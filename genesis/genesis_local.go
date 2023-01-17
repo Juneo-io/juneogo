@@ -8,11 +8,11 @@ import (
 
 	_ "embed"
 
-	"github.com/ava-labs/avalanchego/utils/cb58"
-	"github.com/ava-labs/avalanchego/utils/crypto"
-	"github.com/ava-labs/avalanchego/utils/units"
-	"github.com/ava-labs/avalanchego/utils/wrappers"
-	"github.com/ava-labs/avalanchego/vms/platformvm/reward"
+	"github.com/Juneo-io/juneogo/utils/cb58"
+	"github.com/Juneo-io/juneogo/utils/crypto"
+	"github.com/Juneo-io/juneogo/utils/units"
+	"github.com/Juneo-io/juneogo/utils/wrappers"
+	"github.com/Juneo-io/juneogo/vms/relayvm/reward"
 )
 
 // PrivateKey-vmRQiZeXEXYMyJhEiqdC2z5JhuDbxL8ix9UVvjgMu2Er1NepE => P-local1g65uqn6t77p656w64023nh8nd9updzmxyymev2
@@ -37,29 +37,27 @@ var (
 	// LocalParams are the params used for local networks
 	LocalParams = Params{
 		TxFeeConfig: TxFeeConfig{
-			TxFee:                         units.MilliAvax,
-			CreateAssetTxFee:              units.MilliAvax,
-			CreateSubnetTxFee:             100 * units.MilliAvax,
-			TransformSubnetTxFee:          100 * units.MilliAvax,
-			CreateBlockchainTxFee:         100 * units.MilliAvax,
+			TxFee:                         units.MilliJune,
+			CreateAssetTxFee:              units.MilliJune,
+			CreateSupernetTxFee:           100 * units.MilliJune,
+			TransformSupernetTxFee:        100 * units.MilliJune,
+			CreateBlockchainTxFee:         100 * units.MilliJune,
 			AddPrimaryNetworkValidatorFee: 0,
 			AddPrimaryNetworkDelegatorFee: 0,
-			AddSubnetValidatorFee:         units.MilliAvax,
-			AddSubnetDelegatorFee:         units.MilliAvax,
+			AddSupernetValidatorFee:       units.MilliJune,
+			AddSupernetDelegatorFee:       units.MilliJune,
 		},
 		StakingConfig: StakingConfig{
 			UptimeRequirement: .8, // 80%
-			MinValidatorStake: 2 * units.KiloAvax,
-			MaxValidatorStake: 3 * units.MegaAvax,
-			MinDelegatorStake: 25 * units.Avax,
+			MinValidatorStake: 2 * units.KiloJune,
+			MaxValidatorStake: 3 * units.MegaJune,
+			MinDelegatorStake: 25 * units.June,
 			MinDelegationFee:  20000, // 2%
 			MinStakeDuration:  24 * time.Hour,
 			MaxStakeDuration:  365 * 24 * time.Hour,
 			RewardConfig: reward.Config{
-				MaxConsumptionRate: .12 * reward.PercentDenominator,
-				MinConsumptionRate: .10 * reward.PercentDenominator,
-				MintingPeriod:      365 * 24 * time.Hour,
-				SupplyCap:          720 * units.MegaAvax,
+				MintingPeriod: 365 * 24 * time.Hour,
+				RewardShare:   50000, // 5%
 			},
 		},
 	}

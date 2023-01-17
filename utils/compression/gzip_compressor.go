@@ -12,7 +12,7 @@ import (
 	"math"
 	"sync"
 
-	"github.com/ava-labs/avalanchego/utils"
+	"github.com/Juneo-io/juneogo/utils"
 )
 
 var (

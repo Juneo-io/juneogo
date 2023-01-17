@@ -6,7 +6,7 @@ package secp256k1fx
 import (
 	"errors"
 
-	"github.com/ava-labs/avalanchego/snow"
+	"github.com/Juneo-io/juneogo/snow"
 )
 
 var errNoValueInput = errors.New("input has no value")

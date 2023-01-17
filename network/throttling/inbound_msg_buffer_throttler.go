@@ -10,9 +10,9 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils/metric"
-	"github.com/ava-labs/avalanchego/utils/wrappers"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils/metric"
+	"github.com/Juneo-io/juneogo/utils/wrappers"
 )
 
 // See inbound_msg_throttler.go
@@ -58,7 +58,8 @@ type inboundMsgBufferThrottler struct {
 // The returned release function must be called (!) when done processing the message
 // (or when we give up trying to read the message.)
 // invariant: There should be a maximum of 1 blocking call to Acquire for a
-//            given nodeID. Callers must enforce this invariant.
+//
+//	given nodeID. Callers must enforce this invariant.
 func (t *inboundMsgBufferThrottler) Acquire(ctx context.Context, nodeID ids.NodeID) ReleaseFunc {
 	startTime := time.Now()
 	defer func() {

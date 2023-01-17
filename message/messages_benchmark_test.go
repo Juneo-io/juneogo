@@ -15,9 +15,9 @@ import (
 
 	"google.golang.org/protobuf/proto"
 
-	"github.com/ava-labs/avalanchego/ids"
+	"github.com/Juneo-io/juneogo/ids"
 
-	p2ppb "github.com/ava-labs/avalanchego/proto/pb/p2p"
+	p2ppb "github.com/Juneo-io/juneogo/proto/pb/p2p"
 )
 
 var (
@@ -48,14 +48,14 @@ func BenchmarkMarshalVersion(b *testing.B) {
 	msg := p2ppb.Message{
 		Message: &p2ppb.Message_Version{
 			Version: &p2ppb.Version{
-				NetworkId:      uint32(1337),
-				MyTime:         uint64(time.Now().Unix()),
-				IpAddr:         []byte(net.IPv4(1, 2, 3, 4).To16()),
-				IpPort:         0,
-				MyVersion:      "v1.2.3",
-				MyVersionTime:  uint64(time.Now().Unix()),
-				Sig:            []byte{'y', 'e', 'e', 't'},
-				TrackedSubnets: [][]byte{id[:]},
+				NetworkId:        uint32(1337),
+				MyTime:           uint64(time.Now().Unix()),
+				IpAddr:           []byte(net.IPv4(1, 2, 3, 4).To16()),
+				IpPort:           0,
+				MyVersion:        "v1.2.3",
+				MyVersionTime:    uint64(time.Now().Unix()),
+				Sig:              []byte{'y', 'e', 'e', 't'},
+				TrackedSupernets: [][]byte{id[:]},
 			},
 		},
 	}
@@ -104,14 +104,14 @@ func BenchmarkUnmarshalVersion(b *testing.B) {
 	msg := p2ppb.Message{
 		Message: &p2ppb.Message_Version{
 			Version: &p2ppb.Version{
-				NetworkId:      uint32(1337),
-				MyTime:         uint64(time.Now().Unix()),
-				IpAddr:         []byte(net.IPv4(1, 2, 3, 4).To16()),
-				IpPort:         0,
-				MyVersion:      "v1.2.3",
-				MyVersionTime:  uint64(time.Now().Unix()),
-				Sig:            []byte{'y', 'e', 'e', 't'},
-				TrackedSubnets: [][]byte{id[:]},
+				NetworkId:        uint32(1337),
+				MyTime:           uint64(time.Now().Unix()),
+				IpAddr:           []byte(net.IPv4(1, 2, 3, 4).To16()),
+				IpPort:           0,
+				MyVersion:        "v1.2.3",
+				MyVersionTime:    uint64(time.Now().Unix()),
+				Sig:              []byte{'y', 'e', 'e', 't'},
+				TrackedSupernets: [][]byte{id[:]},
 			},
 		},
 	}

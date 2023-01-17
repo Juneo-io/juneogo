@@ -11,15 +11,15 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/message"
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/snow/engine/common"
-	"github.com/ava-labs/avalanchego/snow/networking/router"
-	"github.com/ava-labs/avalanchego/snow/networking/timeout"
-	"github.com/ava-labs/avalanchego/utils"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/set"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/message"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/snow/engine/common"
+	"github.com/Juneo-io/juneogo/snow/networking/router"
+	"github.com/Juneo-io/juneogo/snow/networking/timeout"
+	"github.com/Juneo-io/juneogo/utils"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/set"
 )
 
 var _ common.Sender = (*sender)(nil)
@@ -144,7 +144,7 @@ func (s *sender) SendGetStateSummaryFrontier(ctx context.Context, nodeIDs set.Se
 		sentTo = s.sender.Send(
 			outMsg,
 			nodeIDs,
-			s.ctx.SubnetID,
+			s.ctx.SupernetID,
 			s.ctx.IsValidatorOnly(),
 		)
 	} else {
@@ -207,7 +207,7 @@ func (s *sender) SendStateSummaryFrontier(ctx context.Context, nodeID ids.NodeID
 	sentTo := s.sender.Send(
 		outMsg,
 		nodeIDs,
-		s.ctx.SubnetID,
+		s.ctx.SupernetID,
 		s.ctx.IsValidatorOnly(),
 	)
 	if sentTo.Len() == 0 {
@@ -284,7 +284,7 @@ func (s *sender) SendGetAcceptedStateSummary(ctx context.Context, nodeIDs set.Se
 		sentTo = s.sender.Send(
 			outMsg,
 			nodeIDs,
-			s.ctx.SubnetID,
+			s.ctx.SupernetID,
 			s.ctx.IsValidatorOnly(),
 		)
 	} else {
@@ -347,7 +347,7 @@ func (s *sender) SendAcceptedStateSummary(ctx context.Context, nodeID ids.NodeID
 	sentTo := s.sender.Send(
 		outMsg,
 		nodeIDs,
-		s.ctx.SubnetID,
+		s.ctx.SupernetID,
 		s.ctx.IsValidatorOnly(),
 	)
 	if sentTo.Len() == 0 {
@@ -416,7 +416,7 @@ func (s *sender) SendGetAcceptedFrontier(ctx context.Context, nodeIDs set.Set[id
 		sentTo = s.sender.Send(
 			outMsg,
 			nodeIDs,
-			s.ctx.SubnetID,
+			s.ctx.SupernetID,
 			s.ctx.IsValidatorOnly(),
 		)
 	} else {
@@ -479,7 +479,7 @@ func (s *sender) SendAcceptedFrontier(ctx context.Context, nodeID ids.NodeID, re
 	sentTo := s.sender.Send(
 		outMsg,
 		nodeIDs,
-		s.ctx.SubnetID,
+		s.ctx.SupernetID,
 		s.ctx.IsValidatorOnly(),
 	)
 	if sentTo.Len() == 0 {
@@ -550,7 +550,7 @@ func (s *sender) SendGetAccepted(ctx context.Context, nodeIDs set.Set[ids.NodeID
 		sentTo = s.sender.Send(
 			outMsg,
 			nodeIDs,
-			s.ctx.SubnetID,
+			s.ctx.SupernetID,
 			s.ctx.IsValidatorOnly(),
 		)
 	} else {
@@ -609,7 +609,7 @@ func (s *sender) SendAccepted(ctx context.Context, nodeID ids.NodeID, requestID 
 	sentTo := s.sender.Send(
 		outMsg,
 		nodeIDs,
-		s.ctx.SubnetID,
+		s.ctx.SupernetID,
 		s.ctx.IsValidatorOnly(),
 	)
 	if sentTo.Len() == 0 {
@@ -687,7 +687,7 @@ func (s *sender) SendGetAncestors(ctx context.Context, nodeID ids.NodeID, reques
 	sentTo := s.sender.Send(
 		outMsg,
 		nodeIDs,
-		s.ctx.SubnetID,
+		s.ctx.SupernetID,
 		s.ctx.IsValidatorOnly(),
 	)
 	if sentTo.Len() == 0 {
@@ -727,7 +727,7 @@ func (s *sender) SendAncestors(_ context.Context, nodeID ids.NodeID, requestID u
 	sentTo := s.sender.Send(
 		outMsg,
 		nodeIDs,
-		s.ctx.SubnetID,
+		s.ctx.SupernetID,
 		s.ctx.IsValidatorOnly(),
 	)
 	if sentTo.Len() == 0 {
@@ -799,7 +799,7 @@ func (s *sender) SendGet(ctx context.Context, nodeID ids.NodeID, requestID uint3
 		sentTo = s.sender.Send(
 			outMsg,
 			nodeIDs,
-			s.ctx.SubnetID,
+			s.ctx.SupernetID,
 			s.ctx.IsValidatorOnly(),
 		)
 	} else {
@@ -851,7 +851,7 @@ func (s *sender) SendPut(_ context.Context, nodeID ids.NodeID, requestID uint32,
 	sentTo := s.sender.Send(
 		outMsg,
 		nodeIDs,
-		s.ctx.SubnetID,
+		s.ctx.SupernetID,
 		s.ctx.IsValidatorOnly(),
 	)
 	if sentTo.Len() == 0 {
@@ -954,7 +954,7 @@ func (s *sender) SendPushQuery(ctx context.Context, nodeIDs set.Set[ids.NodeID],
 		sentTo = s.sender.Send(
 			outMsg,
 			nodeIDs,
-			s.ctx.SubnetID,
+			s.ctx.SupernetID,
 			s.ctx.IsValidatorOnly(),
 		)
 	} else {
@@ -1075,7 +1075,7 @@ func (s *sender) SendPullQuery(ctx context.Context, nodeIDs set.Set[ids.NodeID],
 		sentTo = s.sender.Send(
 			outMsg,
 			nodeIDs,
-			s.ctx.SubnetID,
+			s.ctx.SupernetID,
 			s.ctx.IsValidatorOnly(),
 		)
 	} else {
@@ -1147,7 +1147,7 @@ func (s *sender) SendChits(ctx context.Context, nodeID ids.NodeID, requestID uin
 	sentTo := s.sender.Send(
 		outMsg,
 		nodeIDs,
-		s.ctx.SubnetID,
+		s.ctx.SupernetID,
 		s.ctx.IsValidatorOnly(),
 	)
 	if sentTo.Len() == 0 {
@@ -1288,7 +1288,7 @@ func (s *sender) SendAppRequest(ctx context.Context, nodeIDs set.Set[ids.NodeID]
 		sentTo = s.sender.Send(
 			outMsg,
 			nodeIDs,
-			s.ctx.SubnetID,
+			s.ctx.SupernetID,
 			s.ctx.IsValidatorOnly(),
 		)
 	} else {
@@ -1369,7 +1369,7 @@ func (s *sender) SendAppResponse(ctx context.Context, nodeID ids.NodeID, request
 	sentTo := s.sender.Send(
 		outMsg,
 		nodeIDs,
-		s.ctx.SubnetID,
+		s.ctx.SupernetID,
 		s.ctx.IsValidatorOnly(),
 	)
 	if sentTo.Len() == 0 {
@@ -1407,7 +1407,7 @@ func (s *sender) SendAppGossipSpecific(_ context.Context, nodeIDs set.Set[ids.No
 	sentTo := s.sender.Send(
 		outMsg,
 		nodeIDs,
-		s.ctx.SubnetID,
+		s.ctx.SupernetID,
 		s.ctx.IsValidatorOnly(),
 	)
 	if sentTo.Len() == 0 {
@@ -1450,7 +1450,7 @@ func (s *sender) SendAppGossip(_ context.Context, appGossipBytes []byte) error {
 
 	sentTo := s.sender.Gossip(
 		outMsg,
-		s.ctx.SubnetID,
+		s.ctx.SupernetID,
 		s.ctx.IsValidatorOnly(),
 		validatorSize,
 		nonValidatorSize,
@@ -1490,7 +1490,7 @@ func (s *sender) SendGossip(_ context.Context, container []byte) {
 
 	sentTo := s.sender.Gossip(
 		outMsg,
-		s.ctx.SubnetID,
+		s.ctx.SupernetID,
 		s.ctx.IsValidatorOnly(),
 		int(s.gossipConfig.AcceptedFrontierValidatorSize),
 		int(s.gossipConfig.AcceptedFrontierNonValidatorSize),
@@ -1534,7 +1534,7 @@ func (s *sender) Accept(ctx *snow.ConsensusContext, _ ids.ID, container []byte) 
 
 	sentTo := s.sender.Gossip(
 		outMsg,
-		s.ctx.SubnetID,
+		s.ctx.SupernetID,
 		s.ctx.IsValidatorOnly(),
 		int(s.gossipConfig.OnAcceptValidatorSize),
 		int(s.gossipConfig.OnAcceptNonValidatorSize),

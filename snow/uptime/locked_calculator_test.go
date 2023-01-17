@@ -13,8 +13,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils"
 )
 
 func TestLockedCalculator(t *testing.T) {
@@ -27,14 +27,14 @@ func TestLockedCalculator(t *testing.T) {
 
 	// Should still error because ctx is nil
 	nodeID := ids.GenerateTestNodeID()
-	subnetID := ids.GenerateTestID()
-	_, _, err := lc.CalculateUptime(nodeID, subnetID)
+	supernetID := ids.GenerateTestID()
+	_, _, err := lc.CalculateUptime(nodeID, supernetID)
 	require.ErrorIs(err, errNotReady)
 
-	_, err = lc.CalculateUptimePercent(nodeID, subnetID)
+	_, err = lc.CalculateUptimePercent(nodeID, supernetID)
 	require.ErrorIs(err, errNotReady)
 
-	_, err = lc.CalculateUptimePercentFrom(nodeID, subnetID, time.Now())
+	_, err = lc.CalculateUptimePercentFrom(nodeID, supernetID, time.Now())
 	require.ErrorIs(err, errNotReady)
 
 	var isBootstrapped utils.AtomicBool
@@ -42,13 +42,13 @@ func TestLockedCalculator(t *testing.T) {
 
 	// Should still error because ctx is not bootstrapped
 	lc.SetCalculator(&isBootstrapped, &sync.Mutex{}, mockCalc)
-	_, _, err = lc.CalculateUptime(nodeID, subnetID)
+	_, _, err = lc.CalculateUptime(nodeID, supernetID)
 	require.ErrorIs(err, errNotReady)
 
-	_, err = lc.CalculateUptimePercent(nodeID, subnetID)
+	_, err = lc.CalculateUptimePercent(nodeID, supernetID)
 	require.ErrorIs(err, errNotReady)
 
-	_, err = lc.CalculateUptimePercentFrom(nodeID, subnetID, time.Now())
+	_, err = lc.CalculateUptimePercentFrom(nodeID, supernetID, time.Now())
 	require.EqualValues(errNotReady, err)
 
 	isBootstrapped.SetValue(true)
@@ -56,14 +56,14 @@ func TestLockedCalculator(t *testing.T) {
 	// Should return the value from the mocked inner calculator
 	mockErr := errors.New("mock error")
 	mockCalc.EXPECT().CalculateUptime(gomock.Any(), gomock.Any()).AnyTimes().Return(time.Duration(0), time.Time{}, mockErr)
-	_, _, err = lc.CalculateUptime(nodeID, subnetID)
+	_, _, err = lc.CalculateUptime(nodeID, supernetID)
 	require.ErrorIs(err, mockErr)
 
 	mockCalc.EXPECT().CalculateUptimePercent(gomock.Any(), gomock.Any()).AnyTimes().Return(float64(0), mockErr)
-	_, err = lc.CalculateUptimePercent(nodeID, subnetID)
+	_, err = lc.CalculateUptimePercent(nodeID, supernetID)
 	require.ErrorIs(err, mockErr)
 
 	mockCalc.EXPECT().CalculateUptimePercentFrom(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes().Return(float64(0), mockErr)
-	_, err = lc.CalculateUptimePercentFrom(nodeID, subnetID, time.Now())
+	_, err = lc.CalculateUptimePercentFrom(nodeID, supernetID, time.Now())
 	require.ErrorIs(err, mockErr)
 }

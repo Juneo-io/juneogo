@@ -7,9 +7,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/ava-labs/avalanchego/utils/set"
+	"github.com/Juneo-io/juneogo/utils/set"
 
-	p2ppb "github.com/ava-labs/avalanchego/proto/pb/p2p"
+	p2ppb "github.com/Juneo-io/juneogo/proto/pb/p2p"
 )
 
 // Op is an opcode
@@ -61,7 +61,7 @@ const (
 	CrossChainAppResponseOp
 	// Internal:
 	ConnectedOp
-	ConnectedSubnetOp
+	ConnectedSupernetOp
 	DisconnectedOp
 	NotifyOp
 	GossipRequestOp
@@ -121,7 +121,7 @@ var (
 		CrossChainAppRequestFailedOp,
 		CrossChainAppResponseOp,
 		ConnectedOp,
-		ConnectedSubnetOp,
+		ConnectedSupernetOp,
 		DisconnectedOp,
 		NotifyOp,
 		GossipRequestOp,
@@ -159,7 +159,7 @@ var (
 		ChitsOp,
 		// Internal
 		ConnectedOp,
-		ConnectedSubnetOp,
+		ConnectedSupernetOp,
 		DisconnectedOp,
 	}
 
@@ -282,8 +282,8 @@ func (op Op) String() string {
 		// Internal
 	case ConnectedOp:
 		return "connected"
-	case ConnectedSubnetOp:
-		return "connected_subnet"
+	case ConnectedSupernetOp:
+		return "connected_supernet"
 	case DisconnectedOp:
 		return "disconnected"
 	case NotifyOp:

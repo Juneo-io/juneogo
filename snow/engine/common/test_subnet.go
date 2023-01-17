@@ -6,11 +6,11 @@ package common
 import (
 	"testing"
 
-	"github.com/ava-labs/avalanchego/ids"
+	"github.com/Juneo-io/juneogo/ids"
 )
 
-// SubnetTest is a test subnet
-type SubnetTest struct {
+// SupernetTest is a test supernet
+type SupernetTest struct {
 	T *testing.T
 
 	CantIsBootstrapped, CantBootstrapped bool
@@ -20,7 +20,7 @@ type SubnetTest struct {
 }
 
 // Default set the default callable value to [cant]
-func (s *SubnetTest) Default(cant bool) {
+func (s *SupernetTest) Default(cant bool) {
 	s.CantIsBootstrapped = cant
 	s.CantBootstrapped = cant
 }
@@ -28,7 +28,7 @@ func (s *SubnetTest) Default(cant bool) {
 // IsBootstrapped calls IsBootstrappedF if it was initialized. If it wasn't
 // initialized and this function shouldn't be called and testing was
 // initialized, then testing will fail. Defaults to returning false.
-func (s *SubnetTest) IsBootstrapped() bool {
+func (s *SupernetTest) IsBootstrapped() bool {
 	if s.IsBootstrappedF != nil {
 		return s.IsBootstrappedF()
 	}
@@ -41,7 +41,7 @@ func (s *SubnetTest) IsBootstrapped() bool {
 // Bootstrapped calls BootstrappedF if it was initialized. If it wasn't
 // initialized and this function shouldn't be called and testing was
 // initialized, then testing will fail.
-func (s *SubnetTest) Bootstrapped(chainID ids.ID) {
+func (s *SupernetTest) Bootstrapped(chainID ids.ID) {
 	if s.BootstrappedF != nil {
 		s.BootstrappedF(chainID)
 	} else if s.CantBootstrapped && s.T != nil {

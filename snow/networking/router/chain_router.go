@@ -15,17 +15,17 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/message"
-	"github.com/ava-labs/avalanchego/snow/networking/benchlist"
-	"github.com/ava-labs/avalanchego/snow/networking/handler"
-	"github.com/ava-labs/avalanchego/snow/networking/timeout"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/linkedhashmap"
-	"github.com/ava-labs/avalanchego/utils/logging"
-	"github.com/ava-labs/avalanchego/utils/set"
-	"github.com/ava-labs/avalanchego/utils/timer/mockable"
-	"github.com/ava-labs/avalanchego/version"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/message"
+	"github.com/Juneo-io/juneogo/snow/networking/benchlist"
+	"github.com/Juneo-io/juneogo/snow/networking/handler"
+	"github.com/Juneo-io/juneogo/snow/networking/timeout"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/linkedhashmap"
+	"github.com/Juneo-io/juneogo/utils/logging"
+	"github.com/Juneo-io/juneogo/utils/set"
+	"github.com/Juneo-io/juneogo/utils/timer/mockable"
+	"github.com/Juneo-io/juneogo/version"
 )
 
 var (
@@ -44,11 +44,11 @@ type requestEntry struct {
 
 type peer struct {
 	version *version.Application
-	// The subnets that this peer is currently tracking (i.e whitelisted)
-	trackedSubnets set.Set[ids.ID]
-	// The subnets that this peer actually has a connection to.
-	// This is a subset of trackedSubnets.
-	connectedSubnets set.Set[ids.ID]
+	// The supernets that this peer is currently tracking (i.e whitelisted)
+	trackedSupernets set.Set[ids.ID]
+	// The supernets that this peer actually has a connection to.
+	// This is a subset of trackedSupernets.
+	connectedSupernets set.Set[ids.ID]
 }
 
 // ChainRouter routes incoming messages from the validator network
@@ -93,7 +93,7 @@ func (cr *ChainRouter) Initialize(
 	timeoutManager timeout.Manager,
 	closeTimeout time.Duration,
 	criticalChains set.Set[ids.ID],
-	whitelistedSubnets set.Set[ids.ID],
+	whitelistedSupernets set.Set[ids.ID],
 	onFatal func(exitCode int),
 	healthConfig HealthConfig,
 	metricsNamespace string,
@@ -115,8 +115,8 @@ func (cr *ChainRouter) Initialize(
 	myself := &peer{
 		version: version.CurrentApp,
 	}
-	myself.trackedSubnets.Union(whitelistedSubnets)
-	myself.trackedSubnets.Add(constants.PrimaryNetworkID)
+	myself.trackedSupernets.Union(whitelistedSupernets)
+	myself.trackedSupernets.Add(constants.PrimaryNetworkID)
 	cr.peers[nodeID] = myself
 
 	// Register metrics
@@ -355,18 +355,18 @@ func (cr *ChainRouter) AddChain(ctx context.Context, chain handler.Handler) {
 	cr.chains[chainID] = chain
 
 	// Notify connected validators
-	subnetID := chain.Context().SubnetID
+	supernetID := chain.Context().SupernetID
 	for validatorID, peer := range cr.peers {
 		// If this validator is benched on any chain, treat them as disconnected on all chains
-		if _, benched := cr.benched[validatorID]; !benched && peer.trackedSubnets.Contains(subnetID) {
+		if _, benched := cr.benched[validatorID]; !benched && peer.trackedSupernets.Contains(supernetID) {
 			msg := message.InternalConnected(validatorID, peer.version)
 			chain.Push(ctx, msg)
 		}
 	}
 
 	// When we register the P-chain, we mark ourselves as connected on all of
-	// the subnets that we have whitelisted.
-	if chainID != constants.PlatformChainID {
+	// the supernets that we have whitelisted.
+	if chainID != constants.RelayChainID {
 		return
 	}
 
@@ -379,13 +379,13 @@ func (cr *ChainRouter) AddChain(ctx context.Context, chain handler.Handler) {
 	}
 
 	myself := cr.peers[cr.myNodeID]
-	for subnetID := range myself.trackedSubnets {
-		cr.connectedSubnet(myself, cr.myNodeID, subnetID)
+	for supernetID := range myself.trackedSupernets {
+		cr.connectedSupernet(myself, cr.myNodeID, supernetID)
 	}
 }
 
 // Connected routes an incoming notification that a validator was just connected
-func (cr *ChainRouter) Connected(nodeID ids.NodeID, nodeVersion *version.Application, subnetID ids.ID) {
+func (cr *ChainRouter) Connected(nodeID ids.NodeID, nodeVersion *version.Application, supernetID ids.ID) {
 	cr.lock.Lock()
 	defer cr.lock.Unlock()
 
@@ -396,7 +396,7 @@ func (cr *ChainRouter) Connected(nodeID ids.NodeID, nodeVersion *version.Applica
 		}
 		cr.peers[nodeID] = connectedPeer
 	}
-	connectedPeer.trackedSubnets.Add(subnetID)
+	connectedPeer.trackedSupernets.Add(supernetID)
 
 	// If this validator is benched on any chain, treat them as disconnected on all chains
 	if _, benched := cr.benched[nodeID]; benched {
@@ -406,14 +406,14 @@ func (cr *ChainRouter) Connected(nodeID ids.NodeID, nodeVersion *version.Applica
 	msg := message.InternalConnected(nodeID, nodeVersion)
 
 	// TODO: fire up an event when validator state changes i.e when they leave set, disconnect.
-	// we cannot put a subnet-only validator check here since Disconnected would not be handled properly.
+	// we cannot put a supernet-only validator check here since Disconnected would not be handled properly.
 	for _, chain := range cr.chains {
-		if subnetID == chain.Context().SubnetID {
+		if supernetID == chain.Context().SupernetID {
 			chain.Push(context.TODO(), msg)
 		}
 	}
 
-	cr.connectedSubnet(connectedPeer, nodeID, subnetID)
+	cr.connectedSupernet(connectedPeer, nodeID, supernetID)
 }
 
 // Disconnected routes an incoming notification that a validator was connected
@@ -430,9 +430,9 @@ func (cr *ChainRouter) Disconnected(nodeID ids.NodeID) {
 	msg := message.InternalDisconnected(nodeID)
 
 	// TODO: fire up an event when validator state changes i.e when they leave set, disconnect.
-	// we cannot put a subnet-only validator check here since if a validator connects then it leaves validator-set, it would not be disconnected properly.
+	// we cannot put a supernet-only validator check here since if a validator connects then it leaves validator-set, it would not be disconnected properly.
 	for _, chain := range cr.chains {
-		if peer.trackedSubnets.Contains(chain.Context().SubnetID) {
+		if peer.trackedSupernets.Contains(chain.Context().SupernetID) {
 			chain.Push(context.TODO(), msg)
 		}
 	}
@@ -452,17 +452,17 @@ func (cr *ChainRouter) Benched(chainID ids.ID, nodeID ids.NodeID) {
 		return
 	}
 
-	// This will disconnect the node from all subnets when issued to P-chain.
-	// Even if there is no chain in the subnet.
+	// This will disconnect the node from all supernets when issued to P-chain.
+	// Even if there is no chain in the supernet.
 	msg := message.InternalDisconnected(nodeID)
 
 	for _, chain := range cr.chains {
-		if peer.trackedSubnets.Contains(chain.Context().SubnetID) {
+		if peer.trackedSupernets.Contains(chain.Context().SupernetID) {
 			chain.Push(context.TODO(), msg)
 		}
 	}
 
-	peer.connectedSubnets.Clear()
+	peer.connectedSupernets.Clear()
 }
 
 // Unbenched routes an incoming notification that a validator was just unbenched
@@ -487,16 +487,16 @@ func (cr *ChainRouter) Unbenched(chainID ids.ID, nodeID ids.NodeID) {
 	msg := message.InternalConnected(nodeID, peer.version)
 
 	for _, chain := range cr.chains {
-		if peer.trackedSubnets.Contains(chain.Context().SubnetID) {
+		if peer.trackedSupernets.Contains(chain.Context().SupernetID) {
 			chain.Push(context.TODO(), msg)
 		}
 	}
 
-	// This will unbench the node from all its subnets.
+	// This will unbench the node from all its supernets.
 	// We handle this case separately because the node may have been benched on
-	// a subnet that has no chains.
-	for subnetID := range peer.trackedSubnets {
-		cr.connectedSubnet(peer, nodeID, subnetID)
+	// a supernet that has no chains.
+	for supernetID := range peer.trackedSupernets {
+		cr.connectedSupernet(peer, nodeID, supernetID)
 	}
 }
 
@@ -596,39 +596,39 @@ func (cr *ChainRouter) clearRequest(
 	return uniqueRequestID, &request
 }
 
-// connectedSubnet pushes an InternalSubnetConnected message with [nodeID] and
-// [subnetID] to the P-chain. This should be called when a node is either first
-// connecting to [subnetID] or when a node that was already connected is
-// unbenched on [subnetID]. This is a noop if [subnetID] is the Primary Network
-// or if the peer is already marked as connected to the subnet.
+// connectedSupernet pushes an InternalSupernetConnected message with [nodeID] and
+// [supernetID] to the P-chain. This should be called when a node is either first
+// connecting to [supernetID] or when a node that was already connected is
+// unbenched on [supernetID]. This is a noop if [supernetID] is the Primary Network
+// or if the peer is already marked as connected to the supernet.
 // Invariant: should be called after *message.Connected is pushed to the P-chain
 // Invariant: should be called after the P-chain was provided in [AddChain]
-func (cr *ChainRouter) connectedSubnet(peer *peer, nodeID ids.NodeID, subnetID ids.ID) {
+func (cr *ChainRouter) connectedSupernet(peer *peer, nodeID ids.NodeID, supernetID ids.ID) {
 	// if connected to primary network, we can skip this
 	// because Connected has its own internal message
-	if subnetID == constants.PrimaryNetworkID {
+	if supernetID == constants.PrimaryNetworkID {
 		return
 	}
 
-	// peer already connected to this subnet
-	if peer.connectedSubnets.Contains(subnetID) {
+	// peer already connected to this supernet
+	if peer.connectedSupernets.Contains(supernetID) {
 		return
 	}
 
-	msg := message.InternalConnectedSubnet(nodeID, subnetID)
+	msg := message.InternalConnectedSupernet(nodeID, supernetID)
 	// We only push this message to the P-chain because it is the only chain
-	// that cares about the connectivity of all subnets. Others chains learn
-	// about the connectivity of their own subnet when they receive a
+	// that cares about the connectivity of all supernets. Others chains learn
+	// about the connectivity of their own supernet when they receive a
 	// *message.Connected.
-	platformChain, ok := cr.chains[constants.PlatformChainID]
+	relayChain, ok := cr.chains[constants.RelayChainID]
 	if !ok {
-		cr.log.Error("trying to issue InternalConnectedSubnet message, but platform chain is not registered",
+		cr.log.Error("trying to issue InternalConnectedSupernet message, but platform chain is not registered",
 			zap.Stringer("nodeID", nodeID),
-			zap.Stringer("subnetID", subnetID),
+			zap.Stringer("supernetID", supernetID),
 		)
 		return
 	}
-	platformChain.Push(context.TODO(), msg)
+	relayChain.Push(context.TODO(), msg)
 
-	peer.connectedSubnets.Add(subnetID)
+	peer.connectedSupernets.Add(supernetID)
 }

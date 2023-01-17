@@ -6,9 +6,9 @@ package common
 import (
 	"time"
 
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/snow/engine/common/tracker"
-	"github.com/ava-labs/avalanchego/snow/validators"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/snow/engine/common/tracker"
+	"github.com/Juneo-io/juneogo/snow/validators"
 )
 
 // Config wraps the common configurations that are needed by a Snow consensus
@@ -23,7 +23,7 @@ type Config struct {
 	StartupTracker tracker.Startup
 	Sender         Sender
 	Bootstrapable  Bootstrapable
-	Subnet         Subnet
+	Supernet       Supernet
 	Timer          Timer
 
 	// Should Bootstrap be retried

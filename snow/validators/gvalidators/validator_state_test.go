@@ -16,12 +16,12 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/test/bufconn"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow/validators"
-	"github.com/ava-labs/avalanchego/utils/crypto/bls"
-	"github.com/ava-labs/avalanchego/vms/rpcchainvm/grpcutils"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow/validators"
+	"github.com/Juneo-io/juneogo/utils/crypto/bls"
+	"github.com/Juneo-io/juneogo/vms/rpcchainvm/grpcutils"
 
-	pb "github.com/ava-labs/avalanchego/proto/pb/validatorstate"
+	pb "github.com/Juneo-io/juneogo/proto/pb/validatorstate"
 )
 
 const bufSize = 1024 * 1024
@@ -121,7 +121,7 @@ func TestGetCurrentHeight(t *testing.T) {
 	require.Error(err)
 }
 
-func TestGetSubnetID(t *testing.T) {
+func TestGetSupernetID(t *testing.T) {
 	require := require.New(t)
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -131,17 +131,17 @@ func TestGetSubnetID(t *testing.T) {
 
 	// Happy path
 	chainID := ids.GenerateTestID()
-	expectedSubnetID := ids.GenerateTestID()
-	state.server.EXPECT().GetSubnetID(gomock.Any(), chainID).Return(expectedSubnetID, nil)
+	expectedSupernetID := ids.GenerateTestID()
+	state.server.EXPECT().GetSupernetID(gomock.Any(), chainID).Return(expectedSupernetID, nil)
 
-	subnetID, err := state.client.GetSubnetID(context.Background(), chainID)
+	supernetID, err := state.client.GetSupernetID(context.Background(), chainID)
 	require.NoError(err)
-	require.Equal(expectedSubnetID, subnetID)
+	require.Equal(expectedSupernetID, supernetID)
 
 	// Error path
-	state.server.EXPECT().GetSubnetID(gomock.Any(), chainID).Return(expectedSubnetID, errCustom)
+	state.server.EXPECT().GetSupernetID(gomock.Any(), chainID).Return(expectedSupernetID, errCustom)
 
-	_, err = state.client.GetSubnetID(context.Background(), chainID)
+	_, err = state.client.GetSupernetID(context.Background(), chainID)
 	require.Error(err)
 }
 
@@ -182,16 +182,16 @@ func TestGetValidatorSet(t *testing.T) {
 		vdr2.NodeID: vdr2,
 	}
 	height := uint64(1337)
-	subnetID := ids.GenerateTestID()
-	state.server.EXPECT().GetValidatorSet(gomock.Any(), height, subnetID).Return(expectedVdrs, nil)
+	supernetID := ids.GenerateTestID()
+	state.server.EXPECT().GetValidatorSet(gomock.Any(), height, supernetID).Return(expectedVdrs, nil)
 
-	vdrs, err := state.client.GetValidatorSet(context.Background(), height, subnetID)
+	vdrs, err := state.client.GetValidatorSet(context.Background(), height, supernetID)
 	require.NoError(err)
 	require.Equal(expectedVdrs, vdrs)
 
 	// Error path
-	state.server.EXPECT().GetValidatorSet(gomock.Any(), height, subnetID).Return(expectedVdrs, errCustom)
+	state.server.EXPECT().GetValidatorSet(gomock.Any(), height, supernetID).Return(expectedVdrs, errCustom)
 
-	_, err = state.client.GetValidatorSet(context.Background(), height, subnetID)
+	_, err = state.client.GetValidatorSet(context.Background(), height, supernetID)
 	require.Error(err)
 }

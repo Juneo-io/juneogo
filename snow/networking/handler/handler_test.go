@@ -16,14 +16,14 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/message"
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/snow/engine/common"
-	"github.com/ava-labs/avalanchego/snow/networking/tracker"
-	"github.com/ava-labs/avalanchego/snow/validators"
-	"github.com/ava-labs/avalanchego/utils/math/meter"
-	"github.com/ava-labs/avalanchego/utils/resource"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/message"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/snow/engine/common"
+	"github.com/Juneo-io/juneogo/snow/networking/tracker"
+	"github.com/Juneo-io/juneogo/snow/validators"
+	"github.com/Juneo-io/juneogo/utils/math/meter"
+	"github.com/Juneo-io/juneogo/utils/resource"
 )
 
 func TestHandlerDropsTimedOutMessages(t *testing.T) {
@@ -50,7 +50,7 @@ func TestHandlerDropsTimedOutMessages(t *testing.T) {
 		nil,
 		time.Second,
 		resourceTracker,
-		validators.UnhandledSubnetConnector,
+		validators.UnhandledSupernetConnector,
 	)
 	require.NoError(t, err)
 	handler := handlerIntf.(*handler)
@@ -131,7 +131,7 @@ func TestHandlerClosesOnError(t *testing.T) {
 		nil,
 		time.Second,
 		resourceTracker,
-		validators.UnhandledSubnetConnector,
+		validators.UnhandledSupernetConnector,
 	)
 	require.NoError(t, err)
 	handler := handlerIntf.(*handler)
@@ -210,7 +210,7 @@ func TestHandlerDropsGossipDuringBootstrapping(t *testing.T) {
 		nil,
 		1,
 		resourceTracker,
-		validators.UnhandledSubnetConnector,
+		validators.UnhandledSupernetConnector,
 	)
 	require.NoError(t, err)
 	handler := handlerIntf.(*handler)
@@ -279,7 +279,7 @@ func TestHandlerDispatchInternal(t *testing.T) {
 		nil,
 		time.Second,
 		resourceTracker,
-		validators.UnhandledSubnetConnector,
+		validators.UnhandledSupernetConnector,
 	)
 	require.NoError(t, err)
 
@@ -320,7 +320,7 @@ func TestHandlerDispatchInternal(t *testing.T) {
 	}
 }
 
-func TestHandlerSubnetConnector(t *testing.T) {
+func TestHandlerSupernetConnector(t *testing.T) {
 	ctx := snow.DefaultConsensusContextTest()
 	vdrs := validators.NewSet()
 	err := vdrs.Add(ids.GenerateTestNodeID(), nil, ids.Empty, 1)
@@ -334,10 +334,10 @@ func TestHandlerSubnetConnector(t *testing.T) {
 	)
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	connector := validators.NewMockSubnetConnector(ctrl)
+	connector := validators.NewMockSupernetConnector(ctrl)
 
 	nodeID := ids.GenerateTestNodeID()
-	subnetID := ids.GenerateTestID()
+	supernetID := ids.GenerateTestID()
 
 	require.NoError(t, err)
 	handler, err := New(
@@ -376,9 +376,9 @@ func TestHandlerSubnetConnector(t *testing.T) {
 
 	handler.Start(context.Background(), false)
 
-	// Handler should call subnet connector when ConnectedSubnet message is received
+	// Handler should call supernet connector when ConnectedSupernet message is received
 	var wg sync.WaitGroup
-	connector.EXPECT().ConnectedSubnet(gomock.Any(), nodeID, subnetID).Do(
+	connector.EXPECT().ConnectedSupernet(gomock.Any(), nodeID, supernetID).Do(
 		func(context.Context, ids.NodeID, ids.ID) {
 			wg.Done()
 		})
@@ -386,6 +386,6 @@ func TestHandlerSubnetConnector(t *testing.T) {
 	wg.Add(1)
 	defer wg.Wait()
 
-	subnetMsg := message.InternalConnectedSubnet(nodeID, subnetID)
-	handler.Push(context.Background(), subnetMsg)
+	supernetMsg := message.InternalConnectedSupernet(nodeID, supernetID)
+	handler.Push(context.Background(), supernetMsg)
 }

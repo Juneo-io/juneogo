@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ava-labs/avalanchego/ids"
+	"github.com/Juneo-io/juneogo/ids"
 )
 
 // Const variables to be exported
@@ -32,7 +32,7 @@ const (
 	UnitTestName = "testing"
 	LocalName    = "local"
 
-	MainnetHRP  = "avax"
+	MainnetHRP  = "june"
 	CascadeHRP  = "cascade"
 	DenaliHRP   = "denali"
 	EverestHRP  = "everest"
@@ -45,7 +45,7 @@ const (
 // Variables to be exported
 var (
 	PrimaryNetworkID = ids.Empty
-	PlatformChainID  = ids.Empty
+	RelayChainID     = ids.Empty
 
 	NetworkIDToNetworkName = map[uint32]string{
 		MainnetID:  MainnetName,

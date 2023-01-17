@@ -18,38 +18,38 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
 
-	"github.com/ava-labs/avalanchego/api/keystore/gkeystore"
-	"github.com/ava-labs/avalanchego/api/metrics"
-	"github.com/ava-labs/avalanchego/chains/atomic/gsharedmemory"
-	"github.com/ava-labs/avalanchego/database/corruptabledb"
-	"github.com/ava-labs/avalanchego/database/manager"
-	"github.com/ava-labs/avalanchego/database/rpcdb"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/ids/galiasreader"
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/snow/consensus/snowman"
-	"github.com/ava-labs/avalanchego/snow/engine/common"
-	"github.com/ava-labs/avalanchego/snow/engine/common/appsender"
-	"github.com/ava-labs/avalanchego/snow/engine/snowman/block"
-	"github.com/ava-labs/avalanchego/snow/validators/gvalidators"
-	"github.com/ava-labs/avalanchego/utils/logging"
-	"github.com/ava-labs/avalanchego/utils/wrappers"
-	"github.com/ava-labs/avalanchego/version"
-	"github.com/ava-labs/avalanchego/vms/platformvm/teleporter/gteleporter"
-	"github.com/ava-labs/avalanchego/vms/rpcchainvm/ghttp"
-	"github.com/ava-labs/avalanchego/vms/rpcchainvm/grpcutils"
-	"github.com/ava-labs/avalanchego/vms/rpcchainvm/messenger"
+	"github.com/Juneo-io/juneogo/api/keystore/gkeystore"
+	"github.com/Juneo-io/juneogo/api/metrics"
+	"github.com/Juneo-io/juneogo/chains/atomic/gsharedmemory"
+	"github.com/Juneo-io/juneogo/database/corruptabledb"
+	"github.com/Juneo-io/juneogo/database/manager"
+	"github.com/Juneo-io/juneogo/database/rpcdb"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/ids/galiasreader"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/snow/consensus/snowman"
+	"github.com/Juneo-io/juneogo/snow/engine/common"
+	"github.com/Juneo-io/juneogo/snow/engine/common/appsender"
+	"github.com/Juneo-io/juneogo/snow/engine/snowman/block"
+	"github.com/Juneo-io/juneogo/snow/validators/gvalidators"
+	"github.com/Juneo-io/juneogo/utils/logging"
+	"github.com/Juneo-io/juneogo/utils/wrappers"
+	"github.com/Juneo-io/juneogo/version"
+	"github.com/Juneo-io/juneogo/vms/relayvm/teleporter/gteleporter"
+	"github.com/Juneo-io/juneogo/vms/rpcchainvm/ghttp"
+	"github.com/Juneo-io/juneogo/vms/rpcchainvm/grpcutils"
+	"github.com/Juneo-io/juneogo/vms/rpcchainvm/messenger"
 
-	aliasreaderpb "github.com/ava-labs/avalanchego/proto/pb/aliasreader"
-	appsenderpb "github.com/ava-labs/avalanchego/proto/pb/appsender"
-	httppb "github.com/ava-labs/avalanchego/proto/pb/http"
-	keystorepb "github.com/ava-labs/avalanchego/proto/pb/keystore"
-	messengerpb "github.com/ava-labs/avalanchego/proto/pb/messenger"
-	rpcdbpb "github.com/ava-labs/avalanchego/proto/pb/rpcdb"
-	sharedmemorypb "github.com/ava-labs/avalanchego/proto/pb/sharedmemory"
-	teleporterpb "github.com/ava-labs/avalanchego/proto/pb/teleporter"
-	validatorstatepb "github.com/ava-labs/avalanchego/proto/pb/validatorstate"
-	vmpb "github.com/ava-labs/avalanchego/proto/pb/vm"
+	aliasreaderpb "github.com/Juneo-io/juneogo/proto/pb/aliasreader"
+	appsenderpb "github.com/Juneo-io/juneogo/proto/pb/appsender"
+	httppb "github.com/Juneo-io/juneogo/proto/pb/http"
+	keystorepb "github.com/Juneo-io/juneogo/proto/pb/keystore"
+	messengerpb "github.com/Juneo-io/juneogo/proto/pb/messenger"
+	rpcdbpb "github.com/Juneo-io/juneogo/proto/pb/rpcdb"
+	sharedmemorypb "github.com/Juneo-io/juneogo/proto/pb/sharedmemory"
+	teleporterpb "github.com/Juneo-io/juneogo/proto/pb/teleporter"
+	validatorstatepb "github.com/Juneo-io/juneogo/proto/pb/validatorstate"
+	vmpb "github.com/Juneo-io/juneogo/proto/pb/vm"
 )
 
 var (
@@ -94,7 +94,7 @@ func NewServer(vm block.ChainVM) *VMServer {
 }
 
 func (vm *VMServer) Initialize(ctx context.Context, req *vmpb.InitializeRequest) (*vmpb.InitializeResponse, error) {
-	subnetID, err := ids.ToID(req.SubnetId)
+	supernetID, err := ids.ToID(req.SupernetId)
 	if err != nil {
 		return nil, err
 	}
@@ -106,15 +106,19 @@ func (vm *VMServer) Initialize(ctx context.Context, req *vmpb.InitializeRequest)
 	if err != nil {
 		return nil, err
 	}
-	xChainID, err := ids.ToID(req.XChainId)
+	assetChainID, err := ids.ToID(req.AssetChainId)
 	if err != nil {
 		return nil, err
 	}
-	cChainID, err := ids.ToID(req.CChainId)
+	juneChainID, err := ids.ToID(req.JuneChainId)
 	if err != nil {
 		return nil, err
 	}
-	avaxAssetID, err := ids.ToID(req.AvaxAssetId)
+	juneAssetID, err := ids.ToID(req.JuneAssetId)
+	if err != nil {
+		return nil, err
+	}
+	chainAssetID, err := ids.ToID(req.ChainAssetId)
 	if err != nil {
 		return nil, err
 	}
@@ -208,14 +212,15 @@ func (vm *VMServer) Initialize(ctx context.Context, req *vmpb.InitializeRequest)
 	}()
 
 	vm.ctx = &snow.Context{
-		NetworkID: req.NetworkId,
-		SubnetID:  subnetID,
-		ChainID:   chainID,
-		NodeID:    nodeID,
+		NetworkID:  req.NetworkId,
+		SupernetID: supernetID,
+		ChainID:    chainID,
+		NodeID:     nodeID,
 
-		XChainID:    xChainID,
-		CChainID:    cChainID,
-		AVAXAssetID: avaxAssetID,
+		AssetChainID: assetChainID,
+		JuneChainID:  juneChainID,
+		JuneAssetID:  juneAssetID,
+		ChainAssetID: chainAssetID,
 
 		Log:          logging.NoLog{},
 		Keystore:     keystoreClient,

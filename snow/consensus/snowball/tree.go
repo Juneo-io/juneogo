@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/ava-labs/avalanchego/ids"
+	"github.com/Juneo-io/juneogo/ids"
 )
 
 var (
@@ -180,144 +180,145 @@ func (u *unaryNode) DecidedPrefix() int {
 // snowball instances, and this function's purpose is convert one of these unary
 // snowball instances into a binary snowball instance.
 // There are 5 possible cases.
-// 1. None of these instances should be split, we should attempt to split a
-//    child
 //
-//        For example, attempting to insert the value "00001" in this node:
+//  1. None of these instances should be split, we should attempt to split a
+//     child
 //
-//                       +-------------------+ <-- This node will not be split
-//                       |                   |
-//                       |       0 0 0       |
-//                       |                   |
-//                       +-------------------+ <-- Pass the add to the child
-//                                 ^
-//                                 |
+//     For example, attempting to insert the value "00001" in this node:
 //
-//        Results in:
+//     +-------------------+ <-- This node will not be split
+//     |                   |
+//     |       0 0 0       |
+//     |                   |
+//     +-------------------+ <-- Pass the add to the child
+//     ^
+//     |
 //
-//                       +-------------------+
-//                       |                   |
-//                       |       0 0 0       |
-//                       |                   |
-//                       +-------------------+ <-- With the modified child
-//                                 ^
-//                                 |
+//     Results in:
 //
-// 2. This instance represents a series of only one unary instance and it must
-//    be split
-//       This will return a binary choice, with one child the same as my child,
-//       and another (possibly nil child) representing a new chain to the end of
-//       the hash
+//     +-------------------+
+//     |                   |
+//     |       0 0 0       |
+//     |                   |
+//     +-------------------+ <-- With the modified child
+//     ^
+//     |
 //
-//        For example, attempting to insert the value "1" in this tree:
+//  2. This instance represents a series of only one unary instance and it must
+//     be split
+//     This will return a binary choice, with one child the same as my child,
+//     and another (possibly nil child) representing a new chain to the end of
+//     the hash
 //
-//                       +-------------------+
-//                       |                   |
-//                       |         0         |
-//                       |                   |
-//                       +-------------------+
+//     For example, attempting to insert the value "1" in this tree:
 //
-//        Results in:
+//     +-------------------+
+//     |                   |
+//     |         0         |
+//     |                   |
+//     +-------------------+
 //
-//                       +-------------------+
-//                       |         |         |
-//                       |    0    |    1    |
-//                       |         |         |
-//                       +-------------------+
+//     Results in:
 //
-// 3. This instance must be split on the first bit
-//       This will return a binary choice, with one child equal to this instance
-//       with decidedPrefix increased by one, and another representing a new
-//       chain to the end of the hash
+//     +-------------------+
+//     |         |         |
+//     |    0    |    1    |
+//     |         |         |
+//     +-------------------+
 //
-//        For example, attempting to insert the value "10" in this tree:
+//  3. This instance must be split on the first bit
+//     This will return a binary choice, with one child equal to this instance
+//     with decidedPrefix increased by one, and another representing a new
+//     chain to the end of the hash
 //
-//                       +-------------------+
-//                       |                   |
-//                       |        0 0        |
-//                       |                   |
-//                       +-------------------+
+//     For example, attempting to insert the value "10" in this tree:
 //
-//        Results in:
+//     +-------------------+
+//     |                   |
+//     |        0 0        |
+//     |                   |
+//     +-------------------+
 //
-//                       +-------------------+
-//                       |         |         |
-//                       |    0    |    1    |
-//                       |         |         |
-//                       +-------------------+
-//                            ^         ^
-//                           /           \
-//            +-------------------+ +-------------------+
-//            |                   | |                   |
-//            |         0         | |         0         |
-//            |                   | |                   |
-//            +-------------------+ +-------------------+
+//     Results in:
 //
-// 4. This instance must be split on the last bit
-//       This will modify this unary choice. The commonPrefix is decreased by
-//       one. The child is set to a binary instance that has a child equal to
-//       the current child and another child equal to a new unary instance to
-//       the end of the hash
+//     +-------------------+
+//     |         |         |
+//     |    0    |    1    |
+//     |         |         |
+//     +-------------------+
+//     ^         ^
+//     /           \
+//     +-------------------+ +-------------------+
+//     |                   | |                   |
+//     |         0         | |         0         |
+//     |                   | |                   |
+//     +-------------------+ +-------------------+
 //
-//        For example, attempting to insert the value "01" in this tree:
+//  4. This instance must be split on the last bit
+//     This will modify this unary choice. The commonPrefix is decreased by
+//     one. The child is set to a binary instance that has a child equal to
+//     the current child and another child equal to a new unary instance to
+//     the end of the hash
 //
-//                       +-------------------+
-//                       |                   |
-//                       |        0 0        |
-//                       |                   |
-//                       +-------------------+
+//     For example, attempting to insert the value "01" in this tree:
 //
-//        Results in:
+//     +-------------------+
+//     |                   |
+//     |        0 0        |
+//     |                   |
+//     +-------------------+
 //
-//                       +-------------------+
-//                       |                   |
-//                       |         0         |
-//                       |                   |
-//                       +-------------------+
-//                                 ^
-//                                 |
-//                       +-------------------+
-//                       |         |         |
-//                       |    0    |    1    |
-//                       |         |         |
-//                       +-------------------+
+//     Results in:
 //
-// 5. This instance must be split on an interior bit
-//       This will modify this unary choice. The commonPrefix is set to the
-//       interior bit. The child is set to a binary instance that has a child
-//       equal to this unary choice with the decidedPrefix equal to the interior
-//       bit and another child equal to a new unary instance to the end of the
-//       hash
+//     +-------------------+
+//     |                   |
+//     |         0         |
+//     |                   |
+//     +-------------------+
+//     ^
+//     |
+//     +-------------------+
+//     |         |         |
+//     |    0    |    1    |
+//     |         |         |
+//     +-------------------+
 //
-//        For example, attempting to insert the value "010" in this tree:
+//  5. This instance must be split on an interior bit
+//     This will modify this unary choice. The commonPrefix is set to the
+//     interior bit. The child is set to a binary instance that has a child
+//     equal to this unary choice with the decidedPrefix equal to the interior
+//     bit and another child equal to a new unary instance to the end of the
+//     hash
 //
-//                       +-------------------+
-//                       |                   |
-//                       |       0 0 0       |
-//                       |                   |
-//                       +-------------------+
+//     For example, attempting to insert the value "010" in this tree:
 //
-//        Results in:
+//     +-------------------+
+//     |                   |
+//     |       0 0 0       |
+//     |                   |
+//     +-------------------+
 //
-//                       +-------------------+
-//                       |                   |
-//                       |         0         |
-//                       |                   |
-//                       +-------------------+
-//                                 ^
-//                                 |
-//                       +-------------------+
-//                       |         |         |
-//                       |    0    |    1    |
-//                       |         |         |
-//                       +-------------------+
-//                            ^         ^
-//                           /           \
-//            +-------------------+ +-------------------+
-//            |                   | |                   |
-//            |         0         | |         0         |
-//            |                   | |                   |
-//            +-------------------+ +-------------------+
+//     Results in:
+//
+//     +-------------------+
+//     |                   |
+//     |         0         |
+//     |                   |
+//     +-------------------+
+//     ^
+//     |
+//     +-------------------+
+//     |         |         |
+//     |    0    |    1    |
+//     |         |         |
+//     +-------------------+
+//     ^         ^
+//     /           \
+//     +-------------------+ +-------------------+
+//     |                   | |                   |
+//     |         0         | |         0         |
+//     |                   | |                   |
+//     +-------------------+ +-------------------+
 func (u *unaryNode) Add(newChoice ids.ID) node {
 	if u.Finalized() {
 		return u // Only happens if the tree is finalized, or it's a leaf node

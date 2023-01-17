@@ -16,23 +16,23 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/message"
-	"github.com/ava-labs/avalanchego/proto/pb/p2p"
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/snow/engine/common"
-	"github.com/ava-labs/avalanchego/snow/networking/benchlist"
-	"github.com/ava-labs/avalanchego/snow/networking/handler"
-	"github.com/ava-labs/avalanchego/snow/networking/router"
-	"github.com/ava-labs/avalanchego/snow/networking/timeout"
-	"github.com/ava-labs/avalanchego/snow/networking/tracker"
-	"github.com/ava-labs/avalanchego/snow/validators"
-	"github.com/ava-labs/avalanchego/utils/logging"
-	"github.com/ava-labs/avalanchego/utils/math/meter"
-	"github.com/ava-labs/avalanchego/utils/resource"
-	"github.com/ava-labs/avalanchego/utils/set"
-	"github.com/ava-labs/avalanchego/utils/timer"
-	"github.com/ava-labs/avalanchego/version"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/message"
+	"github.com/Juneo-io/juneogo/proto/pb/p2p"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/snow/engine/common"
+	"github.com/Juneo-io/juneogo/snow/networking/benchlist"
+	"github.com/Juneo-io/juneogo/snow/networking/handler"
+	"github.com/Juneo-io/juneogo/snow/networking/router"
+	"github.com/Juneo-io/juneogo/snow/networking/timeout"
+	"github.com/Juneo-io/juneogo/snow/networking/tracker"
+	"github.com/Juneo-io/juneogo/snow/validators"
+	"github.com/Juneo-io/juneogo/utils/logging"
+	"github.com/Juneo-io/juneogo/utils/math/meter"
+	"github.com/Juneo-io/juneogo/utils/resource"
+	"github.com/Juneo-io/juneogo/utils/set"
+	"github.com/Juneo-io/juneogo/utils/timer"
+	"github.com/Juneo-io/juneogo/version"
 )
 
 var defaultGossipConfig = GossipConfig{
@@ -117,7 +117,7 @@ func TestTimeout(t *testing.T) {
 		nil,
 		time.Hour,
 		resourceTracker,
-		validators.UnhandledSubnetConnector,
+		validators.UnhandledSupernetConnector,
 	)
 	require.NoError(err)
 
@@ -373,7 +373,7 @@ func TestReliableMessages(t *testing.T) {
 		nil,
 		1,
 		resourceTracker,
-		validators.UnhandledSubnetConnector,
+		validators.UnhandledSupernetConnector,
 	)
 	require.NoError(t, err)
 
@@ -497,7 +497,7 @@ func TestReliableMessagesToMyself(t *testing.T) {
 		nil,
 		time.Second,
 		resourceTracker,
-		validators.UnhandledSubnetConnector,
+		validators.UnhandledSupernetConnector,
 	)
 	require.NoError(t, err)
 
@@ -555,7 +555,7 @@ func TestReliableMessagesToMyself(t *testing.T) {
 func TestSender_Bootstrap_Requests(t *testing.T) {
 	var (
 		chainID       = ids.GenerateTestID()
-		subnetID      = ids.GenerateTestID()
+		supernetID    = ids.GenerateTestID()
 		myNodeID      = ids.GenerateTestNodeID()
 		successNodeID = ids.GenerateTestNodeID()
 		failedNodeID  = ids.GenerateTestNodeID()
@@ -566,7 +566,7 @@ func TestSender_Bootstrap_Requests(t *testing.T) {
 		containerIDs  = []ids.ID{ids.GenerateTestID(), ids.GenerateTestID()}
 	)
 	ctx.ChainID = chainID
-	ctx.SubnetID = subnetID
+	ctx.SupernetID = supernetID
 	ctx.NodeID = myNodeID
 	snowCtx := &snow.ConsensusContext{
 		Context:    ctx,
@@ -615,7 +615,7 @@ func TestSender_Bootstrap_Requests(t *testing.T) {
 						successNodeID: struct{}{},
 						failedNodeID:  struct{}{},
 					}, // Node IDs
-					subnetID, // Subnet ID
+					supernetID, // Supernet ID
 					snowCtx.IsValidatorOnly(),
 				).Return(set.Set[ids.NodeID]{
 					successNodeID: struct{}{},
@@ -662,7 +662,7 @@ func TestSender_Bootstrap_Requests(t *testing.T) {
 						successNodeID: struct{}{},
 						failedNodeID:  struct{}{},
 					}, // Node IDs
-					subnetID, // Subnet ID
+					supernetID, // Supernet ID
 					snowCtx.IsValidatorOnly(),
 				).Return(set.Set[ids.NodeID]{
 					successNodeID: struct{}{},
@@ -703,7 +703,7 @@ func TestSender_Bootstrap_Requests(t *testing.T) {
 						successNodeID: struct{}{},
 						failedNodeID:  struct{}{},
 					}, // Node IDs
-					subnetID, // Subnet ID
+					supernetID, // Supernet ID
 					snowCtx.IsValidatorOnly(),
 				).Return(set.Set[ids.NodeID]{
 					successNodeID: struct{}{},
@@ -745,7 +745,7 @@ func TestSender_Bootstrap_Requests(t *testing.T) {
 						successNodeID: struct{}{},
 						failedNodeID:  struct{}{},
 					}, // Node IDs
-					subnetID, // Subnet ID
+					supernetID, // Supernet ID
 					snowCtx.IsValidatorOnly(),
 				).Return(set.Set[ids.NodeID]{
 					successNodeID: struct{}{},
@@ -835,7 +835,7 @@ func TestSender_Bootstrap_Requests(t *testing.T) {
 func TestSender_Bootstrap_Responses(t *testing.T) {
 	var (
 		chainID           = ids.GenerateTestID()
-		subnetID          = ids.GenerateTestID()
+		supernetID        = ids.GenerateTestID()
 		myNodeID          = ids.GenerateTestNodeID()
 		destinationNodeID = ids.GenerateTestNodeID()
 		deadline          = time.Second
@@ -845,7 +845,7 @@ func TestSender_Bootstrap_Responses(t *testing.T) {
 		summary           = []byte{1, 2, 3}
 	)
 	ctx.ChainID = chainID
-	ctx.SubnetID = subnetID
+	ctx.SupernetID = supernetID
 	ctx.NodeID = myNodeID
 	snowCtx := &snow.ConsensusContext{
 		Context:    ctx,
@@ -881,7 +881,7 @@ func TestSender_Bootstrap_Responses(t *testing.T) {
 				externalSender.EXPECT().Send(
 					gomock.Any(), // Outbound message
 					set.Set[ids.NodeID]{destinationNodeID: struct{}{}}, // Node IDs
-					subnetID, // Subnet ID
+					supernetID, // Supernet ID
 					snowCtx.IsValidatorOnly(),
 				).Return(nil)
 			},
@@ -911,7 +911,7 @@ func TestSender_Bootstrap_Responses(t *testing.T) {
 				externalSender.EXPECT().Send(
 					gomock.Any(), // Outbound message
 					set.Set[ids.NodeID]{destinationNodeID: struct{}{}}, // Node IDs
-					subnetID, // Subnet ID
+					supernetID, // Supernet ID
 					snowCtx.IsValidatorOnly(),
 				).Return(nil)
 			},
@@ -941,7 +941,7 @@ func TestSender_Bootstrap_Responses(t *testing.T) {
 				externalSender.EXPECT().Send(
 					gomock.Any(), // Outbound message
 					set.Set[ids.NodeID]{destinationNodeID: struct{}{}}, // Node IDs
-					subnetID, // Subnet ID
+					supernetID, // Supernet ID
 					snowCtx.IsValidatorOnly(),
 				).Return(nil)
 			},
@@ -971,7 +971,7 @@ func TestSender_Bootstrap_Responses(t *testing.T) {
 				externalSender.EXPECT().Send(
 					gomock.Any(), // Outbound message
 					set.Set[ids.NodeID]{destinationNodeID: struct{}{}}, // Node IDs
-					subnetID, // Subnet ID
+					supernetID, // Supernet ID
 					snowCtx.IsValidatorOnly(),
 				).Return(nil)
 			},
@@ -1039,7 +1039,7 @@ func TestSender_Bootstrap_Responses(t *testing.T) {
 func TestSender_Single_Request(t *testing.T) {
 	var (
 		chainID           = ids.GenerateTestID()
-		subnetID          = ids.GenerateTestID()
+		supernetID        = ids.GenerateTestID()
 		myNodeID          = ids.GenerateTestNodeID()
 		destinationNodeID = ids.GenerateTestNodeID()
 		deadline          = time.Second
@@ -1048,7 +1048,7 @@ func TestSender_Single_Request(t *testing.T) {
 		containerID       = ids.GenerateTestID()
 	)
 	ctx.ChainID = chainID
-	ctx.SubnetID = subnetID
+	ctx.SupernetID = supernetID
 	ctx.NodeID = myNodeID
 	snowCtx := &snow.ConsensusContext{
 		Context:    ctx,
@@ -1094,7 +1094,7 @@ func TestSender_Single_Request(t *testing.T) {
 				externalSender.EXPECT().Send(
 					gomock.Any(), // Outbound message
 					set.Set[ids.NodeID]{destinationNodeID: struct{}{}}, // Node IDs
-					subnetID,
+					supernetID,
 					snowCtx.IsValidatorOnly(),
 				).Return(sentTo)
 			},
@@ -1130,7 +1130,7 @@ func TestSender_Single_Request(t *testing.T) {
 				externalSender.EXPECT().Send(
 					gomock.Any(), // Outbound message
 					set.Set[ids.NodeID]{destinationNodeID: struct{}{}}, // Node IDs
-					subnetID,
+					supernetID,
 					snowCtx.IsValidatorOnly(),
 				).Return(sentTo)
 			},

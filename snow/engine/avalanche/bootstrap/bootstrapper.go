@@ -12,15 +12,15 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/ava-labs/avalanchego/cache"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/snow/choices"
-	"github.com/ava-labs/avalanchego/snow/consensus/avalanche"
-	"github.com/ava-labs/avalanchego/snow/engine/avalanche/vertex"
-	"github.com/ava-labs/avalanchego/snow/engine/common"
-	"github.com/ava-labs/avalanchego/utils/set"
-	"github.com/ava-labs/avalanchego/version"
+	"github.com/Juneo-io/juneogo/cache"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/snow/choices"
+	"github.com/Juneo-io/juneogo/snow/consensus/avalanche"
+	"github.com/Juneo-io/juneogo/snow/engine/avalanche/vertex"
+	"github.com/Juneo-io/juneogo/snow/engine/common"
+	"github.com/Juneo-io/juneogo/utils/set"
+	"github.com/Juneo-io/juneogo/version"
 )
 
 const (
@@ -300,7 +300,7 @@ func (b *bootstrapper) Timeout(ctx context.Context) error {
 	}
 	b.awaitingTimeout = false
 
-	if !b.Config.Subnet.IsBootstrapped() {
+	if !b.Config.Supernet.IsBootstrapped() {
 		return b.Restart(ctx, true)
 	}
 	return b.OnFinished(ctx, b.Config.SharedCfg.RequestID)
@@ -591,17 +591,17 @@ func (b *bootstrapper) checkFinish(ctx context.Context) error {
 		return b.Restart(ctx, true)
 	}
 
-	// Notify the subnet that this chain is synced
-	b.Config.Subnet.Bootstrapped(b.Ctx.ChainID)
+	// Notify the supernet that this chain is synced
+	b.Config.Supernet.Bootstrapped(b.Ctx.ChainID)
 	b.processedCache.Flush()
 
-	// If the subnet hasn't finished bootstrapping, this chain should remain
+	// If the supernet hasn't finished bootstrapping, this chain should remain
 	// syncing.
-	if !b.Config.Subnet.IsBootstrapped() {
+	if !b.Config.Supernet.IsBootstrapped() {
 		if !b.Config.SharedCfg.Restarted {
-			b.Ctx.Log.Info("waiting for the remaining chains in this subnet to finish syncing")
+			b.Ctx.Log.Info("waiting for the remaining chains in this supernet to finish syncing")
 		} else {
-			b.Ctx.Log.Debug("waiting for the remaining chains in this subnet to finish syncing")
+			b.Ctx.Log.Debug("waiting for the remaining chains in this supernet to finish syncing")
 		}
 		// Restart bootstrapping after [bootstrappingDelay] to keep up to date
 		// on the latest tip.

@@ -6,12 +6,12 @@ package node
 import (
 	"sync/atomic"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow/networking/router"
-	"github.com/ava-labs/avalanchego/snow/validators"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/timer"
-	"github.com/ava-labs/avalanchego/version"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow/networking/router"
+	"github.com/Juneo-io/juneogo/snow/validators"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/timer"
+	"github.com/Juneo-io/juneogo/version"
 )
 
 var _ router.Router = (*beaconManager)(nil)
@@ -24,13 +24,13 @@ type beaconManager struct {
 	numConns      int64
 }
 
-func (b *beaconManager) Connected(nodeID ids.NodeID, nodeVersion *version.Application, subnetID ids.ID) {
-	if constants.PrimaryNetworkID == subnetID &&
+func (b *beaconManager) Connected(nodeID ids.NodeID, nodeVersion *version.Application, supernetID ids.ID) {
+	if constants.PrimaryNetworkID == supernetID &&
 		b.beacons.Contains(nodeID) &&
 		atomic.AddInt64(&b.numConns, 1) >= b.requiredConns {
 		b.timer.Cancel()
 	}
-	b.Router.Connected(nodeID, nodeVersion, subnetID)
+	b.Router.Connected(nodeID, nodeVersion, supernetID)
 }
 
 func (b *beaconManager) Disconnected(nodeID ids.NodeID) {

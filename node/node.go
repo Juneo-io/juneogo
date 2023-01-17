@@ -23,65 +23,63 @@ import (
 
 	"go.uber.org/zap"
 
-	coreth "github.com/ava-labs/coreth/plugin/evm"
+	"github.com/Juneo-io/juneogo/api/admin"
+	"github.com/Juneo-io/juneogo/api/auth"
+	"github.com/Juneo-io/juneogo/api/health"
+	"github.com/Juneo-io/juneogo/api/info"
+	"github.com/Juneo-io/juneogo/api/keystore"
+	"github.com/Juneo-io/juneogo/api/metrics"
+	"github.com/Juneo-io/juneogo/api/server"
+	"github.com/Juneo-io/juneogo/chains"
+	"github.com/Juneo-io/juneogo/chains/atomic"
+	"github.com/Juneo-io/juneogo/database"
+	"github.com/Juneo-io/juneogo/database/leveldb"
+	"github.com/Juneo-io/juneogo/database/manager"
+	"github.com/Juneo-io/juneogo/database/memdb"
+	"github.com/Juneo-io/juneogo/database/prefixdb"
+	"github.com/Juneo-io/juneogo/genesis"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/indexer"
+	"github.com/Juneo-io/juneogo/ipcs"
+	"github.com/Juneo-io/juneogo/message"
+	"github.com/Juneo-io/juneogo/network"
+	"github.com/Juneo-io/juneogo/network/dialer"
+	"github.com/Juneo-io/juneogo/network/peer"
+	"github.com/Juneo-io/juneogo/network/throttling"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/snow/engine/common"
+	"github.com/Juneo-io/juneogo/snow/networking/benchlist"
+	"github.com/Juneo-io/juneogo/snow/networking/router"
+	"github.com/Juneo-io/juneogo/snow/networking/timeout"
+	"github.com/Juneo-io/juneogo/snow/networking/tracker"
+	"github.com/Juneo-io/juneogo/snow/uptime"
+	"github.com/Juneo-io/juneogo/snow/validators"
+	"github.com/Juneo-io/juneogo/trace"
+	"github.com/Juneo-io/juneogo/utils"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/crypto/bls"
+	"github.com/Juneo-io/juneogo/utils/filesystem"
+	"github.com/Juneo-io/juneogo/utils/hashing"
+	"github.com/Juneo-io/juneogo/utils/ips"
+	"github.com/Juneo-io/juneogo/utils/logging"
+	"github.com/Juneo-io/juneogo/utils/math/meter"
+	"github.com/Juneo-io/juneogo/utils/perms"
+	"github.com/Juneo-io/juneogo/utils/profiler"
+	"github.com/Juneo-io/juneogo/utils/resource"
+	"github.com/Juneo-io/juneogo/utils/set"
+	"github.com/Juneo-io/juneogo/utils/timer"
+	"github.com/Juneo-io/juneogo/utils/wrappers"
+	"github.com/Juneo-io/juneogo/version"
+	"github.com/Juneo-io/juneogo/vms/jvm"
+	"github.com/Juneo-io/juneogo/vms/nftfx"
+	"github.com/Juneo-io/juneogo/vms/propertyfx"
+	"github.com/Juneo-io/juneogo/vms/registry"
+	"github.com/Juneo-io/juneogo/vms/relayvm"
+	"github.com/Juneo-io/juneogo/vms/relayvm/config"
+	"github.com/Juneo-io/juneogo/vms/relayvm/signer"
+	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
 
-	"github.com/ava-labs/avalanchego/api/admin"
-	"github.com/ava-labs/avalanchego/api/auth"
-	"github.com/ava-labs/avalanchego/api/health"
-	"github.com/ava-labs/avalanchego/api/info"
-	"github.com/ava-labs/avalanchego/api/keystore"
-	"github.com/ava-labs/avalanchego/api/metrics"
-	"github.com/ava-labs/avalanchego/api/server"
-	"github.com/ava-labs/avalanchego/chains"
-	"github.com/ava-labs/avalanchego/chains/atomic"
-	"github.com/ava-labs/avalanchego/database"
-	"github.com/ava-labs/avalanchego/database/leveldb"
-	"github.com/ava-labs/avalanchego/database/manager"
-	"github.com/ava-labs/avalanchego/database/memdb"
-	"github.com/ava-labs/avalanchego/database/prefixdb"
-	"github.com/ava-labs/avalanchego/genesis"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/indexer"
-	"github.com/ava-labs/avalanchego/ipcs"
-	"github.com/ava-labs/avalanchego/message"
-	"github.com/ava-labs/avalanchego/network"
-	"github.com/ava-labs/avalanchego/network/dialer"
-	"github.com/ava-labs/avalanchego/network/peer"
-	"github.com/ava-labs/avalanchego/network/throttling"
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/snow/engine/common"
-	"github.com/ava-labs/avalanchego/snow/networking/benchlist"
-	"github.com/ava-labs/avalanchego/snow/networking/router"
-	"github.com/ava-labs/avalanchego/snow/networking/timeout"
-	"github.com/ava-labs/avalanchego/snow/networking/tracker"
-	"github.com/ava-labs/avalanchego/snow/uptime"
-	"github.com/ava-labs/avalanchego/snow/validators"
-	"github.com/ava-labs/avalanchego/trace"
-	"github.com/ava-labs/avalanchego/utils"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/crypto/bls"
-	"github.com/ava-labs/avalanchego/utils/filesystem"
-	"github.com/ava-labs/avalanchego/utils/hashing"
-	"github.com/ava-labs/avalanchego/utils/ips"
-	"github.com/ava-labs/avalanchego/utils/logging"
-	"github.com/ava-labs/avalanchego/utils/math/meter"
-	"github.com/ava-labs/avalanchego/utils/perms"
-	"github.com/ava-labs/avalanchego/utils/profiler"
-	"github.com/ava-labs/avalanchego/utils/resource"
-	"github.com/ava-labs/avalanchego/utils/set"
-	"github.com/ava-labs/avalanchego/utils/timer"
-	"github.com/ava-labs/avalanchego/utils/wrappers"
-	"github.com/ava-labs/avalanchego/version"
-	"github.com/ava-labs/avalanchego/vms/avm"
-	"github.com/ava-labs/avalanchego/vms/nftfx"
-	"github.com/ava-labs/avalanchego/vms/platformvm"
-	"github.com/ava-labs/avalanchego/vms/platformvm/config"
-	"github.com/ava-labs/avalanchego/vms/platformvm/signer"
-	"github.com/ava-labs/avalanchego/vms/propertyfx"
-	"github.com/ava-labs/avalanchego/vms/registry"
-	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
-
-	ipcsapi "github.com/ava-labs/avalanchego/api/ipcs"
+	ipcsapi "github.com/Juneo-io/juneogo/api/ipcs"
 )
 
 var (
@@ -325,7 +323,7 @@ func (n *Node) initNetworking(primaryNetVdrs validators.Set) error {
 	n.Config.NetworkConfig.Beacons = n.beacons
 	n.Config.NetworkConfig.TLSConfig = tlsConfig
 	n.Config.NetworkConfig.TLSKey = tlsKey
-	n.Config.NetworkConfig.WhitelistedSubnets = n.Config.WhitelistedSubnets
+	n.Config.NetworkConfig.WhitelistedSupernets = n.Config.WhitelistedSupernets
 	n.Config.NetworkConfig.UptimeCalculator = n.uptimeCalculator
 	n.Config.NetworkConfig.UptimeRequirement = n.Config.UptimeRequirement
 	n.Config.NetworkConfig.ResourceTracker = n.resourceTracker
@@ -542,16 +540,16 @@ func (n *Node) initIndexer() error {
 func (n *Node) initChains(genesisBytes []byte) {
 	n.Log.Info("initializing chains")
 
-	platformChain := chains.ChainParameters{
-		ID:            constants.PlatformChainID,
-		SubnetID:      constants.PrimaryNetworkID,
+	relayChain := chains.ChainParameters{
+		ID:            constants.RelayChainID,
+		SupernetID:    constants.PrimaryNetworkID,
 		GenesisData:   genesisBytes, // Specifies other chains to create
-		VMID:          constants.PlatformVMID,
+		VMID:          constants.RelayVMID,
 		CustomBeacons: n.beacons,
 	}
 
 	// Start the chain creator with the Platform Chain
-	n.chainManager.StartChainCreator(platformChain)
+	n.chainManager.StartChainCreator(relayChain)
 }
 
 // initAPIServer initializes the server that handles HTTP calls
@@ -620,28 +618,45 @@ func (n *Node) addDefaultVMAliases() error {
 }
 
 // Create the chainManager and register the following VMs:
-// AVM, Simple Payments DAG, Simple Payments Chain, and Platform VM
+// JVM, Simple Payments DAG, Simple Payments Chain, and Relay VM
 // Assumes n.DBManager, n.vdrs all initialized (non-nil)
-func (n *Node) initChainManager(avaxAssetID ids.ID) error {
-	createAVMTx, err := genesis.VMGenesis(n.Config.GenesisBytes, constants.AVMID)
+func (n *Node) initChainManager(juneAssetID ids.ID) error {
+	createJVMTxs, err := genesis.VMGenesis(n.Config.GenesisBytes, constants.JVMID)
 	if err != nil {
 		return err
 	}
-	xChainID := createAVMTx.ID()
-
-	createEVMTx, err := genesis.VMGenesis(n.Config.GenesisBytes, constants.EVMID)
+	createEVMTxs, err := genesis.VMGenesis(n.Config.GenesisBytes, constants.EVMID)
 	if err != nil {
 		return err
 	}
-	cChainID := createEVMTx.ID()
 
 	// If any of these chains die, the node shuts down
 	criticalChains := set.Set[ids.ID]{}
 	criticalChains.Add(
-		constants.PlatformChainID,
-		xChainID,
-		cChainID,
+		constants.RelayChainID,
 	)
+
+	assetChainID := ids.Empty
+	juneChainID := ids.Empty
+	for _, createJVMTx := range createJVMTxs {
+		criticalChains.Add(createJVMTx.BlockchainID)
+		if createJVMTx.ChainName == "X Chain" {
+			assetChainID = createJVMTx.BlockchainID
+		}
+	}
+	for _, createEVMTx := range createEVMTxs {
+		criticalChains.Add(createEVMTx.BlockchainID)
+		if createEVMTx.ChainName == "June Chain" {
+			juneChainID = createEVMTx.BlockchainID
+		}
+	}
+
+	if assetChainID == ids.Empty {
+		return fmt.Errorf("couldn't find asset chain ID")
+	}
+	if juneChainID == ids.Empty {
+		return fmt.Errorf("couldn't find june chain ID")
+	}
 
 	// Manages network timeouts
 	timeoutManager, err := timeout.NewManager(
@@ -662,7 +677,7 @@ func (n *Node) initChainManager(avaxAssetID ids.ID) error {
 		timeoutManager,
 		n.Config.ConsensusShutdownTimeout,
 		criticalChains,
-		n.Config.WhitelistedSubnets,
+		n.Config.WhitelistedSupernets,
 		n.Shutdown,
 		n.Config.RouterHealthConfig,
 		"requests",
@@ -692,9 +707,9 @@ func (n *Node) initChainManager(avaxAssetID ids.ID) error {
 		Server:                                  n.APIServer,
 		Keystore:                                n.keystore,
 		AtomicMemory:                            n.sharedMemory,
-		AVAXAssetID:                             avaxAssetID,
-		XChainID:                                xChainID,
-		CChainID:                                cChainID,
+		JuneAssetID:                             juneAssetID,
+		AssetChainID:                            assetChainID,
+		JuneChainID:                             juneChainID,
 		CriticalChains:                          criticalChains,
 		TimeoutManager:                          timeoutManager,
 		Health:                                  n.health,
@@ -703,7 +718,7 @@ func (n *Node) initChainManager(avaxAssetID ids.ID) error {
 		ShutdownNodeFunc:                        n.Shutdown,
 		MeterVMEnabled:                          n.Config.MeterVMEnabled,
 		Metrics:                                 n.MetricsGatherer,
-		SubnetConfigs:                           n.Config.SubnetConfigs,
+		SupernetConfigs:                         n.Config.SupernetConfigs,
 		ChainConfigs:                            n.Config.ChainConfigs,
 		ConsensusGossipFrequency:                n.Config.ConsensusGossipFrequency,
 		GossipConfig:                            n.Config.GossipConfig,
@@ -730,7 +745,7 @@ func (n *Node) initVMs() error {
 
 	vdrs := n.vdrs
 
-	// If staking is disabled, ignore updates to Subnets' validator sets
+	// If staking is disabled, ignore updates to Supernets' validator sets
 	// Instead of updating node's validator manager, platform chain makes changes
 	// to its own local validator manager (which isn't used for sampling)
 	if !n.Config.EnableStaking {
@@ -748,22 +763,22 @@ func (n *Node) initVMs() error {
 	// Register the VMs that Avalanche supports
 	errs := wrappers.Errs{}
 	errs.Add(
-		vmRegisterer.Register(context.TODO(), constants.PlatformVMID, &platformvm.Factory{
+		vmRegisterer.Register(context.TODO(), constants.RelayVMID, &relayvm.Factory{
 			Config: config.Config{
 				Chains:                          n.chainManager,
 				Validators:                      vdrs,
 				UptimeLockedCalculator:          n.uptimeCalculator,
 				StakingEnabled:                  n.Config.EnableStaking,
-				WhitelistedSubnets:              n.Config.WhitelistedSubnets,
+				WhitelistedSupernets:            n.Config.WhitelistedSupernets,
 				TxFee:                           n.Config.TxFee,
 				CreateAssetTxFee:                n.Config.CreateAssetTxFee,
-				CreateSubnetTxFee:               n.Config.CreateSubnetTxFee,
-				TransformSubnetTxFee:            n.Config.TransformSubnetTxFee,
+				CreateSupernetTxFee:             n.Config.CreateSupernetTxFee,
+				TransformSupernetTxFee:          n.Config.TransformSupernetTxFee,
 				CreateBlockchainTxFee:           n.Config.CreateBlockchainTxFee,
 				AddPrimaryNetworkValidatorFee:   n.Config.AddPrimaryNetworkValidatorFee,
 				AddPrimaryNetworkDelegatorFee:   n.Config.AddPrimaryNetworkDelegatorFee,
-				AddSubnetValidatorFee:           n.Config.AddSubnetValidatorFee,
-				AddSubnetDelegatorFee:           n.Config.AddSubnetDelegatorFee,
+				AddSupernetValidatorFee:         n.Config.AddSupernetValidatorFee,
+				AddSupernetDelegatorFee:         n.Config.AddSupernetDelegatorFee,
 				UptimePercentage:                n.Config.UptimeRequirement,
 				MinValidatorStake:               n.Config.MinValidatorStake,
 				MaxValidatorStake:               n.Config.MaxValidatorStake,
@@ -779,11 +794,10 @@ func (n *Node) initVMs() error {
 				UseCurrentHeight:                n.Config.UseCurrentHeight,
 			},
 		}),
-		vmRegisterer.Register(context.TODO(), constants.AVMID, &avm.Factory{
+		vmRegisterer.Register(context.TODO(), constants.JVMID, &jvm.Factory{
 			TxFee:            n.Config.TxFee,
 			CreateAssetTxFee: n.Config.CreateAssetTxFee,
 		}),
-		vmRegisterer.Register(context.TODO(), constants.EVMID, &coreth.Factory{}),
 		n.Config.VMManager.RegisterFactory(context.TODO(), secp256k1fx.ID, &secp256k1fx.Factory{}),
 		n.Config.VMManager.RegisterFactory(context.TODO(), nftfx.ID, &nftfx.Factory{}),
 		n.Config.VMManager.RegisterFactory(context.TODO(), propertyfx.ID, &propertyfx.Factory{}),
@@ -953,13 +967,13 @@ func (n *Node) initInfoAPI() error {
 			NetworkID:                     n.Config.NetworkID,
 			TxFee:                         n.Config.TxFee,
 			CreateAssetTxFee:              n.Config.CreateAssetTxFee,
-			CreateSubnetTxFee:             n.Config.CreateSubnetTxFee,
-			TransformSubnetTxFee:          n.Config.TransformSubnetTxFee,
+			CreateSupernetTxFee:           n.Config.CreateSupernetTxFee,
+			TransformSupernetTxFee:        n.Config.TransformSupernetTxFee,
 			CreateBlockchainTxFee:         n.Config.CreateBlockchainTxFee,
 			AddPrimaryNetworkValidatorFee: n.Config.AddPrimaryNetworkValidatorFee,
 			AddPrimaryNetworkDelegatorFee: n.Config.AddPrimaryNetworkDelegatorFee,
-			AddSubnetValidatorFee:         n.Config.AddSubnetValidatorFee,
-			AddSubnetDelegatorFee:         n.Config.AddSubnetDelegatorFee,
+			AddSupernetValidatorFee:       n.Config.AddSupernetValidatorFee,
+			AddSupernetDelegatorFee:       n.Config.AddSupernetDelegatorFee,
 			VMManager:                     n.Config.VMManager,
 		},
 		n.Log,
@@ -1286,7 +1300,7 @@ func (n *Node) Initialize(
 	if err := n.addDefaultVMAliases(); err != nil {
 		return fmt.Errorf("couldn't initialize API aliases: %w", err)
 	}
-	if err := n.initChainManager(n.Config.AvaxAssetID); err != nil { // Set up the chain manager
+	if err := n.initChainManager(n.Config.JuneAssetID); err != nil { // Set up the chain manager
 		return fmt.Errorf("couldn't initialize chain manager: %w", err)
 	}
 	if err := n.initVMs(); err != nil { // Initialize the VM registry.

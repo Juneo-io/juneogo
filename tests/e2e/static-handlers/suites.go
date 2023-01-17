@@ -1,32 +1,32 @@
 // Copyright (C) 2019-2022, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
-// Implements static handlers tests for avm and platformvm
+// Implements static handlers tests for jvm and relayvm
 package statichandlers
 
 import (
 	"context"
 	"time"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/tests/e2e"
-	"github.com/ava-labs/avalanchego/utils/cb58"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/crypto"
-	"github.com/ava-labs/avalanchego/utils/formatting"
-	"github.com/ava-labs/avalanchego/utils/formatting/address"
-	"github.com/ava-labs/avalanchego/utils/json"
-	"github.com/ava-labs/avalanchego/utils/units"
-	"github.com/ava-labs/avalanchego/vms/avm"
-	"github.com/ava-labs/avalanchego/vms/platformvm/api"
-	"github.com/ava-labs/avalanchego/vms/platformvm/reward"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/tests/e2e"
+	"github.com/Juneo-io/juneogo/utils/cb58"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/crypto"
+	"github.com/Juneo-io/juneogo/utils/formatting"
+	"github.com/Juneo-io/juneogo/utils/formatting/address"
+	"github.com/Juneo-io/juneogo/utils/json"
+	"github.com/Juneo-io/juneogo/utils/units"
+	"github.com/Juneo-io/juneogo/vms/jvm"
+	"github.com/Juneo-io/juneogo/vms/relayvm/api"
+	"github.com/Juneo-io/juneogo/vms/relayvm/reward"
 
 	ginkgo "github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"
 )
 
 var _ = ginkgo.Describe("[StaticHandlers]", func() {
-	ginkgo.It("can make calls to avm static api",
+	ginkgo.It("can make calls to jvm static api",
 		// use this for filtering tests by labels
 		// ref. https://onsi.github.io/ginkgo/#spec-labels
 		ginkgo.Label(
@@ -46,28 +46,28 @@ var _ = ginkgo.Describe("[StaticHandlers]", func() {
 				addrMap[addrStr], err = address.FormatBech32(constants.NetworkIDToHRP[constants.LocalID], addr[:])
 				gomega.Expect(err).Should(gomega.BeNil())
 			}
-			avmArgs := avm.BuildGenesisArgs{
+			jvmArgs := jvm.BuildGenesisArgs{
 				Encoding: formatting.Hex,
-				GenesisData: map[string]avm.AssetDefinition{
+				GenesisData: map[string]jvm.AssetDefinition{
 					"asset1": {
 						Name:         "myFixedCapAsset",
 						Symbol:       "MFCA",
 						Denomination: 8,
 						InitialState: map[string][]interface{}{
 							"fixedCap": {
-								avm.Holder{
+								jvm.Holder{
 									Amount:  100000,
 									Address: addrMap["A9bTQjfYGBFK3JPRJqF2eh3JYL7cHocvy"],
 								},
-								avm.Holder{
+								jvm.Holder{
 									Amount:  100000,
 									Address: addrMap["6mxBGnjGDCKgkVe7yfrmvMA7xE7qCv3vv"],
 								},
-								avm.Holder{
+								jvm.Holder{
 									Amount:  json.Uint64(50000),
 									Address: addrMap["6ncQ19Q2U4MamkCYzshhD8XFjfwAWFzTa"],
 								},
-								avm.Holder{
+								jvm.Holder{
 									Amount:  json.Uint64(50000),
 									Address: addrMap["Jz9ayEDt7dx9hDx45aXALujWmL9ZUuqe7"],
 								},
@@ -79,14 +79,14 @@ var _ = ginkgo.Describe("[StaticHandlers]", func() {
 						Symbol: "MVCA",
 						InitialState: map[string][]interface{}{
 							"variableCap": {
-								avm.Owners{
+								jvm.Owners{
 									Threshold: 1,
 									Minters: []string{
 										addrMap["A9bTQjfYGBFK3JPRJqF2eh3JYL7cHocvy"],
 										addrMap["6mxBGnjGDCKgkVe7yfrmvMA7xE7qCv3vv"],
 									},
 								},
-								avm.Owners{
+								jvm.Owners{
 									Threshold: 2,
 									Minters: []string{
 										addrMap["6ncQ19Q2U4MamkCYzshhD8XFjfwAWFzTa"],
@@ -100,7 +100,7 @@ var _ = ginkgo.Describe("[StaticHandlers]", func() {
 						Name: "myOtherVarCapAsset",
 						InitialState: map[string][]interface{}{
 							"variableCap": {
-								avm.Owners{
+								jvm.Owners{
 									Threshold: 1,
 									Minters: []string{
 										addrMap["A9bTQjfYGBFK3JPRJqF2eh3JYL7cHocvy"],
@@ -113,15 +113,15 @@ var _ = ginkgo.Describe("[StaticHandlers]", func() {
 			}
 			uris := e2e.Env.GetURIs()
 			gomega.Expect(uris).ShouldNot(gomega.BeEmpty())
-			staticClient := avm.NewStaticClient(uris[0])
+			staticClient := jvm.NewStaticClient(uris[0])
 			ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
-			resp, err := staticClient.BuildGenesis(ctx, &avmArgs)
+			resp, err := staticClient.BuildGenesis(ctx, &jvmArgs)
 			cancel()
 			gomega.Expect(err).Should(gomega.BeNil())
 			gomega.Expect(resp.Bytes).Should(gomega.Equal("0x0000000000030006617373657431000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f6d794669786564436170417373657400044d4643410800000001000000000000000400000007000000000000c350000000000000000000000001000000013f78e510df62bc48b0829ec06d6a6b98062d695300000007000000000000c35000000000000000000000000100000001c54903de5177a16f7811771ef2f4659d9e8646710000000700000000000186a0000000000000000000000001000000013f58fda2e9ea8d9e4b181832a07b26dae286f2cb0000000700000000000186a000000000000000000000000100000001645938bb7ae2193270e6ffef009e3664d11e07c10006617373657432000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000d6d79566172436170417373657400044d5643410000000001000000000000000200000006000000000000000000000001000000023f58fda2e9ea8d9e4b181832a07b26dae286f2cb645938bb7ae2193270e6ffef009e3664d11e07c100000006000000000000000000000001000000023f78e510df62bc48b0829ec06d6a6b98062d6953c54903de5177a16f7811771ef2f4659d9e864671000661737365743300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000126d794f7468657256617243617041737365740000000000000100000000000000010000000600000000000000000000000100000001645938bb7ae2193270e6ffef009e3664d11e07c1279fa028"))
 		})
 
-	ginkgo.It("can make calls to platformvm static api", func() {
+	ginkgo.It("can make calls to relayvm static api", func() {
 		keys := []*crypto.PrivateKeySECP256K1R{}
 		factory := crypto.FactorySECP256K1R{}
 		for _, key := range []string{
@@ -145,7 +145,7 @@ var _ = ginkgo.Describe("[StaticHandlers]", func() {
 			addr, err := address.FormatBech32(hrp, id.Bytes())
 			gomega.Expect(err).Should(gomega.BeNil())
 			genesisUTXOs[i] = api.UTXO{
-				Amount:  json.Uint64(50000 * units.MilliAvax),
+				Amount:  json.Uint64(50000 * units.MilliJune),
 				Address: addr,
 			}
 		}
@@ -175,12 +175,12 @@ var _ = ginkgo.Describe("[StaticHandlers]", func() {
 
 		buildGenesisArgs := api.BuildGenesisArgs{
 			NetworkID:     json.Uint32(constants.UnitTestID),
-			AvaxAssetID:   ids.ID{'a', 'v', 'a', 'x'},
+			JuneAssetID:   ids.ID{'a', 'v', 'a', 'x'},
 			UTXOs:         genesisUTXOs,
 			Validators:    genesisValidators,
 			Chains:        nil,
 			Time:          json.Uint64(time.Date(1997, 1, 1, 0, 0, 0, 0, time.UTC).Unix()),
-			InitialSupply: json.Uint64(360 * units.MegaAvax),
+			InitialSupply: json.Uint64(360 * units.MegaJune),
 			Encoding:      formatting.Hex,
 		}
 

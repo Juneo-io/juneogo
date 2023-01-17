@@ -8,8 +8,8 @@ import (
 
 	_ "embed"
 
-	"github.com/ava-labs/avalanchego/utils/units"
-	"github.com/ava-labs/avalanchego/vms/platformvm/reward"
+	"github.com/Juneo-io/juneogo/utils/units"
+	"github.com/Juneo-io/juneogo/vms/relayvm/reward"
 )
 
 var (
@@ -19,29 +19,27 @@ var (
 	// MainnetParams are the params used for mainnet
 	MainnetParams = Params{
 		TxFeeConfig: TxFeeConfig{
-			TxFee:                         units.MilliAvax,
-			CreateAssetTxFee:              10 * units.MilliAvax,
-			CreateSubnetTxFee:             1 * units.Avax,
-			TransformSubnetTxFee:          10 * units.Avax,
-			CreateBlockchainTxFee:         1 * units.Avax,
+			TxFee:                         units.MilliJune,
+			CreateAssetTxFee:              10 * units.MilliJune,
+			CreateSupernetTxFee:           1 * units.June,
+			TransformSupernetTxFee:        10 * units.June,
+			CreateBlockchainTxFee:         1 * units.June,
 			AddPrimaryNetworkValidatorFee: 0,
 			AddPrimaryNetworkDelegatorFee: 0,
-			AddSubnetValidatorFee:         units.MilliAvax,
-			AddSubnetDelegatorFee:         units.MilliAvax,
+			AddSupernetValidatorFee:       units.MilliJune,
+			AddSupernetDelegatorFee:       units.MilliJune,
 		},
 		StakingConfig: StakingConfig{
 			UptimeRequirement: .8, // 80%
-			MinValidatorStake: 2 * units.KiloAvax,
-			MaxValidatorStake: 3 * units.MegaAvax,
-			MinDelegatorStake: 25 * units.Avax,
-			MinDelegationFee:  20000, // 2%
+			MinValidatorStake: 100 * units.June,
+			MaxValidatorStake: 45 * units.KiloJune,
+			MinDelegatorStake: 10 * units.MilliJune,
+			MinDelegationFee:  120000, // 12%
 			MinStakeDuration:  2 * 7 * 24 * time.Hour,
 			MaxStakeDuration:  365 * 24 * time.Hour,
 			RewardConfig: reward.Config{
-				MaxConsumptionRate: .12 * reward.PercentDenominator,
-				MinConsumptionRate: .10 * reward.PercentDenominator,
-				MintingPeriod:      365 * 24 * time.Hour,
-				SupplyCap:          720 * units.MegaAvax,
+				MintingPeriod: 365 * 24 * time.Hour,
+				RewardShare:   50000, // 5%
 			},
 		},
 	}

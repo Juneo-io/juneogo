@@ -10,9 +10,9 @@ import (
 
 	"github.com/spf13/pflag"
 
-	"github.com/ava-labs/avalanchego/app/runner"
-	"github.com/ava-labs/avalanchego/config"
-	"github.com/ava-labs/avalanchego/version"
+	"github.com/Juneo-io/juneogo/app/runner"
+	"github.com/Juneo-io/juneogo/config"
+	"github.com/Juneo-io/juneogo/version"
 )
 
 func main() {

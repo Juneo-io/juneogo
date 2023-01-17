@@ -8,14 +8,14 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/snow/choices"
-	"github.com/ava-labs/avalanchego/snow/consensus/avalanche"
-	"github.com/ava-labs/avalanchego/snow/engine/avalanche/vertex"
-	"github.com/ava-labs/avalanchego/snow/engine/common"
-	"github.com/ava-labs/avalanchego/snow/validators"
-	"github.com/ava-labs/avalanchego/utils/set"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/snow/choices"
+	"github.com/Juneo-io/juneogo/snow/consensus/avalanche"
+	"github.com/Juneo-io/juneogo/snow/engine/avalanche/vertex"
+	"github.com/Juneo-io/juneogo/snow/engine/common"
+	"github.com/Juneo-io/juneogo/snow/validators"
+	"github.com/Juneo-io/juneogo/utils/set"
 )
 
 var errUnknownVertex = errors.New("unknown vertex")
@@ -32,7 +32,7 @@ func testSetup(t *testing.T) (*vertex.TestManager, *common.SenderTest, common.Co
 	sender.CantSendGetAcceptedFrontier = false
 
 	isBootstrapped := false
-	subnet := &common.SubnetTest{
+	supernet := &common.SupernetTest{
 		T: t,
 		IsBootstrappedF: func() bool {
 			return isBootstrapped
@@ -49,7 +49,7 @@ func testSetup(t *testing.T) (*vertex.TestManager, *common.SenderTest, common.Co
 		SampleK:                        peers.Len(),
 		Alpha:                          peers.Weight()/2 + 1,
 		Sender:                         sender,
-		Subnet:                         subnet,
+		Supernet:                       supernet,
 		Timer:                          &common.TimerTest{},
 		AncestorsMaxContainersSent:     2000,
 		AncestorsMaxContainersReceived: 2000,

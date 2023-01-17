@@ -4,12 +4,12 @@
 package common
 
 import (
-	"github.com/ava-labs/avalanchego/ids"
+	"github.com/Juneo-io/juneogo/ids"
 )
 
-// Subnet describes the standard interface of a subnet description
-type Subnet interface {
-	// Returns true iff the subnet is done bootstrapping
+// Supernet describes the standard interface of a supernet description
+type Supernet interface {
+	// Returns true iff the supernet is done bootstrapping
 	IsBootstrapped() bool
 
 	// Bootstrapped marks the named chain as being bootstrapped

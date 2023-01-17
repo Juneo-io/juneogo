@@ -13,14 +13,14 @@ import (
 
 	oteltrace "go.opentelemetry.io/otel/trace"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/message"
-	"github.com/ava-labs/avalanchego/snow/networking/handler"
-	"github.com/ava-labs/avalanchego/snow/networking/timeout"
-	"github.com/ava-labs/avalanchego/trace"
-	"github.com/ava-labs/avalanchego/utils/logging"
-	"github.com/ava-labs/avalanchego/utils/set"
-	"github.com/ava-labs/avalanchego/version"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/message"
+	"github.com/Juneo-io/juneogo/snow/networking/handler"
+	"github.com/Juneo-io/juneogo/snow/networking/timeout"
+	"github.com/Juneo-io/juneogo/trace"
+	"github.com/Juneo-io/juneogo/utils/logging"
+	"github.com/Juneo-io/juneogo/utils/set"
+	"github.com/Juneo-io/juneogo/version"
 )
 
 var _ Router = (*tracedRouter)(nil)
@@ -43,7 +43,7 @@ func (r *tracedRouter) Initialize(
 	timeoutManager timeout.Manager,
 	closeTimeout time.Duration,
 	criticalChains set.Set[ids.ID],
-	whitelistedSubnets set.Set[ids.ID],
+	whitelistedSupernets set.Set[ids.ID],
 	onFatal func(exitCode int),
 	healthConfig HealthConfig,
 	metricsNamespace string,
@@ -55,7 +55,7 @@ func (r *tracedRouter) Initialize(
 		timeoutManager,
 		closeTimeout,
 		criticalChains,
-		whitelistedSubnets,
+		whitelistedSupernets,
 		onFatal,
 		healthConfig,
 		metricsNamespace,
@@ -118,7 +118,7 @@ func (r *tracedRouter) Shutdown(ctx context.Context) {
 func (r *tracedRouter) AddChain(ctx context.Context, chain handler.Handler) {
 	chainCtx := chain.Context()
 	ctx, span := r.tracer.Start(ctx, "tracedRouter.AddChain", oteltrace.WithAttributes(
-		attribute.Stringer("subnetID", chainCtx.SubnetID),
+		attribute.Stringer("supernetID", chainCtx.SupernetID),
 		attribute.Stringer("chainID", chainCtx.ChainID),
 	))
 	defer span.End()
@@ -126,8 +126,8 @@ func (r *tracedRouter) AddChain(ctx context.Context, chain handler.Handler) {
 	r.router.AddChain(ctx, chain)
 }
 
-func (r *tracedRouter) Connected(nodeID ids.NodeID, nodeVersion *version.Application, subnetID ids.ID) {
-	r.router.Connected(nodeID, nodeVersion, subnetID)
+func (r *tracedRouter) Connected(nodeID ids.NodeID, nodeVersion *version.Application, supernetID ids.ID) {
+	r.router.Connected(nodeID, nodeVersion, supernetID)
 }
 
 func (r *tracedRouter) Disconnected(nodeID ids.NodeID) {

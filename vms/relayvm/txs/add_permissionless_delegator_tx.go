@@ -1,0 +1,154 @@
+// Copyright (C) 2019-2022, Ava Labs, Inc. All rights reserved.
+// See the file LICENSE for licensing terms.
+
+package txs
+
+import (
+	"fmt"
+	"time"
+
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/crypto/bls"
+	"github.com/Juneo-io/juneogo/utils/math"
+	"github.com/Juneo-io/juneogo/vms/components/june"
+	"github.com/Juneo-io/juneogo/vms/components/verify"
+	"github.com/Juneo-io/juneogo/vms/relayvm/fx"
+	"github.com/Juneo-io/juneogo/vms/relayvm/validator"
+	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
+)
+
+var _ DelegatorTx = (*AddPermissionlessDelegatorTx)(nil)
+
+// AddPermissionlessDelegatorTx is an unsigned addPermissionlessDelegatorTx
+type AddPermissionlessDelegatorTx struct {
+	// Metadata, inputs and outputs
+	BaseTx `serialize:"true"`
+	// Describes the validator
+	Validator validator.Validator `serialize:"true" json:"validator"`
+	// ID of the supernet this validator is validating
+	Supernet ids.ID `serialize:"true" json:"supernetID"`
+	// Where to send staked tokens when done validating
+	StakeOuts []*june.TransferableOutput `serialize:"true" json:"stake"`
+	// Where to send staking rewards when done validating
+	DelegationRewardsOwner fx.Owner `serialize:"true" json:"rewardsOwner"`
+}
+
+// InitCtx sets the FxID fields in the inputs and outputs of this
+// [AddPermissionlessDelegatorTx]. Also sets the [ctx] to the given [vm.ctx] so
+// that the addresses can be json marshalled into human readable format
+func (tx *AddPermissionlessDelegatorTx) InitCtx(ctx *snow.Context) {
+	tx.BaseTx.InitCtx(ctx)
+	for _, out := range tx.StakeOuts {
+		out.FxID = secp256k1fx.ID
+		out.InitCtx(ctx)
+	}
+	tx.DelegationRewardsOwner.InitCtx(ctx)
+}
+
+func (tx *AddPermissionlessDelegatorTx) SupernetID() ids.ID {
+	return tx.Supernet
+}
+
+func (tx *AddPermissionlessDelegatorTx) NodeID() ids.NodeID {
+	return tx.Validator.NodeID
+}
+
+func (*AddPermissionlessDelegatorTx) PublicKey() (*bls.PublicKey, bool, error) {
+	return nil, false, nil
+}
+
+func (tx *AddPermissionlessDelegatorTx) StartTime() time.Time {
+	return tx.Validator.StartTime()
+}
+
+func (tx *AddPermissionlessDelegatorTx) EndTime() time.Time {
+	return tx.Validator.EndTime()
+}
+
+func (tx *AddPermissionlessDelegatorTx) Weight() uint64 {
+	return tx.Validator.Wght
+}
+
+func (tx *AddPermissionlessDelegatorTx) PendingPriority() Priority {
+	if tx.Supernet == constants.PrimaryNetworkID {
+		return PrimaryNetworkDelegatorBanffPendingPriority
+	}
+	return SupernetPermissionlessDelegatorPendingPriority
+}
+
+func (tx *AddPermissionlessDelegatorTx) CurrentPriority() Priority {
+	if tx.Supernet == constants.PrimaryNetworkID {
+		return PrimaryNetworkDelegatorCurrentPriority
+	}
+	return SupernetPermissionlessDelegatorCurrentPriority
+}
+
+func (tx *AddPermissionlessDelegatorTx) Stake() []*june.TransferableOutput {
+	return tx.StakeOuts
+}
+
+func (tx *AddPermissionlessDelegatorTx) RewardsOwner() fx.Owner {
+	return tx.DelegationRewardsOwner
+}
+
+// SyntacticVerify returns nil iff [tx] is valid
+func (tx *AddPermissionlessDelegatorTx) SyntacticVerify(ctx *snow.Context) error {
+	switch {
+	case tx == nil:
+		return ErrNilTx
+	case tx.SyntacticallyVerified: // already passed syntactic verification
+		return nil
+	case len(tx.StakeOuts) == 0: // Ensure there is provided stake
+		return errNoStake
+	}
+
+	if err := tx.BaseTx.SyntacticVerify(ctx); err != nil {
+		return fmt.Errorf("failed to verify BaseTx: %w", err)
+	}
+	if err := verify.All(&tx.Validator, tx.DelegationRewardsOwner); err != nil {
+		return fmt.Errorf("failed to verify validator or rewards owner: %w", err)
+	}
+
+	for _, out := range tx.StakeOuts {
+		if err := out.Verify(); err != nil {
+			return fmt.Errorf("failed to verify output: %w", err)
+		}
+	}
+
+	firstStakeOutput := tx.StakeOuts[0]
+	stakedAssetID := firstStakeOutput.AssetID()
+	totalStakeWeight := firstStakeOutput.Output().Amount()
+	for _, out := range tx.StakeOuts[1:] {
+		newWeight, err := math.Add64(totalStakeWeight, out.Output().Amount())
+		if err != nil {
+			return err
+		}
+		totalStakeWeight = newWeight
+
+		assetID := out.AssetID()
+		if assetID != stakedAssetID {
+			return fmt.Errorf("%w: %q and %q", errMultipleStakedAssets, stakedAssetID, assetID)
+		}
+	}
+
+	switch {
+	case !june.IsSortedTransferableOutputs(tx.StakeOuts, Codec):
+		return errOutputsNotSorted
+	case totalStakeWeight != tx.Validator.Wght:
+		return fmt.Errorf("%w, delegator weight %d total stake weight %d",
+			errDelegatorWeightMismatch,
+			tx.Validator.Wght,
+			totalStakeWeight,
+		)
+	}
+
+	// cache that this is valid
+	tx.SyntacticallyVerified = true
+	return nil
+}
+
+func (tx *AddPermissionlessDelegatorTx) Visit(visitor Visitor) error {
+	return visitor.AddPermissionlessDelegatorTx(tx)
+}

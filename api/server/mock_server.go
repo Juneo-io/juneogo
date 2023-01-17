@@ -11,7 +11,7 @@ import (
 	reflect "reflect"
 	sync "sync"
 
-	common "github.com/ava-labs/avalanchego/snow/engine/common"
+	common "github.com/Juneo-io/juneogo/snow/engine/common"
 	gomock "github.com/golang/mock/gomock"
 )
 

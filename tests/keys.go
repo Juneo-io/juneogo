@@ -10,7 +10,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/ava-labs/avalanchego/utils/crypto"
+	"github.com/Juneo-io/juneogo/utils/crypto"
 )
 
 // Loads a list of secp256k1 hex-encoded private keys from the file, new-line separated.

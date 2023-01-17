@@ -26,39 +26,39 @@ import (
 
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 
-	"github.com/ava-labs/avalanchego/api/keystore/gkeystore"
-	"github.com/ava-labs/avalanchego/api/metrics"
-	"github.com/ava-labs/avalanchego/chains/atomic/gsharedmemory"
-	"github.com/ava-labs/avalanchego/database/manager"
-	"github.com/ava-labs/avalanchego/database/rpcdb"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/ids/galiasreader"
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/snow/choices"
-	"github.com/ava-labs/avalanchego/snow/consensus/snowman"
-	"github.com/ava-labs/avalanchego/snow/engine/common"
-	"github.com/ava-labs/avalanchego/snow/engine/common/appsender"
-	"github.com/ava-labs/avalanchego/snow/engine/snowman/block"
-	"github.com/ava-labs/avalanchego/snow/validators/gvalidators"
-	"github.com/ava-labs/avalanchego/utils/resource"
-	"github.com/ava-labs/avalanchego/utils/wrappers"
-	"github.com/ava-labs/avalanchego/version"
-	"github.com/ava-labs/avalanchego/vms/components/chain"
-	"github.com/ava-labs/avalanchego/vms/platformvm/teleporter/gteleporter"
-	"github.com/ava-labs/avalanchego/vms/rpcchainvm/ghttp"
-	"github.com/ava-labs/avalanchego/vms/rpcchainvm/grpcutils"
-	"github.com/ava-labs/avalanchego/vms/rpcchainvm/messenger"
+	"github.com/Juneo-io/juneogo/api/keystore/gkeystore"
+	"github.com/Juneo-io/juneogo/api/metrics"
+	"github.com/Juneo-io/juneogo/chains/atomic/gsharedmemory"
+	"github.com/Juneo-io/juneogo/database/manager"
+	"github.com/Juneo-io/juneogo/database/rpcdb"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/ids/galiasreader"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/snow/choices"
+	"github.com/Juneo-io/juneogo/snow/consensus/snowman"
+	"github.com/Juneo-io/juneogo/snow/engine/common"
+	"github.com/Juneo-io/juneogo/snow/engine/common/appsender"
+	"github.com/Juneo-io/juneogo/snow/engine/snowman/block"
+	"github.com/Juneo-io/juneogo/snow/validators/gvalidators"
+	"github.com/Juneo-io/juneogo/utils/resource"
+	"github.com/Juneo-io/juneogo/utils/wrappers"
+	"github.com/Juneo-io/juneogo/version"
+	"github.com/Juneo-io/juneogo/vms/components/chain"
+	"github.com/Juneo-io/juneogo/vms/relayvm/teleporter/gteleporter"
+	"github.com/Juneo-io/juneogo/vms/rpcchainvm/ghttp"
+	"github.com/Juneo-io/juneogo/vms/rpcchainvm/grpcutils"
+	"github.com/Juneo-io/juneogo/vms/rpcchainvm/messenger"
 
-	aliasreaderpb "github.com/ava-labs/avalanchego/proto/pb/aliasreader"
-	appsenderpb "github.com/ava-labs/avalanchego/proto/pb/appsender"
-	httppb "github.com/ava-labs/avalanchego/proto/pb/http"
-	keystorepb "github.com/ava-labs/avalanchego/proto/pb/keystore"
-	messengerpb "github.com/ava-labs/avalanchego/proto/pb/messenger"
-	rpcdbpb "github.com/ava-labs/avalanchego/proto/pb/rpcdb"
-	sharedmemorypb "github.com/ava-labs/avalanchego/proto/pb/sharedmemory"
-	teleporterpb "github.com/ava-labs/avalanchego/proto/pb/teleporter"
-	validatorstatepb "github.com/ava-labs/avalanchego/proto/pb/validatorstate"
-	vmpb "github.com/ava-labs/avalanchego/proto/pb/vm"
+	aliasreaderpb "github.com/Juneo-io/juneogo/proto/pb/aliasreader"
+	appsenderpb "github.com/Juneo-io/juneogo/proto/pb/appsender"
+	httppb "github.com/Juneo-io/juneogo/proto/pb/http"
+	keystorepb "github.com/Juneo-io/juneogo/proto/pb/keystore"
+	messengerpb "github.com/Juneo-io/juneogo/proto/pb/messenger"
+	rpcdbpb "github.com/Juneo-io/juneogo/proto/pb/rpcdb"
+	sharedmemorypb "github.com/Juneo-io/juneogo/proto/pb/sharedmemory"
+	teleporterpb "github.com/Juneo-io/juneogo/proto/pb/teleporter"
+	validatorstatepb "github.com/Juneo-io/juneogo/proto/pb/validatorstate"
+	vmpb "github.com/Juneo-io/juneogo/proto/pb/vm"
 )
 
 const (
@@ -202,12 +202,13 @@ func (vm *VMClient) Initialize(
 
 	resp, err := vm.client.Initialize(ctx, &vmpb.InitializeRequest{
 		NetworkId:    chainCtx.NetworkID,
-		SubnetId:     chainCtx.SubnetID[:],
+		SupernetId:   chainCtx.SupernetID[:],
 		ChainId:      chainCtx.ChainID[:],
 		NodeId:       chainCtx.NodeID.Bytes(),
-		XChainId:     chainCtx.XChainID[:],
-		CChainId:     chainCtx.CChainID[:],
-		AvaxAssetId:  chainCtx.AVAXAssetID[:],
+		AssetChainId: chainCtx.AssetChainID[:],
+		JuneChainId:  chainCtx.JuneChainID[:],
+		JuneAssetId:  chainCtx.JuneAssetID[:],
+		ChainAssetId: chainCtx.ChainAssetID[:],
 		ChainDataDir: chainCtx.ChainDataDir,
 		GenesisBytes: genesisBytes,
 		UpgradeBytes: upgradeBytes,

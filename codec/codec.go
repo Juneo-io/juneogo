@@ -3,7 +3,7 @@
 
 package codec
 
-import "github.com/ava-labs/avalanchego/utils/wrappers"
+import "github.com/Juneo-io/juneogo/utils/wrappers"
 
 // Codec marshals and unmarshals
 type Codec interface {

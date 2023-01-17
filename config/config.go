@@ -19,45 +19,45 @@ import (
 
 	"github.com/spf13/viper"
 
-	"github.com/ava-labs/avalanchego/app/runner"
-	"github.com/ava-labs/avalanchego/chains"
-	"github.com/ava-labs/avalanchego/genesis"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/ipcs"
-	"github.com/ava-labs/avalanchego/nat"
-	"github.com/ava-labs/avalanchego/network"
-	"github.com/ava-labs/avalanchego/network/dialer"
-	"github.com/ava-labs/avalanchego/network/throttling"
-	"github.com/ava-labs/avalanchego/node"
-	"github.com/ava-labs/avalanchego/snow/consensus/avalanche"
-	"github.com/ava-labs/avalanchego/snow/consensus/snowball"
-	"github.com/ava-labs/avalanchego/snow/networking/benchlist"
-	"github.com/ava-labs/avalanchego/snow/networking/router"
-	"github.com/ava-labs/avalanchego/snow/networking/sender"
-	"github.com/ava-labs/avalanchego/snow/networking/tracker"
-	"github.com/ava-labs/avalanchego/staking"
-	"github.com/ava-labs/avalanchego/trace"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/crypto/bls"
-	"github.com/ava-labs/avalanchego/utils/dynamicip"
-	"github.com/ava-labs/avalanchego/utils/ips"
-	"github.com/ava-labs/avalanchego/utils/logging"
-	"github.com/ava-labs/avalanchego/utils/password"
-	"github.com/ava-labs/avalanchego/utils/perms"
-	"github.com/ava-labs/avalanchego/utils/profiler"
-	"github.com/ava-labs/avalanchego/utils/set"
-	"github.com/ava-labs/avalanchego/utils/storage"
-	"github.com/ava-labs/avalanchego/utils/timer"
-	"github.com/ava-labs/avalanchego/vms"
-	"github.com/ava-labs/avalanchego/vms/platformvm/reward"
-	"github.com/ava-labs/avalanchego/vms/proposervm"
+	"github.com/Juneo-io/juneogo/app/runner"
+	"github.com/Juneo-io/juneogo/chains"
+	"github.com/Juneo-io/juneogo/genesis"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/ipcs"
+	"github.com/Juneo-io/juneogo/nat"
+	"github.com/Juneo-io/juneogo/network"
+	"github.com/Juneo-io/juneogo/network/dialer"
+	"github.com/Juneo-io/juneogo/network/throttling"
+	"github.com/Juneo-io/juneogo/node"
+	"github.com/Juneo-io/juneogo/snow/consensus/avalanche"
+	"github.com/Juneo-io/juneogo/snow/consensus/snowball"
+	"github.com/Juneo-io/juneogo/snow/networking/benchlist"
+	"github.com/Juneo-io/juneogo/snow/networking/router"
+	"github.com/Juneo-io/juneogo/snow/networking/sender"
+	"github.com/Juneo-io/juneogo/snow/networking/tracker"
+	"github.com/Juneo-io/juneogo/staking"
+	"github.com/Juneo-io/juneogo/trace"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/crypto/bls"
+	"github.com/Juneo-io/juneogo/utils/dynamicip"
+	"github.com/Juneo-io/juneogo/utils/ips"
+	"github.com/Juneo-io/juneogo/utils/logging"
+	"github.com/Juneo-io/juneogo/utils/password"
+	"github.com/Juneo-io/juneogo/utils/perms"
+	"github.com/Juneo-io/juneogo/utils/profiler"
+	"github.com/Juneo-io/juneogo/utils/set"
+	"github.com/Juneo-io/juneogo/utils/storage"
+	"github.com/Juneo-io/juneogo/utils/timer"
+	"github.com/Juneo-io/juneogo/vms"
+	"github.com/Juneo-io/juneogo/vms/proposervm"
+	"github.com/Juneo-io/juneogo/vms/relayvm/reward"
 )
 
 const (
-	pluginsDirName       = "plugins"
-	chainConfigFileName  = "config"
-	chainUpgradeFileName = "upgrade"
-	subnetConfigFileExt  = ".json"
+	pluginsDirName        = "plugins"
+	chainConfigFileName   = "config"
+	chainUpgradeFileName  = "upgrade"
+	supernetConfigFileExt = ".json"
 )
 
 var (
@@ -807,10 +807,8 @@ func getStakingConfig(v *viper.Viper, networkID uint32) (node.StakingConfig, err
 		config.MinDelegatorStake = v.GetUint64(MinDelegatorStakeKey)
 		config.MinStakeDuration = v.GetDuration(MinStakeDurationKey)
 		config.MaxStakeDuration = v.GetDuration(MaxStakeDurationKey)
-		config.RewardConfig.MaxConsumptionRate = v.GetUint64(StakeMaxConsumptionRateKey)
-		config.RewardConfig.MinConsumptionRate = v.GetUint64(StakeMinConsumptionRateKey)
 		config.RewardConfig.MintingPeriod = v.GetDuration(StakeMintingPeriodKey)
-		config.RewardConfig.SupplyCap = v.GetUint64(StakeSupplyCapKey)
+		config.RewardConfig.RewardShare = v.GetUint64(StakeRewardShareKey)
 		config.MinDelegationFee = v.GetUint32(MinDelegatorFeeKey)
 		switch {
 		case config.UptimeRequirement < 0 || config.UptimeRequirement > 1:
@@ -823,10 +821,6 @@ func getStakingConfig(v *viper.Viper, networkID uint32) (node.StakingConfig, err
 			return node.StakingConfig{}, errInvalidMinStakeDuration
 		case config.MaxStakeDuration < config.MinStakeDuration:
 			return node.StakingConfig{}, errMinStakeDurationAboveMax
-		case config.RewardConfig.MaxConsumptionRate > reward.PercentDenominator:
-			return node.StakingConfig{}, errStakeMaxConsumptionTooLarge
-		case config.RewardConfig.MaxConsumptionRate < config.RewardConfig.MinConsumptionRate:
-			return node.StakingConfig{}, errStakeMaxConsumptionBelowMin
 		case config.RewardConfig.MintingPeriod < config.MaxStakeDuration:
 			return node.StakingConfig{}, errStakeMintingPeriodBelowMin
 		}
@@ -841,13 +835,13 @@ func getTxFeeConfig(v *viper.Viper, networkID uint32) genesis.TxFeeConfig {
 		return genesis.TxFeeConfig{
 			TxFee:                         v.GetUint64(TxFeeKey),
 			CreateAssetTxFee:              v.GetUint64(CreateAssetTxFeeKey),
-			CreateSubnetTxFee:             v.GetUint64(CreateSubnetTxFeeKey),
-			TransformSubnetTxFee:          v.GetUint64(TransformSubnetTxFeeKey),
+			CreateSupernetTxFee:           v.GetUint64(CreateSupernetTxFeeKey),
+			TransformSupernetTxFee:        v.GetUint64(TransformSupernetTxFeeKey),
 			CreateBlockchainTxFee:         v.GetUint64(CreateBlockchainTxFeeKey),
 			AddPrimaryNetworkValidatorFee: v.GetUint64(AddPrimaryNetworkValidatorFeeKey),
 			AddPrimaryNetworkDelegatorFee: v.GetUint64(AddPrimaryNetworkDelegatorFeeKey),
-			AddSubnetValidatorFee:         v.GetUint64(AddSubnetValidatorFeeKey),
-			AddSubnetDelegatorFee:         v.GetUint64(AddSubnetDelegatorFeeKey),
+			AddSupernetValidatorFee:       v.GetUint64(AddSupernetValidatorFeeKey),
+			AddSupernetDelegatorFee:       v.GetUint64(AddSupernetDelegatorFeeKey),
 		}
 	}
 	return genesis.GetTxFeeConfig(networkID)
@@ -871,22 +865,22 @@ func getGenesisData(v *viper.Viper, networkID uint32) ([]byte, ids.ID, error) {
 	return genesis.FromConfig(config)
 }
 
-func getWhitelistedSubnets(v *viper.Viper) (set.Set[ids.ID], error) {
-	whitelistedSubnetIDs := set.Set[ids.ID]{}
-	for _, subnet := range strings.Split(v.GetString(WhitelistedSubnetsKey), ",") {
-		if subnet == "" {
+func getWhitelistedSupernets(v *viper.Viper) (set.Set[ids.ID], error) {
+	whitelistedSupernetIDs := set.Set[ids.ID]{}
+	for _, supernet := range strings.Split(v.GetString(WhitelistedSupernetsKey), ",") {
+		if supernet == "" {
 			continue
 		}
-		subnetID, err := ids.FromString(subnet)
+		supernetID, err := ids.FromString(supernet)
 		if err != nil {
-			return nil, fmt.Errorf("couldn't parse subnetID %q: %w", subnet, err)
+			return nil, fmt.Errorf("couldn't parse supernetID %q: %w", supernet, err)
 		}
-		if subnetID == constants.PrimaryNetworkID {
+		if supernetID == constants.PrimaryNetworkID {
 			return nil, errCannotWhitelistPrimaryNetwork
 		}
-		whitelistedSubnetIDs.Add(subnetID)
+		whitelistedSupernetIDs.Add(supernetID)
 	}
-	return whitelistedSubnetIDs, nil
+	return whitelistedSupernetIDs, nil
 }
 
 func getDatabaseConfig(v *viper.Viper, networkID uint32) (node.DatabaseConfig, error) {
@@ -1070,58 +1064,58 @@ func readChainConfigPath(chainConfigPath string) (map[string]chains.ChainConfig,
 	return chainConfigMap, nil
 }
 
-func getSubnetConfigs(v *viper.Viper, subnetIDs []ids.ID) (map[ids.ID]chains.SubnetConfig, error) {
-	if v.IsSet(SubnetConfigContentKey) {
-		return getSubnetConfigsFromFlags(v, subnetIDs)
+func getSupernetConfigs(v *viper.Viper, supernetIDs []ids.ID) (map[ids.ID]chains.SupernetConfig, error) {
+	if v.IsSet(SupernetConfigContentKey) {
+		return getSupernetConfigsFromFlags(v, supernetIDs)
 	}
-	return getSubnetConfigsFromDir(v, subnetIDs)
+	return getSupernetConfigsFromDir(v, supernetIDs)
 }
 
-func getSubnetConfigsFromFlags(v *viper.Viper, subnetIDs []ids.ID) (map[ids.ID]chains.SubnetConfig, error) {
-	subnetConfigContentB64 := v.GetString(SubnetConfigContentKey)
-	subnetConfigContent, err := base64.StdEncoding.DecodeString(subnetConfigContentB64)
+func getSupernetConfigsFromFlags(v *viper.Viper, supernetIDs []ids.ID) (map[ids.ID]chains.SupernetConfig, error) {
+	supernetConfigContentB64 := v.GetString(SupernetConfigContentKey)
+	supernetConfigContent, err := base64.StdEncoding.DecodeString(supernetConfigContentB64)
 	if err != nil {
 		return nil, fmt.Errorf("unable to decode base64 content: %w", err)
 	}
 
 	// partially parse configs to be filled by defaults later
-	subnetConfigs := make(map[ids.ID]json.RawMessage, len(subnetIDs))
-	if err := json.Unmarshal(subnetConfigContent, &subnetConfigs); err != nil {
+	supernetConfigs := make(map[ids.ID]json.RawMessage, len(supernetIDs))
+	if err := json.Unmarshal(supernetConfigContent, &supernetConfigs); err != nil {
 		return nil, fmt.Errorf("could not unmarshal JSON: %w", err)
 	}
 
-	res := make(map[ids.ID]chains.SubnetConfig)
-	for _, subnetID := range subnetIDs {
-		if rawSubnetConfigBytes, ok := subnetConfigs[subnetID]; ok {
-			subnetConfig, err := parseSubnetConfigs(rawSubnetConfigBytes, getDefaultSubnetConfig(v))
+	res := make(map[ids.ID]chains.SupernetConfig)
+	for _, supernetID := range supernetIDs {
+		if rawSupernetConfigBytes, ok := supernetConfigs[supernetID]; ok {
+			supernetConfig, err := parseSupernetConfigs(rawSupernetConfigBytes, getDefaultSupernetConfig(v))
 			if err != nil {
 				return nil, err
 			}
-			res[subnetID] = subnetConfig
+			res[supernetID] = supernetConfig
 		}
 	}
 	return res, nil
 }
 
-// getSubnetConfigs reads SubnetConfigs to node config map
-func getSubnetConfigsFromDir(v *viper.Viper, subnetIDs []ids.ID) (map[ids.ID]chains.SubnetConfig, error) {
-	subnetConfigPath, err := getPathFromDirKey(v, SubnetConfigDirKey)
+// getSupernetConfigs reads SupernetConfigs to node config map
+func getSupernetConfigsFromDir(v *viper.Viper, supernetIDs []ids.ID) (map[ids.ID]chains.SupernetConfig, error) {
+	supernetConfigPath, err := getPathFromDirKey(v, SupernetConfigDirKey)
 	if err != nil {
 		return nil, err
 	}
-	if len(subnetConfigPath) == 0 {
-		// subnet config path does not exist but not explicitly specified, so ignore it
-		return make(map[ids.ID]chains.SubnetConfig), nil
+	if len(supernetConfigPath) == 0 {
+		// supernet config path does not exist but not explicitly specified, so ignore it
+		return make(map[ids.ID]chains.SupernetConfig), nil
 	}
 
-	// reads subnet config files from a path and given subnetIDs and returns a map.
-	subnetConfigs := make(map[ids.ID]chains.SubnetConfig)
-	for _, subnetID := range subnetIDs {
-		filePath := filepath.Join(subnetConfigPath, subnetID.String()+subnetConfigFileExt)
+	// reads supernet config files from a path and given supernetIDs and returns a map.
+	supernetConfigs := make(map[ids.ID]chains.SupernetConfig)
+	for _, supernetID := range supernetIDs {
+		filePath := filepath.Join(supernetConfigPath, supernetID.String()+supernetConfigFileExt)
 		fileInfo, err := os.Stat(filePath)
 		switch {
 		case errors.Is(err, os.ErrNotExist):
-			// this subnet config does not exist, move to the next one
+			// this supernet config does not exist, move to the next one
 			continue
 		case err != nil:
 			return nil, err
@@ -1129,34 +1123,34 @@ func getSubnetConfigsFromDir(v *viper.Viper, subnetIDs []ids.ID) (map[ids.ID]cha
 			return nil, fmt.Errorf("%q is a directory, expected a file", fileInfo.Name())
 		}
 
-		// subnetConfigDir/subnetID.json
+		// supernetConfigDir/supernetID.json
 		file, err := os.ReadFile(filePath)
 		if err != nil {
 			return nil, err
 		}
-		config, err := parseSubnetConfigs(file, getDefaultSubnetConfig(v))
+		config, err := parseSupernetConfigs(file, getDefaultSupernetConfig(v))
 		if err != nil {
 			return nil, err
 		}
-		subnetConfigs[subnetID] = config
+		supernetConfigs[supernetID] = config
 	}
 
-	return subnetConfigs, nil
+	return supernetConfigs, nil
 }
 
-func parseSubnetConfigs(data []byte, defaultSubnetConfig chains.SubnetConfig) (chains.SubnetConfig, error) {
-	if err := json.Unmarshal(data, &defaultSubnetConfig); err != nil {
-		return chains.SubnetConfig{}, err
+func parseSupernetConfigs(data []byte, defaultSupernetConfig chains.SupernetConfig) (chains.SupernetConfig, error) {
+	if err := json.Unmarshal(data, &defaultSupernetConfig); err != nil {
+		return chains.SupernetConfig{}, err
 	}
 
-	if err := defaultSubnetConfig.ConsensusParameters.Valid(); err != nil {
-		return chains.SubnetConfig{}, fmt.Errorf("invalid consensus parameters: %w", err)
+	if err := defaultSupernetConfig.ConsensusParameters.Valid(); err != nil {
+		return chains.SupernetConfig{}, fmt.Errorf("invalid consensus parameters: %w", err)
 	}
-	return defaultSubnetConfig, nil
+	return defaultSupernetConfig, nil
 }
 
-func getDefaultSubnetConfig(v *viper.Viper) chains.SubnetConfig {
-	return chains.SubnetConfig{
+func getDefaultSupernetConfig(v *viper.Viper) chains.SupernetConfig {
+	return chains.SupernetConfig{
 		ConsensusParameters:   getConsensusConfig(v),
 		ValidatorOnly:         false,
 		GossipConfig:          getGossipConfig(v),
@@ -1301,8 +1295,8 @@ func GetNodeConfig(v *viper.Viper, buildDir string) (node.Config, error) {
 		return node.Config{}, err
 	}
 
-	// Whitelisted Subnets
-	nodeConfig.WhitelistedSubnets, err = getWhitelistedSubnets(v)
+	// Whitelisted Supernets
+	nodeConfig.WhitelistedSupernets, err = getWhitelistedSupernets(v)
 	if err != nil {
 		return node.Config{}, err
 	}
@@ -1361,7 +1355,7 @@ func GetNodeConfig(v *viper.Viper, buildDir string) (node.Config, error) {
 	nodeConfig.TxFeeConfig = getTxFeeConfig(v, nodeConfig.NetworkID)
 
 	// Genesis Data
-	nodeConfig.GenesisBytes, nodeConfig.AvaxAssetID, err = getGenesisData(v, nodeConfig.NetworkID)
+	nodeConfig.GenesisBytes, nodeConfig.JuneAssetID, err = getGenesisData(v, nodeConfig.NetworkID)
 	if err != nil {
 		return node.Config{}, fmt.Errorf("unable to load genesis file: %w", err)
 	}
@@ -1378,20 +1372,20 @@ func GetNodeConfig(v *viper.Viper, buildDir string) (node.Config, error) {
 		return node.Config{}, err
 	}
 
-	// Subnet Configs
-	subnetConfigs, err := getSubnetConfigs(v, nodeConfig.WhitelistedSubnets.List())
+	// Supernet Configs
+	supernetConfigs, err := getSupernetConfigs(v, nodeConfig.WhitelistedSupernets.List())
 	if err != nil {
-		return node.Config{}, fmt.Errorf("couldn't read subnet configs: %w", err)
+		return node.Config{}, fmt.Errorf("couldn't read supernet configs: %w", err)
 	}
-	nodeConfig.SubnetConfigs = subnetConfigs
+	nodeConfig.SupernetConfigs = supernetConfigs
 
 	// Node health
 	nodeConfig.MinPercentConnectedStakeHealthy = map[ids.ID]float64{
 		constants.PrimaryNetworkID: calcMinConnectedStake(nodeConfig.ConsensusParams.Parameters),
 	}
 
-	for subnetID, config := range subnetConfigs {
-		nodeConfig.MinPercentConnectedStakeHealthy[subnetID] = calcMinConnectedStake(config.ConsensusParameters.Parameters)
+	for supernetID, config := range supernetConfigs {
+		nodeConfig.MinPercentConnectedStakeHealthy[supernetID] = calcMinConnectedStake(config.ConsensusParameters.Parameters)
 	}
 
 	// Chain Configs

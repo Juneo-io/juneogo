@@ -13,15 +13,15 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/snow/choices"
-	"github.com/ava-labs/avalanchego/snow/consensus/snowman"
-	"github.com/ava-labs/avalanchego/snow/engine/common"
-	"github.com/ava-labs/avalanchego/snow/engine/snowman/block"
-	"github.com/ava-labs/avalanchego/utils/set"
-	"github.com/ava-labs/avalanchego/utils/timer"
-	"github.com/ava-labs/avalanchego/version"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/snow/choices"
+	"github.com/Juneo-io/juneogo/snow/consensus/snowman"
+	"github.com/Juneo-io/juneogo/snow/engine/common"
+	"github.com/Juneo-io/juneogo/snow/engine/snowman/block"
+	"github.com/Juneo-io/juneogo/utils/set"
+	"github.com/Juneo-io/juneogo/utils/timer"
+	"github.com/Juneo-io/juneogo/version"
 )
 
 // Parameters for delaying bootstrapping to avoid potential CPU burns
@@ -276,7 +276,7 @@ func (b *bootstrapper) Timeout(ctx context.Context) error {
 	}
 	b.awaitingTimeout = false
 
-	if !b.Config.Subnet.IsBootstrapped() {
+	if !b.Config.Supernet.IsBootstrapped() {
 		return b.Restart(ctx, true)
 	}
 	b.fetchETA.Set(0)
@@ -577,16 +577,16 @@ func (b *bootstrapper) checkFinish(ctx context.Context) error {
 		})
 	}
 
-	// Notify the subnet that this chain is synced
-	b.Config.Subnet.Bootstrapped(b.Ctx.ChainID)
+	// Notify the supernet that this chain is synced
+	b.Config.Supernet.Bootstrapped(b.Ctx.ChainID)
 
-	// If the subnet hasn't finished bootstrapping, this chain should remain
+	// If the supernet hasn't finished bootstrapping, this chain should remain
 	// syncing.
-	if !b.Config.Subnet.IsBootstrapped() {
+	if !b.Config.Supernet.IsBootstrapped() {
 		if !b.Config.SharedCfg.Restarted {
-			b.Ctx.Log.Info("waiting for the remaining chains in this subnet to finish syncing")
+			b.Ctx.Log.Info("waiting for the remaining chains in this supernet to finish syncing")
 		} else {
-			b.Ctx.Log.Debug("waiting for the remaining chains in this subnet to finish syncing")
+			b.Ctx.Log.Debug("waiting for the remaining chains in this supernet to finish syncing")
 		}
 		// Restart bootstrapping after [bootstrappingDelay] to keep up to date
 		// on the latest tip.

@@ -15,23 +15,23 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/api/metrics"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/message"
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/snow/engine/common"
-	"github.com/ava-labs/avalanchego/snow/networking/benchlist"
-	"github.com/ava-labs/avalanchego/snow/networking/handler"
-	"github.com/ava-labs/avalanchego/snow/networking/timeout"
-	"github.com/ava-labs/avalanchego/snow/networking/tracker"
-	"github.com/ava-labs/avalanchego/snow/validators"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/logging"
-	"github.com/ava-labs/avalanchego/utils/math/meter"
-	"github.com/ava-labs/avalanchego/utils/resource"
-	"github.com/ava-labs/avalanchego/utils/set"
-	"github.com/ava-labs/avalanchego/utils/timer"
-	"github.com/ava-labs/avalanchego/version"
+	"github.com/Juneo-io/juneogo/api/metrics"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/message"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/snow/engine/common"
+	"github.com/Juneo-io/juneogo/snow/networking/benchlist"
+	"github.com/Juneo-io/juneogo/snow/networking/handler"
+	"github.com/Juneo-io/juneogo/snow/networking/timeout"
+	"github.com/Juneo-io/juneogo/snow/networking/tracker"
+	"github.com/Juneo-io/juneogo/snow/validators"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/logging"
+	"github.com/Juneo-io/juneogo/utils/math/meter"
+	"github.com/Juneo-io/juneogo/utils/resource"
+	"github.com/Juneo-io/juneogo/utils/set"
+	"github.com/Juneo-io/juneogo/utils/timer"
+	"github.com/Juneo-io/juneogo/version"
 )
 
 func TestShutdown(t *testing.T) {
@@ -86,7 +86,7 @@ func TestShutdown(t *testing.T) {
 		nil,
 		time.Second,
 		resourceTracker,
-		validators.UnhandledSubnetConnector,
+		validators.UnhandledSupernetConnector,
 	)
 	require.NoError(t, err)
 
@@ -207,7 +207,7 @@ func TestShutdownTimesOut(t *testing.T) {
 		nil,
 		time.Second,
 		resourceTracker,
-		validators.UnhandledSubnetConnector,
+		validators.UnhandledSupernetConnector,
 	)
 	require.NoError(t, err)
 
@@ -346,7 +346,7 @@ func TestRouterTimeout(t *testing.T) {
 		nil,
 		time.Second,
 		resourceTracker,
-		validators.UnhandledSubnetConnector,
+		validators.UnhandledSupernetConnector,
 	)
 	r.NoError(err)
 
@@ -656,7 +656,7 @@ func TestRouterClearTimeouts(t *testing.T) {
 		nil,
 		time.Second,
 		resourceTracker,
-		validators.UnhandledSubnetConnector,
+		validators.UnhandledSupernetConnector,
 	)
 	require.NoError(t, err)
 
@@ -921,7 +921,7 @@ func TestValidatorOnlyMessageDrops(t *testing.T) {
 		nil,
 		time.Second,
 		resourceTracker,
-		validators.UnhandledSubnetConnector,
+		validators.UnhandledSupernetConnector,
 	)
 	require.NoError(t, err)
 
@@ -1070,7 +1070,7 @@ func TestRouterCrossChainMessages(t *testing.T) {
 		nil,
 		time.Second,
 		resourceTracker,
-		validators.UnhandledSubnetConnector,
+		validators.UnhandledSupernetConnector,
 	)
 	require.NoError(t, err)
 
@@ -1087,7 +1087,7 @@ func TestRouterCrossChainMessages(t *testing.T) {
 		nil,
 		time.Second,
 		resourceTracker,
-		validators.UnhandledSubnetConnector,
+		validators.UnhandledSupernetConnector,
 	)
 	require.NoError(t, err)
 
@@ -1144,7 +1144,7 @@ func TestRouterCrossChainMessages(t *testing.T) {
 	require.Equal(t, 2, chainRouter.chains[requester.ChainID].Len())
 }
 
-func TestConnectedSubnet(t *testing.T) {
+func TestConnectedSupernet(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -1166,10 +1166,10 @@ func TestConnectedSubnet(t *testing.T) {
 	// Create chain router
 	myNodeID := ids.GenerateTestNodeID()
 	peerNodeID := ids.GenerateTestNodeID()
-	subnetID0 := ids.GenerateTestID()
-	subnetID1 := ids.GenerateTestID()
-	whitelistedSubnets := set.Set[ids.ID]{}
-	whitelistedSubnets.Add(subnetID0, subnetID1)
+	supernetID0 := ids.GenerateTestID()
+	supernetID1 := ids.GenerateTestID()
+	whitelistedSupernets := set.Set[ids.ID]{}
+	whitelistedSupernets.Add(supernetID0, supernetID1)
 	chainRouter := ChainRouter{}
 	err = chainRouter.Initialize(
 		myNodeID,
@@ -1177,7 +1177,7 @@ func TestConnectedSubnet(t *testing.T) {
 		tm,
 		time.Millisecond,
 		set.Set[ids.ID]{},
-		whitelistedSubnets,
+		whitelistedSupernets,
 		nil,
 		HealthConfig{},
 		"",
@@ -1187,23 +1187,23 @@ func TestConnectedSubnet(t *testing.T) {
 
 	// Create bootstrapper, engine and handler
 	platform := snow.DefaultConsensusContextTest()
-	platform.ChainID = constants.PlatformChainID
-	platform.SubnetID = constants.PrimaryNetworkID
+	platform.ChainID = constants.RelayChainID
+	platform.SupernetID = constants.PrimaryNetworkID
 	platform.Registerer = prometheus.NewRegistry()
 	platform.Metrics = metrics.NewOptionalGatherer()
 	platform.Executing(false)
 	platform.SetState(snow.NormalOp)
 
 	myConnectedMsg := message.InternalConnected(myNodeID, version.CurrentApp)
-	mySubnetConnectedMsg0 := message.InternalConnectedSubnet(myNodeID, subnetID0)
-	mySubnetConnectedMsg1 := message.InternalConnectedSubnet(myNodeID, subnetID1)
+	mySupernetConnectedMsg0 := message.InternalConnectedSupernet(myNodeID, supernetID0)
+	mySupernetConnectedMsg1 := message.InternalConnectedSupernet(myNodeID, supernetID1)
 
 	platformHandler := handler.NewMockHandler(ctrl)
 	platformHandler.EXPECT().Context().Return(platform).AnyTimes()
 	platformHandler.EXPECT().SetOnStopped(gomock.Any()).AnyTimes()
 	platformHandler.EXPECT().Push(gomock.Any(), myConnectedMsg).Times(1)
-	platformHandler.EXPECT().Push(gomock.Any(), mySubnetConnectedMsg0).Times(1)
-	platformHandler.EXPECT().Push(gomock.Any(), mySubnetConnectedMsg1).Times(1)
+	platformHandler.EXPECT().Push(gomock.Any(), mySupernetConnectedMsg0).Times(1)
+	platformHandler.EXPECT().Push(gomock.Any(), mySupernetConnectedMsg1).Times(1)
 
 	chainRouter.AddChain(context.Background(), platformHandler)
 
@@ -1211,28 +1211,28 @@ func TestConnectedSubnet(t *testing.T) {
 	platformHandler.EXPECT().Push(gomock.Any(), peerConnectedMsg).Times(1)
 	chainRouter.Connected(peerNodeID, version.CurrentApp, constants.PrimaryNetworkID)
 
-	peerSubnetConnectedMsg0 := message.InternalConnectedSubnet(peerNodeID, subnetID0)
-	platformHandler.EXPECT().Push(gomock.Any(), peerSubnetConnectedMsg0).Times(1)
-	chainRouter.Connected(peerNodeID, version.CurrentApp, subnetID0)
+	peerSupernetConnectedMsg0 := message.InternalConnectedSupernet(peerNodeID, supernetID0)
+	platformHandler.EXPECT().Push(gomock.Any(), peerSupernetConnectedMsg0).Times(1)
+	chainRouter.Connected(peerNodeID, version.CurrentApp, supernetID0)
 
 	myDisconnectedMsg := message.InternalDisconnected(myNodeID)
 	platformHandler.EXPECT().Push(gomock.Any(), myDisconnectedMsg).Times(1)
-	chainRouter.Benched(constants.PlatformChainID, myNodeID)
+	chainRouter.Benched(constants.RelayChainID, myNodeID)
 
 	peerDisconnectedMsg := message.InternalDisconnected(peerNodeID)
 	platformHandler.EXPECT().Push(gomock.Any(), peerDisconnectedMsg).Times(1)
-	chainRouter.Benched(constants.PlatformChainID, peerNodeID)
+	chainRouter.Benched(constants.RelayChainID, peerNodeID)
 
 	platformHandler.EXPECT().Push(gomock.Any(), myConnectedMsg).Times(1)
-	platformHandler.EXPECT().Push(gomock.Any(), mySubnetConnectedMsg0).Times(1)
-	platformHandler.EXPECT().Push(gomock.Any(), mySubnetConnectedMsg1).Times(1)
+	platformHandler.EXPECT().Push(gomock.Any(), mySupernetConnectedMsg0).Times(1)
+	platformHandler.EXPECT().Push(gomock.Any(), mySupernetConnectedMsg1).Times(1)
 
-	chainRouter.Unbenched(constants.PlatformChainID, myNodeID)
+	chainRouter.Unbenched(constants.RelayChainID, myNodeID)
 
 	platformHandler.EXPECT().Push(gomock.Any(), peerConnectedMsg).Times(1)
-	platformHandler.EXPECT().Push(gomock.Any(), peerSubnetConnectedMsg0).Times(1)
+	platformHandler.EXPECT().Push(gomock.Any(), peerSupernetConnectedMsg0).Times(1)
 
-	chainRouter.Unbenched(constants.PlatformChainID, peerNodeID)
+	chainRouter.Unbenched(constants.RelayChainID, peerNodeID)
 
 	platformHandler.EXPECT().Push(gomock.Any(), peerDisconnectedMsg).Times(1)
 	chainRouter.Disconnected(peerNodeID)

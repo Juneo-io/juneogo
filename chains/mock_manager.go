@@ -4,8 +4,8 @@
 package chains
 
 import (
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow/networking/router"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow/networking/router"
 )
 
 var _ Manager = (*MockManager)(nil)
@@ -46,7 +46,7 @@ func (mm MockManager) Shutdown() {}
 
 func (mm MockManager) StartChainCreator(ChainParameters) {}
 
-func (mm MockManager) SubnetID(ids.ID) (ids.ID, error) {
+func (mm MockManager) SupernetID(ids.ID) (ids.ID, error) {
 	return ids.ID{}, nil
 }
 

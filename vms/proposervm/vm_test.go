@@ -16,22 +16,22 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/database/manager"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/snow/choices"
-	"github.com/ava-labs/avalanchego/snow/consensus/snowman"
-	"github.com/ava-labs/avalanchego/snow/engine/common"
-	"github.com/ava-labs/avalanchego/snow/engine/snowman/block"
-	"github.com/ava-labs/avalanchego/snow/engine/snowman/block/mocks"
-	"github.com/ava-labs/avalanchego/snow/validators"
-	"github.com/ava-labs/avalanchego/staking"
-	"github.com/ava-labs/avalanchego/utils/timer/mockable"
-	"github.com/ava-labs/avalanchego/version"
-	"github.com/ava-labs/avalanchego/vms/proposervm/proposer"
-	"github.com/ava-labs/avalanchego/vms/proposervm/state"
+	"github.com/Juneo-io/juneogo/database/manager"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/snow/choices"
+	"github.com/Juneo-io/juneogo/snow/consensus/snowman"
+	"github.com/Juneo-io/juneogo/snow/engine/common"
+	"github.com/Juneo-io/juneogo/snow/engine/snowman/block"
+	"github.com/Juneo-io/juneogo/snow/engine/snowman/block/mocks"
+	"github.com/Juneo-io/juneogo/snow/validators"
+	"github.com/Juneo-io/juneogo/staking"
+	"github.com/Juneo-io/juneogo/utils/timer/mockable"
+	"github.com/Juneo-io/juneogo/version"
+	"github.com/Juneo-io/juneogo/vms/proposervm/proposer"
+	"github.com/Juneo-io/juneogo/vms/proposervm/state"
 
-	statelessblock "github.com/ava-labs/avalanchego/vms/proposervm/block"
+	statelessblock "github.com/Juneo-io/juneogo/vms/proposervm/block"
 )
 
 var (
@@ -1529,11 +1529,13 @@ func TestBuildBlockDuringWindow(t *testing.T) {
 // Ensure that Accepting a PostForkBlock (A) containing core block (X) causes
 // core block (Y) and (Z) to also be rejected.
 //
-//      G
-//    /   \
+//	  G
+//	/   \
+//
 // A(X)   B(Y)
-//         |
-//        C(Z)
+//
+//	 |
+//	C(Z)
 func TestTwoForks_OneIsAccepted(t *testing.T) {
 	forkTime := time.Unix(0, 0)
 	coreVM, _, proVM, gBlock, _ := initTestProposerVM(t, forkTime, 0)
@@ -1740,11 +1742,11 @@ func TestTooFarAdvanced(t *testing.T) {
 // Ensure that Accepting a PostForkOption (B) causes both the other option and
 // the core block in the other option to be rejected.
 //
-//     G
-//     |
-//    A(X)
-//   /====\
-//  B(...) C(...)
+//	   G
+//	   |
+//	  A(X)
+//	 /====\
+//	B(...) C(...)
 //
 // B(...) is B(X.opts[0])
 // B(...) is C(X.opts[1])

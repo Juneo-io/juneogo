@@ -13,22 +13,22 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/api/server"
-	"github.com/ava-labs/avalanchego/database/memdb"
-	"github.com/ava-labs/avalanchego/database/versiondb"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/snow/choices"
-	"github.com/ava-labs/avalanchego/snow/consensus/avalanche"
-	"github.com/ava-labs/avalanchego/snow/consensus/snowstorm"
-	"github.com/ava-labs/avalanchego/snow/engine/avalanche/vertex"
-	"github.com/ava-labs/avalanchego/snow/engine/common"
-	"github.com/ava-labs/avalanchego/snow/engine/snowman"
-	"github.com/ava-labs/avalanchego/utils"
-	"github.com/ava-labs/avalanchego/utils/logging"
+	"github.com/Juneo-io/juneogo/api/server"
+	"github.com/Juneo-io/juneogo/database/memdb"
+	"github.com/Juneo-io/juneogo/database/versiondb"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/snow/choices"
+	"github.com/Juneo-io/juneogo/snow/consensus/avalanche"
+	"github.com/Juneo-io/juneogo/snow/consensus/snowstorm"
+	"github.com/Juneo-io/juneogo/snow/engine/avalanche/vertex"
+	"github.com/Juneo-io/juneogo/snow/engine/common"
+	"github.com/Juneo-io/juneogo/snow/engine/snowman"
+	"github.com/Juneo-io/juneogo/utils"
+	"github.com/Juneo-io/juneogo/utils/logging"
 
-	aveng "github.com/ava-labs/avalanchego/snow/engine/avalanche"
-	smblockmocks "github.com/ava-labs/avalanchego/snow/engine/snowman/block/mocks"
+	aveng "github.com/Juneo-io/juneogo/snow/engine/avalanche"
+	smblockmocks "github.com/Juneo-io/juneogo/snow/engine/snowman/block/mocks"
 )
 
 var _ server.PathAdder = (*apiServerMock)(nil)
@@ -529,7 +529,7 @@ func TestIgnoreNonDefaultChains(t *testing.T) {
 	// Assert state is right
 	chain1Ctx := snow.DefaultConsensusContextTest()
 	chain1Ctx.ChainID = ids.GenerateTestID()
-	chain1Ctx.SubnetID = ids.GenerateTestID()
+	chain1Ctx.SupernetID = ids.GenerateTestID()
 
 	// RegisterChain should return without adding an index for this chain
 	chainVM := smblockmocks.NewMockChainVM(ctrl)

@@ -6,10 +6,10 @@ package message
 import (
 	"time"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils/ips"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils/ips"
 
-	p2ppb "github.com/ava-labs/avalanchego/proto/pb/p2p"
+	p2ppb "github.com/Juneo-io/juneogo/proto/pb/p2p"
 )
 
 var _ OutboundMsgBuilder = (*outMsgBuilder)(nil)
@@ -25,7 +25,7 @@ type OutboundMsgBuilder interface {
 		myVersion string,
 		myVersionTime uint64,
 		sig []byte,
-		trackedSubnets []ids.ID,
+		trackedSupernets []ids.ID,
 	) (OutboundMessage, error)
 
 	PeerList(
@@ -41,7 +41,7 @@ type OutboundMsgBuilder interface {
 
 	Pong(
 		primaryUptime uint32,
-		subnetUptimes []*p2ppb.SubnetUptime,
+		supernetUptimes []*p2ppb.SupernetUptime,
 	) (OutboundMessage, error)
 
 	GetStateSummaryFrontier(
@@ -188,14 +188,14 @@ func (b *outMsgBuilder) Ping() (OutboundMessage, error) {
 
 func (b *outMsgBuilder) Pong(
 	primaryUptime uint32,
-	subnetUptimes []*p2ppb.SubnetUptime,
+	supernetUptimes []*p2ppb.SupernetUptime,
 ) (OutboundMessage, error) {
 	return b.builder.createOutbound(
 		&p2ppb.Message{
 			Message: &p2ppb.Message_Pong{
 				Pong: &p2ppb.Pong{
-					Uptime:        primaryUptime,
-					SubnetUptimes: subnetUptimes,
+					Uptime:          primaryUptime,
+					SupernetUptimes: supernetUptimes,
 				},
 			},
 		},
@@ -211,22 +211,22 @@ func (b *outMsgBuilder) Version(
 	myVersion string,
 	myVersionTime uint64,
 	sig []byte,
-	trackedSubnets []ids.ID,
+	trackedSupernets []ids.ID,
 ) (OutboundMessage, error) {
-	subnetIDBytes := make([][]byte, len(trackedSubnets))
-	encodeIDs(trackedSubnets, subnetIDBytes)
+	supernetIDBytes := make([][]byte, len(trackedSupernets))
+	encodeIDs(trackedSupernets, supernetIDBytes)
 	return b.builder.createOutbound(
 		&p2ppb.Message{
 			Message: &p2ppb.Message_Version{
 				Version: &p2ppb.Version{
-					NetworkId:      networkID,
-					MyTime:         myTime,
-					IpAddr:         ip.IP.To16(),
-					IpPort:         uint32(ip.Port),
-					MyVersion:      myVersion,
-					MyVersionTime:  myVersionTime,
-					Sig:            sig,
-					TrackedSubnets: subnetIDBytes,
+					NetworkId:        networkID,
+					MyTime:           myTime,
+					IpAddr:           ip.IP.To16(),
+					IpPort:           uint32(ip.Port),
+					MyVersion:        myVersion,
+					MyVersionTime:    myVersionTime,
+					Sig:              sig,
+					TrackedSupernets: supernetIDBytes,
 				},
 			},
 		},

@@ -6,7 +6,7 @@ package linkedhashmap
 import (
 	"container/list"
 
-	"github.com/ava-labs/avalanchego/utils"
+	"github.com/Juneo-io/juneogo/utils"
 )
 
 var _ Iter[int, struct{}] = (*iterator[int, struct{}])(nil)

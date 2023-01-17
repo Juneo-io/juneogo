@@ -4,7 +4,7 @@
 package crypto
 
 import (
-	"github.com/ava-labs/avalanchego/utils/cb58"
+	"github.com/Juneo-io/juneogo/utils/cb58"
 )
 
 func BuildTestKeys() []*PrivateKeySECP256K1R {

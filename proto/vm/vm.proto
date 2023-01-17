@@ -6,7 +6,7 @@ import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 import "io/prometheus/client/metrics.proto";
 
-option go_package = "github.com/ava-labs/avalanchego/proto/pb/vm";
+option go_package = "github.com/Juneo-io/juneogo/proto/pb/vm";
 
 // ref. https://pkg.go.dev/github.com/ava-labs/avalanchego/snow/engine/snowman/block
 // ref. https://pkg.go.dev/github.com/ava-labs/avalanchego/snow/consensus/snowman#Block
@@ -91,21 +91,22 @@ service VM {
 
 message InitializeRequest {
   uint32 network_id = 1;
-  bytes subnet_id = 2;
+  bytes supernet_id = 2;
   bytes chain_id = 3;
   bytes node_id = 4;
-  bytes x_chain_id = 5;
-  bytes c_chain_id = 6;
-  bytes avax_asset_id = 7;
-  string chain_data_dir = 8;
-  bytes genesis_bytes = 9;
-  bytes upgrade_bytes = 10;
-  bytes config_bytes = 11;
-  repeated VersionedDBServer db_servers = 12;
+  bytes asset_chain_id = 5;
+  bytes june_chain_id = 6;
+  bytes june_asset_id = 7;
+  bytes chain_asset_id = 8;
+  string chain_data_dir = 9;
+  bytes genesis_bytes = 10;
+  bytes upgrade_bytes = 11;
+  bytes config_bytes = 12;
+  repeated VersionedDBServer db_servers = 13;
   // server_addr is the address of the gRPC server which serves
   // the messenger, keystore, shared memory, blockchain alias,
-  // subnet alias, and appSender services
-  string server_addr = 13;
+  // supernet alias, and appSender services
+  string server_addr = 14;
 }
 
 message InitializeResponse {

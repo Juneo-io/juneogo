@@ -10,11 +10,11 @@ package state
 import (
 	reflect "reflect"
 
-	versiondb "github.com/ava-labs/avalanchego/database/versiondb"
-	ids "github.com/ava-labs/avalanchego/ids"
-	choices "github.com/ava-labs/avalanchego/snow/choices"
-	logging "github.com/ava-labs/avalanchego/utils/logging"
-	block "github.com/ava-labs/avalanchego/vms/proposervm/block"
+	versiondb "github.com/Juneo-io/juneogo/database/versiondb"
+	ids "github.com/Juneo-io/juneogo/ids"
+	choices "github.com/Juneo-io/juneogo/snow/choices"
+	logging "github.com/Juneo-io/juneogo/utils/logging"
+	block "github.com/Juneo-io/juneogo/vms/proposervm/block"
 	gomock "github.com/golang/mock/gomock"
 )
 

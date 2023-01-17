@@ -14,11 +14,11 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/hashing"
-	"github.com/ava-labs/avalanchego/utils/perms"
-	"github.com/ava-labs/avalanchego/vms/platformvm/genesis"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/hashing"
+	"github.com/Juneo-io/juneogo/utils/perms"
+	"github.com/Juneo-io/juneogo/vms/relayvm/genesis"
 )
 
 var (
@@ -128,7 +128,7 @@ func TestValidateConfig(t *testing.T) {
 			networkID: 12345,
 			config: func() *Config {
 				thisConfig := LocalConfig
-				thisConfig.CChainGenesis = ""
+				thisConfig.JuneChainGenesis = ""
 				return &thisConfig
 			}(),
 			err: "C-Chain genesis cannot be empty",
@@ -379,7 +379,7 @@ func TestVMGenesis(t *testing.T) {
 			networkID: constants.MainnetID,
 			vmTest: []vmTest{
 				{
-					vmID:       constants.AVMID,
+					vmID:       constants.JVMID,
 					expectedID: "2oYMBNV4eNHyqk2fjjV5nVQLDbtmNJzq5s3qs3Lo6ftnC6FByM",
 				},
 				{
@@ -392,7 +392,7 @@ func TestVMGenesis(t *testing.T) {
 			networkID: constants.FujiID,
 			vmTest: []vmTest{
 				{
-					vmID:       constants.AVMID,
+					vmID:       constants.JVMID,
 					expectedID: "2JVSBoinj9C2J33VntvzYtVJNZdN2NKiwwKjcumHUWEb5DbBrm",
 				},
 				{
@@ -405,7 +405,7 @@ func TestVMGenesis(t *testing.T) {
 			networkID: constants.LocalID,
 			vmTest: []vmTest{
 				{
-					vmID:       constants.AVMID,
+					vmID:       constants.JVMID,
 					expectedID: "2eNy1mUFdmaxXNj1eQHUe7Np4gju9sJsEtWQ4MX3ToiNKuADed",
 				},
 				{
@@ -429,22 +429,24 @@ func TestVMGenesis(t *testing.T) {
 				genesisBytes, _, err := FromConfig(config)
 				require.NoError(err)
 
-				genesisTx, err := VMGenesis(genesisBytes, vmTest.vmID)
+				genesisTxs, err := VMGenesis(genesisBytes, vmTest.vmID)
 				require.NoError(err)
 
-				require.Equal(
-					vmTest.expectedID,
-					genesisTx.ID().String(),
-					"%s genesisID with networkID %d mismatch",
-					vmTest.vmID,
-					test.networkID,
-				)
+				for _, tx := range genesisTxs {
+					require.Equal(
+						vmTest.expectedID,
+						fmt.Sprint(tx.NetworkID),
+						"%s genesisID with networkID %d mismatch",
+						vmTest.vmID,
+						test.networkID,
+					)
+				}
 			})
 		}
 	}
 }
 
-func TestAVAXAssetID(t *testing.T) {
+func TestJuneAssetID(t *testing.T) {
 	tests := []struct {
 		networkID  uint32
 		expectedID string
@@ -468,13 +470,13 @@ func TestAVAXAssetID(t *testing.T) {
 			require := require.New(t)
 
 			config := GetConfig(test.networkID)
-			_, avaxAssetID, err := FromConfig(config)
+			_, juneAssetID, err := FromConfig(config)
 			require.NoError(err)
 
 			require.Equal(
 				test.expectedID,
-				avaxAssetID.String(),
-				"AVAX assetID with networkID %d mismatch",
+				juneAssetID.String(),
+				"JUNE assetID with networkID %d mismatch",
 				test.networkID,
 			)
 		})

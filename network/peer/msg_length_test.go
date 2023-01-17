@@ -8,7 +8,7 @@ import (
 	"math"
 	"testing"
 
-	"github.com/ava-labs/avalanchego/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/constants"
 )
 
 func TestMsgLen(t *testing.T) {

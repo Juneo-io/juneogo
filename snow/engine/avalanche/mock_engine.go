@@ -12,11 +12,11 @@ import (
 	reflect "reflect"
 	time "time"
 
-	ids "github.com/ava-labs/avalanchego/ids"
-	snow "github.com/ava-labs/avalanchego/snow"
-	avalanche "github.com/ava-labs/avalanchego/snow/consensus/avalanche"
-	common "github.com/ava-labs/avalanchego/snow/engine/common"
-	version "github.com/ava-labs/avalanchego/version"
+	ids "github.com/Juneo-io/juneogo/ids"
+	snow "github.com/Juneo-io/juneogo/snow"
+	avalanche "github.com/Juneo-io/juneogo/snow/consensus/avalanche"
+	common "github.com/Juneo-io/juneogo/snow/engine/common"
+	version "github.com/Juneo-io/juneogo/version"
 	gomock "github.com/golang/mock/gomock"
 )
 

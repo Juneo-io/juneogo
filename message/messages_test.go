@@ -15,10 +15,10 @@ import (
 
 	"google.golang.org/protobuf/proto"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/staking"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/staking"
 
-	p2ppb "github.com/ava-labs/avalanchego/proto/pb/p2p"
+	p2ppb "github.com/Juneo-io/juneogo/proto/pb/p2p"
 )
 
 func TestMessage(t *testing.T) {
@@ -69,7 +69,7 @@ func TestMessage(t *testing.T) {
 			bytesSaved:       false,
 		},
 		{
-			desc: "pong message with no compression no subnet uptimes",
+			desc: "pong message with no compression no supernet uptimes",
 			op:   PongOp,
 			msg: &p2ppb.Message{
 				Message: &p2ppb.Message_Pong{
@@ -83,16 +83,16 @@ func TestMessage(t *testing.T) {
 			bytesSaved:       false,
 		},
 		{
-			desc: "pong message with no compression and subnet uptimes",
+			desc: "pong message with no compression and supernet uptimes",
 			op:   PongOp,
 			msg: &p2ppb.Message{
 				Message: &p2ppb.Message_Pong{
 					Pong: &p2ppb.Pong{
 						Uptime: 100,
-						SubnetUptimes: []*p2ppb.SubnetUptime{
+						SupernetUptimes: []*p2ppb.SupernetUptime{
 							{
-								SubnetId: testID[:],
-								Uptime:   100,
+								SupernetId: testID[:],
+								Uptime:     100,
 							},
 						},
 					},
@@ -108,14 +108,14 @@ func TestMessage(t *testing.T) {
 			msg: &p2ppb.Message{
 				Message: &p2ppb.Message_Version{
 					Version: &p2ppb.Version{
-						NetworkId:      uint32(1337),
-						MyTime:         uint64(nowUnix),
-						IpAddr:         []byte(net.IPv6zero),
-						IpPort:         9651,
-						MyVersion:      "v1.2.3",
-						MyVersionTime:  uint64(nowUnix),
-						Sig:            []byte{'y', 'e', 'e', 't'},
-						TrackedSubnets: [][]byte{testID[:]},
+						NetworkId:        uint32(1337),
+						MyTime:           uint64(nowUnix),
+						IpAddr:           []byte(net.IPv6zero),
+						IpPort:           9651,
+						MyVersion:        "v1.2.3",
+						MyVersionTime:    uint64(nowUnix),
+						Sig:              []byte{'y', 'e', 'e', 't'},
+						TrackedSupernets: [][]byte{testID[:]},
 					},
 				},
 			},

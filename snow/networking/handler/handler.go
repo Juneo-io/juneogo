@@ -16,18 +16,18 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/ava-labs/avalanchego/api/health"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/message"
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/snow/engine/common"
-	"github.com/ava-labs/avalanchego/snow/networking/tracker"
-	"github.com/ava-labs/avalanchego/snow/networking/worker"
-	"github.com/ava-labs/avalanchego/snow/validators"
-	"github.com/ava-labs/avalanchego/utils"
-	"github.com/ava-labs/avalanchego/utils/timer/mockable"
+	"github.com/Juneo-io/juneogo/api/health"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/message"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/snow/engine/common"
+	"github.com/Juneo-io/juneogo/snow/networking/tracker"
+	"github.com/Juneo-io/juneogo/snow/networking/worker"
+	"github.com/Juneo-io/juneogo/snow/validators"
+	"github.com/Juneo-io/juneogo/utils"
+	"github.com/Juneo-io/juneogo/utils/timer/mockable"
 
-	p2ppb "github.com/ava-labs/avalanchego/proto/pb/p2p"
+	p2ppb "github.com/Juneo-io/juneogo/proto/pb/p2p"
 )
 
 const (
@@ -105,7 +105,7 @@ type handler struct {
 	// Closed when this handler and [engine] are done shutting down
 	closed chan struct{}
 
-	subnetConnector validators.SubnetConnector
+	supernetConnector validators.SupernetConnector
 }
 
 // Initialize this consensus handler
@@ -117,20 +117,20 @@ func New(
 	preemptTimeouts chan struct{},
 	gossipFrequency time.Duration,
 	resourceTracker tracker.ResourceTracker,
-	subnetConnector validators.SubnetConnector,
+	supernetConnector validators.SupernetConnector,
 ) (Handler, error) {
 	h := &handler{
-		ctx:              ctx,
-		validators:       validators,
-		msgFromVMChan:    msgFromVMChan,
-		preemptTimeouts:  preemptTimeouts,
-		gossipFrequency:  gossipFrequency,
-		asyncMessagePool: worker.NewPool(threadPoolSize),
-		timeouts:         make(chan struct{}, 1),
-		closingChan:      make(chan struct{}),
-		closed:           make(chan struct{}),
-		resourceTracker:  resourceTracker,
-		subnetConnector:  subnetConnector,
+		ctx:               ctx,
+		validators:        validators,
+		msgFromVMChan:     msgFromVMChan,
+		preemptTimeouts:   preemptTimeouts,
+		gossipFrequency:   gossipFrequency,
+		asyncMessagePool:  worker.NewPool(threadPoolSize),
+		timeouts:          make(chan struct{}, 1),
+		closingChan:       make(chan struct{}),
+		closed:            make(chan struct{}),
+		resourceTracker:   resourceTracker,
+		supernetConnector: supernetConnector,
 	}
 
 	var err error
@@ -646,8 +646,8 @@ func (h *handler) handleSyncMsg(ctx context.Context, msg message.InboundMessage)
 	case *message.Connected:
 		return engine.Connected(ctx, nodeID, msg.NodeVersion)
 
-	case *message.ConnectedSubnet:
-		return h.subnetConnector.ConnectedSubnet(ctx, nodeID, msg.SubnetID)
+	case *message.ConnectedSupernet:
+		return h.supernetConnector.ConnectedSupernet(ctx, nodeID, msg.SupernetID)
 
 	case *message.Disconnected:
 		return engine.Disconnected(ctx, nodeID)

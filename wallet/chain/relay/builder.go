@@ -1,0 +1,1109 @@
+// Copyright (C) 2019-2022, Ava Labs, Inc. All rights reserved.
+// See the file LICENSE for licensing terms.
+
+package relay
+
+import (
+	"errors"
+	"fmt"
+	"time"
+
+	stdcontext "context"
+
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/math"
+	"github.com/Juneo-io/juneogo/utils/set"
+	"github.com/Juneo-io/juneogo/vms/components/june"
+	"github.com/Juneo-io/juneogo/vms/relayvm/signer"
+	"github.com/Juneo-io/juneogo/vms/relayvm/stakeable"
+	"github.com/Juneo-io/juneogo/vms/relayvm/txs"
+	"github.com/Juneo-io/juneogo/vms/relayvm/validator"
+	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
+	"github.com/Juneo-io/juneogo/wallet/supernet/primary/common"
+)
+
+var (
+	errNoChangeAddress           = errors.New("no possible change address")
+	errWrongTxType               = errors.New("wrong tx type")
+	errUnknownOwnerType          = errors.New("unknown owner type")
+	errInsufficientAuthorization = errors.New("insufficient authorization")
+	errInsufficientFunds         = errors.New("insufficient funds")
+
+	_ Builder = (*builder)(nil)
+)
+
+// Builder provides a convenient interface for building unsigned P-chain
+// transactions.
+type Builder interface {
+	// GetBalance calculates the amount of each asset that this builder has
+	// control over.
+	GetBalance(
+		options ...common.Option,
+	) (map[ids.ID]uint64, error)
+
+	// GetImportableBalance calculates the amount of each asset that this
+	// builder could import from the provided chain.
+	//
+	// - [chainID] specifies the chain the funds are from.
+	GetImportableBalance(
+		chainID ids.ID,
+		options ...common.Option,
+	) (map[ids.ID]uint64, error)
+
+	// NewBaseTx creates a new simple value transfer. Because the P-chain
+	// doesn't intend for balance transfers to occur, this method is expensive
+	// and abuses the creation of supernets.
+	//
+	// - [outputs] specifies all the recipients and amounts that should be sent
+	//   from this transaction.
+	NewBaseTx(
+		outputs []*june.TransferableOutput,
+		options ...common.Option,
+	) (*txs.CreateSupernetTx, error)
+
+	// NewAddValidatorTx creates a new validator of the primary network.
+	//
+	// - [vdr] specifies all the details of the validation period such as the
+	//   startTime, endTime, stake weight, and nodeID.
+	// - [rewardsOwner] specifies the owner of all the rewards this validator
+	//   may accrue during its validation period.
+	// - [shares] specifies the fraction (out of 1,000,000) that this validator
+	//   will take from delegation rewards. If 1,000,000 is provided, 100% of
+	//   the delegation reward will be sent to the validator's [rewardsOwner].
+	NewAddValidatorTx(
+		vdr *validator.Validator,
+		rewardsOwner *secp256k1fx.OutputOwners,
+		shares uint32,
+		options ...common.Option,
+	) (*txs.AddValidatorTx, error)
+
+	// NewAddSupernetValidatorTx creates a new validator of a supernet.
+	//
+	// - [vdr] specifies all the details of the validation period such as the
+	//   startTime, endTime, sampling weight, nodeID, and supernetID.
+	NewAddSupernetValidatorTx(
+		vdr *validator.SupernetValidator,
+		options ...common.Option,
+	) (*txs.AddSupernetValidatorTx, error)
+
+	// NewRemoveSupernetValidatorTx removes [nodeID] from the validator
+	// set [supernetID].
+	NewRemoveSupernetValidatorTx(
+		nodeID ids.NodeID,
+		supernetID ids.ID,
+		options ...common.Option,
+	) (*txs.RemoveSupernetValidatorTx, error)
+
+	// NewAddDelegatorTx creates a new delegator to a validator on the primary
+	// network.
+	//
+	// - [vdr] specifies all the details of the delegation period such as the
+	//   startTime, endTime, stake weight, and validator's nodeID.
+	// - [rewardsOwner] specifies the owner of all the rewards this delegator
+	//   may accrue at the end of its delegation period.
+	NewAddDelegatorTx(
+		vdr *validator.Validator,
+		rewardsOwner *secp256k1fx.OutputOwners,
+		options ...common.Option,
+	) (*txs.AddDelegatorTx, error)
+
+	// NewCreateChainTx creates a new chain in the named supernet.
+	//
+	// - [supernetID] specifies the supernet to launch the chain in.
+	// - [genesis] specifies the initial state of the new chain.
+	// - [vmID] specifies the vm that the new chain will run.
+	// - [fxIDs] specifies all the feature extensions that the vm should be
+	//   running with.
+	// - [chainName] specifies a human readable name for the chain.
+	NewCreateChainTx(
+		supernetID ids.ID,
+		genesis []byte,
+		vmID ids.ID,
+		fxIDs []ids.ID,
+		chainName string,
+		options ...common.Option,
+	) (*txs.CreateChainTx, error)
+
+	// NewCreateSupernetTx creates a new supernet with the specified owner.
+	//
+	// - [owner] specifies who has the ability to create new chains and add new
+	//   validators to the supernet.
+	NewCreateSupernetTx(
+		owner *secp256k1fx.OutputOwners,
+		options ...common.Option,
+	) (*txs.CreateSupernetTx, error)
+
+	// NewImportTx creates an import transaction that attempts to consume all
+	// the available UTXOs and import the funds to [to].
+	//
+	// - [chainID] specifies the chain to be importing funds from.
+	// - [to] specifies where to send the imported funds to.
+	NewImportTx(
+		chainID ids.ID,
+		to *secp256k1fx.OutputOwners,
+		options ...common.Option,
+	) (*txs.ImportTx, error)
+
+	// NewExportTx creates an export transaction that attempts to send all the
+	// provided [outputs] to the requested [chainID].
+	//
+	// - [chainID] specifies the chain to be exporting the funds to.
+	// - [outputs] specifies the outputs to send to the [chainID].
+	NewExportTx(
+		chainID ids.ID,
+		outputs []*june.TransferableOutput,
+		options ...common.Option,
+	) (*txs.ExportTx, error)
+
+	// NewTransformSupernetTx creates a transform supernet transaction that attempts
+	// to convert the provided [supernetID] from a permissioned supernet to a
+	// permissionless supernet. This transaction will convert
+	// [maxSupply] - [initialSupply] of [assetID] to staking rewards.
+	//
+	// - [supernetID] specifies the supernet to transform.
+	// - [assetID] specifies the asset to use to reward stakers on the supernet.
+	// - [rewardsPoolSupply] specifies the amount of rewards that will initially
+	//   be available in the rewards pool of the supernet.
+	// - [rewardShare] specifies the share of rewards given for validators.
+	// - [minValidatorStake] is the minimum amount of funds required to become a
+	//   validator.
+	// - [maxValidatorStake] is the maximum amount of funds a single validator
+	//   can be allocated, including delegated funds.
+	// - [minStakeDuration] is the minimum number of seconds a staker can stake
+	//   for.
+	// - [maxStakeDuration] is the maximum number of seconds a staker can stake
+	//   for.
+	// - [minValidatorStake] is the minimum amount of funds required to become a
+	//   delegator.
+	// - [maxValidatorWeightFactor] is the factor which calculates the maximum
+	//   amount of delegation a validator can receive. A value of 1 effectively
+	//   disables delegation.
+	// - [uptimeRequirement] is the minimum percentage a validator must be
+	//   online and responsive to receive a reward.
+	NewTransformSupernetTx(
+		supernetID ids.ID,
+		assetID ids.ID,
+		RewardsPoolSupply uint64,
+		rewardShare uint64,
+		minValidatorStake uint64,
+		maxValidatorStake uint64,
+		minStakeDuration time.Duration,
+		maxStakeDuration time.Duration,
+		minDelegationFee uint32,
+		minDelegatorStake uint64,
+		maxValidatorWeightFactor byte,
+		uptimeRequirement uint32,
+		options ...common.Option,
+	) (*txs.TransformSupernetTx, error)
+
+	// NewAddPermissionlessValidatorTx creates a new validator of the specified
+	// supernet.
+	//
+	// - [vdr] specifies all the details of the validation period such as the
+	//   supernetID, startTime, endTime, stake weight, and nodeID.
+	// - [signer] if the supernetID is the primary network, this is the BLS key
+	//   for this validator. Otherwise, this value should be the empty signer.
+	// - [assetID] specifies the asset to stake.
+	// - [validationRewardsOwner] specifies the owner of all the rewards this
+	//   validator earns for its validation period.
+	// - [delegationRewardsOwner] specifies the owner of all the rewards this
+	//   validator earns for delegations during its validation period.
+	// - [shares] specifies the fraction (out of 1,000,000) that this validator
+	//   will take from delegation rewards. If 1,000,000 is provided, 100% of
+	//   the delegation reward will be sent to the validator's [rewardsOwner].
+	NewAddPermissionlessValidatorTx(
+		vdr *validator.SupernetValidator,
+		signer signer.Signer,
+		assetID ids.ID,
+		validationRewardsOwner *secp256k1fx.OutputOwners,
+		delegationRewardsOwner *secp256k1fx.OutputOwners,
+		shares uint32,
+		options ...common.Option,
+	) (*txs.AddPermissionlessValidatorTx, error)
+
+	// NewAddPermissionlessDelegatorTx creates a new delegator of the specified
+	// supernet on the specified nodeID.
+	//
+	// - [vdr] specifies all the details of the delegation period such as the
+	//   supernetID, startTime, endTime, stake weight, and nodeID.
+	// - [assetID] specifies the asset to stake.
+	// - [rewardsOwner] specifies the owner of all the rewards this delegator
+	//   earns during its delegation period.
+	NewAddPermissionlessDelegatorTx(
+		vdr *validator.SupernetValidator,
+		assetID ids.ID,
+		rewardsOwner *secp256k1fx.OutputOwners,
+		options ...common.Option,
+	) (*txs.AddPermissionlessDelegatorTx, error)
+}
+
+// BuilderBackend specifies the required information needed to build unsigned
+// P-chain transactions.
+type BuilderBackend interface {
+	Context
+	UTXOs(ctx stdcontext.Context, sourceChainID ids.ID) ([]*june.UTXO, error)
+	GetTx(ctx stdcontext.Context, txID ids.ID) (*txs.Tx, error)
+}
+
+type builder struct {
+	addrs   set.Set[ids.ShortID]
+	backend BuilderBackend
+}
+
+// NewBuilder returns a new transaction builder.
+//
+//   - [addrs] is the set of addresses that the builder assumes can be used when
+//     signing the transactions in the future.
+//   - [backend] provides the required access to the chain's context and state
+//     to build out the transactions.
+func NewBuilder(addrs set.Set[ids.ShortID], backend BuilderBackend) Builder {
+	return &builder{
+		addrs:   addrs,
+		backend: backend,
+	}
+}
+
+func (b *builder) GetBalance(
+	options ...common.Option,
+) (map[ids.ID]uint64, error) {
+	ops := common.NewOptions(options)
+	return b.getBalance(constants.RelayChainID, ops)
+}
+
+func (b *builder) GetImportableBalance(
+	chainID ids.ID,
+	options ...common.Option,
+) (map[ids.ID]uint64, error) {
+	ops := common.NewOptions(options)
+	return b.getBalance(chainID, ops)
+}
+
+func (b *builder) NewBaseTx(
+	outputs []*june.TransferableOutput,
+	options ...common.Option,
+) (*txs.CreateSupernetTx, error) {
+	toBurn := map[ids.ID]uint64{
+		b.backend.JuneAssetID(): b.backend.CreateSupernetTxFee(),
+	}
+	for _, out := range outputs {
+		assetID := out.AssetID()
+		amountToBurn, err := math.Add64(toBurn[assetID], out.Out.Amount())
+		if err != nil {
+			return nil, err
+		}
+		toBurn[assetID] = amountToBurn
+	}
+	toStake := map[ids.ID]uint64{}
+
+	ops := common.NewOptions(options)
+	inputs, changeOutputs, _, err := b.spend(toBurn, toStake, ops)
+	if err != nil {
+		return nil, err
+	}
+	outputs = append(outputs, changeOutputs...)
+	june.SortTransferableOutputs(outputs, txs.Codec) // sort the outputs
+
+	return &txs.CreateSupernetTx{
+		BaseTx: txs.BaseTx{BaseTx: june.BaseTx{
+			NetworkID:    b.backend.NetworkID(),
+			BlockchainID: constants.RelayChainID,
+			Ins:          inputs,
+			Outs:         outputs,
+			Memo:         ops.Memo(),
+		}},
+		Owner: &secp256k1fx.OutputOwners{},
+	}, nil
+}
+
+func (b *builder) NewAddValidatorTx(
+	vdr *validator.Validator,
+	rewardsOwner *secp256k1fx.OutputOwners,
+	shares uint32,
+	options ...common.Option,
+) (*txs.AddValidatorTx, error) {
+	juneAssetID := b.backend.JuneAssetID()
+	toBurn := map[ids.ID]uint64{
+		juneAssetID: b.backend.AddPrimaryNetworkValidatorFee(),
+	}
+	toStake := map[ids.ID]uint64{
+		juneAssetID: vdr.Wght,
+	}
+	ops := common.NewOptions(options)
+	inputs, baseOutputs, stakeOutputs, err := b.spend(toBurn, toStake, ops)
+	if err != nil {
+		return nil, err
+	}
+
+	utils.Sort(rewardsOwner.Addrs)
+	return &txs.AddValidatorTx{
+		BaseTx: txs.BaseTx{BaseTx: june.BaseTx{
+			NetworkID:    b.backend.NetworkID(),
+			BlockchainID: constants.RelayChainID,
+			Ins:          inputs,
+			Outs:         baseOutputs,
+			Memo:         ops.Memo(),
+		}},
+		Validator:        *vdr,
+		StakeOuts:        stakeOutputs,
+		RewardsOwner:     rewardsOwner,
+		DelegationShares: shares,
+	}, nil
+}
+
+func (b *builder) NewAddSupernetValidatorTx(
+	vdr *validator.SupernetValidator,
+	options ...common.Option,
+) (*txs.AddSupernetValidatorTx, error) {
+	toBurn := map[ids.ID]uint64{
+		b.backend.JuneAssetID(): b.backend.AddSupernetValidatorFee(),
+	}
+	toStake := map[ids.ID]uint64{}
+	ops := common.NewOptions(options)
+	inputs, outputs, _, err := b.spend(toBurn, toStake, ops)
+	if err != nil {
+		return nil, err
+	}
+
+	supernetAuth, err := b.authorizeSupernet(vdr.Supernet, ops)
+	if err != nil {
+		return nil, err
+	}
+
+	return &txs.AddSupernetValidatorTx{
+		BaseTx: txs.BaseTx{BaseTx: june.BaseTx{
+			NetworkID:    b.backend.NetworkID(),
+			BlockchainID: constants.RelayChainID,
+			Ins:          inputs,
+			Outs:         outputs,
+			Memo:         ops.Memo(),
+		}},
+		Validator:    *vdr,
+		SupernetAuth: supernetAuth,
+	}, nil
+}
+
+func (b *builder) NewRemoveSupernetValidatorTx(
+	nodeID ids.NodeID,
+	supernetID ids.ID,
+	options ...common.Option,
+) (*txs.RemoveSupernetValidatorTx, error) {
+	toBurn := map[ids.ID]uint64{
+		b.backend.JuneAssetID(): b.backend.BaseTxFee(),
+	}
+	toStake := map[ids.ID]uint64{}
+	ops := common.NewOptions(options)
+	inputs, outputs, _, err := b.spend(toBurn, toStake, ops)
+	if err != nil {
+		return nil, err
+	}
+
+	supernetAuth, err := b.authorizeSupernet(supernetID, ops)
+	if err != nil {
+		return nil, err
+	}
+
+	return &txs.RemoveSupernetValidatorTx{
+		BaseTx: txs.BaseTx{BaseTx: june.BaseTx{
+			NetworkID:    b.backend.NetworkID(),
+			BlockchainID: constants.RelayChainID,
+			Ins:          inputs,
+			Outs:         outputs,
+			Memo:         ops.Memo(),
+		}},
+		Supernet:     supernetID,
+		NodeID:       nodeID,
+		SupernetAuth: supernetAuth,
+	}, nil
+}
+
+func (b *builder) NewAddDelegatorTx(
+	vdr *validator.Validator,
+	rewardsOwner *secp256k1fx.OutputOwners,
+	options ...common.Option,
+) (*txs.AddDelegatorTx, error) {
+	juneAssetID := b.backend.JuneAssetID()
+	toBurn := map[ids.ID]uint64{
+		juneAssetID: b.backend.AddPrimaryNetworkDelegatorFee(),
+	}
+	toStake := map[ids.ID]uint64{
+		b.backend.JuneAssetID(): vdr.Wght,
+	}
+	ops := common.NewOptions(options)
+	inputs, baseOutputs, stakeOutputs, err := b.spend(toBurn, toStake, ops)
+	if err != nil {
+		return nil, err
+	}
+
+	utils.Sort(rewardsOwner.Addrs)
+	return &txs.AddDelegatorTx{
+		BaseTx: txs.BaseTx{BaseTx: june.BaseTx{
+			NetworkID:    b.backend.NetworkID(),
+			BlockchainID: constants.RelayChainID,
+			Ins:          inputs,
+			Outs:         baseOutputs,
+			Memo:         ops.Memo(),
+		}},
+		Validator:              *vdr,
+		StakeOuts:              stakeOutputs,
+		DelegationRewardsOwner: rewardsOwner,
+	}, nil
+}
+
+func (b *builder) NewCreateChainTx(
+	supernetID ids.ID,
+	genesis []byte,
+	vmID ids.ID,
+	fxIDs []ids.ID,
+	chainName string,
+	options ...common.Option,
+) (*txs.CreateChainTx, error) {
+	toBurn := map[ids.ID]uint64{
+		b.backend.JuneAssetID(): b.backend.CreateBlockchainTxFee(),
+	}
+	toStake := map[ids.ID]uint64{}
+	ops := common.NewOptions(options)
+	inputs, outputs, _, err := b.spend(toBurn, toStake, ops)
+	if err != nil {
+		return nil, err
+	}
+
+	supernetAuth, err := b.authorizeSupernet(supernetID, ops)
+	if err != nil {
+		return nil, err
+	}
+
+	utils.Sort(fxIDs)
+	return &txs.CreateChainTx{
+		BaseTx: txs.BaseTx{BaseTx: june.BaseTx{
+			NetworkID:    b.backend.NetworkID(),
+			BlockchainID: constants.RelayChainID,
+			Ins:          inputs,
+			Outs:         outputs,
+			Memo:         ops.Memo(),
+		}},
+		SupernetID:   supernetID,
+		ChainName:    chainName,
+		VMID:         vmID,
+		FxIDs:        fxIDs,
+		GenesisData:  genesis,
+		SupernetAuth: supernetAuth,
+	}, nil
+}
+
+func (b *builder) NewCreateSupernetTx(
+	owner *secp256k1fx.OutputOwners,
+	options ...common.Option,
+) (*txs.CreateSupernetTx, error) {
+	toBurn := map[ids.ID]uint64{
+		b.backend.JuneAssetID(): b.backend.CreateSupernetTxFee(),
+	}
+	toStake := map[ids.ID]uint64{}
+	ops := common.NewOptions(options)
+	inputs, outputs, _, err := b.spend(toBurn, toStake, ops)
+	if err != nil {
+		return nil, err
+	}
+
+	utils.Sort(owner.Addrs)
+	return &txs.CreateSupernetTx{
+		BaseTx: txs.BaseTx{BaseTx: june.BaseTx{
+			NetworkID:    b.backend.NetworkID(),
+			BlockchainID: constants.RelayChainID,
+			Ins:          inputs,
+			Outs:         outputs,
+			Memo:         ops.Memo(),
+		}},
+		Owner: owner,
+	}, nil
+}
+
+func (b *builder) NewImportTx(
+	sourceChainID ids.ID,
+	to *secp256k1fx.OutputOwners,
+	options ...common.Option,
+) (*txs.ImportTx, error) {
+	ops := common.NewOptions(options)
+	utxos, err := b.backend.UTXOs(ops.Context(), sourceChainID)
+	if err != nil {
+		return nil, err
+	}
+
+	var (
+		addrs           = ops.Addresses(b.addrs)
+		minIssuanceTime = ops.MinIssuanceTime()
+		juneAssetID     = b.backend.JuneAssetID()
+		txFee           = b.backend.BaseTxFee()
+
+		importedInputs  = make([]*june.TransferableInput, 0, len(utxos))
+		importedAmounts = make(map[ids.ID]uint64)
+	)
+	// Iterate over the unlocked UTXOs
+	for _, utxo := range utxos {
+		out, ok := utxo.Out.(*secp256k1fx.TransferOutput)
+		if !ok {
+			continue
+		}
+
+		inputSigIndices, ok := common.MatchOwners(&out.OutputOwners, addrs, minIssuanceTime)
+		if !ok {
+			// We couldn't spend this UTXO, so we skip to the next one
+			continue
+		}
+
+		importedInputs = append(importedInputs, &june.TransferableInput{
+			UTXOID: utxo.UTXOID,
+			Asset:  utxo.Asset,
+			In: &secp256k1fx.TransferInput{
+				Amt: out.Amt,
+				Input: secp256k1fx.Input{
+					SigIndices: inputSigIndices,
+				},
+			},
+		})
+
+		assetID := utxo.AssetID()
+		newImportedAmount, err := math.Add64(importedAmounts[assetID], out.Amt)
+		if err != nil {
+			return nil, err
+		}
+		importedAmounts[assetID] = newImportedAmount
+	}
+	utils.Sort(importedInputs) // sort imported inputs
+
+	if len(importedInputs) == 0 {
+		return nil, fmt.Errorf(
+			"%w: no UTXOs available to import",
+			errInsufficientFunds,
+		)
+	}
+
+	var (
+		inputs       []*june.TransferableInput
+		outputs      = make([]*june.TransferableOutput, 0, len(importedAmounts))
+		importedJUNE = importedAmounts[juneAssetID]
+	)
+	if importedJUNE > txFee {
+		importedAmounts[juneAssetID] -= txFee
+	} else {
+		if importedJUNE < txFee { // imported amount goes toward paying tx fee
+			toBurn := map[ids.ID]uint64{
+				juneAssetID: txFee - importedJUNE,
+			}
+			toStake := map[ids.ID]uint64{}
+			var err error
+			inputs, outputs, _, err = b.spend(toBurn, toStake, ops)
+			if err != nil {
+				return nil, fmt.Errorf("couldn't generate tx inputs/outputs: %w", err)
+			}
+		}
+		delete(importedAmounts, juneAssetID)
+	}
+
+	for assetID, amount := range importedAmounts {
+		outputs = append(outputs, &june.TransferableOutput{
+			Asset: june.Asset{ID: assetID},
+			Out: &secp256k1fx.TransferOutput{
+				Amt:          amount,
+				OutputOwners: *to,
+			},
+		})
+	}
+
+	june.SortTransferableOutputs(outputs, txs.Codec) // sort imported outputs
+	return &txs.ImportTx{
+		BaseTx: txs.BaseTx{BaseTx: june.BaseTx{
+			NetworkID:    b.backend.NetworkID(),
+			BlockchainID: constants.RelayChainID,
+			Ins:          inputs,
+			Outs:         outputs,
+			Memo:         ops.Memo(),
+		}},
+		SourceChain:    sourceChainID,
+		ImportedInputs: importedInputs,
+	}, nil
+}
+
+func (b *builder) NewExportTx(
+	chainID ids.ID,
+	outputs []*june.TransferableOutput,
+	options ...common.Option,
+) (*txs.ExportTx, error) {
+	toBurn := map[ids.ID]uint64{
+		b.backend.JuneAssetID(): b.backend.BaseTxFee(),
+	}
+	for _, out := range outputs {
+		assetID := out.AssetID()
+		amountToBurn, err := math.Add64(toBurn[assetID], out.Out.Amount())
+		if err != nil {
+			return nil, err
+		}
+		toBurn[assetID] = amountToBurn
+	}
+
+	toStake := map[ids.ID]uint64{}
+	ops := common.NewOptions(options)
+	inputs, changeOutputs, _, err := b.spend(toBurn, toStake, ops)
+	if err != nil {
+		return nil, err
+	}
+
+	june.SortTransferableOutputs(outputs, txs.Codec) // sort exported outputs
+	return &txs.ExportTx{
+		BaseTx: txs.BaseTx{BaseTx: june.BaseTx{
+			NetworkID:    b.backend.NetworkID(),
+			BlockchainID: constants.RelayChainID,
+			Ins:          inputs,
+			Outs:         changeOutputs,
+			Memo:         ops.Memo(),
+		}},
+		DestinationChain: chainID,
+		ExportedOutputs:  outputs,
+	}, nil
+}
+
+func (b *builder) NewTransformSupernetTx(
+	supernetID ids.ID,
+	assetID ids.ID,
+	rewardPoolSupply uint64,
+	rewardShare uint64,
+	minValidatorStake uint64,
+	maxValidatorStake uint64,
+	minStakeDuration time.Duration,
+	maxStakeDuration time.Duration,
+	minDelegationFee uint32,
+	minDelegatorStake uint64,
+	maxValidatorWeightFactor byte,
+	uptimeRequirement uint32,
+	options ...common.Option,
+) (*txs.TransformSupernetTx, error) {
+	toBurn := map[ids.ID]uint64{
+		b.backend.JuneAssetID(): b.backend.TransformSupernetTxFee(),
+		assetID:                 rewardPoolSupply,
+	}
+	toStake := map[ids.ID]uint64{}
+	ops := common.NewOptions(options)
+	inputs, outputs, _, err := b.spend(toBurn, toStake, ops)
+	if err != nil {
+		return nil, err
+	}
+
+	supernetAuth, err := b.authorizeSupernet(supernetID, ops)
+	if err != nil {
+		return nil, err
+	}
+
+	return &txs.TransformSupernetTx{
+		BaseTx: txs.BaseTx{BaseTx: june.BaseTx{
+			NetworkID:    b.backend.NetworkID(),
+			BlockchainID: constants.RelayChainID,
+			Ins:          inputs,
+			Outs:         outputs,
+			Memo:         ops.Memo(),
+		}},
+		Supernet:                 supernetID,
+		AssetID:                  assetID,
+		RewardsPoolSupply:        rewardPoolSupply,
+		RewardShare:              rewardShare,
+		MinValidatorStake:        minValidatorStake,
+		MaxValidatorStake:        maxValidatorStake,
+		MinStakeDuration:         uint32(minStakeDuration / time.Second),
+		MaxStakeDuration:         uint32(maxStakeDuration / time.Second),
+		MinDelegationFee:         minDelegationFee,
+		MinDelegatorStake:        minDelegatorStake,
+		MaxValidatorWeightFactor: maxValidatorWeightFactor,
+		UptimeRequirement:        uptimeRequirement,
+		SupernetAuth:             supernetAuth,
+	}, nil
+}
+
+func (b *builder) NewAddPermissionlessValidatorTx(
+	vdr *validator.SupernetValidator,
+	signer signer.Signer,
+	assetID ids.ID,
+	validationRewardsOwner *secp256k1fx.OutputOwners,
+	delegationRewardsOwner *secp256k1fx.OutputOwners,
+	shares uint32,
+	options ...common.Option,
+) (*txs.AddPermissionlessValidatorTx, error) {
+	juneAssetID := b.backend.JuneAssetID()
+	toBurn := map[ids.ID]uint64{}
+	if vdr.Supernet == constants.PrimaryNetworkID {
+		toBurn[juneAssetID] = b.backend.AddPrimaryNetworkValidatorFee()
+	} else {
+		toBurn[juneAssetID] = b.backend.AddSupernetValidatorFee()
+	}
+	toStake := map[ids.ID]uint64{
+		assetID: vdr.Wght,
+	}
+	ops := common.NewOptions(options)
+	inputs, baseOutputs, stakeOutputs, err := b.spend(toBurn, toStake, ops)
+	if err != nil {
+		return nil, err
+	}
+
+	utils.Sort(validationRewardsOwner.Addrs)
+	utils.Sort(delegationRewardsOwner.Addrs)
+	return &txs.AddPermissionlessValidatorTx{
+		BaseTx: txs.BaseTx{BaseTx: june.BaseTx{
+			NetworkID:    b.backend.NetworkID(),
+			BlockchainID: constants.RelayChainID,
+			Ins:          inputs,
+			Outs:         baseOutputs,
+			Memo:         ops.Memo(),
+		}},
+		Validator:             vdr.Validator,
+		Supernet:              vdr.Supernet,
+		Signer:                signer,
+		StakeOuts:             stakeOutputs,
+		ValidatorRewardsOwner: validationRewardsOwner,
+		DelegatorRewardsOwner: delegationRewardsOwner,
+		DelegationShares:      shares,
+	}, nil
+}
+
+func (b *builder) NewAddPermissionlessDelegatorTx(
+	vdr *validator.SupernetValidator,
+	assetID ids.ID,
+	rewardsOwner *secp256k1fx.OutputOwners,
+	options ...common.Option,
+) (*txs.AddPermissionlessDelegatorTx, error) {
+	juneAssetID := b.backend.JuneAssetID()
+	toBurn := map[ids.ID]uint64{}
+	if vdr.Supernet == constants.PrimaryNetworkID {
+		toBurn[juneAssetID] = b.backend.AddPrimaryNetworkDelegatorFee()
+	} else {
+		toBurn[juneAssetID] = b.backend.AddSupernetDelegatorFee()
+	}
+	toStake := map[ids.ID]uint64{
+		assetID: vdr.Wght,
+	}
+	ops := common.NewOptions(options)
+	inputs, baseOutputs, stakeOutputs, err := b.spend(toBurn, toStake, ops)
+	if err != nil {
+		return nil, err
+	}
+
+	utils.Sort(rewardsOwner.Addrs)
+	return &txs.AddPermissionlessDelegatorTx{
+		BaseTx: txs.BaseTx{BaseTx: june.BaseTx{
+			NetworkID:    b.backend.NetworkID(),
+			BlockchainID: constants.RelayChainID,
+			Ins:          inputs,
+			Outs:         baseOutputs,
+			Memo:         ops.Memo(),
+		}},
+		Validator:              vdr.Validator,
+		Supernet:               vdr.Supernet,
+		StakeOuts:              stakeOutputs,
+		DelegationRewardsOwner: rewardsOwner,
+	}, nil
+}
+
+func (b *builder) getBalance(
+	chainID ids.ID,
+	options *common.Options,
+) (
+	balance map[ids.ID]uint64,
+	err error,
+) {
+	utxos, err := b.backend.UTXOs(options.Context(), chainID)
+	if err != nil {
+		return nil, err
+	}
+
+	addrs := options.Addresses(b.addrs)
+	minIssuanceTime := options.MinIssuanceTime()
+	balance = make(map[ids.ID]uint64)
+
+	// Iterate over the UTXOs
+	for _, utxo := range utxos {
+		outIntf := utxo.Out
+		if lockedOut, ok := outIntf.(*stakeable.LockOut); ok {
+			if !options.AllowStakeableLocked() && lockedOut.Locktime > minIssuanceTime {
+				// This output is currently locked, so this output can't be
+				// burned.
+				continue
+			}
+			outIntf = lockedOut.TransferableOut
+		}
+
+		out, ok := outIntf.(*secp256k1fx.TransferOutput)
+		if !ok {
+			return nil, errUnknownOutputType
+		}
+
+		_, ok = common.MatchOwners(&out.OutputOwners, addrs, minIssuanceTime)
+		if !ok {
+			// We couldn't spend this UTXO, so we skip to the next one
+			continue
+		}
+
+		assetID := utxo.AssetID()
+		balance[assetID], err = math.Add64(balance[assetID], out.Amt)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return balance, nil
+}
+
+// spend takes in the requested burn amounts and the requested stake amounts.
+//
+//   - [amountsToBurn] maps assetID to the amount of the asset to spend without
+//     producing an output. This is typically used for fees. However, it can
+//     also be used to consume some of an asset that will be produced in
+//     separate outputs, such as ExportedOutputs. Only unlocked UTXOs are able
+//     to be burned here.
+//   - [amountsToStake] maps assetID to the amount of the asset to spend and
+//     place into the staked outputs. First locked UTXOs are attempted to be
+//     used for these funds, and then unlocked UTXOs will be attempted to be
+//     used. There is no preferential ordering on the unlock times.
+func (b *builder) spend(
+	amountsToBurn map[ids.ID]uint64,
+	amountsToStake map[ids.ID]uint64,
+	options *common.Options,
+) (
+	inputs []*june.TransferableInput,
+	changeOutputs []*june.TransferableOutput,
+	stakeOutputs []*june.TransferableOutput,
+	err error,
+) {
+	utxos, err := b.backend.UTXOs(options.Context(), constants.RelayChainID)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	addrs := options.Addresses(b.addrs)
+	minIssuanceTime := options.MinIssuanceTime()
+
+	addr, ok := addrs.Peek()
+	if !ok {
+		return nil, nil, nil, errNoChangeAddress
+	}
+	changeOwner := options.ChangeOwner(&secp256k1fx.OutputOwners{
+		Threshold: 1,
+		Addrs:     []ids.ShortID{addr},
+	})
+
+	// Iterate over the locked UTXOs
+	for _, utxo := range utxos {
+		assetID := utxo.AssetID()
+		remainingAmountToStake := amountsToStake[assetID]
+
+		// If we have staked enough of the asset, then we have no need burn
+		// more.
+		if remainingAmountToStake == 0 {
+			continue
+		}
+
+		outIntf := utxo.Out
+		lockedOut, ok := outIntf.(*stakeable.LockOut)
+		if !ok {
+			// This output isn't locked, so it will be handled during the next
+			// iteration of the UTXO set
+			continue
+		}
+		if minIssuanceTime >= lockedOut.Locktime {
+			// This output isn't locked, so it will be handled during the next
+			// iteration of the UTXO set
+			continue
+		}
+
+		out, ok := lockedOut.TransferableOut.(*secp256k1fx.TransferOutput)
+		if !ok {
+			return nil, nil, nil, errUnknownOutputType
+		}
+
+		inputSigIndices, ok := common.MatchOwners(&out.OutputOwners, addrs, minIssuanceTime)
+		if !ok {
+			// We couldn't spend this UTXO, so we skip to the next one
+			continue
+		}
+
+		inputs = append(inputs, &june.TransferableInput{
+			UTXOID: utxo.UTXOID,
+			Asset:  utxo.Asset,
+			In: &stakeable.LockIn{
+				Locktime: lockedOut.Locktime,
+				TransferableIn: &secp256k1fx.TransferInput{
+					Amt: out.Amt,
+					Input: secp256k1fx.Input{
+						SigIndices: inputSigIndices,
+					},
+				},
+			},
+		})
+
+		// Stake any value that should be staked
+		amountToStake := math.Min(
+			remainingAmountToStake, // Amount we still need to stake
+			out.Amt,                // Amount available to stake
+		)
+
+		// Add the output to the staked outputs
+		stakeOutputs = append(stakeOutputs, &june.TransferableOutput{
+			Asset: utxo.Asset,
+			Out: &stakeable.LockOut{
+				Locktime: lockedOut.Locktime,
+				TransferableOut: &secp256k1fx.TransferOutput{
+					Amt:          amountToStake,
+					OutputOwners: out.OutputOwners,
+				},
+			},
+		})
+
+		amountsToStake[assetID] -= amountToStake
+		if remainingAmount := out.Amt - amountToStake; remainingAmount > 0 {
+			// This input had extra value, so some of it must be returned
+			changeOutputs = append(changeOutputs, &june.TransferableOutput{
+				Asset: utxo.Asset,
+				Out: &stakeable.LockOut{
+					Locktime: lockedOut.Locktime,
+					TransferableOut: &secp256k1fx.TransferOutput{
+						Amt:          remainingAmount,
+						OutputOwners: out.OutputOwners,
+					},
+				},
+			})
+		}
+	}
+
+	// Iterate over the unlocked UTXOs
+	for _, utxo := range utxos {
+		assetID := utxo.AssetID()
+		remainingAmountToStake := amountsToStake[assetID]
+		remainingAmountToBurn := amountsToBurn[assetID]
+
+		// If we have consumed enough of the asset, then we have no need burn
+		// more.
+		if remainingAmountToStake == 0 && remainingAmountToBurn == 0 {
+			continue
+		}
+
+		outIntf := utxo.Out
+		if lockedOut, ok := outIntf.(*stakeable.LockOut); ok {
+			if lockedOut.Locktime > minIssuanceTime {
+				// This output is currently locked, so this output can't be
+				// burned.
+				continue
+			}
+			outIntf = lockedOut.TransferableOut
+		}
+
+		out, ok := outIntf.(*secp256k1fx.TransferOutput)
+		if !ok {
+			return nil, nil, nil, errUnknownOutputType
+		}
+
+		inputSigIndices, ok := common.MatchOwners(&out.OutputOwners, addrs, minIssuanceTime)
+		if !ok {
+			// We couldn't spend this UTXO, so we skip to the next one
+			continue
+		}
+
+		inputs = append(inputs, &june.TransferableInput{
+			UTXOID: utxo.UTXOID,
+			Asset:  utxo.Asset,
+			In: &secp256k1fx.TransferInput{
+				Amt: out.Amt,
+				Input: secp256k1fx.Input{
+					SigIndices: inputSigIndices,
+				},
+			},
+		})
+
+		// Burn any value that should be burned
+		amountToBurn := math.Min(
+			remainingAmountToBurn, // Amount we still need to burn
+			out.Amt,               // Amount available to burn
+		)
+		amountsToBurn[assetID] -= amountToBurn
+
+		amountAvalibleToStake := out.Amt - amountToBurn
+		// Burn any value that should be burned
+		amountToStake := math.Min(
+			remainingAmountToStake, // Amount we still need to stake
+			amountAvalibleToStake,  // Amount available to stake
+		)
+		amountsToStake[assetID] -= amountToStake
+		if amountToStake > 0 {
+			// Some of this input was put for staking
+			stakeOutputs = append(stakeOutputs, &june.TransferableOutput{
+				Asset: utxo.Asset,
+				Out: &secp256k1fx.TransferOutput{
+					Amt:          amountToStake,
+					OutputOwners: *changeOwner,
+				},
+			})
+		}
+		if remainingAmount := amountAvalibleToStake - amountToStake; remainingAmount > 0 {
+			// This input had extra value, so some of it must be returned
+			changeOutputs = append(changeOutputs, &june.TransferableOutput{
+				Asset: utxo.Asset,
+				Out: &secp256k1fx.TransferOutput{
+					Amt:          remainingAmount,
+					OutputOwners: *changeOwner,
+				},
+			})
+		}
+	}
+
+	for assetID, amount := range amountsToStake {
+		if amount != 0 {
+			return nil, nil, nil, fmt.Errorf(
+				"%w: provided UTXOs need %d more units of asset %q to stake",
+				errInsufficientFunds,
+				amount,
+				assetID,
+			)
+		}
+	}
+	for assetID, amount := range amountsToBurn {
+		if amount != 0 {
+			return nil, nil, nil, fmt.Errorf(
+				"%w: provided UTXOs need %d more units of asset %q",
+				errInsufficientFunds,
+				amount,
+				assetID,
+			)
+		}
+	}
+
+	utils.Sort(inputs)                                     // sort inputs
+	june.SortTransferableOutputs(changeOutputs, txs.Codec) // sort the change outputs
+	june.SortTransferableOutputs(stakeOutputs, txs.Codec)  // sort stake outputs
+	return inputs, changeOutputs, stakeOutputs, nil
+}
+
+func (b *builder) authorizeSupernet(supernetID ids.ID, options *common.Options) (*secp256k1fx.Input, error) {
+	supernetTx, err := b.backend.GetTx(options.Context(), supernetID)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"failed to fetch supernet %q: %w",
+			supernetID,
+			err,
+		)
+	}
+	supernet, ok := supernetTx.Unsigned.(*txs.CreateSupernetTx)
+	if !ok {
+		return nil, errWrongTxType
+	}
+
+	owner, ok := supernet.Owner.(*secp256k1fx.OutputOwners)
+	if !ok {
+		return nil, errUnknownOwnerType
+	}
+
+	addrs := options.Addresses(b.addrs)
+	minIssuanceTime := options.MinIssuanceTime()
+	inputSigIndices, ok := common.MatchOwners(owner, addrs, minIssuanceTime)
+	if !ok {
+		// We can't authorize the supernet
+		return nil, errInsufficientAuthorization
+	}
+	return &secp256k1fx.Input{
+		SigIndices: inputSigIndices,
+	}, nil
+}

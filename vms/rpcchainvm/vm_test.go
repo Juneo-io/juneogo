@@ -33,13 +33,13 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
 
-	"github.com/ava-labs/avalanchego/snow/engine/common"
-	"github.com/ava-labs/avalanchego/utils/json"
-	"github.com/ava-labs/avalanchego/vms/rpcchainvm/ghttp"
-	"github.com/ava-labs/avalanchego/vms/rpcchainvm/grpcutils"
+	"github.com/Juneo-io/juneogo/snow/engine/common"
+	"github.com/Juneo-io/juneogo/utils/json"
+	"github.com/Juneo-io/juneogo/vms/rpcchainvm/ghttp"
+	"github.com/Juneo-io/juneogo/vms/rpcchainvm/grpcutils"
 
-	httppb "github.com/ava-labs/avalanchego/proto/pb/http"
-	vmpb "github.com/ava-labs/avalanchego/proto/pb/vm"
+	httppb "github.com/Juneo-io/juneogo/proto/pb/http"
+	vmpb "github.com/Juneo-io/juneogo/proto/pb/vm"
 )
 
 var (
@@ -73,7 +73,7 @@ func chainVMTestPlugin(t *testing.T, _ bool) (plugin.Plugin, *gomock.Controller)
 	// test key is "chainVMTest"
 	ctrl := gomock.NewController(t)
 
-	return NewTestVM(&TestSubnetVM{
+	return NewTestVM(&TestSupernetVM{
 		logger: hclog.New(&hclog.LoggerOptions{
 			Level:      hclog.Trace,
 			Output:     os.Stderr,
@@ -83,13 +83,13 @@ func chainVMTestPlugin(t *testing.T, _ bool) (plugin.Plugin, *gomock.Controller)
 }
 
 // Test_VMCreateHandlers tests the Handle and HandleSimple RPCs by creating a plugin and
-// serving the handlers exposed by the subnet. The test then will exercise the service
+// serving the handlers exposed by the supernet. The test then will exercise the service
 // as a regression test.
 func Test_VMCreateHandlers(t *testing.T) {
 	require := require.New(t)
 	pr := &pingRequest{
 		Version: "2.0",
-		Method:  "subnet.ping",
+		Method:  "supernet.ping",
 		Params:  []string{},
 		ID:      "1",
 	}
@@ -135,7 +135,7 @@ func Test_VMCreateHandlers(t *testing.T) {
 			vm, ok := raw.(*TestVMClient)
 			require.True(ok)
 
-			// Get the handlers exposed by the subnet vm.
+			// Get the handlers exposed by the supernet vm.
 			handlers, err := vm.CreateHandlers()
 			require.NoErrorf(err, "failed to get handlers: %v", err)
 
@@ -320,7 +320,7 @@ type testVMPlugin struct {
 	vm TestVM
 }
 
-func NewTestVM(vm *TestSubnetVM) plugin.Plugin {
+func NewTestVM(vm *TestSupernetVM) plugin.Plugin {
 	return &testVMPlugin{vm: vm}
 }
 
@@ -333,11 +333,11 @@ func (*testVMPlugin) GRPCClient(_ context.Context, _ *plugin.GRPCBroker, c *grpc
 	return NewTestClient(vmpb.NewVMClient(c)), nil
 }
 
-type TestSubnetVM struct {
+type TestSupernetVM struct {
 	logger hclog.Logger
 }
 
-func (*TestSubnetVM) CreateHandlers() (map[string]*common.HTTPHandler, error) {
+func (*TestSupernetVM) CreateHandlers() (map[string]*common.HTTPHandler, error) {
 	apis := make(map[string]*common.HTTPHandler)
 
 	testEchoMsgCount := 5
@@ -381,7 +381,7 @@ func getTestRPCServer() (*gorillarpc.Server, error) {
 	server := gorillarpc.NewServer()
 	server.RegisterCodec(json.NewCodec(), "application/json")
 	server.RegisterCodec(json.NewCodec(), "application/json;charset=UTF-8")
-	if err := server.RegisterService(&PingService{}, "subnet"); err != nil {
+	if err := server.RegisterService(&PingService{}, "supernet"); err != nil {
 		return nil, fmt.Errorf("failed to create rpc server %w", err)
 	}
 	return server, nil

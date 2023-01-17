@@ -7,9 +7,9 @@ import (
 	"context"
 	"time"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils/rpc"
-	"github.com/ava-labs/avalanchego/vms/platformvm/signer"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils/rpc"
+	"github.com/Juneo-io/juneogo/vms/relayvm/signer"
 )
 
 var _ Client = (*client)(nil)
@@ -100,10 +100,10 @@ func (c *client) GetTxFee(ctx context.Context, options ...rpc.Option) (*GetTxFee
 	return res, err
 }
 
-func (c *client) Uptime(ctx context.Context, subnetID ids.ID, options ...rpc.Option) (*UptimeResponse, error) {
+func (c *client) Uptime(ctx context.Context, supernetID ids.ID, options ...rpc.Option) (*UptimeResponse, error) {
 	res := &UptimeResponse{}
 	err := c.requester.SendRequest(ctx, "info.uptime", &UptimeRequest{
-		SubnetID: subnetID,
+		SupernetID: supernetID,
 	}, res, options...)
 	return res, err
 }

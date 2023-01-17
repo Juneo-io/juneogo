@@ -6,9 +6,9 @@ package poll
 import (
 	"fmt"
 
-	"github.com/ava-labs/avalanchego/ids"
+	"github.com/Juneo-io/juneogo/ids"
 
-	sets "github.com/ava-labs/avalanchego/utils/set"
+	sets "github.com/Juneo-io/juneogo/utils/set"
 )
 
 var (

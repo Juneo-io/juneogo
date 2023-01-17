@@ -4,16 +4,16 @@
 package common
 
 import (
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/snow/engine/common/tracker"
-	"github.com/ava-labs/avalanchego/snow/validators"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/snow/engine/common/tracker"
+	"github.com/Juneo-io/juneogo/snow/validators"
 )
 
 // DefaultConfigTest returns a test configuration
 func DefaultConfigTest() Config {
 	isBootstrapped := false
-	subnet := &SubnetTest{
+	supernet := &SupernetTest{
 		IsBootstrappedF: func() bool {
 			return isBootstrapped
 		},
@@ -35,7 +35,7 @@ func DefaultConfigTest() Config {
 		StartupTracker:                 startupTracker,
 		Sender:                         &SenderTest{},
 		Bootstrapable:                  &BootstrapableTest{},
-		Subnet:                         subnet,
+		Supernet:                       supernet,
 		Timer:                          &TimerTest{},
 		AncestorsMaxContainersSent:     2000,
 		AncestorsMaxContainersReceived: 2000,

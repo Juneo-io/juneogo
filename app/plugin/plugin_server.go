@@ -8,9 +8,9 @@ import (
 
 	"google.golang.org/protobuf/types/known/emptypb"
 
-	"github.com/ava-labs/avalanchego/app"
+	"github.com/Juneo-io/juneogo/app"
 
-	pluginpb "github.com/ava-labs/avalanchego/proto/pb/plugin"
+	pluginpb "github.com/Juneo-io/juneogo/proto/pb/plugin"
 )
 
 // Server wraps a node so it can be served with the hashicorp plugin harness

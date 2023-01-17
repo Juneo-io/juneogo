@@ -10,7 +10,7 @@ import (
 	"runtime"
 	"runtime/pprof"
 
-	"github.com/ava-labs/avalanchego/utils/perms"
+	"github.com/Juneo-io/juneogo/utils/perms"
 )
 
 const (

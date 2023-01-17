@@ -11,16 +11,16 @@ import (
 
 	"github.com/onsi/gomega"
 
-	"github.com/ava-labs/avalanchego/genesis"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/tests"
-	"github.com/ava-labs/avalanchego/tests/e2e"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/units"
-	"github.com/ava-labs/avalanchego/vms/components/avax"
-	"github.com/ava-labs/avalanchego/vms/components/verify"
-	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
-	"github.com/ava-labs/avalanchego/wallet/subnet/primary"
+	"github.com/Juneo-io/juneogo/genesis"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/tests"
+	"github.com/Juneo-io/juneogo/tests/e2e"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/units"
+	"github.com/Juneo-io/juneogo/vms/components/june"
+	"github.com/Juneo-io/juneogo/vms/components/verify"
+	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
+	"github.com/Juneo-io/juneogo/wallet/supernet/primary"
 )
 
 var _ = ginkgo.Describe("[Banff]", func() {
@@ -57,11 +57,11 @@ var _ = ginkgo.Describe("[Banff]", func() {
 			})
 
 			// Get the P-chain and the X-chain wallets
-			pWallet := wallet.P()
-			xWallet := wallet.X()
+			pWallet := wallet.Relay()
+			xWallet := wallet.Asset()
 
 			// Pull out useful constants to use when issuing transactions.
-			xChainID := xWallet.BlockchainID()
+			assetChainID := xWallet.BlockchainID()
 			owner := &secp256k1fx.OutputOwners{
 				Threshold: 1,
 				Addrs: []ids.ShortID{
@@ -92,10 +92,10 @@ var _ = ginkgo.Describe("[Banff]", func() {
 
 			ginkgo.By("export new X-chain asset to P-chain", func() {
 				txID, err := xWallet.IssueExportTx(
-					constants.PlatformChainID,
-					[]*avax.TransferableOutput{
+					constants.RelayChainID,
+					[]*june.TransferableOutput{
 						{
-							Asset: avax.Asset{
+							Asset: june.Asset{
 								ID: assetID,
 							},
 							Out: &secp256k1fx.TransferOutput{
@@ -111,7 +111,7 @@ var _ = ginkgo.Describe("[Banff]", func() {
 			})
 
 			ginkgo.By("import new asset from X-chain on the P-chain", func() {
-				txID, err := pWallet.IssueImportTx(xChainID, owner)
+				txID, err := pWallet.IssueImportTx(assetChainID, owner)
 				gomega.Expect(err).Should(gomega.BeNil())
 
 				tests.Outf("{{green}}issued P-chain import{{/}}: %s\n", txID)
@@ -119,10 +119,10 @@ var _ = ginkgo.Describe("[Banff]", func() {
 
 			ginkgo.By("export asset from P-chain to the X-chain", func() {
 				txID, err := pWallet.IssueExportTx(
-					xChainID,
-					[]*avax.TransferableOutput{
+					assetChainID,
+					[]*june.TransferableOutput{
 						{
-							Asset: avax.Asset{
+							Asset: june.Asset{
 								ID: assetID,
 							},
 							Out: &secp256k1fx.TransferOutput{
@@ -138,7 +138,7 @@ var _ = ginkgo.Describe("[Banff]", func() {
 			})
 
 			ginkgo.By("import asset from P-chain on the X-chain", func() {
-				txID, err := xWallet.IssueImportTx(constants.PlatformChainID, owner)
+				txID, err := xWallet.IssueImportTx(constants.RelayChainID, owner)
 				gomega.Expect(err).Should(gomega.BeNil())
 
 				tests.Outf("{{green}}issued X-chain import{{/}}: %s\n", txID)

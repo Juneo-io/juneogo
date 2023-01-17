@@ -12,10 +12,10 @@ import (
 	reflect "reflect"
 	time "time"
 
-	ids "github.com/ava-labs/avalanchego/ids"
-	message "github.com/ava-labs/avalanchego/message"
-	snow "github.com/ava-labs/avalanchego/snow"
-	common "github.com/ava-labs/avalanchego/snow/engine/common"
+	ids "github.com/Juneo-io/juneogo/ids"
+	message "github.com/Juneo-io/juneogo/message"
+	snow "github.com/Juneo-io/juneogo/snow"
+	common "github.com/Juneo-io/juneogo/snow/engine/common"
 	gomock "github.com/golang/mock/gomock"
 )
 

@@ -8,7 +8,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/ids"
+	"github.com/Juneo-io/juneogo/ids"
 )
 
 func TestAllocationLess(t *testing.T) {
@@ -45,14 +45,14 @@ func TestAllocationLess(t *testing.T) {
 			name:   "first bytes smaller",
 			alloc1: Allocation{},
 			alloc2: Allocation{
-				AVAXAddr: ids.ShortID{1},
+				JuneAddr: ids.ShortID{1},
 			},
 			expected: true,
 		},
 		{
 			name: "first bytes larger",
 			alloc1: Allocation{
-				AVAXAddr: ids.ShortID{1},
+				JuneAddr: ids.ShortID{1},
 			},
 			alloc2:   Allocation{},
 			expected: false,

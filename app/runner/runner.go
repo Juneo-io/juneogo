@@ -12,12 +12,12 @@ import (
 
 	"golang.org/x/term"
 
-	"github.com/ava-labs/avalanchego/app"
-	"github.com/ava-labs/avalanchego/app/process"
-	"github.com/ava-labs/avalanchego/node"
-	"github.com/ava-labs/avalanchego/vms/rpcchainvm/grpcutils"
+	"github.com/Juneo-io/juneogo/app"
+	"github.com/Juneo-io/juneogo/app/process"
+	"github.com/Juneo-io/juneogo/node"
+	"github.com/Juneo-io/juneogo/vms/rpcchainvm/grpcutils"
 
-	appplugin "github.com/ava-labs/avalanchego/app/plugin"
+	appplugin "github.com/Juneo-io/juneogo/app/plugin"
 )
 
 // Run an AvalancheGo node.

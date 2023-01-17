@@ -8,7 +8,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/utils/crypto"
+	"github.com/Juneo-io/juneogo/utils/crypto"
 )
 
 func TestLoadTestKeys(t *testing.T) {

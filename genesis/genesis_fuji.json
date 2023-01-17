@@ -3,7 +3,7 @@
 	"allocations": [
 		{
 			"ethAddr": "0xb3d82b1367d362de99ab59a658165aff520cbd4d",
-			"avaxAddr": "X-fuji1wycv8n7d2fg9aq6unp23pnj4q0arv03ysya8jw",
+			"juneAddr": "X-fuji1wycv8n7d2fg9aq6unp23pnj4q0arv03ysya8jw",
 			"initialAmount": 0,
 			"unlockSchedule": [
 				{
@@ -13,61 +13,61 @@
 		},
 		{
 			"ethAddr": "0xb3d82b1367d362de99ab59a658165aff520cbd4d",
-			"avaxAddr": "X-fuji1xpmx0ljrpvqexrvrj26fnggvr0ax9wm32gaxmx",
+			"juneAddr": "X-fuji1xpmx0ljrpvqexrvrj26fnggvr0ax9wm32gaxmx",
 			"initialAmount": 32000000000000000,
 			"unlockSchedule": []
 		},
 		{
 			"ethAddr": "0xb3d82b1367d362de99ab59a658165aff520cbd4d",
-			"avaxAddr": "X-fuji1wrv92qg5x3dsqrtukdc8qxnpqust3qdakxgm4s",
+			"juneAddr": "X-fuji1wrv92qg5x3dsqrtukdc8qxnpqust3qdakxgm4s",
 			"initialAmount": 32000000000000000,
 			"unlockSchedule": []
 		},
 		{
 			"ethAddr": "0xb3d82b1367d362de99ab59a658165aff520cbd4d",
-			"avaxAddr": "X-fuji1qrmj7u9pquyy3mahzxeq0nnlnj2aceedjfqqrq",
+			"juneAddr": "X-fuji1qrmj7u9pquyy3mahzxeq0nnlnj2aceedjfqqrq",
 			"initialAmount": 32000000000000000,
 			"unlockSchedule": []
 		},
 		{
 			"ethAddr": "0xb3d82b1367d362de99ab59a658165aff520cbd4d",
-			"avaxAddr": "X-fuji1cap3ru2ghc3jtdnuyey738ru8u5ekdadcvrtyk",
+			"juneAddr": "X-fuji1cap3ru2ghc3jtdnuyey738ru8u5ekdadcvrtyk",
 			"initialAmount": 32000000000000000,
 			"unlockSchedule": []
 		},
 		{
 			"ethAddr": "0xb3d82b1367d362de99ab59a658165aff520cbd4d",
-			"avaxAddr": "X-fuji18g2m7483k6swe46cpfmq96t09sp63pgv7judr4",
+			"juneAddr": "X-fuji18g2m7483k6swe46cpfmq96t09sp63pgv7judr4",
 			"initialAmount": 32000000000000000,
 			"unlockSchedule": []
 		},
 		{
 			"ethAddr": "0xb3d82b1367d362de99ab59a658165aff520cbd4d",
-			"avaxAddr": "X-fuji1zwe0kxhg73x3ehgtkkz24k9czlfgztc45hgrg3",
+			"juneAddr": "X-fuji1zwe0kxhg73x3ehgtkkz24k9czlfgztc45hgrg3",
 			"initialAmount": 32000000000000000,
 			"unlockSchedule": []
 		},
 		{
 			"ethAddr": "0xb3d82b1367d362de99ab59a658165aff520cbd4d",
-			"avaxAddr": "X-fuji1fqcs4m9p8gdp7gckk30n8u68d55jk0hdumx30f",
+			"juneAddr": "X-fuji1fqcs4m9p8gdp7gckk30n8u68d55jk0hdumx30f",
 			"initialAmount": 32000000000000000,
 			"unlockSchedule": []
 		},
 		{
 			"ethAddr": "0xb3d82b1367d362de99ab59a658165aff520cbd4d",
-			"avaxAddr": "X-fuji18lany6fjlzxc7vuqfd9x4k9wqp0yhk074p283d",
+			"juneAddr": "X-fuji18lany6fjlzxc7vuqfd9x4k9wqp0yhk074p283d",
 			"initialAmount": 32000000000000000,
 			"unlockSchedule": []
 		},
 		{
 			"ethAddr": "0xb3d82b1367d362de99ab59a658165aff520cbd4d",
-			"avaxAddr": "X-fuji18lany6fjlzxc7vuqfd9x4k9wqp0yhk074p283d",
+			"juneAddr": "X-fuji18lany6fjlzxc7vuqfd9x4k9wqp0yhk074p283d",
 			"initialAmount": 32000000000000000,
 			"unlockSchedule": []
 		},
 		{
 			"ethAddr": "0xb3d82b1367d362de99ab59a658165aff520cbd4d",
-			"avaxAddr": "X-fuji10d2fqjfl3ghl73z2ez65ufanxwwhccxugq8z2t",
+			"juneAddr": "X-fuji10d2fqjfl3ghl73z2ez65ufanxwwhccxugq8z2t",
 			"initialAmount": 32000000000000000,
 			"unlockSchedule": []
 		}

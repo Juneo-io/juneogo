@@ -24,7 +24,7 @@ type Application struct {
 }
 
 // The only difference here between Application and Semantic is that Application
-// prepends "avalanche/" rather than "v".
+// prepends "belgrade/" rather than "v".
 func (a *Application) String() string {
 	strIntf := a.str.Load()
 	if strIntf != nil {
@@ -32,7 +32,7 @@ func (a *Application) String() string {
 	}
 
 	str := fmt.Sprintf(
-		"avalanche/%d.%d.%d",
+		"belgrade/%d.%d.%d",
 		a.Major,
 		a.Minor,
 		a.Patch,

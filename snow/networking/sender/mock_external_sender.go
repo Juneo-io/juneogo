@@ -10,9 +10,9 @@ package sender
 import (
 	reflect "reflect"
 
-	ids "github.com/ava-labs/avalanchego/ids"
-	message "github.com/ava-labs/avalanchego/message"
-	set "github.com/ava-labs/avalanchego/utils/set"
+	ids "github.com/Juneo-io/juneogo/ids"
+	message "github.com/Juneo-io/juneogo/message"
+	set "github.com/Juneo-io/juneogo/utils/set"
 	gomock "github.com/golang/mock/gomock"
 )
 

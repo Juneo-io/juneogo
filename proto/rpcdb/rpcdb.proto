@@ -4,7 +4,7 @@ package rpcdb;
 
 import "google/protobuf/empty.proto";
 
-option go_package = "github.com/ava-labs/avalanchego/proto/pb/rpcdb";
+option go_package = "github.com/Juneo-io/juneogo/proto/pb/rpcdb";
 
 service Database {
   rpc Has(HasRequest) returns (HasResponse);

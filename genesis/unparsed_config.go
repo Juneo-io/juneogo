@@ -7,15 +7,15 @@ import (
 	"encoding/hex"
 	"errors"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils/formatting/address"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils/formatting/address"
 )
 
 var errInvalidETHAddress = errors.New("invalid eth address")
 
 type UnparsedAllocation struct {
 	ETHAddr        string         `json:"ethAddr"`
-	AVAXAddr       string         `json:"avaxAddr"`
+	JuneAddr       string         `json:"juneAddr"`
 	InitialAmount  uint64         `json:"initialAmount"`
 	UnlockSchedule []LockedAmount `json:"unlockSchedule"`
 }
@@ -40,15 +40,15 @@ func (ua UnparsedAllocation) Parse() (Allocation, error) {
 	}
 	a.ETHAddr = ethAddr
 
-	_, _, avaxAddrBytes, err := address.Parse(ua.AVAXAddr)
+	_, _, juneAddrBytes, err := address.Parse(ua.JuneAddr)
 	if err != nil {
 		return a, err
 	}
-	avaxAddr, err := ids.ToShortID(avaxAddrBytes)
+	juneAddr, err := ids.ToShortID(juneAddrBytes)
 	if err != nil {
 		return a, err
 	}
-	a.AVAXAddr = avaxAddr
+	a.JuneAddr = juneAddr
 
 	return a, nil
 }
@@ -65,21 +65,22 @@ func (us UnparsedStaker) Parse() (Staker, error) {
 		DelegationFee: us.DelegationFee,
 	}
 
-	_, _, avaxAddrBytes, err := address.Parse(us.RewardAddress)
+	_, _, juneAddrBytes, err := address.Parse(us.RewardAddress)
 	if err != nil {
 		return s, err
 	}
-	avaxAddr, err := ids.ToShortID(avaxAddrBytes)
+	juneAddr, err := ids.ToShortID(juneAddrBytes)
 	if err != nil {
 		return s, err
 	}
-	s.RewardAddress = avaxAddr
+	s.RewardAddress = juneAddr
 	return s, nil
 }
 
 // UnparsedConfig contains the genesis addresses used to construct a genesis
 type UnparsedConfig struct {
-	NetworkID uint32 `json:"networkID"`
+	NetworkID         uint32 `json:"networkID"`
+	RewardsPoolSupply uint64 `json:"rewardsPoolSupply"`
 
 	Allocations []UnparsedAllocation `json:"allocations"`
 
@@ -89,7 +90,7 @@ type UnparsedConfig struct {
 	InitialStakedFunds         []string         `json:"initialStakedFunds"`
 	InitialStakers             []UnparsedStaker `json:"initialStakers"`
 
-	CChainGenesis string `json:"cChainGenesis"`
+	JuneChainGenesis string `json:"juneChainGenesis"`
 
 	Message string `json:"message"`
 }
@@ -97,13 +98,14 @@ type UnparsedConfig struct {
 func (uc UnparsedConfig) Parse() (Config, error) {
 	c := Config{
 		NetworkID:                  uc.NetworkID,
+		RewardsPoolSupply:          uc.RewardsPoolSupply,
 		Allocations:                make([]Allocation, len(uc.Allocations)),
 		StartTime:                  uc.StartTime,
 		InitialStakeDuration:       uc.InitialStakeDuration,
 		InitialStakeDurationOffset: uc.InitialStakeDurationOffset,
 		InitialStakedFunds:         make([]ids.ShortID, len(uc.InitialStakedFunds)),
 		InitialStakers:             make([]Staker, len(uc.InitialStakers)),
-		CChainGenesis:              uc.CChainGenesis,
+		JuneChainGenesis:           uc.JuneChainGenesis,
 		Message:                    uc.Message,
 	}
 	for i, ua := range uc.Allocations {
@@ -114,15 +116,15 @@ func (uc UnparsedConfig) Parse() (Config, error) {
 		c.Allocations[i] = a
 	}
 	for i, isa := range uc.InitialStakedFunds {
-		_, _, avaxAddrBytes, err := address.Parse(isa)
+		_, _, juneAddrBytes, err := address.Parse(isa)
 		if err != nil {
 			return c, err
 		}
-		avaxAddr, err := ids.ToShortID(avaxAddrBytes)
+		juneAddr, err := ids.ToShortID(juneAddrBytes)
 		if err != nil {
 			return c, err
 		}
-		c.InitialStakedFunds[i] = avaxAddr
+		c.InitialStakedFunds[i] = juneAddr
 	}
 	for i, uis := range uc.InitialStakers {
 		is, err := uis.Parse()

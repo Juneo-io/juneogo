@@ -8,7 +8,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 
-	"github.com/ava-labs/avalanchego/cache"
+	"github.com/Juneo-io/juneogo/cache"
 )
 
 func TestInterface(t *testing.T) {

@@ -9,8 +9,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/Juneo-io/juneogo/ids"
 	"github.com/ava-labs/avalanche-ledger-go/mocks"
-	"github.com/ava-labs/avalanchego/ids"
 )
 
 var errTest = errors.New("test")

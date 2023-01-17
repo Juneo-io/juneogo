@@ -11,12 +11,12 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/formatting/address"
-	"github.com/ava-labs/avalanchego/utils/math"
-	"github.com/ava-labs/avalanchego/utils/wrappers"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/formatting/address"
+	"github.com/Juneo-io/juneogo/utils/math"
+	"github.com/Juneo-io/juneogo/utils/wrappers"
 )
 
 var _ utils.Sortable[Allocation] = Allocation{}
@@ -28,7 +28,7 @@ type LockedAmount struct {
 
 type Allocation struct {
 	ETHAddr        ids.ShortID    `json:"ethAddr"`
-	AVAXAddr       ids.ShortID    `json:"avaxAddr"`
+	JuneAddr       ids.ShortID    `json:"juneAddr"`
 	InitialAmount  uint64         `json:"initialAmount"`
 	UnlockSchedule []LockedAmount `json:"unlockSchedule"`
 }
@@ -39,18 +39,18 @@ func (a Allocation) Unparse(networkID uint32) (UnparsedAllocation, error) {
 		UnlockSchedule: a.UnlockSchedule,
 		ETHAddr:        "0x" + hex.EncodeToString(a.ETHAddr.Bytes()),
 	}
-	avaxAddr, err := address.Format(
+	juneAddr, err := address.Format(
 		"X",
 		constants.GetHRP(networkID),
-		a.AVAXAddr.Bytes(),
+		a.JuneAddr.Bytes(),
 	)
-	ua.AVAXAddr = avaxAddr
+	ua.JuneAddr = juneAddr
 	return ua, err
 }
 
 func (a Allocation) Less(other Allocation) bool {
 	return a.InitialAmount < other.InitialAmount ||
-		(a.InitialAmount == other.InitialAmount && a.AVAXAddr.Less(other.AVAXAddr))
+		(a.InitialAmount == other.InitialAmount && a.JuneAddr.Less(other.JuneAddr))
 }
 
 type Staker struct {
@@ -60,21 +60,22 @@ type Staker struct {
 }
 
 func (s Staker) Unparse(networkID uint32) (UnparsedStaker, error) {
-	avaxAddr, err := address.Format(
+	juneAddr, err := address.Format(
 		"X",
 		constants.GetHRP(networkID),
 		s.RewardAddress.Bytes(),
 	)
 	return UnparsedStaker{
 		NodeID:        s.NodeID,
-		RewardAddress: avaxAddr,
+		RewardAddress: juneAddr,
 		DelegationFee: s.DelegationFee,
 	}, err
 }
 
 // Config contains the genesis addresses used to construct a genesis
 type Config struct {
-	NetworkID uint32 `json:"networkID"`
+	NetworkID         uint32 `json:"networkID"`
+	RewardsPoolSupply uint64 `json:"rewardsPoolSupply"`
 
 	Allocations []Allocation `json:"allocations"`
 
@@ -84,7 +85,7 @@ type Config struct {
 	InitialStakedFunds         []ids.ShortID `json:"initialStakedFunds"`
 	InitialStakers             []Staker      `json:"initialStakers"`
 
-	CChainGenesis string `json:"cChainGenesis"`
+	JuneChainGenesis string `json:"juneChainGenesis"`
 
 	Message string `json:"message"`
 }
@@ -92,13 +93,14 @@ type Config struct {
 func (c Config) Unparse() (UnparsedConfig, error) {
 	uc := UnparsedConfig{
 		NetworkID:                  c.NetworkID,
+		RewardsPoolSupply:          c.RewardsPoolSupply,
 		Allocations:                make([]UnparsedAllocation, len(c.Allocations)),
 		StartTime:                  c.StartTime,
 		InitialStakeDuration:       c.InitialStakeDuration,
 		InitialStakeDurationOffset: c.InitialStakeDurationOffset,
 		InitialStakedFunds:         make([]string, len(c.InitialStakedFunds)),
 		InitialStakers:             make([]UnparsedStaker, len(c.InitialStakers)),
-		CChainGenesis:              c.CChainGenesis,
+		JuneChainGenesis:           c.JuneChainGenesis,
 		Message:                    c.Message,
 	}
 	for i, a := range c.Allocations {
@@ -109,7 +111,7 @@ func (c Config) Unparse() (UnparsedConfig, error) {
 		uc.Allocations[i] = ua
 	}
 	for i, isa := range c.InitialStakedFunds {
-		avaxAddr, err := address.Format(
+		juneAddr, err := address.Format(
 			"X",
 			constants.GetHRP(uc.NetworkID),
 			isa.Bytes(),
@@ -117,7 +119,7 @@ func (c Config) Unparse() (UnparsedConfig, error) {
 		if err != nil {
 			return uc, err
 		}
-		uc.InitialStakedFunds[i] = avaxAddr
+		uc.InitialStakedFunds[i] = juneAddr
 	}
 	for i, is := range c.InitialStakers {
 		uis, err := is.Unparse(c.NetworkID)
@@ -145,6 +147,11 @@ func (c *Config) InitialSupply() (uint64, error) {
 		}
 		initialSupply = newInitialSupply
 	}
+	newInitialSupply, err := math.Add64(initialSupply, c.RewardsPoolSupply)
+	if err != nil {
+		return 0, err
+	}
+	initialSupply = newInitialSupply
 	return initialSupply, nil
 }
 

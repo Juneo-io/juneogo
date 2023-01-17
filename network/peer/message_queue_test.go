@@ -9,11 +9,11 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/message"
-	"github.com/ava-labs/avalanchego/utils/logging"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/message"
+	"github.com/Juneo-io/juneogo/utils/logging"
 
-	p2ppb "github.com/ava-labs/avalanchego/proto/pb/p2p"
+	p2ppb "github.com/Juneo-io/juneogo/proto/pb/p2p"
 )
 
 func TestMessageQueue(t *testing.T) {
@@ -37,9 +37,9 @@ func TestMessageQueue(t *testing.T) {
 		testID := ids.GenerateTestID()
 		testID2 := ids.GenerateTestID()
 		m, err := mc.Pong(uint32(i),
-			[]*p2ppb.SubnetUptime{
-				{SubnetId: testID[:], Uptime: uint32(i)},
-				{SubnetId: testID2[:], Uptime: uint32(i)},
+			[]*p2ppb.SupernetUptime{
+				{SupernetId: testID[:], Uptime: uint32(i)},
+				{SupernetId: testID2[:], Uptime: uint32(i)},
 			})
 		require.NoError(err)
 		msgs = append(msgs, m)

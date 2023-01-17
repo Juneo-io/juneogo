@@ -1,0 +1,110 @@
+// Copyright (C) 2019-2022, Ava Labs, Inc. All rights reserved.
+// See the file LICENSE for licensing terms.
+
+package relayvm
+
+import (
+	"context"
+	"fmt"
+	"testing"
+
+	"github.com/stretchr/testify/require"
+
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow/validators"
+	"github.com/Juneo-io/juneogo/version"
+)
+
+const defaultMinConnectedStake = 0.8
+
+func TestHealthCheckPrimaryNetwork(t *testing.T) {
+	require := require.New(t)
+
+	vm, _, _ := defaultVM()
+	vm.ctx.Lock.Lock()
+
+	defer func() {
+		require.NoError(vm.Shutdown(context.Background()))
+		vm.ctx.Lock.Unlock()
+	}()
+	genesisState, _ := defaultGenesis()
+	for index, validator := range genesisState.Validators {
+		err := vm.Connected(context.Background(), validator.NodeID, version.CurrentApp)
+		require.NoError(err)
+		details, err := vm.HealthCheck(context.Background())
+		if float64((index+1)*20) >= defaultMinConnectedStake*100 {
+			require.NoError(err)
+		} else {
+			require.Contains(details, "primary-percentConnected")
+			require.ErrorIs(err, errNotEnoughStake)
+		}
+	}
+}
+
+func TestHealthCheckSupernet(t *testing.T) {
+	tests := map[string]struct {
+		minStake   float64
+		useDefault bool
+	}{
+		"default min stake": {
+			useDefault: true,
+			minStake:   0,
+		},
+		"custom min stake": {
+			minStake: 0.40,
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			require := require.New(t)
+
+			vm, _, _ := defaultVM()
+			vm.ctx.Lock.Lock()
+			defer func() {
+				require.NoError(vm.Shutdown(context.Background()))
+				vm.ctx.Lock.Unlock()
+			}()
+
+			supernetID := ids.GenerateTestID()
+			supernetVdrs := validators.NewSet()
+			vm.WhitelistedSupernets.Add(supernetID)
+			testVdrCount := 4
+			for i := 0; i < testVdrCount; i++ {
+				supernetVal := ids.GenerateTestNodeID()
+				err := supernetVdrs.Add(supernetVal, nil, ids.Empty, 100)
+				require.NoError(err)
+			}
+			ok := vm.Validators.Add(supernetID, supernetVdrs)
+			require.True(ok)
+
+			// connect to all primary network validators first
+			genesisState, _ := defaultGenesis()
+			for _, validator := range genesisState.Validators {
+				err := vm.Connected(context.Background(), validator.NodeID, version.CurrentApp)
+				require.NoError(err)
+			}
+			var expectedMinStake float64
+			if test.useDefault {
+				expectedMinStake = defaultMinConnectedStake
+			} else {
+				expectedMinStake = test.minStake
+				vm.MinPercentConnectedStakeHealthy = map[ids.ID]float64{
+					supernetID: expectedMinStake,
+				}
+			}
+			for index, vdr := range supernetVdrs.List() {
+				err := vm.ConnectedSupernet(context.Background(), vdr.NodeID, supernetID)
+				require.NoError(err)
+				details, err := vm.HealthCheck(context.Background())
+				connectedPerc := float64((index + 1) * (100 / testVdrCount))
+				if connectedPerc >= expectedMinStake*100 {
+					require.NoError(err)
+				} else {
+					require.Contains(details, fmt.Sprintf("%s-percentConnected", supernetID))
+					require.ErrorIs(err, errNotEnoughStake)
+				}
+			}
+		})
+	}
+}

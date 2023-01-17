@@ -9,7 +9,7 @@ import (
 
 	"golang.org/x/sync/errgroup"
 
-	"github.com/ava-labs/avalanchego/utils/filesystem"
+	"github.com/Juneo-io/juneogo/utils/filesystem"
 )
 
 // Config that is used to describe the options of the continuous profiler.

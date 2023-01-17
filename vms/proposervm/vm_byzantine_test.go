@@ -11,24 +11,26 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ava-labs/avalanchego/database"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow/choices"
-	"github.com/ava-labs/avalanchego/snow/consensus/snowman"
-	"github.com/ava-labs/avalanchego/snow/validators"
-	"github.com/ava-labs/avalanchego/vms/proposervm/block"
-	"github.com/ava-labs/avalanchego/vms/proposervm/proposer"
+	"github.com/Juneo-io/juneogo/database"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow/choices"
+	"github.com/Juneo-io/juneogo/snow/consensus/snowman"
+	"github.com/Juneo-io/juneogo/snow/validators"
+	"github.com/Juneo-io/juneogo/vms/proposervm/block"
+	"github.com/Juneo-io/juneogo/vms/proposervm/proposer"
 )
 
 // Ensure that a byzantine node issuing an invalid PreForkBlock (Y) when the
 // parent block (X) is issued into a PostForkBlock (A) will be marked as invalid
 // correctly.
 //
-//     G
-//   / |
+//	  G
+//	/ |
+//
 // A - X
-//     |
-//     Y
+//
+//	|
+//	Y
 func TestInvalidByzantineProposerParent(t *testing.T) {
 	forkTime := time.Unix(0, 0) // enable ProBlks
 	coreVM, _, proVM, gBlock, _ := initTestProposerVM(t, forkTime, 0)
@@ -97,11 +99,13 @@ func TestInvalidByzantineProposerParent(t *testing.T) {
 // the parent block (X) is issued into a PostForkBlock (A) will be marked as
 // invalid correctly.
 //
-//     G
-//   / |
+//	  G
+//	/ |
+//
 // A - X
-//    / \
-//   Y   Z
+//
+//	 / \
+//	Y   Z
 func TestInvalidByzantineProposerOracleParent(t *testing.T) {
 	coreVM, _, proVM, coreGenBlk, _ := initTestProposerVM(t, time.Time{}, 0)
 	proVM.Set(coreGenBlk.Timestamp())
@@ -218,10 +222,13 @@ func TestInvalidByzantineProposerOracleParent(t *testing.T) {
 // parent block (X) is issued into a PostForkBlock (A) will be marked as invalid
 // correctly.
 //
-//     G
-//   / |
+//	  G
+//	/ |
+//
 // A - X
-//   / |
+//
+//	/ |
+//
 // B - Y
 func TestInvalidByzantineProposerPreForkParent(t *testing.T) {
 	forkTime := time.Unix(0, 0) // enable ProBlks
@@ -324,8 +331,9 @@ func TestInvalidByzantineProposerPreForkParent(t *testing.T) {
 // contains core block (Y) whose parent (G) doesn't match (B)'s parent (A)'s
 // inner block (X) will be marked as invalid correctly.
 //
-//     G
-//   / | \
+//	  G
+//	/ | \
+//
 // A - X  |
 // |     /
 // B - Y
@@ -422,8 +430,9 @@ func TestBlockVerify_PostForkOption_FaultyParent(t *testing.T) {
 	}
 }
 
-//   ,--G ----.
-//  /    \     \
+//	 ,--G ----.
+//	/    \     \
+//
 // A(X)  B(Y)  C(Z)
 // | \_ /_____/
 // |\  /   |

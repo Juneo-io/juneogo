@@ -11,8 +11,8 @@ import (
 
 	oteltrace "go.opentelemetry.io/otel/trace"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/trace"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/trace"
 )
 
 var _ State = (*tracedState)(nil)
@@ -21,7 +21,7 @@ type tracedState struct {
 	s                   State
 	getMinimumHeightTag string
 	getCurrentHeightTag string
-	getSubnetIDTag      string
+	getSupernetIDTag    string
 	getValidatorSetTag  string
 	tracer              trace.Tracer
 }
@@ -31,7 +31,7 @@ func Trace(s State, name string, tracer trace.Tracer) State {
 		s:                   s,
 		getMinimumHeightTag: fmt.Sprintf("%s.GetMinimumHeight", name),
 		getCurrentHeightTag: fmt.Sprintf("%s.GetCurrentHeight", name),
-		getSubnetIDTag:      fmt.Sprintf("%s.GetSubnetID", name),
+		getSupernetIDTag:    fmt.Sprintf("%s.GetSupernetID", name),
 		getValidatorSetTag:  fmt.Sprintf("%s.GetValidatorSet", name),
 		tracer:              tracer,
 	}
@@ -51,25 +51,25 @@ func (s *tracedState) GetCurrentHeight(ctx context.Context) (uint64, error) {
 	return s.s.GetCurrentHeight(ctx)
 }
 
-func (s *tracedState) GetSubnetID(ctx context.Context, chainID ids.ID) (ids.ID, error) {
+func (s *tracedState) GetSupernetID(ctx context.Context, chainID ids.ID) (ids.ID, error) {
 	ctx, span := s.tracer.Start(ctx, s.getValidatorSetTag, oteltrace.WithAttributes(
 		attribute.Stringer("chainID", chainID),
 	))
 	defer span.End()
 
-	return s.s.GetSubnetID(ctx, chainID)
+	return s.s.GetSupernetID(ctx, chainID)
 }
 
 func (s *tracedState) GetValidatorSet(
 	ctx context.Context,
 	height uint64,
-	subnetID ids.ID,
+	supernetID ids.ID,
 ) (map[ids.NodeID]*GetValidatorOutput, error) {
 	ctx, span := s.tracer.Start(ctx, s.getValidatorSetTag, oteltrace.WithAttributes(
 		attribute.Int64("height", int64(height)),
-		attribute.Stringer("subnetID", subnetID),
+		attribute.Stringer("supernetID", supernetID),
 	))
 	defer span.End()
 
-	return s.s.GetValidatorSet(ctx, height, subnetID)
+	return s.s.GetValidatorSet(ctx, height, supernetID)
 }

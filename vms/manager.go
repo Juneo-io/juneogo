@@ -11,9 +11,9 @@ import (
 
 	"golang.org/x/exp/maps"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/snow/engine/common"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/snow/engine/common"
 )
 
 var (
@@ -30,13 +30,13 @@ type Factory interface {
 // Manager tracks a collection of VM factories, their aliases, and their
 // versions.
 // It has the following functionality:
-//   1) Register a VM factory. To register a VM is to associate its ID with a
-//		VMFactory which, when New() is called upon it, creates a new instance of
-//      that VM.
-//	 2) Get a VM factory. Given the ID of a VM that has been registered, return
-//      the factory that the ID is associated with.
-//   3) Manage the aliases of VMs
-//   3) Manage the versions of VMs
+//  1. Register a VM factory. To register a VM is to associate its ID with a
+//     VMFactory which, when New() is called upon it, creates a new instance of
+//     that VM.
+//  2. Get a VM factory. Given the ID of a VM that has been registered, return
+//     the factory that the ID is associated with.
+//  3. Manage the aliases of VMs
+//  3. Manage the versions of VMs
 type Manager interface {
 	ids.Aliaser
 
