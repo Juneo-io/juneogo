@@ -7,6 +7,6 @@ import "github.com/ava-labs/avalanchego/ids"
 
 var (
 	PlatformVMID = ids.ID{'p', 'l', 'a', 't', 'f', 'o', 'r', 'm', 'v', 'm'}
-	AVMID        = ids.ID{'a', 'v', 'm'}
-	EVMID        = ids.ID{'e', 'v', 'm'}
+	AVMID        = ids.ID{'j', 'v', 'm'}
+	EVMID        = ids.ID{'j', 'e', 'v', 'm'}
 )
