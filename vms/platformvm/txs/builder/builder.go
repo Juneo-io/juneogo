@@ -70,6 +70,7 @@ type DecisionTxBuilder interface {
 	// vmID: ID of VM this chain runs
 	// fxIDs: ids of features extensions this chain supports
 	// chainName: name of the chain
+	// chainAssetID: the main asset used by this chain to pay the fees
 	// keys: keys to sign the tx
 	// changeAddr: address to send change to, if there is any
 	NewCreateChainTx(
@@ -78,6 +79,7 @@ type DecisionTxBuilder interface {
 		vmID ids.ID,
 		fxIDs []ids.ID,
 		chainName string,
+		chainAssetID ids.ID,
 		keys []*secp256k1.PrivateKey,
 		changeAddr ids.ShortID,
 	) (*txs.Tx, error)
@@ -348,6 +350,7 @@ func (b *builder) NewCreateChainTx(
 	vmID ids.ID,
 	fxIDs []ids.ID,
 	chainName string,
+	chainAssetID ids.ID,
 	keys []*secp256k1.PrivateKey,
 	changeAddr ids.ShortID,
 ) (*txs.Tx, error) {
@@ -375,12 +378,13 @@ func (b *builder) NewCreateChainTx(
 			Ins:          ins,
 			Outs:         outs,
 		}},
-		SubnetID:    subnetID,
-		ChainName:   chainName,
-		VMID:        vmID,
-		FxIDs:       fxIDs,
-		GenesisData: genesisData,
-		SubnetAuth:  subnetAuth,
+		SubnetID:     subnetID,
+		ChainName:    chainName,
+		ChainAssetID: chainAssetID,
+		VMID:         vmID,
+		FxIDs:        fxIDs,
+		GenesisData:  genesisData,
+		SubnetAuth:   subnetAuth,
 	}
 	tx, err := txs.NewSigned(utx, txs.Codec, signers)
 	if err != nil {

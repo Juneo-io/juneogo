@@ -146,6 +146,8 @@ type ChainParameters struct {
 	VMID ids.ID
 	// The IDs of the feature extensions this chain is running.
 	FxIDs []ids.ID
+	// The main asset used by this chain to pay the fees.
+	ChainAssetID ids.ID
 	// Should only be set if the default beacons can't be used.
 	CustomBeacons validators.Set
 }
@@ -317,6 +319,9 @@ func (m *manager) QueueChainCreation(chainParams ChainParameters) {
 // Note: it is expected for the subnet to already have the chain registered as
 // bootstrapping before this function is called
 func (m *manager) createChain(chainParams ChainParameters) {
+	if chainParams.ChainAssetID == ids.Empty {
+		chainParams.ChainAssetID = m.AVAXAssetID
+	}
 	m.Log.Info("creating chain",
 		zap.Stringer("subnetID", chainParams.SubnetID),
 		zap.Stringer("chainID", chainParams.ID),
@@ -466,9 +471,10 @@ func (m *manager) buildChain(chainParams ChainParameters, sb subnets.Subnet) (*c
 			NodeID:    m.NodeID,
 			PublicKey: bls.PublicFromSecretKey(m.StakingBLSKey),
 
-			XChainID:    m.XChainID,
-			CChainID:    m.CChainID,
-			AVAXAssetID: m.AVAXAssetID,
+			XChainID:     m.XChainID,
+			CChainID:     m.CChainID,
+			AVAXAssetID:  m.AVAXAssetID,
+			ChainAssetID: chainParams.ChainAssetID,
 
 			Log:          chainLog,
 			Keystore:     m.Keystore.NewBlockchainKeyStore(chainParams.ID),

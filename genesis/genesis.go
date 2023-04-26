@@ -441,13 +441,15 @@ func FromConfig(config *Config) ([]byte, ids.ID, error) {
 				nftfx.ID,
 				propertyfx.ID,
 			},
-			Name: "X-Chain",
+			Name:         "X-Chain",
+			ChainAssetID: avaxAssetID,
 		},
 		{
-			GenesisData: genesisStr,
-			SubnetID:    constants.PrimaryNetworkID,
-			VMID:        constants.EVMID,
-			Name:        "C-Chain",
+			GenesisData:  genesisStr,
+			SubnetID:     constants.PrimaryNetworkID,
+			VMID:         constants.EVMID,
+			Name:         "C-Chain",
+			ChainAssetID: avaxAssetID,
 		},
 	}
 

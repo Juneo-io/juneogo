@@ -125,6 +125,10 @@ func (vm *VMServer) Initialize(ctx context.Context, req *vmpb.InitializeRequest)
 	if err != nil {
 		return nil, err
 	}
+	chainAssetID, err := ids.ToID(req.ChainAssetId)
+	if err != nil {
+		return nil, err
+	}
 
 	registerer := prometheus.NewRegistry()
 
@@ -229,9 +233,10 @@ func (vm *VMServer) Initialize(ctx context.Context, req *vmpb.InitializeRequest)
 		NodeID:    nodeID,
 		PublicKey: publicKey,
 
-		XChainID:    xChainID,
-		CChainID:    cChainID,
-		AVAXAssetID: avaxAssetID,
+		XChainID:     xChainID,
+		CChainID:     cChainID,
+		AVAXAssetID:  avaxAssetID,
+		ChainAssetID: chainAssetID,
 
 		// TODO: Allow the logger to be configured by the client
 		Log: logging.NewLogger(

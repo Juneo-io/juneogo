@@ -186,6 +186,7 @@ type Client interface {
 		vmID string,
 		fxIDs []string,
 		name string,
+		chainAssetID ids.ID,
 		genesisData []byte,
 		options ...rpc.Option,
 	) (ids.ID, error)
@@ -636,6 +637,7 @@ func (c *client) CreateBlockchain(
 	vmID string,
 	fxIDs []string,
 	name string,
+	chainAssetID ids.ID,
 	genesisData []byte,
 	options ...rpc.Option,
 ) (ids.ID, error) {
@@ -651,12 +653,13 @@ func (c *client) CreateBlockchain(
 			JSONFromAddrs:  api.JSONFromAddrs{From: ids.ShortIDsToStrings(from)},
 			JSONChangeAddr: api.JSONChangeAddr{ChangeAddr: changeAddr.String()},
 		},
-		SubnetID:    subnetID,
-		VMID:        vmID,
-		FxIDs:       fxIDs,
-		Name:        name,
-		GenesisData: genesisDataStr,
-		Encoding:    formatting.Hex,
+		SubnetID:     subnetID,
+		VMID:         vmID,
+		FxIDs:        fxIDs,
+		Name:         name,
+		ChainAssetID: chainAssetID,
+		GenesisData:  genesisDataStr,
+		Encoding:     formatting.Hex,
 	}, res, options...)
 	return res.TxID, err
 }

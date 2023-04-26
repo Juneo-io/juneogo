@@ -154,11 +154,12 @@ type PrimaryDelegator struct {
 // [Name] is a human-readable, non-unique name for the chain.
 // [SubnetID] is the ID of the subnet that validates the chain
 type Chain struct {
-	GenesisData string   `json:"genesisData"`
-	VMID        ids.ID   `json:"vmID"`
-	FxIDs       []ids.ID `json:"fxIDs"`
-	Name        string   `json:"name"`
-	SubnetID    ids.ID   `json:"subnetID"`
+	GenesisData  string   `json:"genesisData"`
+	VMID         ids.ID   `json:"vmID"`
+	FxIDs        []ids.ID `json:"fxIDs"`
+	Name         string   `json:"name"`
+	SubnetID     ids.ID   `json:"subnetID"`
+	ChainAssetID ids.ID   `json:"chainAssetID"`
 }
 
 // BuildGenesisArgs are the arguments used to create
@@ -336,12 +337,13 @@ func (*StaticService) BuildGenesis(_ *http.Request, args *BuildGenesisArgs, repl
 				NetworkID:    uint32(args.NetworkID),
 				BlockchainID: ids.Empty,
 			}},
-			SubnetID:    chain.SubnetID,
-			ChainName:   chain.Name,
-			VMID:        chain.VMID,
-			FxIDs:       chain.FxIDs,
-			GenesisData: genesisBytes,
-			SubnetAuth:  &secp256k1fx.Input{},
+			SubnetID:     chain.SubnetID,
+			ChainName:    chain.Name,
+			VMID:         chain.VMID,
+			FxIDs:        chain.FxIDs,
+			GenesisData:  genesisBytes,
+			SubnetAuth:   &secp256k1fx.Input{},
+			ChainAssetID: chain.ChainAssetID,
 		}}
 		if err := tx.Initialize(txs.GenesisCodec); err != nil {
 			return err

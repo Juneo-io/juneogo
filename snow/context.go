@@ -37,9 +37,10 @@ type Context struct {
 	NodeID    ids.NodeID
 	PublicKey *bls.PublicKey
 
-	XChainID    ids.ID
-	CChainID    ids.ID
-	AVAXAssetID ids.ID
+	XChainID     ids.ID
+	CChainID     ids.ID
+	AVAXAssetID  ids.ID
+	ChainAssetID ids.ID
 
 	Log          logging.Logger
 	Lock         sync.RWMutex

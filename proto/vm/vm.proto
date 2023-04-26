@@ -124,15 +124,16 @@ message InitializeRequest {
   bytes x_chain_id = 6;
   bytes c_chain_id = 7;
   bytes avax_asset_id = 8;
-  string chain_data_dir = 9;
-  bytes genesis_bytes = 10;
-  bytes upgrade_bytes = 11;
-  bytes config_bytes = 12;
-  repeated VersionedDBServer db_servers = 13;
+  bytes chain_asset_id = 9;
+  string chain_data_dir = 10;
+  bytes genesis_bytes = 11;
+  bytes upgrade_bytes = 12;
+  bytes config_bytes = 13;
+  repeated VersionedDBServer db_servers = 14;
   // server_addr is the address of the gRPC server which serves
   // the messenger, keystore, shared memory, blockchain alias,
   // subnet alias, and appSender services
-  string server_addr = 14;
+  string server_addr = 15;
 }
 
 message InitializeResponse {

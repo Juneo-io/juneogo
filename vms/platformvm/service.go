@@ -1745,6 +1745,8 @@ type CreateBlockchainArgs struct {
 	FxIDs []string `json:"fxIDs"`
 	// Human-readable name for the new blockchain, not necessarily unique
 	Name string `json:"name"`
+	// The main asset used by this chain to pay the fees
+	ChainAssetID ids.ID `json:"chainAssetID"`
 	// Genesis state of the blockchain being created
 	GenesisData string `json:"genesisData"`
 	// Encoding format to use for genesis data
@@ -1832,6 +1834,7 @@ func (s *Service) CreateBlockchain(_ *http.Request, args *CreateBlockchainArgs, 
 		vmID,
 		fxIDs,
 		args.Name,
+		args.ChainAssetID,
 		keys.Keys,
 		changeAddr, // Change address
 	)
@@ -2047,6 +2050,9 @@ type APIBlockchain struct {
 
 	// Virtual Machine the blockchain runs
 	VMID ids.ID `json:"vmID"`
+
+	// The main asset used by this chain to pay the fees
+	ChainAssetID ids.ID `json:"chainAssetID"`
 }
 
 // GetBlockchainsResponse is the response from a call to GetBlockchains
@@ -2086,10 +2092,11 @@ func (s *Service) GetBlockchains(_ *http.Request, _ *struct{}, response *GetBloc
 				return fmt.Errorf("expected tx type *txs.CreateChainTx but got %T", chainTx.Unsigned)
 			}
 			response.Blockchains = append(response.Blockchains, APIBlockchain{
-				ID:       chainID,
-				Name:     chain.ChainName,
-				SubnetID: subnetID,
-				VMID:     chain.VMID,
+				ID:           chainID,
+				Name:         chain.ChainName,
+				SubnetID:     subnetID,
+				VMID:         chain.VMID,
+				ChainAssetID: chain.ChainAssetID,
 			})
 		}
 	}
@@ -2105,10 +2112,11 @@ func (s *Service) GetBlockchains(_ *http.Request, _ *struct{}, response *GetBloc
 			return fmt.Errorf("expected tx type *txs.CreateChainTx but got %T", chainTx.Unsigned)
 		}
 		response.Blockchains = append(response.Blockchains, APIBlockchain{
-			ID:       chainID,
-			Name:     chain.ChainName,
-			SubnetID: constants.PrimaryNetworkID,
-			VMID:     chain.VMID,
+			ID:           chainID,
+			Name:         chain.ChainName,
+			SubnetID:     constants.PrimaryNetworkID,
+			VMID:         chain.VMID,
+			ChainAssetID: chain.ChainAssetID,
 		})
 	}
 

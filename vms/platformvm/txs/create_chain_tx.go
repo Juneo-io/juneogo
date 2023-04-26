@@ -40,6 +40,8 @@ type CreateChainTx struct {
 	SubnetID ids.ID `serialize:"true" json:"subnetID"`
 	// A human readable name for the chain; need not be unique
 	ChainName string `serialize:"true" json:"chainName"`
+	// The main asset used by this chain to pay the fees
+	ChainAssetID ids.ID `serialize:"true" json:"chainAssetID"`
 	// ID of the VM running on the new chain
 	VMID ids.ID `serialize:"true" json:"vmID"`
 	// IDs of the feature extensions running on the new chain

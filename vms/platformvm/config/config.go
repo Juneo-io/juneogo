@@ -156,11 +156,12 @@ func (c *Config) CreateChain(chainID ids.ID, tx *txs.CreateChainTx) {
 	}
 
 	chainParams := chains.ChainParameters{
-		ID:          chainID,
-		SubnetID:    tx.SubnetID,
-		GenesisData: tx.GenesisData,
-		VMID:        tx.VMID,
-		FxIDs:       tx.FxIDs,
+		ID:           chainID,
+		SubnetID:     tx.SubnetID,
+		GenesisData:  tx.GenesisData,
+		VMID:         tx.VMID,
+		FxIDs:        tx.FxIDs,
+		ChainAssetID: tx.ChainAssetID,
 	}
 
 	c.Chains.QueueChainCreation(chainParams)
