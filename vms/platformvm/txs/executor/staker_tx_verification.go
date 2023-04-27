@@ -23,6 +23,7 @@ var (
 	errWeightTooSmall                  = errors.New("weight of this validator is too low")
 	errWeightTooLarge                  = errors.New("weight of this validator is too large")
 	errInsufficientDelegationFee       = errors.New("staker charges an insufficient delegation fee")
+	errTooLargeDelegationFee           = errors.New("staker charges a too large delegation fee")
 	errStakeTooShort                   = errors.New("staking period is too short")
 	errStakeTooLong                    = errors.New("staking period is too long")
 	errFlowCheckFailed                 = errors.New("flow check failed")
@@ -70,6 +71,11 @@ func verifyAddValidatorTx(
 	case tx.DelegationShares < backend.Config.MinDelegationFee:
 		// Ensure the validator fee is at least the minimum amount
 		return nil, errInsufficientDelegationFee
+
+	// Using config param MinFee which should be renamed to Fee as it is fixed
+	case tx.DelegationShares > backend.Config.MinDelegationFee:
+		// Ensure the validator fee is at most the maximum amount
+		return nil, errTooLargeDelegationFee
 
 	case duration < backend.Config.MinStakeDuration:
 		// Ensure staking length is not too short
