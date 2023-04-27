@@ -48,6 +48,20 @@ func (tx *AddDelegatorTx) InitCtx(ctx *snow.Context) {
 	tx.DelegationRewardsOwner.InitCtx(ctx)
 }
 
+func (tx *AddDelegatorTx) ConsumedValue(assetID ids.ID) uint64 {
+	value := tx.BaseTx.ConsumedValue(assetID)
+	for _, out := range tx.StakeOuts {
+		if out.Asset.AssetID() == assetID {
+			val, err := math.Sub(value, out.Out.Amount())
+			if err != nil {
+				return uint64(0)
+			}
+			value = val
+		}
+	}
+	return value
+}
+
 func (*AddDelegatorTx) SubnetID() ids.ID {
 	return constants.PrimaryNetworkID
 }

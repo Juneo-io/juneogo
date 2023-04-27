@@ -46,6 +46,10 @@ func (*AdvanceTimeTx) InputIDs() set.Set[ids.ID] {
 	return nil
 }
 
+func (*AdvanceTimeTx) ConsumedValue(assetID ids.ID) uint64 {
+	return uint64(0)
+}
+
 func (*AdvanceTimeTx) Outputs() []*avax.TransferableOutput {
 	return nil
 }

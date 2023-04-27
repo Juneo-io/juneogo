@@ -46,6 +46,10 @@ func (*RewardValidatorTx) InputIDs() set.Set[ids.ID] {
 	return nil
 }
 
+func (*RewardValidatorTx) ConsumedValue(assetID ids.ID) uint64 {
+	return uint64(0)
+}
+
 func (*RewardValidatorTx) Outputs() []*avax.TransferableOutput {
 	return nil
 }

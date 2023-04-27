@@ -10,6 +10,7 @@ import (
 	"github.com/ava-labs/avalanchego/ids"
 	"github.com/ava-labs/avalanchego/snow"
 	"github.com/ava-labs/avalanchego/utils"
+	"github.com/ava-labs/avalanchego/utils/math"
 	"github.com/ava-labs/avalanchego/utils/set"
 	"github.com/ava-labs/avalanchego/vms/components/avax"
 	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
@@ -56,6 +57,38 @@ func (tx *ImportTx) InputIDs() set.Set[ids.ID] {
 	atomicInputs := tx.InputUTXOs()
 	inputs.Union(atomicInputs)
 	return inputs
+}
+
+func (tx *ImportTx) ConsumedValue(assetID ids.ID) uint64 {
+	value := uint64(0)
+	for _, in := range tx.Ins {
+		if in.Asset.AssetID() == assetID {
+			val, err := math.Add64(value, in.In.Amount())
+			if err != nil {
+				return uint64(0)
+			}
+			value = val
+		}
+	}
+	for _, in := range tx.ImportedInputs {
+		if in.Asset.AssetID() == assetID {
+			val, err := math.Add64(value, in.In.Amount())
+			if err != nil {
+				return uint64(0)
+			}
+			value = val
+		}
+	}
+	for _, out := range tx.Outs {
+		if out.Asset.AssetID() == assetID {
+			val, err := math.Sub(value, out.Out.Amount())
+			if err != nil {
+				return uint64(0)
+			}
+			value = val
+		}
+	}
+	return value
 }
 
 // SyntacticVerify this transaction is well-formed

@@ -52,6 +52,20 @@ func (tx *AddValidatorTx) InitCtx(ctx *snow.Context) {
 	tx.RewardsOwner.InitCtx(ctx)
 }
 
+func (tx *AddValidatorTx) ConsumedValue(assetID ids.ID) uint64 {
+	value := tx.BaseTx.ConsumedValue(assetID)
+	for _, out := range tx.StakeOuts {
+		if out.Asset.AssetID() == assetID {
+			val, err := math.Sub(value, out.Out.Amount())
+			if err != nil {
+				return uint64(0)
+			}
+			value = val
+		}
+	}
+	return value
+}
+
 func (*AddValidatorTx) SubnetID() ids.ID {
 	return constants.PrimaryNetworkID
 }

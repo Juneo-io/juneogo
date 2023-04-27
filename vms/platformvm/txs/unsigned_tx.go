@@ -22,6 +22,9 @@ type UnsignedTx interface {
 	// InputIDs returns the set of inputs this transaction consumes
 	InputIDs() set.Set[ids.ID]
 
+	// ConsumedValue returns the amount consumed by this transaction to pay the fee.
+	ConsumedValue(assetID ids.ID) uint64
+
 	Outputs() []*avax.TransferableOutput
 
 	// Attempts to verify this transaction without any provided state.
