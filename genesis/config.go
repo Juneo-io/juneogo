@@ -74,7 +74,8 @@ func (s Staker) Unparse(networkID uint32) (UnparsedStaker, error) {
 
 // Config contains the genesis addresses used to construct a genesis
 type Config struct {
-	NetworkID uint32 `json:"networkID"`
+	NetworkID         uint32 `json:"networkID"`
+	RewardsPoolSupply uint64 `json:"rewardsPoolSupply"`
 
 	Allocations []Allocation `json:"allocations"`
 
@@ -92,6 +93,7 @@ type Config struct {
 func (c Config) Unparse() (UnparsedConfig, error) {
 	uc := UnparsedConfig{
 		NetworkID:                  c.NetworkID,
+		RewardsPoolSupply:          c.RewardsPoolSupply,
 		Allocations:                make([]UnparsedAllocation, len(c.Allocations)),
 		StartTime:                  c.StartTime,
 		InitialStakeDuration:       c.InitialStakeDuration,
@@ -145,6 +147,11 @@ func (c *Config) InitialSupply() (uint64, error) {
 		}
 		initialSupply = newInitialSupply
 	}
+	newInitialSupply, err := math.Add64(initialSupply, c.RewardsPoolSupply)
+	if err != nil {
+		return 0, err
+	}
+	initialSupply = newInitialSupply
 	return initialSupply, nil
 }
 

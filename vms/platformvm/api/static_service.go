@@ -170,15 +170,16 @@ type Chain struct {
 // [Chains] are the chains that exist at genesis.
 // [Time] is the Platform Chain's time at network genesis.
 type BuildGenesisArgs struct {
-	AvaxAssetID   ids.ID                    `json:"avaxAssetID"`
-	NetworkID     json.Uint32               `json:"networkID"`
-	UTXOs         []UTXO                    `json:"utxos"`
-	Validators    []PermissionlessValidator `json:"validators"`
-	Chains        []Chain                   `json:"chains"`
-	Time          json.Uint64               `json:"time"`
-	InitialSupply json.Uint64               `json:"initialSupply"`
-	Message       string                    `json:"message"`
-	Encoding      formatting.Encoding       `json:"encoding"`
+	AvaxAssetID       ids.ID                    `json:"avaxAssetID"`
+	NetworkID         json.Uint32               `json:"networkID"`
+	RewardsPoolSupply json.Uint64               `json:"rewardsPoolSupply"`
+	UTXOs             []UTXO                    `json:"utxos"`
+	Validators        []PermissionlessValidator `json:"validators"`
+	Chains            []Chain                   `json:"chains"`
+	Time              json.Uint64               `json:"time"`
+	InitialSupply     json.Uint64               `json:"initialSupply"`
+	Message           string                    `json:"message"`
+	Encoding          formatting.Encoding       `json:"encoding"`
 }
 
 // BuildGenesisReply is the reply from BuildGenesis
@@ -356,12 +357,13 @@ func (*StaticService) BuildGenesis(_ *http.Request, args *BuildGenesisArgs, repl
 
 	// genesis holds the genesis state
 	g := genesis.Genesis{
-		UTXOs:         utxos,
-		Validators:    validatorTxs,
-		Chains:        chains,
-		Timestamp:     uint64(args.Time),
-		InitialSupply: uint64(args.InitialSupply),
-		Message:       args.Message,
+		RewardsPoolSupply: uint64(args.RewardsPoolSupply),
+		UTXOs:             utxos,
+		Validators:        validatorTxs,
+		Chains:            chains,
+		Timestamp:         uint64(args.Time),
+		InitialSupply:     uint64(args.InitialSupply),
+		Message:           args.Message,
 	}
 
 	// Marshal genesis to bytes

@@ -16,12 +16,13 @@ type UTXO struct {
 
 // Genesis represents a genesis state of the platform chain
 type Genesis struct {
-	UTXOs         []*UTXO   `serialize:"true"`
-	Validators    []*txs.Tx `serialize:"true"`
-	Chains        []*txs.Tx `serialize:"true"`
-	Timestamp     uint64    `serialize:"true"`
-	InitialSupply uint64    `serialize:"true"`
-	Message       string    `serialize:"true"`
+	RewardsPoolSupply uint64    `serialize:"true"`
+	UTXOs             []*UTXO   `serialize:"true"`
+	Validators        []*txs.Tx `serialize:"true"`
+	Chains            []*txs.Tx `serialize:"true"`
+	Timestamp         uint64    `serialize:"true"`
+	InitialSupply     uint64    `serialize:"true"`
+	Message           string    `serialize:"true"`
 }
 
 func Parse(genesisBytes []byte) (*Genesis, error) {
@@ -44,11 +45,12 @@ func Parse(genesisBytes []byte) (*Genesis, error) {
 
 // State represents the genesis state of the platform chain
 type State struct {
-	UTXOs         []*avax.UTXO
-	Validators    []*txs.Tx
-	Chains        []*txs.Tx
-	Timestamp     uint64
-	InitialSupply uint64
+	RewardsPoolSupply uint64
+	UTXOs             []*avax.UTXO
+	Validators        []*txs.Tx
+	Chains            []*txs.Tx
+	Timestamp         uint64
+	InitialSupply     uint64
 }
 
 func ParseState(genesisBytes []byte) (*State, error) {
@@ -63,10 +65,11 @@ func ParseState(genesisBytes []byte) (*State, error) {
 	}
 
 	return &State{
-		UTXOs:         utxos,
-		Validators:    genesis.Validators,
-		Chains:        genesis.Chains,
-		Timestamp:     genesis.Timestamp,
-		InitialSupply: genesis.InitialSupply,
+		RewardsPoolSupply: genesis.RewardsPoolSupply,
+		UTXOs:             utxos,
+		Validators:        genesis.Validators,
+		Chains:            genesis.Chains,
+		Timestamp:         genesis.Timestamp,
+		InitialSupply:     genesis.InitialSupply,
 	}, nil
 }
