@@ -72,13 +72,15 @@ var (
 	subnetPrefix                  = []byte("subnet")
 	transformedSubnetPrefix       = []byte("transformedSubnet")
 	supplyPrefix                  = []byte("supply")
+	rewardsSupplyPrefix           = []byte("rewards supply")
 	chainPrefix                   = []byte("chain")
 	singletonPrefix               = []byte("singleton")
 
-	timestampKey     = []byte("timestamp")
-	currentSupplyKey = []byte("current supply")
-	lastAcceptedKey  = []byte("last accepted")
-	initializedKey   = []byte("initialized")
+	timestampKey         = []byte("timestamp")
+	currentSupplyKey     = []byte("current supply")
+	rewardsPoolSupplyKey = []byte("rewards pool supply")
+	lastAcceptedKey      = []byte("last accepted")
+	initializedKey       = []byte("initialized")
 )
 
 // Chain collects all methods to manage the state of the chain for block
@@ -94,6 +96,9 @@ type Chain interface {
 
 	GetCurrentSupply(subnetID ids.ID) (uint64, error)
 	SetCurrentSupply(subnetID ids.ID, cs uint64)
+
+	GetRewardsPoolSupply(subnetID ids.ID) (uint64, error)
+	SetRewardsPoolSupply(subnetID ids.ID, rps uint64)
 
 	GetRewardUTXOs(txID ids.ID) ([]*avax.UTXO, error)
 	AddRewardUTXO(txID ids.ID, utxo *avax.UTXO)
@@ -211,6 +216,7 @@ type stateBlk struct {
  *   |-- initializedKey -> nil
  *   |-- timestampKey -> timestamp
  *   |-- currentSupplyKey -> currentSupply
+ *   |-- rewardsPoolSupplyKey -> rewardsPoolSupply
  *   '-- lastAcceptedKey -> lastAccepted
  */
 type state struct {
@@ -286,14 +292,19 @@ type state struct {
 	supplyCache      cache.Cacher[ids.ID, *uint64] // cache of subnetID -> current supply if the entry is nil, it is not in the database
 	supplyDB         database.Database
 
+	modifiedRewardsSupplies map[ids.ID]uint64             // map of subnetID -> rewards pool supply
+	rewardsSupplyCache      cache.Cacher[ids.ID, *uint64] // cache of subnetID -> rewards pool supply if the entry is nil, it is not in the database
+	rewardsSupplyDB         database.Database
+
 	addedChains  map[ids.ID][]*txs.Tx                    // maps subnetID -> the newly added chains to the subnet
 	chainCache   cache.Cacher[ids.ID, []*txs.Tx]         // cache of subnetID -> the chains after all local modifications []*txs.Tx
 	chainDBCache cache.Cacher[ids.ID, linkeddb.LinkedDB] // cache of subnetID -> linkedDB
 	chainDB      database.Database
 
 	// The persisted fields represent the current database value
-	timestamp, persistedTimestamp         time.Time
-	currentSupply, persistedCurrentSupply uint64
+	timestamp, persistedTimestamp                 time.Time
+	currentSupply, persistedCurrentSupply         uint64
+	rewardsPoolSupply, persistedRewardsPoolSupply uint64
 	// [lastAccepted] is the most recently accepted block.
 	lastAccepted, persistedLastAccepted ids.ID
 	singletonDB                         database.Database
@@ -467,6 +478,15 @@ func new(
 		return nil, err
 	}
 
+	rewardsSupplyCache, err := metercacher.New[ids.ID, *uint64](
+		"rewards_supply_cache",
+		metricsReg,
+		&cache.LRU[ids.ID, *uint64]{Size: chainCacheSize},
+	)
+	if err != nil {
+		return nil, err
+	}
+
 	chainCache, err := metercacher.New[ids.ID, []*txs.Tx](
 		"chain_cache",
 		metricsReg,
@@ -548,6 +568,10 @@ func new(
 		modifiedSupplies: make(map[ids.ID]uint64),
 		supplyCache:      supplyCache,
 		supplyDB:         prefixdb.New(supplyPrefix, baseDB),
+
+		modifiedRewardsSupplies: make(map[ids.ID]uint64),
+		rewardsSupplyCache:      rewardsSupplyCache,
+		rewardsSupplyDB:         prefixdb.New(rewardsSupplyPrefix, baseDB),
 
 		addedChains:  make(map[ids.ID][]*txs.Tx),
 		chainDB:      prefixdb.New(chainPrefix, baseDB),
@@ -904,6 +928,45 @@ func (s *state) SetCurrentSupply(subnetID ids.ID, cs uint64) {
 	}
 }
 
+func (s *state) GetRewardsPoolSupply(subnetID ids.ID) (uint64, error) {
+	if subnetID == constants.PrimaryNetworkID {
+		return s.rewardsPoolSupply, nil
+	}
+
+	rewardsSupply, ok := s.modifiedRewardsSupplies[subnetID]
+	if ok {
+		return rewardsSupply, nil
+	}
+
+	cachedRewardsSupply, ok := s.rewardsSupplyCache.Get(subnetID)
+	if ok {
+		if cachedRewardsSupply == nil {
+			return 0, database.ErrNotFound
+		}
+		return *cachedRewardsSupply, nil
+	}
+
+	rewardsSupply, err := database.GetUInt64(s.rewardsSupplyDB, subnetID[:])
+	if err == database.ErrNotFound {
+		s.rewardsSupplyCache.Put(subnetID, nil)
+		return 0, database.ErrNotFound
+	}
+	if err != nil {
+		return 0, err
+	}
+
+	s.rewardsSupplyCache.Put(subnetID, &rewardsSupply)
+	return rewardsSupply, nil
+}
+
+func (s *state) SetRewardsPoolSupply(subnetID ids.ID, rps uint64) {
+	if subnetID == constants.PrimaryNetworkID {
+		s.rewardsPoolSupply = rps
+	} else {
+		s.modifiedRewardsSupplies[subnetID] = rps
+	}
+}
+
 func (s *state) ValidatorSet(subnetID ids.ID, vdrs validators.Set) error {
 	for nodeID, validator := range s.currentStakers.validators[subnetID] {
 		staker := validator.validator
@@ -1006,6 +1069,8 @@ func (s *state) syncGenesis(genesisBlk blocks.Block, genesis *genesis.State) err
 		s.AddUTXO(utxo)
 	}
 
+	totalRewards := uint64(0)
+
 	// Persist primary network validator set at genesis
 	for _, vdrTx := range genesis.Validators {
 		tx, ok := vdrTx.Unsigned.(*txs.AddValidatorTx)
@@ -1025,10 +1090,11 @@ func (s *state) syncGenesis(genesisBlk blocks.Block, genesis *genesis.State) err
 			stakeAmount,
 			currentSupply,
 		)
-		newCurrentSupply, err := math.Add64(currentSupply, potentialReward)
+		newTotalRewards, err := math.Add64(totalRewards, potentialReward)
 		if err != nil {
 			return err
 		}
+		totalRewards = newTotalRewards
 
 		staker, err := NewCurrentStaker(vdrTx.ID(), tx, potentialReward)
 		if err != nil {
@@ -1037,8 +1103,24 @@ func (s *state) syncGenesis(genesisBlk blocks.Block, genesis *genesis.State) err
 
 		s.PutCurrentValidator(staker)
 		s.AddTx(vdrTx, status.Committed)
-		s.SetCurrentSupply(constants.PrimaryNetworkID, newCurrentSupply)
 	}
+
+	currentSupply, err := s.GetCurrentSupply(constants.PrimaryNetworkID)
+	if err != nil {
+		return err
+	}
+	rewardsPoolSupply := uint64(0)
+	if genesis.RewardsPoolSupply > totalRewards {
+		rewardsPoolSupply = genesis.RewardsPoolSupply - totalRewards
+	} else {
+		newCurrentSupply, err := math.Add64(currentSupply, totalRewards-genesis.RewardsPoolSupply)
+		if err != nil {
+			return err
+		}
+		currentSupply = newCurrentSupply
+	}
+	s.SetCurrentSupply(constants.PrimaryNetworkID, currentSupply)
+	s.SetRewardsPoolSupply(constants.PrimaryNetworkID, rewardsPoolSupply)
 
 	for _, chain := range genesis.Chains {
 		unsignedChain, ok := chain.Unsigned.(*txs.CreateChainTx)
@@ -1088,6 +1170,13 @@ func (s *state) loadMetadata() error {
 	}
 	s.persistedCurrentSupply = currentSupply
 	s.SetCurrentSupply(constants.PrimaryNetworkID, currentSupply)
+
+	rewardsPoolSupply, err := database.GetUInt64(s.singletonDB, rewardsPoolSupplyKey)
+	if err != nil {
+		return err
+	}
+	s.persistedRewardsPoolSupply = rewardsPoolSupply
+	s.SetRewardsPoolSupply(constants.PrimaryNetworkID, rewardsPoolSupply)
 
 	lastAccepted, err := database.GetID(s.singletonDB, lastAcceptedKey)
 	if err != nil {
@@ -1375,9 +1464,17 @@ func (s *state) write(updateValidators bool, height uint64) error {
 		s.writeSubnets(),
 		s.writeTransformedSubnets(),
 		s.writeSubnetSupplies(),
+		s.writeSubnetRewardsSupplies(),
 		s.writeChains(),
-		s.writeMetadata(),
 	)
+	var metadataErr error
+	// force update at genesis height
+	if height == 0 {
+		metadataErr = s.forceWriteMetadata()
+	} else {
+		metadataErr = s.writeMetadata()
+	}
+	errs.Add(metadataErr)
 	return errs.Err
 }
 
@@ -1401,6 +1498,7 @@ func (s *state) Close() error {
 		s.subnetBaseDB.Close(),
 		s.transformedSubnetDB.Close(),
 		s.supplyDB.Close(),
+		s.rewardsSupplyDB.Close(),
 		s.chainDB.Close(),
 		s.singletonDB.Close(),
 		s.blockDB.Close(),
@@ -1908,6 +2006,18 @@ func (s *state) writeSubnetSupplies() error {
 	return nil
 }
 
+func (s *state) writeSubnetRewardsSupplies() error {
+	for subnetID, rewardsSupply := range s.modifiedRewardsSupplies {
+		rewardsSupply := rewardsSupply
+		delete(s.modifiedRewardsSupplies, subnetID)
+		s.supplyCache.Put(subnetID, &rewardsSupply)
+		if err := database.PutUInt64(s.rewardsSupplyDB, subnetID[:], rewardsSupply); err != nil {
+			return fmt.Errorf("failed to write subnet rewards supply: %w", err)
+		}
+	}
+	return nil
+}
+
 func (s *state) writeChains() error {
 	for subnetID, chains := range s.addedChains {
 		for _, chain := range chains {
@@ -1936,11 +2046,37 @@ func (s *state) writeMetadata() error {
 		}
 		s.persistedCurrentSupply = s.currentSupply
 	}
+	if s.persistedRewardsPoolSupply != s.rewardsPoolSupply {
+		if err := database.PutUInt64(s.singletonDB, rewardsPoolSupplyKey, s.rewardsPoolSupply); err != nil {
+			return fmt.Errorf("failed to write rewards pool supply: %w", err)
+		}
+		s.persistedRewardsPoolSupply = s.rewardsPoolSupply
+	}
 	if s.persistedLastAccepted != s.lastAccepted {
 		if err := database.PutID(s.singletonDB, lastAcceptedKey, s.lastAccepted); err != nil {
 			return fmt.Errorf("failed to write last accepted: %w", err)
 		}
 		s.persistedLastAccepted = s.lastAccepted
 	}
+	return nil
+}
+
+func (s *state) forceWriteMetadata() error {
+	if err := database.PutTimestamp(s.singletonDB, timestampKey, s.timestamp); err != nil {
+		return fmt.Errorf("failed to force write timestamp: %w", err)
+	}
+	s.persistedTimestamp = s.timestamp
+	if err := database.PutUInt64(s.singletonDB, currentSupplyKey, s.currentSupply); err != nil {
+		return fmt.Errorf("failed to force write current supply: %w", err)
+	}
+	s.persistedCurrentSupply = s.currentSupply
+	if err := database.PutUInt64(s.singletonDB, rewardsPoolSupplyKey, s.rewardsPoolSupply); err != nil {
+		return fmt.Errorf("failed to force write rewards pool supply: %w", err)
+	}
+	s.persistedRewardsPoolSupply = s.rewardsPoolSupply
+	if err := database.PutID(s.singletonDB, lastAcceptedKey, s.lastAccepted); err != nil {
+		return fmt.Errorf("failed to force write last accepted: %w", err)
+	}
+	s.persistedLastAccepted = s.lastAccepted
 	return nil
 }
