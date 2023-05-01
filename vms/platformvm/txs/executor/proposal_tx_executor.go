@@ -605,16 +605,16 @@ func (e *ProposalTxExecutor) RewardValidatorTx(tx *txs.RewardValidatorTx) error 
 		return errShouldBePermissionlessStaker
 	}
 
-	// If the reward is aborted, then the current supply should be decreased.
-	currentSupply, err := e.OnAbortState.GetCurrentSupply(stakerToRemove.SubnetID)
+	// If the reward is aborted, then the rewards pool supply should be increased.
+	rewardsPoolSupply, err := e.OnAbortState.GetRewardsPoolSupply(stakerToRemove.SubnetID)
 	if err != nil {
 		return err
 	}
-	newSupply, err := math.Sub(currentSupply, stakerToRemove.PotentialReward)
+	newRewardsSupply, err := math.Add64(rewardsPoolSupply, stakerToRemove.PotentialReward)
 	if err != nil {
 		return err
 	}
-	e.OnAbortState.SetCurrentSupply(stakerToRemove.SubnetID, newSupply)
+	e.OnAbortState.SetRewardsPoolSupply(stakerToRemove.SubnetID, newRewardsSupply)
 
 	var expectedUptimePercentage float64
 	if stakerToRemove.SubnetID != constants.PrimaryNetworkID {
