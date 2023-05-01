@@ -10,6 +10,7 @@ import (
 
 	"github.com/ava-labs/avalanchego/ids"
 	"github.com/ava-labs/avalanchego/utils/constants"
+	"github.com/ava-labs/avalanchego/utils/math"
 	"github.com/ava-labs/avalanchego/vms/platformvm/reward"
 	"github.com/ava-labs/avalanchego/vms/platformvm/state"
 	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
@@ -63,17 +64,21 @@ type StateChanges interface {
 }
 
 type stateChanges struct {
-	updatedSupplies           map[ids.ID]uint64
-	currentValidatorsToAdd    []*state.Staker
-	currentDelegatorsToAdd    []*state.Staker
-	pendingValidatorsToRemove []*state.Staker
-	pendingDelegatorsToRemove []*state.Staker
-	currentValidatorsToRemove []*state.Staker
+	updatedSupplies            map[ids.ID]uint64
+	updatedRewardsPoolSupplies map[ids.ID]uint64
+	currentValidatorsToAdd     []*state.Staker
+	currentDelegatorsToAdd     []*state.Staker
+	pendingValidatorsToRemove  []*state.Staker
+	pendingDelegatorsToRemove  []*state.Staker
+	currentValidatorsToRemove  []*state.Staker
 }
 
 func (s *stateChanges) Apply(stateDiff state.Diff) {
 	for subnetID, supply := range s.updatedSupplies {
 		stateDiff.SetCurrentSupply(subnetID, supply)
+	}
+	for subnetID, rewardsPoolSupply := range s.updatedRewardsPoolSupplies {
+		stateDiff.SetRewardsPoolSupply(subnetID, rewardsPoolSupply)
 	}
 
 	for _, currentValidatorToAdd := range s.currentValidatorsToAdd {
@@ -114,7 +119,8 @@ func AdvanceTimeTo(
 	defer pendingStakerIterator.Release()
 
 	changes := &stateChanges{
-		updatedSupplies: make(map[ids.ID]uint64),
+		updatedSupplies:            make(map[ids.ID]uint64),
+		updatedRewardsPoolSupplies: make(map[ids.ID]uint64),
 	}
 
 	// Add to the staker set any pending stakers whose start time is at or
@@ -153,6 +159,14 @@ func AdvanceTimeTo(
 			}
 		}
 
+		rewardsPoolSupply := changes.updatedRewardsPoolSupplies[stakerToRemove.SubnetID]
+		if !ok {
+			rewardsPoolSupply, err = parentState.GetRewardsPoolSupply(stakerToRemove.SubnetID)
+			if err != nil {
+				return nil, err
+			}
+		}
+
 		rewards, err := GetRewardsCalculator(backend, parentState, stakerToRemove.SubnetID)
 		if err != nil {
 			return nil, err
@@ -165,9 +179,20 @@ func AdvanceTimeTo(
 		)
 		stakerToAdd.PotentialReward = potentialReward
 
-		// Invariant: [rewards.Calculate] can never return a [potentialReward]
-		//            such that [supply + potentialReward > maximumSupply].
-		changes.updatedSupplies[stakerToRemove.SubnetID] = supply + potentialReward
+		extraValue := uint64(0)
+		if potentialReward > rewardsPoolSupply {
+			extraValue = potentialReward - rewardsPoolSupply
+		}
+		rewardsPoolSupply, err = math.Sub(rewardsPoolSupply, potentialReward-extraValue)
+		if extraValue > 0 {
+			supply, err = math.Add64(supply, extraValue)
+			if err != nil {
+				return nil, err
+			}
+		}
+		changes.updatedRewardsPoolSupplies[stakerToRemove.SubnetID] = rewardsPoolSupply
+
+		changes.updatedSupplies[stakerToRemove.SubnetID] = supply
 
 		switch stakerToRemove.Priority {
 		case txs.PrimaryNetworkValidatorPendingPriority, txs.SubnetPermissionlessValidatorPendingPriority:
