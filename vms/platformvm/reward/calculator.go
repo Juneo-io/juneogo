@@ -11,7 +11,8 @@ import (
 var _ Calculator = (*calculator)(nil)
 
 type Calculator interface {
-	Calculate(stakedDuration time.Duration, stakedAmount, currentSupply uint64) uint64
+	Calculate(stakedDuration time.Duration, currentTime time.Time, stakedAmount uint64) uint64
+	CalculatePrimary(stakedDuration time.Duration, currentTime time.Time, stakedAmount uint64) uint64
 }
 
 type calculator struct {
@@ -30,40 +31,86 @@ func NewCalculator(c Config) Calculator {
 	}
 }
 
-// Reward returns the amount of tokens to reward the staker with.
-//
-// RemainingSupply = SupplyCap - ExistingSupply
-// PortionOfExistingSupply = StakedAmount / ExistingSupply
-// PortionOfStakingDuration = StakingDuration / MaximumStakingDuration
-// MintingRate = MinMintingRate + MaxSubMinMintingRate * PortionOfStakingDuration
-// Reward = RemainingSupply * PortionOfExistingSupply * MintingRate * PortionOfStakingDuration
-func (c *calculator) Calculate(stakedDuration time.Duration, stakedAmount, currentSupply uint64) uint64 {
-	bigStakedDuration := new(big.Int).SetUint64(uint64(stakedDuration))
+var (
+	y7      = uint64(time.Date(2028, time.September, 1, 0, 0, 0, 0, time.UTC).Unix())
+	y6      = uint64(time.Date(2027, time.September, 1, 0, 0, 0, 0, time.UTC).Unix())
+	y4      = uint64(time.Date(2025, time.September, 1, 0, 0, 0, 0, time.UTC).Unix())
+	y1      = uint64(time.Date(2022, time.September, 1, 0, 0, 0, 0, time.UTC).Unix())
+	y7Value = uint64(50000)  // 5%
+	y6Value = uint64(87500)  // 8.75%
+	y4Value = uint64(167500) // 16.75%
+	y1Value = uint64(227500) // 22.75%
+)
+
+// Reward returns the amount of tokens to reward the staker with in a permissionless supernet.
+func (c *calculator) Calculate(stakedDuration time.Duration, currentTime time.Time, stakedAmount uint64) uint64 {
+	timePercentage := new(big.Int).SetUint64(uint64(stakedDuration))
+	timePercentage.Mul(timePercentage, rewardShareDenominator)
+	timePercentage.Div(timePercentage, c.mintingPeriod)
+	bonusRewards := new(big.Int).SetUint64(uint64(stakedDuration))
+	bonusRewards.Mul(bonusRewards, rewardShareDenominator)
+	bonusRewards.Div(bonusRewards, c.mintingPeriod)
+	bonusRewards.Mul(bonusRewards, maxBonusRewardShare)
+	bonusRewards.Div(bonusRewards, rewardShareDenominator)
+	return GetTimeRewardsValue(rewardShare, rewardShare, bonusRewards, timePercentage, rewardShareDenominator, stakedAmount).Uint64()
+}
+
+// Reward returns the amount of tokens to reward the staker with in the primary supernet.
+func (c *calculator) CalculatePrimary(stakedDuration time.Duration, currentTime time.Time, stakedAmount uint64) uint64 {
+	timePercentage := new(big.Int).SetUint64(uint64(stakedDuration))
+	timePercentage.Mul(timePercentage, rewardShareDenominator)
+	timePercentage.Div(timePercentage, c.mintingPeriod)
+	bonusRewards := new(big.Int).SetUint64(uint64(stakedDuration))
+	bonusRewards.Mul(bonusRewards, rewardShareDenominator)
+	bonusRewards.Div(bonusRewards, c.mintingPeriod)
+	bonusRewards.Mul(bonusRewards, maxBonusRewardShare)
+	bonusRewards.Div(bonusRewards, rewardShareDenominator)
+	return GetTimeRewards(currentTime, stakedAmount, bonusRewards, timePercentage).Uint64()
+}
+
+func GetTimeRewards(currentTime time.Time, stakedAmount uint64, bonusRewards *big.Int, timePercentage *big.Int) *big.Int {
+	currentTimeValue := uint64(currentTime.Unix())
+	if currentTimeValue >= y7 {
+		return GetTimeRewardsValue(y7Value, y7Value, bonusRewards, timePercentage, rewardShareDenominator, stakedAmount)
+	}
+	if currentTimeValue >= y6 {
+		return GetTimeRewardsValue(y7Value, y6Value, bonusRewards, timePercentage, GetTimeBoundsPercentage(y7, y6, currentTimeValue), stakedAmount)
+	}
+	if currentTimeValue >= y4 {
+		return GetTimeRewardsValue(y6Value, y4Value, bonusRewards, timePercentage, GetTimeBoundsPercentage(y6, y4, currentTimeValue), stakedAmount)
+	}
+	if currentTimeValue >= y1 {
+		return GetTimeRewardsValue(y4Value, y1Value, bonusRewards, timePercentage, GetTimeBoundsPercentage(y4, y1, currentTimeValue), stakedAmount)
+	}
+	return GetTimeRewardsValue(y1Value, y1Value, bonusRewards, timePercentage, rewardShareDenominator, stakedAmount)
+}
+
+func GetTimeRewardsValue(lowerValue uint64, upperValue uint64, bonusRewards *big.Int, timePercentage *big.Int, timeBoundsPercentage *big.Int, stakedAmount uint64) *big.Int {
+	bigLowerValue := new(big.Int).SetUint64(lowerValue)
+	bigLowerValue.Add(bigLowerValue, rewardShareDenominator)
+	bigRewardsValue := new(big.Int).SetUint64(upperValue)
+	bigRewardsValue.Add(bigRewardsValue, rewardShareDenominator)
 	bigStakedAmount := new(big.Int).SetUint64(stakedAmount)
-	bigCurrentSupply := new(big.Int).SetUint64(currentSupply)
+	bigRewardsValue.Sub(bigRewardsValue, bigLowerValue)
+	bigRewardsValue.Mul(bigRewardsValue, timeBoundsPercentage)
+	bigRewardsValue.Div(bigRewardsValue, rewardShareDenominator)
+	bigRewardsValue.Add(bigRewardsValue, bigLowerValue)
+	bigRewardsValue.Add(bigRewardsValue, bonusRewards)
+	bigRewardsValue.Mul(bigRewardsValue, bigStakedAmount)
+	bigRewardsValue.Div(bigRewardsValue, rewardShareDenominator)
+	bigRewardsValue.Sub(bigRewardsValue, bigStakedAmount)
+	bigRewardsValue.Mul(bigRewardsValue, timePercentage)
+	bigRewardsValue.Div(bigRewardsValue, rewardShareDenominator)
+	return bigRewardsValue
+}
 
-	adjustedConsumptionRateNumerator := new(big.Int).Mul(c.maxSubMinConsumptionRate, bigStakedDuration)
-	adjustedMinConsumptionRateNumerator := new(big.Int).Mul(c.minConsumptionRate, c.mintingPeriod)
-	adjustedConsumptionRateNumerator.Add(adjustedConsumptionRateNumerator, adjustedMinConsumptionRateNumerator)
-	adjustedConsumptionRateDenominator := new(big.Int).Mul(c.mintingPeriod, consumptionRateDenominator)
-
-	remainingSupply := c.supplyCap - currentSupply
-	reward := new(big.Int).SetUint64(remainingSupply)
-	reward.Mul(reward, adjustedConsumptionRateNumerator)
-	reward.Mul(reward, bigStakedAmount)
-	reward.Mul(reward, bigStakedDuration)
-	reward.Div(reward, adjustedConsumptionRateDenominator)
-	reward.Div(reward, bigCurrentSupply)
-	reward.Div(reward, c.mintingPeriod)
-
-	if !reward.IsUint64() {
-		return remainingSupply
-	}
-
-	finalReward := reward.Uint64()
-	if finalReward > remainingSupply {
-		return remainingSupply
-	}
-
-	return finalReward
+func GetTimeBoundsPercentage(lowerTimeBound uint64, upperTimeBound uint64, currentTimeValue uint64) *big.Int {
+	bigLowerBound := new(big.Int).SetUint64(lowerTimeBound)
+	bigPeriodValue := new(big.Int).SetUint64(currentTimeValue)
+	bigPeriodValueDenominator := new(big.Int).SetUint64(upperTimeBound)
+	bigPeriodValue.Sub(bigPeriodValue, bigLowerBound)
+	bigPeriodValueDenominator.Sub(bigPeriodValueDenominator, bigLowerBound)
+	bigPeriodValue.Mul(bigPeriodValue, rewardShareDenominator)
+	bigPeriodValue.Div(bigPeriodValue, bigPeriodValueDenominator)
+	return bigPeriodValue
 }

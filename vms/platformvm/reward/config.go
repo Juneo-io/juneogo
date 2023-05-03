@@ -11,9 +11,14 @@ import (
 // PercentDenominator is the denominator used to calculate percentages
 const PercentDenominator = 1_000_000
 
-// consumptionRateDenominator is the magnitude offset used to emulate
+// Max bonus rewards given for a full staking period
+const MaxBonusRewardShare = 20_000
+
+// rewardShareDenominator is the magnitude offset used to emulate
 // floating point fractions.
-var consumptionRateDenominator = new(big.Int).SetUint64(PercentDenominator)
+var rewardShareDenominator = new(big.Int).SetUint64(PercentDenominator)
+var rewardShare = uint64(50_000)
+var maxBonusRewardShare = new(big.Int).SetUint64(uint64(MaxBonusRewardShare))
 
 type Config struct {
 	// MaxConsumptionRate is the rate to allocate funds if the validator's stake

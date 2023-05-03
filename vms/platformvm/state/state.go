@@ -1060,7 +1060,8 @@ func (s *state) GetValidatorPublicKeyDiffs(height uint64) (map[ids.NodeID]*bls.P
 func (s *state) syncGenesis(genesisBlk blocks.Block, genesis *genesis.State) error {
 	genesisBlkID := genesisBlk.ID()
 	s.SetLastAccepted(genesisBlkID)
-	s.SetTimestamp(time.Unix(int64(genesis.Timestamp), 0))
+	genesisTimestamp := time.Unix(int64(genesis.Timestamp), 0)
+	s.SetTimestamp(genesisTimestamp)
 	s.SetCurrentSupply(constants.PrimaryNetworkID, genesis.InitialSupply)
 	s.AddStatelessBlock(genesisBlk, choices.Accepted)
 
@@ -1080,15 +1081,11 @@ func (s *state) syncGenesis(genesisBlk blocks.Block, genesis *genesis.State) err
 
 		stakeAmount := tx.Validator.Wght
 		stakeDuration := tx.Validator.Duration()
-		currentSupply, err := s.GetCurrentSupply(constants.PrimaryNetworkID)
-		if err != nil {
-			return err
-		}
 
-		potentialReward := s.rewards.Calculate(
+		potentialReward := s.rewards.CalculatePrimary(
 			stakeDuration,
+			genesisTimestamp,
 			stakeAmount,
-			currentSupply,
 		)
 		newTotalRewards, err := math.Add64(totalRewards, potentialReward)
 		if err != nil {

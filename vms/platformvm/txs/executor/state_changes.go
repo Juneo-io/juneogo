@@ -172,11 +172,20 @@ func AdvanceTimeTo(
 			return nil, err
 		}
 
-		potentialReward := rewards.Calculate(
-			stakerToRemove.EndTime.Sub(stakerToRemove.StartTime),
-			stakerToRemove.Weight,
-			supply,
-		)
+		potentialReward := uint64(0)
+		if stakerToRemove.SubnetID == constants.PrimaryNetworkID {
+			potentialReward = rewards.CalculatePrimary(
+				stakerToRemove.EndTime.Sub(stakerToRemove.StartTime),
+				stakerToRemove.StartTime,
+				stakerToRemove.Weight,
+			)
+		} else {
+			potentialReward = rewards.Calculate(
+				stakerToRemove.EndTime.Sub(stakerToRemove.StartTime),
+				stakerToRemove.StartTime,
+				stakerToRemove.Weight,
+			)
+		}
 		stakerToAdd.PotentialReward = potentialReward
 
 		extraValue := uint64(0)
