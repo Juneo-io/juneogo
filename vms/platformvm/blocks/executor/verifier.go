@@ -9,6 +9,7 @@ import (
 
 	"github.com/ava-labs/avalanchego/chains/atomic"
 	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/utils/math"
 	"github.com/ava-labs/avalanchego/utils/set"
 	"github.com/ava-labs/avalanchego/vms/platformvm/blocks"
 	"github.com/ava-labs/avalanchego/vms/platformvm/state"
@@ -200,6 +201,13 @@ func (v *verifier) ApricotAtomicBlock(b *blocks.ApricotAtomicBlock) error {
 		return fmt.Errorf("tx %s failed semantic verification: %w", txID, err)
 	}
 
+	feesPoolValue := atomicExecutor.OnAccept.GetFeesPoolValue()
+	newFeesPoolValue, err := math.Add64(feesPoolValue, b.Tx.Unsigned.ConsumedValue(v.ctx.AVAXAssetID))
+	if err != nil {
+		return err
+	}
+	atomicExecutor.OnAccept.SetFeesPoolValue(newFeesPoolValue)
+
 	atomicExecutor.OnAccept.AddTx(b.Tx, status.Committed)
 
 	if err := v.verifyUniqueInputs(b, atomicExecutor.Inputs); err != nil {
@@ -368,6 +376,13 @@ func (v *verifier) proposalBlock(
 		return err
 	}
 
+	feesPoolValue := onCommitState.GetFeesPoolValue()
+	newFeesPoolValue, err := math.Add64(feesPoolValue, b.Tx.Unsigned.ConsumedValue(v.ctx.AVAXAssetID))
+	if err != nil {
+		return err
+	}
+	onCommitState.SetFeesPoolValue(newFeesPoolValue)
+
 	onCommitState.AddTx(b.Tx, status.Committed)
 	onAbortState.AddTx(b.Tx, status.Aborted)
 
@@ -402,6 +417,7 @@ func (v *verifier) standardBlock(
 	}
 
 	// Finally we process the transactions
+	feesPoolValue := onAcceptState.GetFeesPoolValue()
 	funcs := make([]func(), 0, len(b.Transactions))
 	for _, tx := range b.Transactions {
 		txExecutor := executor.StandardTxExecutor{
@@ -421,6 +437,12 @@ func (v *verifier) standardBlock(
 		// Add UTXOs to batch
 		blkState.inputs.Union(txExecutor.Inputs)
 
+		newFeesPoolValue, err := math.Add64(feesPoolValue, tx.Unsigned.ConsumedValue(v.ctx.AVAXAssetID))
+		if err != nil {
+			return err
+		}
+		feesPoolValue = newFeesPoolValue
+
 		onAcceptState.AddTx(tx, status.Committed)
 		if txExecutor.OnAccept != nil {
 			funcs = append(funcs, txExecutor.OnAccept)
@@ -438,6 +460,8 @@ func (v *verifier) standardBlock(
 			chainRequests.RemoveRequests = append(chainRequests.RemoveRequests, txRequests.RemoveRequests...)
 		}
 	}
+
+	onAcceptState.SetFeesPoolValue(feesPoolValue)
 
 	if err := v.verifyUniqueInputs(b, blkState.inputs); err != nil {
 		return err
