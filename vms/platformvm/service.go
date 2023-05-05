@@ -1093,6 +1093,41 @@ func (s *Service) GetCurrentSupply(_ *http.Request, args *GetCurrentSupplyArgs, 
 	return err
 }
 
+// GetRewardsPoolSupplyArgs are the arguments for calling GetRewardsPoolSupply
+type GetRewardsPoolSupplyArgs struct {
+	SubnetID ids.ID `json:"subnetID"`
+}
+
+// GetRewardsPoolSupplyReply are the results from calling GetRewardsPoolSupply
+type GetRewardsPoolSupplyReply struct {
+	RewardsPoolSupply json.Uint64 `json:"rewardsPoolSupply"`
+}
+
+// GetRewardsPoolSupply returns an upper bound on the supply of AVAX in the system
+func (s *Service) GetRewardsPoolSupply(_ *http.Request, args *GetRewardsPoolSupplyArgs, reply *GetRewardsPoolSupplyReply) error {
+	s.vm.ctx.Log.Debug("API called",
+		zap.String("service", "platform"),
+		zap.String("method", "getRewardsPoolSupply"),
+	)
+
+	rewardsPoolSupply, err := s.vm.state.GetRewardsPoolSupply(args.SubnetID)
+	reply.RewardsPoolSupply = json.Uint64(rewardsPoolSupply)
+	return err
+}
+
+// GetFeesPoolValueReply are the results from calling GetFeesPoolValue
+type GetFeesPoolValueReply struct {
+	FeesPoolValue json.Uint64 `json:"feesPoolValue"`
+}
+
+// GetFeesPoolValue returns the current value in the fees pool
+func (s *Service) GetFeesPoolValue(_ *http.Request, _ *struct{}, reply *GetFeesPoolValueReply) error {
+	s.vm.ctx.Log.Debug("Platform: GetFeesPoolValue called")
+
+	reply.FeesPoolValue = json.Uint64(s.vm.state.GetFeesPoolValue())
+	return nil
+}
+
 // SampleValidatorsArgs are the arguments for calling SampleValidators
 type SampleValidatorsArgs struct {
 	// Number of validators in the sample

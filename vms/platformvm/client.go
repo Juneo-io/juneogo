@@ -79,6 +79,10 @@ type Client interface {
 	GetPendingValidators(ctx context.Context, subnetID ids.ID, nodeIDs []ids.NodeID, options ...rpc.Option) ([]interface{}, []interface{}, error)
 	// GetCurrentSupply returns an upper bound on the supply of AVAX in the system
 	GetCurrentSupply(ctx context.Context, subnetID ids.ID, options ...rpc.Option) (uint64, error)
+	// GetRewardsPoolSupply returns the current supply in the rewards pool
+	GetRewardsPoolSupply(ctx context.Context, subnetID ids.ID, options ...rpc.Option) (uint64, error)
+	// GetFeesPoolValue returns the current value in the fees pool
+	GetFeesPoolValue(ctx context.Context, options ...rpc.Option) (uint64, error)
 	// SampleValidators returns the nodeIDs of a sample of [sampleSize] validators from the current validator set for subnet with ID [subnetID]
 	SampleValidators(ctx context.Context, subnetID ids.ID, sampleSize uint16, options ...rpc.Option) ([]ids.NodeID, error)
 	// AddValidator issues a transaction to add a validator to the primary network
@@ -449,6 +453,20 @@ func (c *client) GetCurrentSupply(ctx context.Context, subnetID ids.ID, options 
 		SubnetID: subnetID,
 	}, res, options...)
 	return uint64(res.Supply), err
+}
+
+func (c *client) GetRewardsPoolSupply(ctx context.Context, subnetID ids.ID, options ...rpc.Option) (uint64, error) {
+	res := &GetRewardsPoolSupplyReply{}
+	err := c.requester.SendRequest(ctx, "platform.getRewardsPoolSupply", &GetRewardsPoolSupplyArgs{
+		SubnetID: subnetID,
+	}, res, options...)
+	return uint64(res.RewardsPoolSupply), err
+}
+
+func (c *client) GetFeesPoolValue(ctx context.Context, options ...rpc.Option) (uint64, error) {
+	res := &GetFeesPoolValueReply{}
+	err := c.requester.SendRequest(ctx, "platform.getFeesPoolValue", struct{}{}, res, options...)
+	return uint64(res.FeesPoolValue), err
 }
 
 func (c *client) SampleValidators(ctx context.Context, subnetID ids.ID, sampleSize uint16, options ...rpc.Option) ([]ids.NodeID, error) {
