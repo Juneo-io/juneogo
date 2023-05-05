@@ -37,6 +37,7 @@ type diff struct {
 	currentSupply map[ids.ID]uint64
 	// Subnet ID --> rewards pool supply of native asset of the subnet
 	rewardsPoolSupply map[ids.ID]uint64
+	feesPoolValue     uint64
 
 	currentStakerDiffs diffStakers
 	// map of subnetID -> nodeID -> total accrued delegatee rewards
@@ -128,6 +129,14 @@ func (d *diff) SetRewardsPoolSupply(subnetID ids.ID, rewardsPoolSupply uint64) {
 	} else {
 		d.rewardsPoolSupply[subnetID] = rewardsPoolSupply
 	}
+}
+
+func (d *diff) GetFeesPoolValue() uint64 {
+	return d.feesPoolValue
+}
+
+func (d *diff) SetFeesPoolValue(feesPoolValue uint64) {
+	d.feesPoolValue = feesPoolValue
 }
 
 func (d *diff) GetCurrentValidator(subnetID ids.ID, nodeID ids.NodeID) (*Staker, error) {
@@ -491,6 +500,7 @@ func (d *diff) Apply(baseState State) error {
 	for subnetID, rewardsPoolSupply := range d.rewardsPoolSupply {
 		baseState.SetRewardsPoolSupply(subnetID, rewardsPoolSupply)
 	}
+	baseState.SetFeesPoolValue(d.feesPoolValue)
 	for _, subnetValidatorDiffs := range d.currentStakerDiffs.validatorDiffs {
 		for _, validatorDiff := range subnetValidatorDiffs {
 			switch validatorDiff.validatorStatus {

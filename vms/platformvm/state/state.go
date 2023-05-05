@@ -79,6 +79,7 @@ var (
 	timestampKey         = []byte("timestamp")
 	currentSupplyKey     = []byte("current supply")
 	rewardsPoolSupplyKey = []byte("rewards pool supply")
+	feesPoolValueKey     = []byte("fees pool value")
 	lastAcceptedKey      = []byte("last accepted")
 	initializedKey       = []byte("initialized")
 )
@@ -99,6 +100,9 @@ type Chain interface {
 
 	GetRewardsPoolSupply(subnetID ids.ID) (uint64, error)
 	SetRewardsPoolSupply(subnetID ids.ID, rps uint64)
+
+	GetFeesPoolValue() uint64
+	SetFeesPoolValue(fpv uint64)
 
 	GetRewardUTXOs(txID ids.ID) ([]*avax.UTXO, error)
 	AddRewardUTXO(txID ids.ID, utxo *avax.UTXO)
@@ -217,6 +221,7 @@ type stateBlk struct {
  *   |-- timestampKey -> timestamp
  *   |-- currentSupplyKey -> currentSupply
  *   |-- rewardsPoolSupplyKey -> rewardsPoolSupply
+ *   |-- feesPoolValueKey -> feesPoolValue
  *   '-- lastAcceptedKey -> lastAccepted
  */
 type state struct {
@@ -305,6 +310,7 @@ type state struct {
 	timestamp, persistedTimestamp                 time.Time
 	currentSupply, persistedCurrentSupply         uint64
 	rewardsPoolSupply, persistedRewardsPoolSupply uint64
+	feesPoolValue, persistedFeesPoolValue         uint64
 	// [lastAccepted] is the most recently accepted block.
 	lastAccepted, persistedLastAccepted ids.ID
 	singletonDB                         database.Database
@@ -967,6 +973,14 @@ func (s *state) SetRewardsPoolSupply(subnetID ids.ID, rps uint64) {
 	}
 }
 
+func (s *state) GetFeesPoolValue() uint64 {
+	return s.feesPoolValue
+}
+
+func (s *state) SetFeesPoolValue(fpv uint64) {
+	s.feesPoolValue = fpv
+}
+
 func (s *state) ValidatorSet(subnetID ids.ID, vdrs validators.Set) error {
 	for nodeID, validator := range s.currentStakers.validators[subnetID] {
 		staker := validator.validator
@@ -1062,7 +1076,7 @@ func (s *state) syncGenesis(genesisBlk blocks.Block, genesis *genesis.State) err
 	s.SetLastAccepted(genesisBlkID)
 	genesisTimestamp := time.Unix(int64(genesis.Timestamp), 0)
 	s.SetTimestamp(genesisTimestamp)
-	s.SetCurrentSupply(constants.PrimaryNetworkID, genesis.InitialSupply)
+	s.SetFeesPoolValue(uint64(0))
 	s.AddStatelessBlock(genesisBlk, choices.Accepted)
 
 	// Persist UTXOs that exist at genesis
@@ -1102,10 +1116,7 @@ func (s *state) syncGenesis(genesisBlk blocks.Block, genesis *genesis.State) err
 		s.AddTx(vdrTx, status.Committed)
 	}
 
-	currentSupply, err := s.GetCurrentSupply(constants.PrimaryNetworkID)
-	if err != nil {
-		return err
-	}
+	currentSupply := genesis.InitialSupply
 	rewardsPoolSupply := uint64(0)
 	if genesis.RewardsPoolSupply > totalRewards {
 		rewardsPoolSupply = genesis.RewardsPoolSupply - totalRewards
@@ -1174,6 +1185,13 @@ func (s *state) loadMetadata() error {
 	}
 	s.persistedRewardsPoolSupply = rewardsPoolSupply
 	s.SetRewardsPoolSupply(constants.PrimaryNetworkID, rewardsPoolSupply)
+
+	feesPoolValue, err := database.GetUInt64(s.singletonDB, feesPoolValueKey)
+	if err != nil {
+		return err
+	}
+	s.persistedFeesPoolValue = feesPoolValue
+	s.SetFeesPoolValue(feesPoolValue)
 
 	lastAccepted, err := database.GetID(s.singletonDB, lastAcceptedKey)
 	if err != nil {
@@ -2049,6 +2067,12 @@ func (s *state) writeMetadata() error {
 		}
 		s.persistedRewardsPoolSupply = s.rewardsPoolSupply
 	}
+	if s.persistedFeesPoolValue != s.feesPoolValue {
+		if err := database.PutUInt64(s.singletonDB, feesPoolValueKey, s.feesPoolValue); err != nil {
+			return fmt.Errorf("failed to write fees pool value: %w", err)
+		}
+		s.persistedFeesPoolValue = s.feesPoolValue
+	}
 	if s.persistedLastAccepted != s.lastAccepted {
 		if err := database.PutID(s.singletonDB, lastAcceptedKey, s.lastAccepted); err != nil {
 			return fmt.Errorf("failed to write last accepted: %w", err)
@@ -2071,6 +2095,10 @@ func (s *state) forceWriteMetadata() error {
 		return fmt.Errorf("failed to force write rewards pool supply: %w", err)
 	}
 	s.persistedRewardsPoolSupply = s.rewardsPoolSupply
+	if err := database.PutUInt64(s.singletonDB, feesPoolValueKey, s.feesPoolValue); err != nil {
+		return fmt.Errorf("failed to write fees pool value: %w", err)
+	}
+	s.persistedFeesPoolValue = s.feesPoolValue
 	if err := database.PutID(s.singletonDB, lastAcceptedKey, s.lastAccepted); err != nil {
 		return fmt.Errorf("failed to force write last accepted: %w", err)
 	}
