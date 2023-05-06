@@ -625,7 +625,9 @@ func (vm *VM) initGenesis(genesisBytes []byte) error {
 		if !stateInitialized {
 			vm.initState(tx)
 		}
-		if index == 0 {
+		// update feeAssetID except for JVM Chain
+		// it is already using previously set default assetID
+		if index == 0 && vm.ctx.ChainID != vm.ctx.XChainID {
 			vm.ctx.Log.Info("fee asset is established",
 				zap.String("alias", genesisTx.Alias),
 				zap.Stringer("assetID", txID),
