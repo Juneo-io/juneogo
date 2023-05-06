@@ -40,6 +40,7 @@ var (
 	isInitializedKey = []byte{0x00}
 	timestampKey     = []byte{0x01}
 	lastAcceptedKey  = []byte{0x02}
+	feesPoolValueKey = []byte{0x03}
 
 	_ State = (*state)(nil)
 )
@@ -55,6 +56,7 @@ type ReadOnlyChain interface {
 	GetBlock(blkID ids.ID) (blocks.Block, error)
 	GetLastAccepted() ids.ID
 	GetTimestamp() time.Time
+	GetFeesPoolValue() uint64
 }
 
 type Chain interface {
@@ -66,6 +68,7 @@ type Chain interface {
 	AddBlock(block blocks.Block)
 	SetLastAccepted(blkID ids.ID)
 	SetTimestamp(t time.Time)
+	SetFeesPoolValue(fpv uint64)
 }
 
 // State persistently maintains a set of UTXOs, transaction, statuses, and
@@ -119,6 +122,7 @@ type State interface {
  * '-. singletons
  *   |-- initializedKey -> nil
  *   |-- timestampKey -> timestamp
+ *   |-- feesPoolValueKey -> feesPoolValue
  *   '-- lastAcceptedKey -> lastAccepted
  */
 type state struct {
@@ -146,9 +150,10 @@ type state struct {
 	blockDB     database.Database
 
 	// [lastAccepted] is the most recently accepted block.
-	lastAccepted, persistedLastAccepted ids.ID
-	timestamp, persistedTimestamp       time.Time
-	singletonDB                         database.Database
+	lastAccepted, persistedLastAccepted   ids.ID
+	timestamp, persistedTimestamp         time.Time
+	feesPoolValue, persistedFeesPoolValue uint64
+	singletonDB                           database.Database
 }
 
 func New(
@@ -362,6 +367,8 @@ func (s *state) InitializeChainState(stopVertexID ids.ID, genesisTimestamp time.
 	s.persistedLastAccepted = lastAccepted
 	s.timestamp, err = database.GetTimestamp(s.singletonDB, timestampKey)
 	s.persistedTimestamp = s.timestamp
+	s.feesPoolValue, err = database.GetUInt64(s.singletonDB, feesPoolValueKey)
+	s.persistedFeesPoolValue = s.feesPoolValue
 	return err
 }
 
@@ -379,6 +386,7 @@ func (s *state) initializeChainState(stopVertexID ids.ID, genesisTimestamp time.
 
 	s.SetLastAccepted(genesis.ID())
 	s.SetTimestamp(genesis.Timestamp())
+	s.SetFeesPoolValue(uint64(0))
 	s.AddBlock(genesis)
 	return s.Commit()
 }
@@ -405,6 +413,14 @@ func (s *state) GetTimestamp() time.Time {
 
 func (s *state) SetTimestamp(t time.Time) {
 	s.timestamp = t
+}
+
+func (s *state) GetFeesPoolValue() uint64 {
+	return s.feesPoolValue
+}
+
+func (s *state) SetFeesPoolValue(fpv uint64) {
+	s.feesPoolValue = fpv
 }
 
 // TODO: remove status support
@@ -553,6 +569,12 @@ func (s *state) writeMetadata() error {
 			return fmt.Errorf("failed to write timestamp: %w", err)
 		}
 		s.persistedTimestamp = s.timestamp
+	}
+	if s.persistedFeesPoolValue != s.feesPoolValue {
+		if err := database.PutUInt64(s.singletonDB, feesPoolValueKey, s.feesPoolValue); err != nil {
+			return fmt.Errorf("failed to write fees pool value: %w", err)
+		}
+		s.persistedFeesPoolValue = s.feesPoolValue
 	}
 	if s.persistedLastAccepted != s.lastAccepted {
 		if err := database.PutID(s.singletonDB, lastAcceptedKey, s.lastAccepted); err != nil {

@@ -37,8 +37,9 @@ type diff struct {
 	addedBlockIDs map[uint64]ids.ID       // map of height -> blockID
 	addedBlocks   map[ids.ID]blocks.Block // map of blockID -> block
 
-	lastAccepted ids.ID
-	timestamp    time.Time
+	lastAccepted  ids.ID
+	timestamp     time.Time
+	feesPoolValue uint64
 }
 
 func NewDiff(
@@ -58,6 +59,7 @@ func NewDiff(
 		addedBlocks:   make(map[ids.ID]blocks.Block),
 		lastAccepted:  parentState.GetLastAccepted(),
 		timestamp:     parentState.GetTimestamp(),
+		feesPoolValue: parentState.GetFeesPoolValue(),
 	}, nil
 }
 
@@ -150,6 +152,14 @@ func (d *diff) SetTimestamp(t time.Time) {
 	d.timestamp = t
 }
 
+func (d *diff) GetFeesPoolValue() uint64 {
+	return d.feesPoolValue
+}
+
+func (d *diff) SetFeesPoolValue(fpv uint64) {
+	d.feesPoolValue = fpv
+}
+
 func (d *diff) Apply(state Chain) {
 	for utxoID, utxo := range d.modifiedUTXOs {
 		if utxo != nil {
@@ -169,4 +179,5 @@ func (d *diff) Apply(state Chain) {
 
 	state.SetLastAccepted(d.lastAccepted)
 	state.SetTimestamp(d.timestamp)
+	state.SetFeesPoolValue(d.feesPoolValue)
 }
