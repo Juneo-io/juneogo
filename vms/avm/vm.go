@@ -374,8 +374,8 @@ func (vm *VM) CreateHandlers(context.Context) (map[string]*common.HTTPHandler, e
 	rpcServer.RegisterCodec(codec, "application/json;charset=UTF-8")
 	rpcServer.RegisterInterceptFunc(vm.metrics.InterceptRequest)
 	rpcServer.RegisterAfterFunc(vm.metrics.AfterRequest)
-	// name this service "avm"
-	if err := rpcServer.RegisterService(&Service{vm: vm}, "avm"); err != nil {
+	// name this service "jvm"
+	if err := rpcServer.RegisterService(&Service{vm: vm}, "jvm"); err != nil {
 		return nil, err
 	}
 
@@ -400,11 +400,11 @@ func (*VM) CreateStaticHandlers(context.Context) (map[string]*common.HTTPHandler
 	newServer.RegisterCodec(codec, "application/json")
 	newServer.RegisterCodec(codec, "application/json;charset=UTF-8")
 
-	// name this service "avm"
+	// name this service "jvm"
 	staticService := CreateStaticService()
 	return map[string]*common.HTTPHandler{
 		"": {LockOptions: common.WriteLock, Handler: newServer},
-	}, newServer.RegisterService(staticService, "avm")
+	}, newServer.RegisterService(staticService, "jvm")
 }
 
 /*

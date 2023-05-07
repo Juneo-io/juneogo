@@ -64,7 +64,7 @@ type Service struct{ vm *VM }
 // GetBlock returns the requested block.
 func (s *Service) GetBlock(_ *http.Request, args *api.GetBlockArgs, reply *api.GetBlockResponse) error {
 	s.vm.ctx.Log.Debug("API called",
-		zap.String("service", "avm"),
+		zap.String("service", "jvm"),
 		zap.String("method", "getBlock"),
 		zap.Stringer("blkID", args.BlockID),
 		zap.Stringer("encoding", args.Encoding),
@@ -107,7 +107,7 @@ func (s *Service) GetBlock(_ *http.Request, args *api.GetBlockArgs, reply *api.G
 // GetBlockByHeight returns the block at the given height.
 func (s *Service) GetBlockByHeight(_ *http.Request, args *api.GetBlockByHeightArgs, reply *api.GetBlockResponse) error {
 	s.vm.ctx.Log.Debug("API called",
-		zap.String("service", "avm"),
+		zap.String("service", "jvm"),
 		zap.String("method", "getBlockByHeight"),
 		zap.Uint64("height", args.Height),
 	)
@@ -158,7 +158,7 @@ func (s *Service) GetBlockByHeight(_ *http.Request, args *api.GetBlockByHeightAr
 // GetHeight returns the height of the last accepted block.
 func (s *Service) GetHeight(_ *http.Request, _ *struct{}, reply *api.GetHeightResponse) error {
 	s.vm.ctx.Log.Debug("API called",
-		zap.String("service", "avm"),
+		zap.String("service", "jvm"),
 		zap.String("method", "getHeight"),
 	)
 
@@ -183,7 +183,7 @@ func (s *Service) GetHeight(_ *http.Request, _ *struct{}, reply *api.GetHeightRe
 // IssueTx attempts to issue a transaction into consensus
 func (s *Service) IssueTx(_ *http.Request, args *api.FormattedTx, reply *api.JSONTxID) error {
 	s.vm.ctx.Log.Debug("API called",
-		zap.String("service", "avm"),
+		zap.String("service", "jvm"),
 		zap.String("method", "issueTx"),
 		logging.UserString("tx", args.Tx),
 	)
@@ -232,7 +232,7 @@ func (s *Service) GetAddressTxs(_ *http.Request, args *GetAddressTxsArgs, reply 
 	cursor := uint64(args.Cursor)
 	pageSize := uint64(args.PageSize)
 	s.vm.ctx.Log.Warn("deprecated API called",
-		zap.String("service", "avm"),
+		zap.String("service", "jvm"),
 		zap.String("method", "getAddressTxs"),
 		logging.UserString("address", args.Address),
 		logging.UserString("assetID", args.AssetID),
@@ -288,7 +288,7 @@ func (s *Service) GetAddressTxs(_ *http.Request, args *GetAddressTxsArgs, reply 
 // used instead to determine if the tx was accepted.
 func (s *Service) GetTxStatus(_ *http.Request, args *api.JSONTxID, reply *GetTxStatusReply) error {
 	s.vm.ctx.Log.Debug("deprecated API called",
-		zap.String("service", "avm"),
+		zap.String("service", "jvm"),
 		zap.String("method", "getTxStatus"),
 		zap.Stringer("txID", args.TxID),
 	)
@@ -315,7 +315,7 @@ func (s *Service) GetTxStatus(_ *http.Request, args *api.JSONTxID, reply *GetTxS
 // GetTx returns the specified transaction
 func (s *Service) GetTx(_ *http.Request, args *api.GetTxArgs, reply *api.GetTxReply) error {
 	s.vm.ctx.Log.Debug("API called",
-		zap.String("service", "avm"),
+		zap.String("service", "jvm"),
 		zap.String("method", "getTx"),
 		zap.Stringer("txID", args.TxID),
 	)
@@ -353,7 +353,7 @@ func (s *Service) GetTx(_ *http.Request, args *api.GetTxArgs, reply *api.GetTxRe
 // GetUTXOs gets all utxos for passed in addresses
 func (s *Service) GetUTXOs(_ *http.Request, args *api.GetUTXOsArgs, reply *api.GetUTXOsReply) error {
 	s.vm.ctx.Log.Debug("API called",
-		zap.String("service", "avm"),
+		zap.String("service", "jvm"),
 		zap.String("method", "getUTXOs"),
 		logging.UserStrings("addresses", args.Addresses),
 	)
@@ -465,7 +465,7 @@ type GetAssetDescriptionReply struct {
 // GetAssetDescription creates an empty account with the name passed in
 func (s *Service) GetAssetDescription(_ *http.Request, args *GetAssetDescriptionArgs, reply *GetAssetDescriptionReply) error {
 	s.vm.ctx.Log.Debug("API called",
-		zap.String("service", "avm"),
+		zap.String("service", "jvm"),
 		zap.String("method", "getAssetDescription"),
 		logging.UserString("assetID", args.AssetID),
 	)
@@ -515,7 +515,7 @@ type GetBalanceReply struct {
 // address, and includes balances with locktime in the future.
 func (s *Service) GetBalance(_ *http.Request, args *GetBalanceArgs, reply *GetBalanceReply) error {
 	s.vm.ctx.Log.Debug("deprecated API called",
-		zap.String("service", "avm"),
+		zap.String("service", "jvm"),
 		zap.String("method", "getBalance"),
 		logging.UserString("address", args.Address),
 		logging.UserString("assetID", args.AssetID),
@@ -590,7 +590,7 @@ type GetAllBalancesReply struct {
 // address, and includes balances with locktime in the future.
 func (s *Service) GetAllBalances(_ *http.Request, args *GetAllBalancesArgs, reply *GetAllBalancesReply) error {
 	s.vm.ctx.Log.Debug("deprecated API called",
-		zap.String("service", "avm"),
+		zap.String("service", "jvm"),
 		zap.String("method", "getAllBalances"),
 		logging.UserString("address", args.Address),
 	)
@@ -676,7 +676,7 @@ type AssetIDChangeAddr struct {
 // CreateAsset returns ID of the newly created asset
 func (s *Service) CreateAsset(_ *http.Request, args *CreateAssetArgs, reply *AssetIDChangeAddr) error {
 	s.vm.ctx.Log.Warn("deprecated API called",
-		zap.String("service", "avm"),
+		zap.String("service", "jvm"),
 		zap.String("method", "createAsset"),
 		logging.UserString("name", args.Name),
 		logging.UserString("symbol", args.Symbol),
@@ -798,7 +798,7 @@ func (s *Service) CreateAsset(_ *http.Request, args *CreateAssetArgs, reply *Ass
 // CreateFixedCapAsset returns ID of the newly created asset
 func (s *Service) CreateFixedCapAsset(r *http.Request, args *CreateAssetArgs, reply *AssetIDChangeAddr) error {
 	s.vm.ctx.Log.Warn("deprecated API called",
-		zap.String("service", "avm"),
+		zap.String("service", "jvm"),
 		zap.String("method", "createFixedCapAsset"),
 		logging.UserString("name", args.Name),
 		logging.UserString("symbol", args.Symbol),
@@ -811,7 +811,7 @@ func (s *Service) CreateFixedCapAsset(r *http.Request, args *CreateAssetArgs, re
 // CreateVariableCapAsset returns ID of the newly created asset
 func (s *Service) CreateVariableCapAsset(r *http.Request, args *CreateAssetArgs, reply *AssetIDChangeAddr) error {
 	s.vm.ctx.Log.Warn("deprecated API called",
-		zap.String("service", "avm"),
+		zap.String("service", "jvm"),
 		zap.String("method", "createVariableCapAsset"),
 		logging.UserString("name", args.Name),
 		logging.UserString("symbol", args.Symbol),
@@ -832,7 +832,7 @@ type CreateNFTAssetArgs struct {
 // CreateNFTAsset returns ID of the newly created asset
 func (s *Service) CreateNFTAsset(_ *http.Request, args *CreateNFTAssetArgs, reply *AssetIDChangeAddr) error {
 	s.vm.ctx.Log.Warn("deprecated API called",
-		zap.String("service", "avm"),
+		zap.String("service", "jvm"),
 		zap.String("method", "createNFTAsset"),
 		logging.UserString("name", args.Name),
 		logging.UserString("symbol", args.Symbol),
@@ -940,7 +940,7 @@ func (s *Service) CreateNFTAsset(_ *http.Request, args *CreateNFTAssetArgs, repl
 // CreateAddress creates an address for the user [args.Username]
 func (s *Service) CreateAddress(_ *http.Request, args *api.UserPass, reply *api.JSONAddress) error {
 	s.vm.ctx.Log.Warn("deprecated API called",
-		zap.String("service", "avm"),
+		zap.String("service", "jvm"),
 		zap.String("method", "createAddress"),
 		logging.UserString("username", args.Username),
 	)
@@ -969,7 +969,7 @@ func (s *Service) CreateAddress(_ *http.Request, args *api.UserPass, reply *api.
 // ListAddresses returns all of the addresses controlled by user [args.Username]
 func (s *Service) ListAddresses(_ *http.Request, args *api.UserPass, response *api.JSONAddresses) error {
 	s.vm.ctx.Log.Warn("deprecated API called",
-		zap.String("service", "avm"),
+		zap.String("service", "jvm"),
 		zap.String("method", "listAddresses"),
 		logging.UserString("username", args.Username),
 	)
@@ -1016,7 +1016,7 @@ type ExportKeyReply struct {
 // ExportKey returns a private key from the provided user
 func (s *Service) ExportKey(_ *http.Request, args *ExportKeyArgs, reply *ExportKeyReply) error {
 	s.vm.ctx.Log.Warn("deprecated API called",
-		zap.String("service", "avm"),
+		zap.String("service", "jvm"),
 		zap.String("method", "exportKey"),
 		logging.UserString("username", args.Username),
 	)
@@ -1056,7 +1056,7 @@ type ImportKeyReply struct {
 // ImportKey adds a private key to the provided user
 func (s *Service) ImportKey(_ *http.Request, args *ImportKeyArgs, reply *api.JSONAddress) error {
 	s.vm.ctx.Log.Warn("deprecated API called",
-		zap.String("service", "avm"),
+		zap.String("service", "jvm"),
 		zap.String("method", "importKey"),
 		logging.UserString("username", args.Username),
 	)
@@ -1132,7 +1132,7 @@ func (s *Service) Send(r *http.Request, args *SendArgs, reply *api.JSONTxIDChang
 // SendMultiple sends a transaction with multiple outputs.
 func (s *Service) SendMultiple(_ *http.Request, args *SendMultipleArgs, reply *api.JSONTxIDChangeAddr) error {
 	s.vm.ctx.Log.Warn("deprecated API called",
-		zap.String("service", "avm"),
+		zap.String("service", "jvm"),
 		zap.String("method", "sendMultiple"),
 		logging.UserString("username", args.Username),
 	)
@@ -1284,7 +1284,7 @@ type MintArgs struct {
 // Mint issues a transaction that mints more of the asset
 func (s *Service) Mint(_ *http.Request, args *MintArgs, reply *api.JSONTxIDChangeAddr) error {
 	s.vm.ctx.Log.Warn("deprecated API called",
-		zap.String("service", "avm"),
+		zap.String("service", "jvm"),
 		zap.String("method", "mint"),
 		logging.UserString("username", args.Username),
 	)
@@ -1403,7 +1403,7 @@ type SendNFTArgs struct {
 // SendNFT sends an NFT
 func (s *Service) SendNFT(_ *http.Request, args *SendNFTArgs, reply *api.JSONTxIDChangeAddr) error {
 	s.vm.ctx.Log.Warn("deprecated API called",
-		zap.String("service", "avm"),
+		zap.String("service", "jvm"),
 		zap.String("method", "sendNFT"),
 		logging.UserString("username", args.Username),
 	)
@@ -1516,7 +1516,7 @@ type MintNFTArgs struct {
 // MintNFT issues a MintNFT transaction and returns the ID of the newly created transaction
 func (s *Service) MintNFT(_ *http.Request, args *MintNFTArgs, reply *api.JSONTxIDChangeAddr) error {
 	s.vm.ctx.Log.Warn("deprecated API called",
-		zap.String("service", "avm"),
+		zap.String("service", "jvm"),
 		zap.String("method", "mintNFT"),
 		logging.UserString("username", args.Username),
 	)
@@ -1643,7 +1643,7 @@ type ImportArgs struct {
 // Returns the ID of the newly created atomic transaction
 func (s *Service) Import(_ *http.Request, args *ImportArgs, reply *api.JSONTxID) error {
 	s.vm.ctx.Log.Warn("deprecated API called",
-		zap.String("service", "avm"),
+		zap.String("service", "jvm"),
 		zap.String("method", "import"),
 		logging.UserString("username", args.Username),
 	)
@@ -1766,7 +1766,7 @@ type ExportArgs struct {
 // Returns the ID of the newly created atomic transaction
 func (s *Service) Export(_ *http.Request, args *ExportArgs, reply *api.JSONTxIDChangeAddr) error {
 	s.vm.ctx.Log.Warn("deprecated API called",
-		zap.String("service", "avm"),
+		zap.String("service", "jvm"),
 		zap.String("method", "export"),
 		logging.UserString("username", args.Username),
 	)

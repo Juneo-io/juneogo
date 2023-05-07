@@ -22,7 +22,7 @@ import (
 
 var _ Client = (*client)(nil)
 
-// Client for interacting with an AVM (X-Chain) instance
+// Client for interacting with a JVM instance
 type Client interface {
 	WalletClient
 	// GetBlock returns the block with the given id.
@@ -219,12 +219,12 @@ type Client interface {
 	) (ids.ID, error)
 }
 
-// implementation for an AVM client for interacting with avm [chain]
+// implementation for a JVM client for interacting with jvm [chain]
 type client struct {
 	requester rpc.EndpointRequester
 }
 
-// NewClient returns an AVM client for interacting with avm [chain]
+// NewClient returns a JVM client for interacting with jvm [chain]
 func NewClient(uri, chain string) Client {
 	path := fmt.Sprintf(
 		"%s/ext/%s/%s",
@@ -239,7 +239,7 @@ func NewClient(uri, chain string) Client {
 
 func (c *client) GetBlock(ctx context.Context, blkID ids.ID, options ...rpc.Option) ([]byte, error) {
 	res := &api.FormattedBlock{}
-	err := c.requester.SendRequest(ctx, "avm.getBlock", &api.GetBlockArgs{
+	err := c.requester.SendRequest(ctx, "jvm.getBlock", &api.GetBlockArgs{
 		BlockID:  blkID,
 		Encoding: formatting.HexNC,
 	}, res, options...)
@@ -252,7 +252,7 @@ func (c *client) GetBlock(ctx context.Context, blkID ids.ID, options ...rpc.Opti
 
 func (c *client) GetBlockByHeight(ctx context.Context, height uint64, options ...rpc.Option) ([]byte, error) {
 	res := &api.FormattedBlock{}
-	err := c.requester.SendRequest(ctx, "avm.getBlockByHeight", &api.GetBlockByHeightArgs{
+	err := c.requester.SendRequest(ctx, "jvm.getBlockByHeight", &api.GetBlockByHeightArgs{
 		Height:   height,
 		Encoding: formatting.HexNC,
 	}, res, options...)
@@ -265,7 +265,7 @@ func (c *client) GetBlockByHeight(ctx context.Context, height uint64, options ..
 
 func (c *client) GetHeight(ctx context.Context, options ...rpc.Option) (uint64, error) {
 	res := &api.GetHeightResponse{}
-	err := c.requester.SendRequest(ctx, "avm.getHeight", struct{}{}, res, options...)
+	err := c.requester.SendRequest(ctx, "jvm.getHeight", struct{}{}, res, options...)
 	return uint64(res.Height), err
 }
 
@@ -275,7 +275,7 @@ func (c *client) IssueTx(ctx context.Context, txBytes []byte, options ...rpc.Opt
 		return ids.ID{}, err
 	}
 	res := &api.JSONTxID{}
-	err = c.requester.SendRequest(ctx, "avm.issueTx", &api.FormattedTx{
+	err = c.requester.SendRequest(ctx, "jvm.issueTx", &api.FormattedTx{
 		Tx:       txStr,
 		Encoding: formatting.Hex,
 	}, res, options...)
@@ -283,12 +283,12 @@ func (c *client) IssueTx(ctx context.Context, txBytes []byte, options ...rpc.Opt
 }
 
 func (c *client) IssueStopVertex(ctx context.Context, options ...rpc.Option) error {
-	return c.requester.SendRequest(ctx, "avm.issueStopVertex", &struct{}{}, &struct{}{}, options...)
+	return c.requester.SendRequest(ctx, "jvm.issueStopVertex", &struct{}{}, &struct{}{}, options...)
 }
 
 func (c *client) GetTxStatus(ctx context.Context, txID ids.ID, options ...rpc.Option) (choices.Status, error) {
 	res := &GetTxStatusReply{}
-	err := c.requester.SendRequest(ctx, "avm.getTxStatus", &api.JSONTxID{
+	err := c.requester.SendRequest(ctx, "jvm.getTxStatus", &api.JSONTxID{
 		TxID: txID,
 	}, res, options...)
 	return res.Status, err
@@ -316,7 +316,7 @@ func (c *client) ConfirmTx(ctx context.Context, txID ids.ID, freq time.Duration,
 
 func (c *client) GetTx(ctx context.Context, txID ids.ID, options ...rpc.Option) ([]byte, error) {
 	res := &api.FormattedTx{}
-	err := c.requester.SendRequest(ctx, "avm.getTx", &api.GetTxArgs{
+	err := c.requester.SendRequest(ctx, "jvm.getTx", &api.GetTxArgs{
 		TxID:     txID,
 		Encoding: formatting.Hex,
 	}, res, options...)
@@ -352,7 +352,7 @@ func (c *client) GetAtomicUTXOs(
 	options ...rpc.Option,
 ) ([][]byte, ids.ShortID, ids.ID, error) {
 	res := &api.GetUTXOsReply{}
-	err := c.requester.SendRequest(ctx, "avm.getUTXOs", &api.GetUTXOsArgs{
+	err := c.requester.SendRequest(ctx, "jvm.getUTXOs", &api.GetUTXOsArgs{
 		Addresses:   ids.ShortIDsToStrings(addrs),
 		SourceChain: sourceChain,
 		Limit:       cjson.Uint32(limit),
@@ -384,7 +384,7 @@ func (c *client) GetAtomicUTXOs(
 
 func (c *client) GetAssetDescription(ctx context.Context, assetID string, options ...rpc.Option) (*GetAssetDescriptionReply, error) {
 	res := &GetAssetDescriptionReply{}
-	err := c.requester.SendRequest(ctx, "avm.getAssetDescription", &GetAssetDescriptionArgs{
+	err := c.requester.SendRequest(ctx, "jvm.getAssetDescription", &GetAssetDescriptionArgs{
 		AssetID: assetID,
 	}, res, options...)
 	return res, err
@@ -398,7 +398,7 @@ func (c *client) GetBalance(
 	options ...rpc.Option,
 ) (*GetBalanceReply, error) {
 	res := &GetBalanceReply{}
-	err := c.requester.SendRequest(ctx, "avm.getBalance", &GetBalanceArgs{
+	err := c.requester.SendRequest(ctx, "jvm.getBalance", &GetBalanceArgs{
 		Address:        addr.String(),
 		AssetID:        assetID,
 		IncludePartial: includePartial,
@@ -413,7 +413,7 @@ func (c *client) GetAllBalances(
 	options ...rpc.Option,
 ) ([]Balance, error) {
 	res := &GetAllBalancesReply{}
-	err := c.requester.SendRequest(ctx, "avm.getAllBalances", &GetAllBalancesArgs{
+	err := c.requester.SendRequest(ctx, "jvm.getAllBalances", &GetAllBalancesArgs{
 		JSONAddress:    api.JSONAddress{Address: addr.String()},
 		IncludePartial: includePartial,
 	}, res, options...)
@@ -459,7 +459,7 @@ func (c *client) CreateAsset(
 			Minters:   ids.ShortIDsToStrings(clientMinter.Minters),
 		}
 	}
-	err := c.requester.SendRequest(ctx, "avm.createAsset", &CreateAssetArgs{
+	err := c.requester.SendRequest(ctx, "jvm.createAsset", &CreateAssetArgs{
 		JSONSpendHeader: api.JSONSpendHeader{
 			UserPass:       user,
 			JSONFromAddrs:  api.JSONFromAddrs{From: ids.ShortIDsToStrings(from)},
@@ -493,7 +493,7 @@ func (c *client) CreateFixedCapAsset(
 			Address: clientHolder.Address.String(),
 		}
 	}
-	err := c.requester.SendRequest(ctx, "avm.createAsset", &CreateAssetArgs{
+	err := c.requester.SendRequest(ctx, "jvm.createAsset", &CreateAssetArgs{
 		JSONSpendHeader: api.JSONSpendHeader{
 			UserPass:       user,
 			JSONFromAddrs:  api.JSONFromAddrs{From: ids.ShortIDsToStrings(from)},
@@ -526,7 +526,7 @@ func (c *client) CreateVariableCapAsset(
 			Minters:   ids.ShortIDsToStrings(clientMinter.Minters),
 		}
 	}
-	err := c.requester.SendRequest(ctx, "avm.createAsset", &CreateAssetArgs{
+	err := c.requester.SendRequest(ctx, "jvm.createAsset", &CreateAssetArgs{
 		JSONSpendHeader: api.JSONSpendHeader{
 			UserPass:       user,
 			JSONFromAddrs:  api.JSONFromAddrs{From: ids.ShortIDsToStrings(from)},
@@ -558,7 +558,7 @@ func (c *client) CreateNFTAsset(
 			Minters:   ids.ShortIDsToStrings(clientMinter.Minters),
 		}
 	}
-	err := c.requester.SendRequest(ctx, "avm.createNFTAsset", &CreateNFTAssetArgs{
+	err := c.requester.SendRequest(ctx, "jvm.createNFTAsset", &CreateNFTAssetArgs{
 		JSONSpendHeader: api.JSONSpendHeader{
 			UserPass:       user,
 			JSONFromAddrs:  api.JSONFromAddrs{From: ids.ShortIDsToStrings(from)},
@@ -573,7 +573,7 @@ func (c *client) CreateNFTAsset(
 
 func (c *client) CreateAddress(ctx context.Context, user api.UserPass, options ...rpc.Option) (ids.ShortID, error) {
 	res := &api.JSONAddress{}
-	err := c.requester.SendRequest(ctx, "avm.createAddress", &user, res, options...)
+	err := c.requester.SendRequest(ctx, "jvm.createAddress", &user, res, options...)
 	if err != nil {
 		return ids.ShortID{}, err
 	}
@@ -582,7 +582,7 @@ func (c *client) CreateAddress(ctx context.Context, user api.UserPass, options .
 
 func (c *client) ListAddresses(ctx context.Context, user api.UserPass, options ...rpc.Option) ([]ids.ShortID, error) {
 	res := &api.JSONAddresses{}
-	err := c.requester.SendRequest(ctx, "avm.listAddresses", &user, res, options...)
+	err := c.requester.SendRequest(ctx, "jvm.listAddresses", &user, res, options...)
 	if err != nil {
 		return nil, err
 	}
@@ -591,7 +591,7 @@ func (c *client) ListAddresses(ctx context.Context, user api.UserPass, options .
 
 func (c *client) ExportKey(ctx context.Context, user api.UserPass, addr ids.ShortID, options ...rpc.Option) (*secp256k1.PrivateKey, error) {
 	res := &ExportKeyReply{}
-	err := c.requester.SendRequest(ctx, "avm.exportKey", &ExportKeyArgs{
+	err := c.requester.SendRequest(ctx, "jvm.exportKey", &ExportKeyArgs{
 		UserPass: user,
 		Address:  addr.String(),
 	}, res, options...)
@@ -600,7 +600,7 @@ func (c *client) ExportKey(ctx context.Context, user api.UserPass, addr ids.Shor
 
 func (c *client) ImportKey(ctx context.Context, user api.UserPass, privateKey *secp256k1.PrivateKey, options ...rpc.Option) (ids.ShortID, error) {
 	res := &api.JSONAddress{}
-	err := c.requester.SendRequest(ctx, "avm.importKey", &ImportKeyArgs{
+	err := c.requester.SendRequest(ctx, "jvm.importKey", &ImportKeyArgs{
 		UserPass:   user,
 		PrivateKey: privateKey,
 	}, res, options...)
@@ -622,7 +622,7 @@ func (c *client) Send(
 	options ...rpc.Option,
 ) (ids.ID, error) {
 	res := &api.JSONTxID{}
-	err := c.requester.SendRequest(ctx, "avm.send", &SendArgs{
+	err := c.requester.SendRequest(ctx, "jvm.send", &SendArgs{
 		JSONSpendHeader: api.JSONSpendHeader{
 			UserPass:       user,
 			JSONFromAddrs:  api.JSONFromAddrs{From: ids.ShortIDsToStrings(from)},
@@ -656,7 +656,7 @@ func (c *client) SendMultiple(
 			To:      clientOutput.To.String(),
 		}
 	}
-	err := c.requester.SendRequest(ctx, "avm.sendMultiple", &SendMultipleArgs{
+	err := c.requester.SendRequest(ctx, "jvm.sendMultiple", &SendMultipleArgs{
 		JSONSpendHeader: api.JSONSpendHeader{
 			UserPass:       user,
 			JSONFromAddrs:  api.JSONFromAddrs{From: ids.ShortIDsToStrings(from)},
@@ -679,7 +679,7 @@ func (c *client) Mint(
 	options ...rpc.Option,
 ) (ids.ID, error) {
 	res := &api.JSONTxID{}
-	err := c.requester.SendRequest(ctx, "avm.mint", &MintArgs{
+	err := c.requester.SendRequest(ctx, "jvm.mint", &MintArgs{
 		JSONSpendHeader: api.JSONSpendHeader{
 			UserPass:       user,
 			JSONFromAddrs:  api.JSONFromAddrs{From: ids.ShortIDsToStrings(from)},
@@ -703,7 +703,7 @@ func (c *client) SendNFT(
 	options ...rpc.Option,
 ) (ids.ID, error) {
 	res := &api.JSONTxID{}
-	err := c.requester.SendRequest(ctx, "avm.sendNFT", &SendNFTArgs{
+	err := c.requester.SendRequest(ctx, "jvm.sendNFT", &SendNFTArgs{
 		JSONSpendHeader: api.JSONSpendHeader{
 			UserPass:       user,
 			JSONFromAddrs:  api.JSONFromAddrs{From: ids.ShortIDsToStrings(from)},
@@ -731,7 +731,7 @@ func (c *client) MintNFT(
 		return ids.ID{}, err
 	}
 	res := &api.JSONTxID{}
-	err = c.requester.SendRequest(ctx, "avm.mintNFT", &MintNFTArgs{
+	err = c.requester.SendRequest(ctx, "jvm.mintNFT", &MintNFTArgs{
 		JSONSpendHeader: api.JSONSpendHeader{
 			UserPass:       user,
 			JSONFromAddrs:  api.JSONFromAddrs{From: ids.ShortIDsToStrings(from)},
@@ -747,7 +747,7 @@ func (c *client) MintNFT(
 
 func (c *client) Import(ctx context.Context, user api.UserPass, to ids.ShortID, sourceChain string, options ...rpc.Option) (ids.ID, error) {
 	res := &api.JSONTxID{}
-	err := c.requester.SendRequest(ctx, "avm.import", &ImportArgs{
+	err := c.requester.SendRequest(ctx, "jvm.import", &ImportArgs{
 		UserPass:    user,
 		To:          to.String(),
 		SourceChain: sourceChain,
@@ -767,7 +767,7 @@ func (c *client) Export(
 	options ...rpc.Option,
 ) (ids.ID, error) {
 	res := &api.JSONTxID{}
-	err := c.requester.SendRequest(ctx, "avm.export", &ExportArgs{
+	err := c.requester.SendRequest(ctx, "jvm.export", &ExportArgs{
 		JSONSpendHeader: api.JSONSpendHeader{
 			UserPass:       user,
 			JSONFromAddrs:  api.JSONFromAddrs{From: ids.ShortIDsToStrings(from)},

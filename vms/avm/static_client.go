@@ -11,26 +11,26 @@ import (
 
 var _ StaticClient = (*staticClient)(nil)
 
-// StaticClient for interacting with the AVM static api
+// StaticClient for interacting with the JVM static api
 type StaticClient interface {
 	BuildGenesis(ctx context.Context, args *BuildGenesisArgs, options ...rpc.Option) (*BuildGenesisReply, error)
 }
 
-// staticClient is an implementation of an AVM client for interacting with the
-// avm static api
+// staticClient is an implementation of a JVM client for interacting with the
+// jvm static api
 type staticClient struct {
 	requester rpc.EndpointRequester
 }
 
-// NewClient returns an AVM client for interacting with the avm static api
+// NewClient returns a JVM client for interacting with the jvm static api
 func NewStaticClient(uri string) StaticClient {
 	return &staticClient{requester: rpc.NewEndpointRequester(
-		uri + "/ext/vm/avm",
+		uri + "/ext/vm/jvm",
 	)}
 }
 
 func (c *staticClient) BuildGenesis(ctx context.Context, args *BuildGenesisArgs, options ...rpc.Option) (resp *BuildGenesisReply, err error) {
 	resp = &BuildGenesisReply{}
-	err = c.requester.SendRequest(ctx, "avm.buildGenesis", args, resp, options...)
+	err = c.requester.SendRequest(ctx, "jvm.buildGenesis", args, resp, options...)
 	return resp, err
 }
