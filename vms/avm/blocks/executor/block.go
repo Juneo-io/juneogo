@@ -16,6 +16,7 @@ import (
 	"github.com/ava-labs/avalanchego/ids"
 	"github.com/ava-labs/avalanchego/snow/choices"
 	"github.com/ava-labs/avalanchego/snow/consensus/snowman"
+	"github.com/ava-labs/avalanchego/utils/math"
 	"github.com/ava-labs/avalanchego/vms/avm/blocks"
 	"github.com/ava-labs/avalanchego/vms/avm/states"
 	"github.com/ava-labs/avalanchego/vms/avm/txs/executor"
@@ -130,6 +131,8 @@ func (b *Block) Verify(context.Context) error {
 		atomicRequests: make(map[ids.ID]*atomic.Requests),
 	}
 
+	feesPoolValue := stateDiff.GetFeesPoolValue()
+
 	for _, tx := range txs {
 		// Verify that the tx is valid according to the current state of the
 		// chain.
@@ -143,6 +146,11 @@ func (b *Block) Verify(context.Context) error {
 			b.manager.mempool.MarkDropped(txID, err)
 			return err
 		}
+		newFeesPoolValue, err := math.Add64(feesPoolValue, tx.Unsigned.ConsumedValue(b.manager.backend.Ctx.AVAXAssetID))
+		if err != nil {
+			return err
+		}
+		feesPoolValue = newFeesPoolValue
 
 		// Apply the txs state changes to the state.
 		//
@@ -186,6 +194,8 @@ func (b *Block) Verify(context.Context) error {
 			chainRequests.RemoveRequests = append(chainRequests.RemoveRequests, txRequests.RemoveRequests...)
 		}
 	}
+
+	stateDiff.SetFeesPoolValue(feesPoolValue)
 
 	// Verify that none of the transactions consumed any inputs that were
 	// already imported in a currently processing block.
