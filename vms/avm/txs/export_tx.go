@@ -6,6 +6,7 @@ package txs
 import (
 	"github.com/ava-labs/avalanchego/ids"
 	"github.com/ava-labs/avalanchego/snow"
+	"github.com/ava-labs/avalanchego/utils/math"
 	"github.com/ava-labs/avalanchego/vms/components/avax"
 	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
 )
@@ -31,6 +32,20 @@ func (t *ExportTx) InitCtx(ctx *snow.Context) {
 		out.InitCtx(ctx)
 	}
 	t.BaseTx.InitCtx(ctx)
+}
+
+func (t *ExportTx) ConsumedValue(assetID ids.ID) uint64 {
+	value := t.BaseTx.ConsumedValue(assetID)
+	for _, out := range t.ExportedOuts {
+		if out.Asset.AssetID() == assetID {
+			val, err := math.Sub(value, out.Out.Amount())
+			if err != nil {
+				return uint64(0)
+			}
+			value = val
+		}
+	}
+	return value
 }
 
 func (t *ExportTx) Visit(v Visitor) error {

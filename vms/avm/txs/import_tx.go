@@ -5,6 +5,7 @@ package txs
 
 import (
 	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/utils/math"
 	"github.com/ava-labs/avalanchego/utils/set"
 	"github.com/ava-labs/avalanchego/vms/components/avax"
 	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
@@ -24,6 +25,38 @@ type ImportTx struct {
 
 	// The inputs to this transaction
 	ImportedIns []*avax.TransferableInput `serialize:"true" json:"importedInputs"`
+}
+
+func (t *ImportTx) ConsumedValue(assetID ids.ID) uint64 {
+	value := uint64(0)
+	for _, in := range t.BaseTx.Ins {
+		if in.Asset.AssetID() == assetID {
+			val, err := math.Add64(value, in.In.Amount())
+			if err != nil {
+				return uint64(0)
+			}
+			value = val
+		}
+	}
+	for _, in := range t.ImportedIns {
+		if in.Asset.AssetID() == assetID {
+			val, err := math.Add64(value, in.In.Amount())
+			if err != nil {
+				return uint64(0)
+			}
+			value = val
+		}
+	}
+	for _, out := range t.BaseTx.Outs {
+		if out.Asset.AssetID() == assetID {
+			val, err := math.Sub(value, out.Out.Amount())
+			if err != nil {
+				return uint64(0)
+			}
+			value = val
+		}
+	}
+	return value
 }
 
 // InputUTXOs track which UTXOs this transaction is consuming.

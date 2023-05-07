@@ -27,6 +27,8 @@ type UnsignedTx interface {
 
 	InputIDs() set.Set[ids.ID]
 
+	ConsumedValue(assetID ids.ID) uint64
+
 	ConsumedAssetIDs() set.Set[ids.ID]
 	AssetIDs() set.Set[ids.ID]
 

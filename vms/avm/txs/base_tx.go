@@ -6,6 +6,7 @@ package txs
 import (
 	"github.com/ava-labs/avalanchego/ids"
 	"github.com/ava-labs/avalanchego/snow"
+	"github.com/ava-labs/avalanchego/utils/math"
 	"github.com/ava-labs/avalanchego/utils/set"
 	"github.com/ava-labs/avalanchego/vms/components/avax"
 	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
@@ -43,6 +44,29 @@ func (t *BaseTx) InputIDs() set.Set[ids.ID] {
 		inputIDs.Add(in.InputID())
 	}
 	return inputIDs
+}
+
+func (t *BaseTx) ConsumedValue(assetID ids.ID) uint64 {
+	value := uint64(0)
+	for _, in := range t.Ins {
+		if in.Asset.AssetID() == assetID {
+			val, err := math.Add64(value, in.In.Amount())
+			if err != nil {
+				return uint64(0)
+			}
+			value = val
+		}
+	}
+	for _, out := range t.Outs {
+		if out.Asset.AssetID() == assetID {
+			val, err := math.Sub(value, out.Out.Amount())
+			if err != nil {
+				return uint64(0)
+			}
+			value = val
+		}
+	}
+	return value
 }
 
 func (t *BaseTx) Visit(v Visitor) error {
