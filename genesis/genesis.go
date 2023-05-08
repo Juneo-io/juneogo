@@ -264,6 +264,7 @@ func FromConfig(config *Config) ([]byte, ids.ID, error) {
 	hrp := constants.GetHRP(config.NetworkID)
 
 	amount := uint64(0)
+	assetsCount := int(0)
 
 	// Specify the genesis state of the AVM
 	avmArgs := avm.BuildGenesisArgs{
@@ -308,6 +309,7 @@ func FromConfig(config *Config) ([]byte, ids.ID, error) {
 		avmArgs.GenesisData = map[string]avm.AssetDefinition{
 			"AVAX": avax, // The AVM starts out with one asset: AVAX
 		}
+		assetsCount = len(avmArgs.GenesisData)
 	}
 	avmReply := avm.BuildGenesisReply{}
 
@@ -321,9 +323,9 @@ func FromConfig(config *Config) ([]byte, ids.ID, error) {
 	if err != nil {
 		return nil, ids.ID{}, fmt.Errorf("couldn't parse avm genesis reply: %w", err)
 	}
-	avaxAssetID, err := AVAXAssetID(bytes)
+	assetsIDs, err := GenesisAssetsIDs(bytes, assetsCount)
 	if err != nil {
-		return nil, ids.ID{}, fmt.Errorf("couldn't generate AVAX asset ID: %w", err)
+		return nil, ids.ID{}, fmt.Errorf("couldn't generate genesis assets IDs: %w", err)
 	}
 
 	genesisTime := time.Unix(int64(config.StartTime), 0)
@@ -338,7 +340,7 @@ func FromConfig(config *Config) ([]byte, ids.ID, error) {
 
 	// Specify the initial state of the Platform Chain
 	platformvmArgs := api.BuildGenesisArgs{
-		AvaxAssetID:       avaxAssetID,
+		AvaxAssetID:       assetsIDs["JUNE"],
 		NetworkID:         json.Uint32(config.NetworkID),
 		RewardsPoolSupply: json.Uint64(config.RewardsPoolSupply),
 		Time:              json.Uint64(config.StartTime),
@@ -377,8 +379,8 @@ func FromConfig(config *Config) ([]byte, ids.ID, error) {
 	allNodeAllocations := splitAllocations(skippedAllocations, len(config.InitialStakers))
 	endStakingTime := genesisTime.Add(time.Duration(config.InitialStakeDuration) * time.Second)
 	stakingOffset := time.Duration(0)
-	for i, staker := range config.InitialStakers {
-		nodeAllocations := allNodeAllocations[i]
+	for _, staker := range config.InitialStakers {
+		nodeAllocations := allNodeAllocations[staker.RewardAddress]
 		endStakingTime := endStakingTime.Add(-stakingOffset)
 		stakingOffset += time.Duration(config.InitialStakeDurationOffset) * time.Second
 
@@ -443,14 +445,14 @@ func FromConfig(config *Config) ([]byte, ids.ID, error) {
 				propertyfx.ID,
 			},
 			Name:         "X-Chain",
-			ChainAssetID: avaxAssetID,
+			ChainAssetID: assetsIDs["JUNE"],
 		},
 		{
 			GenesisData:  genesisStr,
 			SubnetID:     constants.PrimaryNetworkID,
 			VMID:         constants.EVMID,
 			Name:         "C-Chain",
-			ChainAssetID: avaxAssetID,
+			ChainAssetID: assetsIDs["JUNE"],
 		},
 	}
 
@@ -465,108 +467,63 @@ func FromConfig(config *Config) ([]byte, ids.ID, error) {
 		return nil, ids.ID{}, fmt.Errorf("problem parsing platformvm genesis bytes: %w", err)
 	}
 
-	return genesisBytes, avaxAssetID, nil
+	return genesisBytes, assetsIDs["JUNE"], nil
 }
 
-func splitAllocations(allocations []Allocation, numSplits int) [][]Allocation {
-	totalAmount := uint64(0)
+func splitAllocations(allocations []Allocation, numSplits int) map[ids.ShortID][]Allocation {
+	allNodeAllocations := make(map[ids.ShortID][]Allocation)
 	for _, allocation := range allocations {
-		for _, unlock := range allocation.UnlockSchedule {
-			totalAmount += unlock.Amount
-		}
+		allNodeAllocations[allocation.AVAXAddr] = append(allNodeAllocations[allocation.AVAXAddr], allocation)
 	}
-
-	nodeWeight := totalAmount / uint64(numSplits)
-	allNodeAllocations := make([][]Allocation, 0, numSplits)
-
-	currentNodeAllocation := []Allocation(nil)
-	currentNodeAmount := uint64(0)
-	for _, allocation := range allocations {
-		currentAllocation := allocation
-		// Already added to the X-chain
-		currentAllocation.InitialAmount = 0
-		// Going to be added until the correct amount is reached
-		currentAllocation.UnlockSchedule = nil
-
-		for _, unlock := range allocation.UnlockSchedule {
-			unlock := unlock
-			for currentNodeAmount+unlock.Amount > nodeWeight && len(allNodeAllocations) < numSplits-1 {
-				amountToAdd := nodeWeight - currentNodeAmount
-				currentAllocation.UnlockSchedule = append(currentAllocation.UnlockSchedule, LockedAmount{
-					Amount:   amountToAdd,
-					Locktime: unlock.Locktime,
-				})
-				unlock.Amount -= amountToAdd
-
-				currentNodeAllocation = append(currentNodeAllocation, currentAllocation)
-
-				allNodeAllocations = append(allNodeAllocations, currentNodeAllocation)
-
-				currentNodeAllocation = nil
-				currentNodeAmount = 0
-
-				currentAllocation = allocation
-				// Already added to the X-chain
-				currentAllocation.InitialAmount = 0
-				// Going to be added until the correct amount is reached
-				currentAllocation.UnlockSchedule = nil
-			}
-
-			if unlock.Amount == 0 {
-				continue
-			}
-
-			currentAllocation.UnlockSchedule = append(currentAllocation.UnlockSchedule, LockedAmount{
-				Amount:   unlock.Amount,
-				Locktime: unlock.Locktime,
-			})
-			currentNodeAmount += unlock.Amount
-		}
-
-		if len(currentAllocation.UnlockSchedule) > 0 {
-			currentNodeAllocation = append(currentNodeAllocation, currentAllocation)
-		}
-	}
-
-	return append(allNodeAllocations, currentNodeAllocation)
+	return allNodeAllocations
 }
 
-func VMGenesis(genesisBytes []byte, vmID ids.ID) (*pchaintxs.Tx, error) {
+func VMGenesis(genesisBytes []byte, vmID ids.ID) ([]*pchaintxs.CreateChainTx, error) {
 	genesis, err := genesis.Parse(genesisBytes)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse genesis: %w", err)
 	}
+	txs := []*pchaintxs.CreateChainTx{}
 	for _, chain := range genesis.Chains {
 		uChain := chain.Unsigned.(*pchaintxs.CreateChainTx)
+		uChain.BlockchainID = chain.ID()
 		if uChain.VMID == vmID {
-			return chain, nil
+			txs = append(txs, uChain)
 		}
 	}
-	return nil, fmt.Errorf("couldn't find blockchain with VM ID %s", vmID)
+	if len(txs) > 0 {
+		return txs, nil
+	} else {
+		return nil, fmt.Errorf("couldn't find blockchain with VM ID %s", vmID)
+	}
 }
 
-func AVAXAssetID(avmGenesisBytes []byte) (ids.ID, error) {
+func GenesisAssetsIDs(jvmGenesisBytes []byte, assetsCount int) (map[string]ids.ID, error) {
 	parser, err := xchaintxs.NewParser([]fxs.Fx{
 		&secp256k1fx.Fx{},
 	})
 	if err != nil {
-		return ids.Empty, err
+		return map[string]ids.ID{}, err
 	}
 
 	genesisCodec := parser.GenesisCodec()
 	genesis := avm.Genesis{}
-	if _, err := genesisCodec.Unmarshal(avmGenesisBytes, &genesis); err != nil {
-		return ids.Empty, err
+	if _, err := genesisCodec.Unmarshal(jvmGenesisBytes, &genesis); err != nil {
+		return map[string]ids.ID{}, err
 	}
 
 	if len(genesis.Txs) == 0 {
-		return ids.Empty, errNoTxs
+		return map[string]ids.ID{}, errNoTxs
 	}
-	genesisTx := genesis.Txs[0]
+	txs := map[string]ids.ID{}
 
-	tx := xchaintxs.Tx{Unsigned: &genesisTx.CreateAssetTx}
-	if err := parser.InitializeGenesisTx(&tx); err != nil {
-		return ids.Empty, err
+	for i := 0; i < assetsCount; i++ {
+		genesisTx := genesis.Txs[i]
+		tx := xchaintxs.Tx{Unsigned: &genesisTx.CreateAssetTx}
+		if err := parser.InitializeGenesisTx(&tx); err != nil {
+			return map[string]ids.ID{}, err
+		}
+		txs[genesisTx.Symbol] = tx.ID()
 	}
-	return tx.ID(), nil
+	return txs, nil
 }

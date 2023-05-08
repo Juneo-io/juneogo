@@ -656,25 +656,43 @@ func (n *Node) addDefaultVMAliases() error {
 // AVM, Simple Payments DAG, Simple Payments Chain, and Platform VM
 // Assumes n.DBManager, n.vdrs all initialized (non-nil)
 func (n *Node) initChainManager(avaxAssetID ids.ID) error {
-	createAVMTx, err := genesis.VMGenesis(n.Config.GenesisBytes, constants.AVMID)
+	createJVMTxs, err := genesis.VMGenesis(n.Config.GenesisBytes, constants.AVMID)
 	if err != nil {
 		return err
 	}
-	xChainID := createAVMTx.ID()
 
-	createEVMTx, err := genesis.VMGenesis(n.Config.GenesisBytes, constants.EVMID)
+	createEVMTxs, err := genesis.VMGenesis(n.Config.GenesisBytes, constants.EVMID)
 	if err != nil {
 		return err
 	}
-	cChainID := createEVMTx.ID()
 
 	// If any of these chains die, the node shuts down
 	criticalChains := set.Set[ids.ID]{}
 	criticalChains.Add(
 		constants.PlatformChainID,
-		xChainID,
-		cChainID,
 	)
+
+	jvmChainID := ids.Empty
+	juneChainID := ids.Empty
+	for _, createJVMTx := range createJVMTxs {
+		criticalChains.Add(createJVMTx.BlockchainID)
+		if createJVMTx.ChainName == "JVM-Chain" {
+			jvmChainID = createJVMTx.BlockchainID
+		}
+	}
+	for _, createEVMTx := range createEVMTxs {
+		criticalChains.Add(createEVMTx.BlockchainID)
+		if createEVMTx.ChainName == "JUNE-Chain" {
+			juneChainID = createEVMTx.BlockchainID
+		}
+	}
+
+	if jvmChainID == ids.Empty {
+		return fmt.Errorf("couldn't find jvm chain ID")
+	}
+	if juneChainID == ids.Empty {
+		return fmt.Errorf("couldn't find june chain ID")
+	}
 
 	// Manages network timeouts
 	timeoutManager, err := timeout.NewManager(
@@ -727,8 +745,8 @@ func (n *Node) initChainManager(avaxAssetID ids.ID) error {
 		Keystore:                                n.keystore,
 		AtomicMemory:                            n.sharedMemory,
 		AVAXAssetID:                             avaxAssetID,
-		XChainID:                                xChainID,
-		CChainID:                                cChainID,
+		XChainID:                                jvmChainID,
+		CChainID:                                juneChainID,
 		CriticalChains:                          criticalChains,
 		TimeoutManager:                          timeoutManager,
 		Health:                                  n.health,
