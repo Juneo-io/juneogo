@@ -21,8 +21,6 @@ import (
 
 	"go.uber.org/zap"
 
-	coreth "github.com/ava-labs/coreth/plugin/evm"
-
 	"github.com/ava-labs/avalanchego/api/admin"
 	"github.com/ava-labs/avalanchego/api/auth"
 	"github.com/ava-labs/avalanchego/api/health"
@@ -839,7 +837,6 @@ func (n *Node) initVMs() error {
 				CreateAssetTxFee: n.Config.CreateAssetTxFee,
 			},
 		}),
-		vmRegisterer.Register(context.TODO(), constants.EVMID, &coreth.Factory{}),
 		n.VMManager.RegisterFactory(context.TODO(), secp256k1fx.ID, &secp256k1fx.Factory{}),
 		n.VMManager.RegisterFactory(context.TODO(), nftfx.ID, &nftfx.Factory{}),
 		n.VMManager.RegisterFactory(context.TODO(), propertyfx.ID, &propertyfx.Factory{}),
