@@ -37,41 +37,37 @@ func Aliases(genesisBytes []byte) (map[string][]string, map[ids.ID][]string, err
 		uChain := chain.Unsigned.(*txs.CreateChainTx)
 		chainID := chain.ID()
 		endpoint := path.Join(constants.ChainAliasPrefix, chainID.String())
-		switch uChain.VMID {
-		case constants.AVMID:
+		switch uChain.ChainName {
+		case "JVM-Chain":
 			apiAliases[endpoint] = []string{
-				"X",
-				"avm",
-				path.Join(constants.ChainAliasPrefix, "X"),
-				path.Join(constants.ChainAliasPrefix, "avm"),
+				"JVM",
+				path.Join(constants.ChainAliasPrefix, "JVM"),
 			}
-			chainAliases[chainID] = GetXChainAliases()
-		case constants.EVMID:
+			chainAliases[chainID] = GetJVMChainAliases()
+		case "JUNE-Chain":
 			apiAliases[endpoint] = []string{
-				"C",
-				"evm",
-				path.Join(constants.ChainAliasPrefix, "C"),
-				path.Join(constants.ChainAliasPrefix, "evm"),
+				"JUNE",
+				path.Join(constants.ChainAliasPrefix, "JUNE"),
 			}
-			chainAliases[chainID] = GetCChainAliases()
+			chainAliases[chainID] = GetJUNEChainAliases()
 		}
 	}
 	return apiAliases, chainAliases, nil
 }
 
-func GetCChainAliases() []string {
-	return []string{"C", "evm"}
+func GetJUNEChainAliases() []string {
+	return []string{"JUNE"}
 }
 
-func GetXChainAliases() []string {
-	return []string{"X", "avm"}
+func GetJVMChainAliases() []string {
+	return []string{"JVM"}
 }
 
 func GetVMAliases() map[ids.ID][]string {
 	return map[ids.ID][]string{
 		constants.PlatformVMID: {"platform"},
-		constants.AVMID:        {"avm"},
-		constants.EVMID:        {"evm"},
+		constants.AVMID:        {"jvm"},
+		constants.EVMID:        {"jevm"},
 		secp256k1fx.ID:         {"secp256k1fx"},
 		nftfx.ID:               {"nftfx"},
 		propertyfx.ID:          {"propertyfx"},

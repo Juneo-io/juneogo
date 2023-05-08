@@ -40,7 +40,7 @@ func (a Allocation) Unparse(networkID uint32) (UnparsedAllocation, error) {
 		ETHAddr:        "0x" + hex.EncodeToString(a.ETHAddr.Bytes()),
 	}
 	avaxAddr, err := address.Format(
-		"X",
+		"JVM",
 		constants.GetHRP(networkID),
 		a.AVAXAddr.Bytes(),
 	)
@@ -61,7 +61,7 @@ type Staker struct {
 
 func (s Staker) Unparse(networkID uint32) (UnparsedStaker, error) {
 	avaxAddr, err := address.Format(
-		"X",
+		"JVM",
 		constants.GetHRP(networkID),
 		s.RewardAddress.Bytes(),
 	)
@@ -85,7 +85,7 @@ type Config struct {
 	InitialStakedFunds         []ids.ShortID `json:"initialStakedFunds"`
 	InitialStakers             []Staker      `json:"initialStakers"`
 
-	CChainGenesis string `json:"cChainGenesis"`
+	JUNEChainGenesis string `json:"JUNEChainGenesis"`
 
 	Message string `json:"message"`
 }
@@ -100,7 +100,7 @@ func (c Config) Unparse() (UnparsedConfig, error) {
 		InitialStakeDurationOffset: c.InitialStakeDurationOffset,
 		InitialStakedFunds:         make([]string, len(c.InitialStakedFunds)),
 		InitialStakers:             make([]UnparsedStaker, len(c.InitialStakers)),
-		CChainGenesis:              c.CChainGenesis,
+		JUNEChainGenesis:           c.JUNEChainGenesis,
 		Message:                    c.Message,
 	}
 	for i, a := range c.Allocations {
@@ -112,7 +112,7 @@ func (c Config) Unparse() (UnparsedConfig, error) {
 	}
 	for i, isa := range c.InitialStakedFunds {
 		avaxAddr, err := address.Format(
-			"X",
+			"JVM",
 			constants.GetHRP(uc.NetworkID),
 			isa.Bytes(),
 		)

@@ -29,7 +29,7 @@ import (
 
 const (
 	defaultEncoding    = formatting.Hex
-	configChainIDAlias = "X"
+	configChainIDAlias = "JVM"
 )
 
 var (
@@ -38,7 +38,7 @@ var (
 	errNoSupply               = errors.New("initial supply must be > 0")
 	errNoStakeDuration        = errors.New("initial stake duration must be > 0")
 	errNoStakers              = errors.New("initial stakers must be > 0")
-	errNoCChainGenesis        = errors.New("C-Chain genesis cannot be empty")
+	errNoJUNEChainGenesis     = errors.New("JUNE-Chain genesis cannot be empty")
 	errNoTxs                  = errors.New("genesis creates no transactions")
 )
 
@@ -164,8 +164,8 @@ func validateConfig(networkID uint32, config *Config, stakingCfg *StakingConfig)
 		return fmt.Errorf("initial staked funds validation failed: %w", err)
 	}
 
-	if len(config.CChainGenesis) == 0 {
-		return errNoCChainGenesis
+	if len(config.JUNEChainGenesis) == 0 {
+		return errNoJUNEChainGenesis
 	}
 
 	return nil
@@ -266,34 +266,36 @@ func FromConfig(config *Config) ([]byte, ids.ID, error) {
 	amount := uint64(0)
 	assetsCount := int(0)
 
-	// Specify the genesis state of the AVM
+	var june avm.AssetDefinition
+
+	// Specify the genesis state of the JVM
 	avmArgs := avm.BuildGenesisArgs{
 		NetworkID: json.Uint32(config.NetworkID),
 		Encoding:  defaultEncoding,
 	}
 	{
-		avax := avm.AssetDefinition{
-			Name:         "Avalanche",
-			Symbol:       "AVAX",
+		june = avm.AssetDefinition{
+			Name:         "JUNE",
+			Symbol:       "JUNE",
 			Denomination: 9,
 			InitialState: map[string][]interface{}{},
 		}
 		memoBytes := []byte{}
-		xAllocations := []Allocation(nil)
+		jvmAllocations := []Allocation(nil)
 		for _, allocation := range config.Allocations {
 			if allocation.InitialAmount > 0 {
-				xAllocations = append(xAllocations, allocation)
+				jvmAllocations = append(jvmAllocations, allocation)
 			}
 		}
-		utils.Sort(xAllocations)
+		utils.Sort(jvmAllocations)
 
-		for _, allocation := range xAllocations {
+		for _, allocation := range jvmAllocations {
 			addr, err := address.FormatBech32(hrp, allocation.AVAXAddr.Bytes())
 			if err != nil {
 				return nil, ids.ID{}, err
 			}
 
-			avax.InitialState["fixedCap"] = append(avax.InitialState["fixedCap"], avm.Holder{
+			june.InitialState["fixedCap"] = append(june.InitialState["fixedCap"], avm.Holder{
 				Amount:  json.Uint64(allocation.InitialAmount),
 				Address: addr,
 			})
@@ -302,12 +304,12 @@ func FromConfig(config *Config) ([]byte, ids.ID, error) {
 		}
 
 		var err error
-		avax.Memo, err = formatting.Encode(defaultEncoding, memoBytes)
+		june.Memo, err = formatting.Encode(defaultEncoding, memoBytes)
 		if err != nil {
 			return nil, ids.Empty, fmt.Errorf("couldn't parse memo bytes to string: %w", err)
 		}
 		avmArgs.GenesisData = map[string]avm.AssetDefinition{
-			"AVAX": avax, // The AVM starts out with one asset: AVAX
+			june.Symbol: june,
 		}
 		assetsCount = len(avmArgs.GenesisData)
 	}
@@ -340,7 +342,7 @@ func FromConfig(config *Config) ([]byte, ids.ID, error) {
 
 	// Specify the initial state of the Platform Chain
 	platformvmArgs := api.BuildGenesisArgs{
-		AvaxAssetID:       assetsIDs["JUNE"],
+		AvaxAssetID:       assetsIDs[june.Symbol],
 		NetworkID:         json.Uint32(config.NetworkID),
 		RewardsPoolSupply: json.Uint64(config.RewardsPoolSupply),
 		Time:              json.Uint64(config.StartTime),
@@ -430,7 +432,7 @@ func FromConfig(config *Config) ([]byte, ids.ID, error) {
 	}
 
 	// Specify the chains that exist upon this network's creation
-	genesisStr, err := formatting.Encode(defaultEncoding, []byte(config.CChainGenesis))
+	juneGenesisStr, err := formatting.Encode(defaultEncoding, []byte(config.JUNEChainGenesis))
 	if err != nil {
 		return nil, ids.Empty, fmt.Errorf("couldn't encode message: %w", err)
 	}
@@ -444,15 +446,15 @@ func FromConfig(config *Config) ([]byte, ids.ID, error) {
 				nftfx.ID,
 				propertyfx.ID,
 			},
-			Name:         "X-Chain",
-			ChainAssetID: assetsIDs["JUNE"],
+			Name:         "JVM-Chain",
+			ChainAssetID: assetsIDs[june.Symbol],
 		},
 		{
-			GenesisData:  genesisStr,
+			GenesisData:  juneGenesisStr,
 			SubnetID:     constants.PrimaryNetworkID,
 			VMID:         constants.EVMID,
-			Name:         "C-Chain",
-			ChainAssetID: assetsIDs["JUNE"],
+			Name:         "JUNE-Chain",
+			ChainAssetID: assetsIDs[june.Symbol],
 		},
 	}
 
@@ -467,7 +469,7 @@ func FromConfig(config *Config) ([]byte, ids.ID, error) {
 		return nil, ids.ID{}, fmt.Errorf("problem parsing platformvm genesis bytes: %w", err)
 	}
 
-	return genesisBytes, assetsIDs["JUNE"], nil
+	return genesisBytes, assetsIDs[june.Symbol], nil
 }
 
 func splitAllocations(allocations []Allocation, numSplits int) map[ids.ShortID][]Allocation {
