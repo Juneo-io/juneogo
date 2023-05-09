@@ -43,24 +43,106 @@ func Aliases(genesisBytes []byte) (map[string][]string, map[ids.ID][]string, err
 				"JVM",
 				path.Join(constants.ChainAliasPrefix, "JVM"),
 			}
-			chainAliases[chainID] = GetJVMChainAliases()
+			chainAliases[chainID] = []string{"JVM"}
 		case "JUNE-Chain":
 			apiAliases[endpoint] = []string{
 				"JUNE",
 				path.Join(constants.ChainAliasPrefix, "JUNE"),
 			}
-			chainAliases[chainID] = GetJUNEChainAliases()
+			chainAliases[chainID] = []string{"JUNE"}
+		case "ETH1-Chain":
+			apiAliases[endpoint] = []string{
+				"ETH1",
+				path.Join(constants.ChainAliasPrefix, "ETH1"),
+			}
+			chainAliases[chainID] = []string{"ETH1"}
+		case "mBTC1-Chain":
+			apiAliases[endpoint] = []string{
+				"mBTC1",
+				path.Join(constants.ChainAliasPrefix, "mBTC1"),
+			}
+			chainAliases[chainID] = []string{"mBTC1"}
+		case "DOGE1-Chain":
+			apiAliases[endpoint] = []string{
+				"DOGE1",
+				path.Join(constants.ChainAliasPrefix, "DOGE1"),
+			}
+			chainAliases[chainID] = []string{"DOGE1"}
+		case "TUSD1-Chain":
+			apiAliases[endpoint] = []string{
+				"TUSD1",
+				path.Join(constants.ChainAliasPrefix, "TUSD1"),
+			}
+			chainAliases[chainID] = []string{"TUSD1"}
+		case "DAI1-Chain":
+			apiAliases[endpoint] = []string{
+				"DAI1",
+				path.Join(constants.ChainAliasPrefix, "DAI1"),
+			}
+			chainAliases[chainID] = []string{"DAI1"}
+		case "LTC1-Chain":
+			apiAliases[endpoint] = []string{
+				"LTC1",
+				path.Join(constants.ChainAliasPrefix, "LTC1"),
+			}
+			chainAliases[chainID] = []string{"LTC1"}
+		case "XLM1-Chain":
+			apiAliases[endpoint] = []string{
+				"XLM1",
+				path.Join(constants.ChainAliasPrefix, "XLM1"),
+			}
+			chainAliases[chainID] = []string{"XLM1"}
+		case "BCH1-Chain":
+			apiAliases[endpoint] = []string{
+				"BCH1",
+				path.Join(constants.ChainAliasPrefix, "BCH1"),
+			}
+			chainAliases[chainID] = []string{"BCH1"}
+		case "PAXG1-Chain":
+			apiAliases[endpoint] = []string{
+				"PAXG1",
+				path.Join(constants.ChainAliasPrefix, "PAXG1"),
+			}
+			chainAliases[chainID] = []string{"PAXG1"}
+		case "ICP1-Chain":
+			apiAliases[endpoint] = []string{
+				"ICP1",
+				path.Join(constants.ChainAliasPrefix, "ICP1"),
+			}
+			chainAliases[chainID] = []string{"ICP1"}
+		case "XIDR1-Chain":
+			apiAliases[endpoint] = []string{
+				"XIDR1",
+				path.Join(constants.ChainAliasPrefix, "XIDR1"),
+			}
+			chainAliases[chainID] = []string{"XIDR1"}
+		case "XSGD1-Chain":
+			apiAliases[endpoint] = []string{
+				"XSGD1",
+				path.Join(constants.ChainAliasPrefix, "XSGD1"),
+			}
+			chainAliases[chainID] = []string{"XSGD1"}
+		case "ETC1-Chain":
+			apiAliases[endpoint] = []string{
+				"ETC1",
+				path.Join(constants.ChainAliasPrefix, "ETC1"),
+			}
+			chainAliases[chainID] = []string{"ETC1"}
+		case "R1000-Chain":
+			apiAliases[endpoint] = []string{
+				"R1000",
+				path.Join(constants.ChainAliasPrefix, "R1000"),
+			}
+			chainAliases[chainID] = []string{"R1000"}
+		case "R10-Chain":
+			apiAliases[endpoint] = []string{
+				"R10",
+				path.Join(constants.ChainAliasPrefix, "R10"),
+			}
+			chainAliases[chainID] = []string{"R10"}
 		}
 	}
 	return apiAliases, chainAliases, nil
-}
-
-func GetJUNEChainAliases() []string {
-	return []string{"JUNE"}
-}
-
-func GetJVMChainAliases() []string {
-	return []string{"JVM"}
 }
 
 func GetVMAliases() map[ids.ID][]string {
