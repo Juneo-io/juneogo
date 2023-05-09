@@ -85,7 +85,22 @@ type Config struct {
 	InitialStakedFunds         []ids.ShortID `json:"initialStakedFunds"`
 	InitialStakers             []Staker      `json:"initialStakers"`
 
-	JUNEChainGenesis string `json:"JUNEChainGenesis"`
+	JUNEChainGenesis  string `json:"JUNEChainGenesis"`
+	ETH1ChainGenesis  string `json:"ETH1ChainGenesis"`
+	MBTC1ChainGenesis string `json:"MBTC1ChainGenesis"`
+	DOGE1ChainGenesis string `json:"DOGE1ChainGenesis"`
+	TUSD1ChainGenesis string `json:"TUSD1ChainGenesis"`
+	DAI1ChainGenesis  string `json:"DAI1ChainGenesis"`
+	LTC1ChainGenesis  string `json:"LTC1ChainGenesis"`
+	XLM1ChainGenesis  string `json:"XLM1ChainGenesis"`
+	BCH1ChainGenesis  string `json:"BCH1ChainGenesis"`
+	PAXG1ChainGenesis string `json:"PAXG1ChainGenesis"`
+	ICP1ChainGenesis  string `json:"ICP1ChainGenesis"`
+	XIDR1ChainGenesis string `json:"XIDR1ChainGenesis"`
+	XSGD1ChainGenesis string `json:"XSGD1ChainGenesis"`
+	ETC1ChainGenesis  string `json:"ETC1ChainGenesis"`
+	R1000ChainGenesis string `json:"R1000ChainGenesis"`
+	R10ChainGenesis   string `json:"R10ChainGenesis"`
 
 	Message string `json:"message"`
 }
@@ -101,6 +116,21 @@ func (c Config) Unparse() (UnparsedConfig, error) {
 		InitialStakedFunds:         make([]string, len(c.InitialStakedFunds)),
 		InitialStakers:             make([]UnparsedStaker, len(c.InitialStakers)),
 		JUNEChainGenesis:           c.JUNEChainGenesis,
+		ETH1ChainGenesis:           c.ETH1ChainGenesis,
+		MBTC1ChainGenesis:          c.MBTC1ChainGenesis,
+		DOGE1ChainGenesis:          c.DOGE1ChainGenesis,
+		TUSD1ChainGenesis:          c.TUSD1ChainGenesis,
+		DAI1ChainGenesis:           c.DAI1ChainGenesis,
+		LTC1ChainGenesis:           c.LTC1ChainGenesis,
+		XLM1ChainGenesis:           c.XLM1ChainGenesis,
+		BCH1ChainGenesis:           c.BCH1ChainGenesis,
+		PAXG1ChainGenesis:          c.PAXG1ChainGenesis,
+		ICP1ChainGenesis:           c.ICP1ChainGenesis,
+		XIDR1ChainGenesis:          c.XIDR1ChainGenesis,
+		XSGD1ChainGenesis:          c.XSGD1ChainGenesis,
+		ETC1ChainGenesis:           c.ETC1ChainGenesis,
+		R1000ChainGenesis:          c.R1000ChainGenesis,
+		R10ChainGenesis:            c.R10ChainGenesis,
 		Message:                    c.Message,
 	}
 	for i, a := range c.Allocations {
