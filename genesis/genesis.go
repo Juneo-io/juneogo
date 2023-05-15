@@ -367,7 +367,7 @@ func FromConfig(config *Config) ([]byte, ids.ID, error) {
 		mbtc1 = createFixedAsset("mBitcoin", "MBTC1", 9, zeroAddress)
 		doge1 = createFixedAsset("Doge", "DOGE1", 9, zeroAddress)
 		tusd1 = createFixedAsset("TrueUSD", "TUSD1", 9, zeroAddress)
-		usdt1 = createFixedAsset("Tether", "USDT1", 9, zeroAddress)
+		usdt1 = createFixedAsset("Tether USD", "USDT1", 9, zeroAddress)
 		dai1 = createFixedAsset("Dai", "DAI1", 9, zeroAddress)
 		euroc1 = createFixedAsset("Euro Coin", "EUROC1", 9, zeroAddress)
 		ltc1 = createFixedAsset("Litecoin", "LTC1", 9, zeroAddress)
