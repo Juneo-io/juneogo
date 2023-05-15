@@ -311,8 +311,8 @@ func FromConfig(config *Config) ([]byte, ids.ID, error) {
 	amount := uint64(0)
 	assetsCount := int(0)
 
-	var june, eth1, mbtc1, doge1, tusd1, dai1, ltc1, xlm1 avm.AssetDefinition
-	var bch1, paxg1, icp1, xidr1, xsgd1, etc1, r1000, r10 avm.AssetDefinition
+	var june, eth1, mbtc1, doge1, tusd1, usdt1, dai1, euroc1 avm.AssetDefinition
+	var ltc1, xlm1, bch1, paxg1, icp1, xidr1, xsgd1, etc1, r1000, r10 avm.AssetDefinition
 
 	// Specify the genesis state of the JVM
 	avmArgs := avm.BuildGenesisArgs{
@@ -367,7 +367,9 @@ func FromConfig(config *Config) ([]byte, ids.ID, error) {
 		mbtc1 = createFixedAsset("mBitcoin", "MBTC1", 9, zeroAddress)
 		doge1 = createFixedAsset("Doge", "DOGE1", 9, zeroAddress)
 		tusd1 = createFixedAsset("TrueUSD", "TUSD1", 9, zeroAddress)
+		usdt1 = createFixedAsset("Tether", "USDT1", 9, zeroAddress)
 		dai1 = createFixedAsset("Dai", "DAI1", 9, zeroAddress)
+		euroc1 = createFixedAsset("Euro Coin", "EUROC1", 9, zeroAddress)
 		ltc1 = createFixedAsset("Litecoin", "LTC1", 9, zeroAddress)
 		xlm1 = createFixedAsset("Stellar", "XLM1", 9, zeroAddress)
 		bch1 = createFixedAsset("Bitcoin Cash", "BCH1", 9, zeroAddress)
@@ -380,22 +382,24 @@ func FromConfig(config *Config) ([]byte, ids.ID, error) {
 		r10 = createFixedAsset("Ratio 10", "R10", 9, zeroAddress)
 
 		avmArgs.GenesisData = map[string]avm.AssetDefinition{
-			june.Symbol:  june,
-			eth1.Symbol:  eth1,
-			mbtc1.Symbol: mbtc1,
-			doge1.Symbol: doge1,
-			tusd1.Symbol: tusd1,
-			dai1.Symbol:  dai1,
-			ltc1.Symbol:  ltc1,
-			xlm1.Symbol:  xlm1,
-			bch1.Symbol:  bch1,
-			paxg1.Symbol: paxg1,
-			icp1.Symbol:  icp1,
-			xidr1.Symbol: xidr1,
-			xsgd1.Symbol: xsgd1,
-			etc1.Symbol:  etc1,
-			r1000.Symbol: r1000,
-			r10.Symbol:   r10,
+			june.Symbol:   june,
+			eth1.Symbol:   eth1,
+			mbtc1.Symbol:  mbtc1,
+			doge1.Symbol:  doge1,
+			tusd1.Symbol:  tusd1,
+			usdt1.Symbol:  usdt1,
+			dai1.Symbol:   dai1,
+			euroc1.Symbol: euroc1,
+			ltc1.Symbol:   ltc1,
+			xlm1.Symbol:   xlm1,
+			bch1.Symbol:   bch1,
+			paxg1.Symbol:  paxg1,
+			icp1.Symbol:   icp1,
+			xidr1.Symbol:  xidr1,
+			xsgd1.Symbol:  xsgd1,
+			etc1.Symbol:   etc1,
+			r1000.Symbol:  r1000,
+			r10.Symbol:    r10,
 		}
 		assetsCount = len(avmArgs.GenesisData)
 	}
@@ -538,7 +542,15 @@ func FromConfig(config *Config) ([]byte, ids.ID, error) {
 	if err != nil {
 		return nil, ids.Empty, fmt.Errorf("couldn't encode message: %w", err)
 	}
+	usdt1GenesisStr, err := formatting.Encode(defaultEncoding, []byte(config.USDT1ChainGenesis))
+	if err != nil {
+		return nil, ids.Empty, fmt.Errorf("couldn't encode message: %w", err)
+	}
 	dai1GenesisStr, err := formatting.Encode(defaultEncoding, []byte(config.DAI1ChainGenesis))
+	if err != nil {
+		return nil, ids.Empty, fmt.Errorf("couldn't encode message: %w", err)
+	}
+	euroc1GenesisStr, err := formatting.Encode(defaultEncoding, []byte(config.EUROC1ChainGenesis))
 	if err != nil {
 		return nil, ids.Empty, fmt.Errorf("couldn't encode message: %w", err)
 	}
@@ -631,11 +643,25 @@ func FromConfig(config *Config) ([]byte, ids.ID, error) {
 			ChainAssetID: assetsIDs[tusd1.Symbol],
 		},
 		{
+			GenesisData:  usdt1GenesisStr,
+			SubnetID:     constants.PrimaryNetworkID,
+			VMID:         constants.EVMID,
+			Name:         "USDT1-Chain",
+			ChainAssetID: assetsIDs[usdt1.Symbol],
+		},
+		{
 			GenesisData:  dai1GenesisStr,
 			SubnetID:     constants.PrimaryNetworkID,
 			VMID:         constants.EVMID,
 			Name:         "DAI1-Chain",
 			ChainAssetID: assetsIDs[dai1.Symbol],
+		},
+		{
+			GenesisData:  euroc1GenesisStr,
+			SubnetID:     constants.PrimaryNetworkID,
+			VMID:         constants.EVMID,
+			Name:         "EUROC1-Chain",
+			ChainAssetID: assetsIDs[euroc1.Symbol],
 		},
 		{
 			GenesisData:  ltc1GenesisStr,

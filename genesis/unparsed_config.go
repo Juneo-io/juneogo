@@ -90,22 +90,24 @@ type UnparsedConfig struct {
 	InitialStakedFunds         []string         `json:"initialStakedFunds"`
 	InitialStakers             []UnparsedStaker `json:"initialStakers"`
 
-	JUNEChainGenesis  string `json:"JUNEChainGenesis"`
-	ETH1ChainGenesis  string `json:"ETH1ChainGenesis"`
-	MBTC1ChainGenesis string `json:"MBTC1ChainGenesis"`
-	DOGE1ChainGenesis string `json:"DOGE1ChainGenesis"`
-	TUSD1ChainGenesis string `json:"TUSD1ChainGenesis"`
-	DAI1ChainGenesis  string `json:"DAI1ChainGenesis"`
-	LTC1ChainGenesis  string `json:"LTC1ChainGenesis"`
-	XLM1ChainGenesis  string `json:"XLM1ChainGenesis"`
-	BCH1ChainGenesis  string `json:"BCH1ChainGenesis"`
-	PAXG1ChainGenesis string `json:"PAXG1ChainGenesis"`
-	ICP1ChainGenesis  string `json:"ICP1ChainGenesis"`
-	XIDR1ChainGenesis string `json:"XIDR1ChainGenesis"`
-	XSGD1ChainGenesis string `json:"XSGD1ChainGenesis"`
-	ETC1ChainGenesis  string `json:"ETC1ChainGenesis"`
-	R1000ChainGenesis string `json:"R1000ChainGenesis"`
-	R10ChainGenesis   string `json:"R10ChainGenesis"`
+	JUNEChainGenesis   string `json:"JUNEChainGenesis"`
+	ETH1ChainGenesis   string `json:"ETH1ChainGenesis"`
+	MBTC1ChainGenesis  string `json:"MBTC1ChainGenesis"`
+	DOGE1ChainGenesis  string `json:"DOGE1ChainGenesis"`
+	TUSD1ChainGenesis  string `json:"TUSD1ChainGenesis"`
+	USDT1ChainGenesis  string `json:"USDT1ChainGenesis"`
+	DAI1ChainGenesis   string `json:"DAI1ChainGenesis"`
+	EUROC1ChainGenesis string `json:"EUROC1ChainGenesis"`
+	LTC1ChainGenesis   string `json:"LTC1ChainGenesis"`
+	XLM1ChainGenesis   string `json:"XLM1ChainGenesis"`
+	BCH1ChainGenesis   string `json:"BCH1ChainGenesis"`
+	PAXG1ChainGenesis  string `json:"PAXG1ChainGenesis"`
+	ICP1ChainGenesis   string `json:"ICP1ChainGenesis"`
+	XIDR1ChainGenesis  string `json:"XIDR1ChainGenesis"`
+	XSGD1ChainGenesis  string `json:"XSGD1ChainGenesis"`
+	ETC1ChainGenesis   string `json:"ETC1ChainGenesis"`
+	R1000ChainGenesis  string `json:"R1000ChainGenesis"`
+	R10ChainGenesis    string `json:"R10ChainGenesis"`
 
 	Message string `json:"message"`
 }
@@ -125,7 +127,9 @@ func (uc UnparsedConfig) Parse() (Config, error) {
 		MBTC1ChainGenesis:          uc.MBTC1ChainGenesis,
 		DOGE1ChainGenesis:          uc.DOGE1ChainGenesis,
 		TUSD1ChainGenesis:          uc.TUSD1ChainGenesis,
+		USDT1ChainGenesis:          uc.USDT1ChainGenesis,
 		DAI1ChainGenesis:           uc.DAI1ChainGenesis,
+		EUROC1ChainGenesis:         uc.EUROC1ChainGenesis,
 		LTC1ChainGenesis:           uc.LTC1ChainGenesis,
 		XLM1ChainGenesis:           uc.XLM1ChainGenesis,
 		BCH1ChainGenesis:           uc.BCH1ChainGenesis,
