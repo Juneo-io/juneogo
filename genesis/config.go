@@ -194,9 +194,9 @@ var (
 	// genesis.
 	MainnetConfig Config
 
-	// FujiConfig is the config that should be used to generate the fuji
+	// SocotraConfig is the config that should be used to generate the socotra
 	// genesis.
-	FujiConfig Config
+	SocotraConfig Config
 
 	// LocalConfig is the config that should be used to generate a local
 	// genesis.
@@ -205,13 +205,13 @@ var (
 
 func init() {
 	unparsedMainnetConfig := UnparsedConfig{}
-	unparsedFujiConfig := UnparsedConfig{}
+	unparsedSocotraConfig := UnparsedConfig{}
 	unparsedLocalConfig := UnparsedConfig{}
 
 	errs := wrappers.Errs{}
 	errs.Add(
 		json.Unmarshal(mainnetGenesisConfigJSON, &unparsedMainnetConfig),
-		json.Unmarshal(fujiGenesisConfigJSON, &unparsedFujiConfig),
+		json.Unmarshal(socotraGenesisConfigJSON, &unparsedSocotraConfig),
 		json.Unmarshal(localGenesisConfigJSON, &unparsedLocalConfig),
 	)
 	if errs.Errored() {
@@ -222,9 +222,9 @@ func init() {
 	errs.Add(err)
 	MainnetConfig = mainnetConfig
 
-	fujiConfig, err := unparsedFujiConfig.Parse()
+	socotraConfig, err := unparsedSocotraConfig.Parse()
 	errs.Add(err)
-	FujiConfig = fujiConfig
+	SocotraConfig = socotraConfig
 
 	localConfig, err := unparsedLocalConfig.Parse()
 	errs.Add(err)
@@ -239,8 +239,8 @@ func GetConfig(networkID uint32) *Config {
 	switch networkID {
 	case constants.MainnetID:
 		return &MainnetConfig
-	case constants.FujiID:
-		return &FujiConfig
+	case constants.TestnetID:
+		return &SocotraConfig
 	case constants.LocalID:
 		return &LocalConfig
 	default:

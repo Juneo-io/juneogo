@@ -13,7 +13,7 @@ func getIPs(networkID uint32) []string {
 	switch networkID {
 	case constants.MainnetID:
 		return nil
-	case constants.FujiID:
+	case constants.TestnetID:
 		return nil
 	default:
 		return nil
@@ -25,7 +25,7 @@ func getNodeIDs(networkID uint32) []string {
 	switch networkID {
 	case constants.MainnetID:
 		return nil
-	case constants.FujiID:
+	case constants.TestnetID:
 		return nil
 	default:
 		return nil

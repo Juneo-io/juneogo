@@ -13,29 +13,29 @@ import (
 )
 
 var (
-	//go:embed genesis_fuji.json
-	fujiGenesisConfigJSON []byte
+	//go:embed genesis_socotra.json
+	socotraGenesisConfigJSON []byte
 
-	// FujiParams are the params used for the fuji testnet
-	FujiParams = Params{
+	// SocotraParams are the params used for the socotra testnet
+	SocotraParams = Params{
 		TxFeeConfig: TxFeeConfig{
-			TxFee:                         units.MilliAvax,
-			CreateAssetTxFee:              10 * units.MilliAvax,
+			TxFee:                         10 * units.MilliAvax,
+			CreateAssetTxFee:              100 * units.MilliAvax,
 			CreateSubnetTxFee:             100 * units.MilliAvax,
 			TransformSubnetTxFee:          1 * units.Avax,
 			CreateBlockchainTxFee:         100 * units.MilliAvax,
 			AddPrimaryNetworkValidatorFee: 0,
 			AddPrimaryNetworkDelegatorFee: 0,
-			AddSubnetValidatorFee:         units.MilliAvax,
-			AddSubnetDelegatorFee:         units.MilliAvax,
+			AddSubnetValidatorFee:         100 * units.MilliAvax,
+			AddSubnetDelegatorFee:         100 * units.MilliAvax,
 		},
 		StakingConfig: StakingConfig{
 			UptimeRequirement: .8, // 80%
 			MinValidatorStake: 1 * units.Avax,
-			MaxValidatorStake: 3 * units.MegaAvax,
-			MinDelegatorStake: 1 * units.Avax,
-			MinDelegationFee:  20000, // 2%
-			MinStakeDuration:  24 * time.Hour,
+			MaxValidatorStake: 1 * units.MegaAvax,
+			MinDelegatorStake: 10 * units.MilliAvax,
+			MinDelegationFee:  120000, // 12%
+			MinStakeDuration:  2 * 7 * 24 * time.Hour,
 			MaxStakeDuration:  365 * 24 * time.Hour,
 			RewardConfig: reward.Config{
 				MaxConsumptionRate: .12 * reward.PercentDenominator,
