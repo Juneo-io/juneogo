@@ -32,14 +32,12 @@ func NewCalculator(c Config) Calculator {
 }
 
 var (
-	y7      = uint64(time.Date(2028, time.September, 1, 0, 0, 0, 0, time.UTC).Unix())
-	y6      = uint64(time.Date(2027, time.September, 1, 0, 0, 0, 0, time.UTC).Unix())
-	y4      = uint64(time.Date(2025, time.September, 1, 0, 0, 0, 0, time.UTC).Unix())
-	y1      = uint64(time.Date(2022, time.September, 1, 0, 0, 0, 0, time.UTC).Unix())
-	y7Value = uint64(50000)  // 5%
-	y6Value = uint64(87500)  // 8.75%
-	y4Value = uint64(167500) // 16.75%
-	y1Value = uint64(227500) // 22.75%
+	y1      = uint64(time.Date(2023, time.June, 21, 0, 0, 0, 0, time.UTC).Unix())
+	y5      = uint64(time.Date(2027, time.June, 21, 0, 0, 0, 0, time.UTC).Unix())
+	y6      = uint64(time.Date(2028, time.June, 21, 0, 0, 0, 0, time.UTC).Unix())
+	y1Value = uint64(215000) // 23.5% - 2% = 21.5%
+	y5Value = uint64(195000) // 21.5% - 2% = 19.5%
+	y6Value = uint64(65000)  // 8.5% - 2% = 6.5%
 )
 
 // Reward returns the amount of tokens to reward the staker with in a permissionless supernet.
@@ -70,17 +68,14 @@ func (c *calculator) CalculatePrimary(stakedDuration time.Duration, currentTime 
 
 func GetTimeRewards(currentTime time.Time, stakedAmount uint64, bonusRewards *big.Int, timePercentage *big.Int) *big.Int {
 	currentTimeValue := uint64(currentTime.Unix())
-	if currentTimeValue >= y7 {
-		return GetTimeRewardsValue(y7Value, y7Value, bonusRewards, timePercentage, rewardShareDenominator, stakedAmount)
-	}
 	if currentTimeValue >= y6 {
-		return GetTimeRewardsValue(y7Value, y6Value, bonusRewards, timePercentage, GetTimeBoundsPercentage(y7, y6, currentTimeValue), stakedAmount)
+		return GetTimeRewardsValue(y6Value, y6Value, bonusRewards, timePercentage, rewardShareDenominator, stakedAmount)
 	}
-	if currentTimeValue >= y4 {
-		return GetTimeRewardsValue(y6Value, y4Value, bonusRewards, timePercentage, GetTimeBoundsPercentage(y6, y4, currentTimeValue), stakedAmount)
+	if currentTimeValue >= y5 {
+		return GetTimeRewardsValue(y6Value, y5Value, bonusRewards, timePercentage, GetTimeBoundsPercentage(y6, y5, currentTimeValue), stakedAmount)
 	}
 	if currentTimeValue >= y1 {
-		return GetTimeRewardsValue(y4Value, y1Value, bonusRewards, timePercentage, GetTimeBoundsPercentage(y4, y1, currentTimeValue), stakedAmount)
+		return GetTimeRewardsValue(y5Value, y1Value, bonusRewards, timePercentage, GetTimeBoundsPercentage(y5, y1, currentTimeValue), stakedAmount)
 	}
 	return GetTimeRewardsValue(y1Value, y1Value, bonusRewards, timePercentage, rewardShareDenominator, stakedAmount)
 }
