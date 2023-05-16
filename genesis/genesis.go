@@ -355,8 +355,7 @@ func FromConfig(config *Config) ([]byte, ids.ID, error) {
 			return nil, ids.Empty, fmt.Errorf("couldn't parse memo bytes to string: %w", err)
 		}
 
-		zeroAddress, err := address.Format(
-			configChainIDAlias,
+		zeroAddress, err := address.FormatBech32(
 			hrp,
 			make([]byte, 20),
 		)
