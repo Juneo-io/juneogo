@@ -85,7 +85,7 @@ func addNodeFlags(fs *pflag.FlagSet) {
 	fs.String(GenesisConfigContentKey, "", "Specifies base64 encoded genesis content")
 
 	// Network ID
-	fs.String(NetworkNameKey, constants.MainnetName, "Network ID this node will connect to")
+	fs.String(NetworkNameKey, constants.TestnetName, "Network ID this node will connect to")
 
 	// AVAX fees
 	fs.Uint64(TxFeeKey, genesis.LocalParams.TxFee, "Transaction fee, in nAVAX")
