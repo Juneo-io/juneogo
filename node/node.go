@@ -21,6 +21,8 @@ import (
 
 	"go.uber.org/zap"
 
+	coreth "github.com/ava-labs/coreth/plugin/evm"
+
 	"github.com/ava-labs/avalanchego/api/admin"
 	"github.com/ava-labs/avalanchego/api/auth"
 	"github.com/ava-labs/avalanchego/api/health"
@@ -831,6 +833,7 @@ func (n *Node) initVMs() error {
 				UseCurrentHeight:                n.Config.UseCurrentHeight,
 			},
 		}),
+		vmRegisterer.Register(context.TODO(), constants.EVMID, &coreth.Factory{}),
 		vmRegisterer.Register(context.TODO(), constants.AVMID, &avm.Factory{
 			Config: avmconfig.Config{
 				TxFee:            n.Config.TxFee,
