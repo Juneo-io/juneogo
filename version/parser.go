@@ -32,7 +32,7 @@ func ParseApplication(s string) (*Application, error) {
 		return nil, fmt.Errorf("application string %q missing required prefix", s)
 	}
 
-	s = s[5:]
+	s = s[6:]
 	major, minor, patch, err := parseVersions(s)
 	if err != nil {
 		return nil, err
