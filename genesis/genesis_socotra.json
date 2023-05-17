@@ -5,7 +5,7 @@
 			{
 				"ethAddr": "0x44542FD7C3F096aE54Cc07833b1C0Dcf68B7790C",
 				"avaxAddr": "JVM-socotra1cj4lkajc4kdm5z9apjcc9u6w2jss9eqlhqqdkp",
-				"initialAmount": 939999999999999999,
+				"initialAmount": 4939999999999999999,
 				"unlockSchedule": []
 			},
 			{
@@ -15,7 +15,7 @@
 				"unlockSchedule": [
 					{
 						"amount": 1000000000000000,
-						"locktime": 1715810400
+						"locktime": 1633824000
 					}
 				]
 			},
@@ -26,7 +26,7 @@
 				"unlockSchedule": [
 					{
 						"amount": 1000000000000000,
-						"locktime": 1715810400
+						"locktime": 1633824000
 					}
 				]
 			},
@@ -37,7 +37,7 @@
 				"unlockSchedule": [
 					{
 						"amount": 1000000000000000,
-						"locktime": 1715810400
+						"locktime": 1633824000
 					}
 				]
 			},
@@ -48,7 +48,7 @@
 				"unlockSchedule": [
 					{
 						"amount": 1000000000000000,
-						"locktime": 1715810400
+						"locktime": 1633824000
 					}
 				]
 			},
@@ -59,7 +59,7 @@
 				"unlockSchedule": [
 					{
 						"amount": 1000000000000000,
-						"locktime": 1684188000
+						"locktime": 1633824000
 					}
 				]
 			},
@@ -70,7 +70,7 @@
 				"unlockSchedule": [
 					{
 						"amount": 1000000000000000,
-						"locktime": 1684188000
+						"locktime": 1633824000
 					}
 				]
 			},
@@ -81,7 +81,7 @@
 				"unlockSchedule": [
 					{
 						"amount": 1000000000,
-						"locktime": 1684188000
+						"locktime": 1633824000
 					}
 				]
 			}
