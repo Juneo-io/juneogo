@@ -326,6 +326,7 @@ func (m *manager) createChain(chainParams ChainParameters) {
 		zap.Stringer("subnetID", chainParams.SubnetID),
 		zap.Stringer("chainID", chainParams.ID),
 		zap.Stringer("vmID", chainParams.VMID),
+		zap.Stringer("chainAssetID", chainParams.ChainAssetID),
 	)
 
 	m.subnetsLock.Lock()
