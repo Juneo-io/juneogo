@@ -193,6 +193,9 @@ func AdvanceTimeTo(
 			extraValue = potentialReward - rewardsPoolSupply
 		}
 		rewardsPoolSupply, err = math.Sub(rewardsPoolSupply, potentialReward-extraValue)
+		if err != nil {
+			return nil, err
+		}
 		if extraValue > 0 {
 			supply, err = math.Add64(supply, extraValue)
 			if err != nil {
