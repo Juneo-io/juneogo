@@ -72,7 +72,7 @@ var (
 	subnetPrefix                  = []byte("subnet")
 	transformedSubnetPrefix       = []byte("transformedSubnet")
 	supplyPrefix                  = []byte("supply")
-	rewardsSupplyPrefix           = []byte("rewards supply")
+	rewardsSupplyPrefix           = []byte("rewardsSupply")
 	chainPrefix                   = []byte("chain")
 	singletonPrefix               = []byte("singleton")
 
