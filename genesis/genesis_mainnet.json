@@ -4,13 +4,13 @@
 	"allocations": [
 			{
 				"ethAddr": "0xb1f7da1188b6ad10c4a0778e933b9f0db4e0a117",
-				"juneAddr": "JVM-june15xhsu3u8n424hh60yt7435qwq45yu4f6mgmcc6",
+				"avaxAddr": "JVM-june15xhsu3u8n424hh60yt7435qwq45yu4f6mgmcc6",
 				"initialAmount": 44364800000000000,
 				"unlockSchedule": []
 			},
 			{
 				"ethAddr": "0x5e5592b9b3a64f4808dcd4ee8cf54f3c05595405",
-				"juneAddr": "JVM-june17qytasnj7ev2kcneszw0gczwaxwyp6ky7x5qqa",
+				"avaxAddr": "JVM-june17qytasnj7ev2kcneszw0gczwaxwyp6ky7x5qqa",
 				"initialAmount": 0,
 				"unlockSchedule": [
 					{
