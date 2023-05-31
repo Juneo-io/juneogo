@@ -25,8 +25,8 @@ import (
 	"github.com/ava-labs/avalanchego/vms/platformvm/status"
 	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
 	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
-	"github.com/ava-labs/avalanchego/wallet/subnet/primary"
-	"github.com/ava-labs/avalanchego/wallet/subnet/primary/common"
+	"github.com/ava-labs/avalanchego/wallet/supernet/primary"
+	"github.com/ava-labs/avalanchego/wallet/supernet/primary/common"
 )
 
 // PChainWorkflow is an integration test for normal P-Chain operations

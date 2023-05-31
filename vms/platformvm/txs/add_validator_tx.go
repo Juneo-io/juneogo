@@ -66,7 +66,7 @@ func (tx *AddValidatorTx) ConsumedValue(assetID ids.ID) uint64 {
 	return value
 }
 
-func (*AddValidatorTx) SubnetID() ids.ID {
+func (*AddValidatorTx) SupernetID() ids.ID {
 	return constants.PrimaryNetworkID
 }
 

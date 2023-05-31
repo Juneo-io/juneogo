@@ -6,7 +6,7 @@ import "google/protobuf/empty.proto";
 
 option go_package = "github.com/ava-labs/avalanchego/proto/pb/vm/manager";
 
-// Manages the lifecycle of a subnet VM process.
+// Manages the lifecycle of a supernet VM process.
 service Runtime {
   // Initialize a VM Runtime.
   rpc Initialize(InitializeRequest) returns (google.protobuf.Empty);

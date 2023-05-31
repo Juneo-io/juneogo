@@ -33,7 +33,7 @@ func (b *backendVisitor) AddValidatorTx(tx *txs.AddValidatorTx) error {
 	return b.baseTx(&tx.BaseTx)
 }
 
-func (b *backendVisitor) AddSubnetValidatorTx(tx *txs.AddSubnetValidatorTx) error {
+func (b *backendVisitor) AddSupernetValidatorTx(tx *txs.AddSupernetValidatorTx) error {
 	return b.baseTx(&tx.BaseTx)
 }
 
@@ -45,11 +45,11 @@ func (b *backendVisitor) CreateChainTx(tx *txs.CreateChainTx) error {
 	return b.baseTx(&tx.BaseTx)
 }
 
-func (b *backendVisitor) CreateSubnetTx(tx *txs.CreateSubnetTx) error {
+func (b *backendVisitor) CreateSupernetTx(tx *txs.CreateSupernetTx) error {
 	return b.baseTx(&tx.BaseTx)
 }
 
-func (b *backendVisitor) RemoveSubnetValidatorTx(tx *txs.RemoveSubnetValidatorTx) error {
+func (b *backendVisitor) RemoveSupernetValidatorTx(tx *txs.RemoveSupernetValidatorTx) error {
 	return b.baseTx(&tx.BaseTx)
 }
 
@@ -86,7 +86,7 @@ func (b *backendVisitor) ExportTx(tx *txs.ExportTx) error {
 	return b.baseTx(&tx.BaseTx)
 }
 
-func (b *backendVisitor) TransformSubnetTx(tx *txs.TransformSubnetTx) error {
+func (b *backendVisitor) TransformSupernetTx(tx *txs.TransformSupernetTx) error {
 	return b.baseTx(&tx.BaseTx)
 }
 

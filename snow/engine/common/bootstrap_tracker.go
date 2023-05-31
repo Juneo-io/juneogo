@@ -8,7 +8,7 @@ import (
 )
 
 // BootstrapTracker describes the standard interface for tracking the status of
-// a subnet bootstrapping
+// a supernet bootstrapping
 type BootstrapTracker interface {
 	// Returns true iff done bootstrapping
 	IsBootstrapped() bool

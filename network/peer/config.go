@@ -33,7 +33,7 @@ type Config struct {
 	Network              Network
 	Router               router.InboundHandler
 	VersionCompatibility version.Compatibility
-	MySubnets            set.Set[ids.ID]
+	MySupernets          set.Set[ids.ID]
 	Beacons              validators.Set
 	NetworkID            uint32
 	PingFrequency        time.Duration

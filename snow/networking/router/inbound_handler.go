@@ -31,6 +31,6 @@ func (f InboundHandlerFunc) HandleInbound(ctx context.Context, msg message.Inbou
 type ExternalHandler interface {
 	InboundHandler
 
-	Connected(nodeID ids.NodeID, nodeVersion *version.Application, subnetID ids.ID)
+	Connected(nodeID ids.NodeID, nodeVersion *version.Application, supernetID ids.ID)
 	Disconnected(nodeID ids.NodeID)
 }

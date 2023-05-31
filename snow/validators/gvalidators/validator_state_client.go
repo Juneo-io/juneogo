@@ -41,24 +41,24 @@ func (c *Client) GetCurrentHeight(ctx context.Context) (uint64, error) {
 	return resp.Height, nil
 }
 
-func (c *Client) GetSubnetID(ctx context.Context, chainID ids.ID) (ids.ID, error) {
-	resp, err := c.client.GetSubnetID(ctx, &pb.GetSubnetIDRequest{
+func (c *Client) GetSupernetID(ctx context.Context, chainID ids.ID) (ids.ID, error) {
+	resp, err := c.client.GetSupernetID(ctx, &pb.GetSupernetIDRequest{
 		ChainId: chainID[:],
 	})
 	if err != nil {
 		return ids.Empty, err
 	}
-	return ids.ToID(resp.SubnetId)
+	return ids.ToID(resp.SupernetId)
 }
 
 func (c *Client) GetValidatorSet(
 	ctx context.Context,
 	height uint64,
-	subnetID ids.ID,
+	supernetID ids.ID,
 ) (map[ids.NodeID]*validators.GetValidatorOutput, error) {
 	resp, err := c.client.GetValidatorSet(ctx, &pb.GetValidatorSetRequest{
-		Height:   height,
-		SubnetId: subnetID[:],
+		Height:     height,
+		SupernetId: supernetID[:],
 	})
 	if err != nil {
 		return nil, err

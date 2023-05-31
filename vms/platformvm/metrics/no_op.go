@@ -45,8 +45,8 @@ func (noopMetrics) SetTotalStake(uint64) {}
 
 func (noopMetrics) SetTimeUntilUnstake(time.Duration) {}
 
-func (noopMetrics) SetTimeUntilSubnetUnstake(ids.ID, time.Duration) {}
+func (noopMetrics) SetTimeUntilSupernetUnstake(ids.ID, time.Duration) {}
 
-func (noopMetrics) SetSubnetPercentConnected(ids.ID, float64) {}
+func (noopMetrics) SetSupernetPercentConnected(ids.ID, float64) {}
 
 func (noopMetrics) SetPercentConnected(float64) {}

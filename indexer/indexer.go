@@ -160,7 +160,7 @@ func (i *indexer) RegisterChain(chainName string, ctx *snow.ConsensusContext, vm
 			zap.String("chainName", chainName),
 		)
 		return
-	} else if ctx.SubnetID != constants.PrimaryNetworkID {
+	} else if ctx.SupernetID != constants.PrimaryNetworkID {
 		i.log.Debug("not registering chain to indexer",
 			zap.String("reason", "not in the primary network"),
 			zap.String("chainName", chainName),

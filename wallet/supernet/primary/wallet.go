@@ -14,7 +14,7 @@ import (
 	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
 	"github.com/ava-labs/avalanchego/wallet/chain/p"
 	"github.com/ava-labs/avalanchego/wallet/chain/x"
-	"github.com/ava-labs/avalanchego/wallet/subnet/primary/common"
+	"github.com/ava-labs/avalanchego/wallet/supernet/primary/common"
 )
 
 var _ Wallet = (*wallet)(nil)

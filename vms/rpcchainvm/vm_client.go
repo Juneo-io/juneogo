@@ -197,7 +197,7 @@ func (vm *VMClient) Initialize(
 
 	resp, err := vm.client.Initialize(ctx, &vmpb.InitializeRequest{
 		NetworkId:    chainCtx.NetworkID,
-		SubnetId:     chainCtx.SubnetID[:],
+		SupernetId:   chainCtx.SupernetID[:],
 		ChainId:      chainCtx.ChainID[:],
 		NodeId:       chainCtx.NodeID.Bytes(),
 		PublicKey:    bls.PublicKeyToBytes(chainCtx.PublicKey),

@@ -33,7 +33,7 @@ type Router interface {
 		shutdownTimeout time.Duration,
 		criticalChains set.Set[ids.ID],
 		stakingEnabled bool,
-		trackedSubnets set.Set[ids.ID],
+		trackedSupernets set.Set[ids.ID],
 		onFatal func(exitCode int),
 		healthConfig HealthConfig,
 		metricsNamespace string,

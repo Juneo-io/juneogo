@@ -20,12 +20,12 @@ import (
 
 func getValidTx(txBuilder txbuilder.Builder, t *testing.T) *txs.Tx {
 	tx, err := txBuilder.NewCreateChainTx(
-		testSubnet1.ID(),
+		testSupernet1.ID(),
 		nil,
 		constants.AVMID,
 		nil,
 		"chain name",
-		[]*secp256k1.PrivateKey{testSubnet1ControlKeys[0], testSubnet1ControlKeys[1]},
+		[]*secp256k1.PrivateKey{testSupernet1ControlKeys[0], testSupernet1ControlKeys[1]},
 		ids.ShortEmpty,
 	)
 	require.NoError(t, err)

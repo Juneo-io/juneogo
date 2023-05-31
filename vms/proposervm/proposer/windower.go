@@ -49,16 +49,16 @@ type Windower interface {
 // delay for the block submission window of a given validator
 type windower struct {
 	state       validators.State
-	subnetID    ids.ID
+	supernetID  ids.ID
 	chainSource uint64
 	sampler     sampler.WeightedWithoutReplacement
 }
 
-func New(state validators.State, subnetID, chainID ids.ID) Windower {
+func New(state validators.State, supernetID, chainID ids.ID) Windower {
 	w := wrappers.Packer{Bytes: chainID[:]}
 	return &windower{
 		state:       state,
-		subnetID:    subnetID,
+		supernetID:  supernetID,
 		chainSource: w.UnpackLong(),
 		sampler:     sampler.NewDeterministicWeightedWithoutReplacement(),
 	}
@@ -66,7 +66,7 @@ func New(state validators.State, subnetID, chainID ids.ID) Windower {
 
 func (w *windower) Proposers(ctx context.Context, chainHeight, pChainHeight uint64) ([]ids.NodeID, error) {
 	// get the validator set by the p-chain height
-	validatorsMap, err := w.state.GetValidatorSet(ctx, pChainHeight, w.subnetID)
+	validatorsMap, err := w.state.GetValidatorSet(ctx, pChainHeight, w.supernetID)
 	if err != nil {
 		return nil, err
 	}

@@ -133,9 +133,9 @@ type Config struct {
 	// TLSKey is this node's TLS key that is used to sign IPs.
 	TLSKey crypto.Signer `json:"-"`
 
-	// TrackedSubnets of the node.
-	TrackedSubnets set.Set[ids.ID] `json:"-"`
-	Beacons        validators.Set  `json:"-"`
+	// TrackedSupernets of the node.
+	TrackedSupernets set.Set[ids.ID] `json:"-"`
+	Beacons          validators.Set  `json:"-"`
 
 	// Validators are the current validators in the Avalanche network
 	Validators validators.Manager `json:"-"`

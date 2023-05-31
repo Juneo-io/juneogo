@@ -41,10 +41,10 @@ type Metrics interface {
 	SetTotalStake(uint64)
 	// Mark when this node will unstake from the Primary Network.
 	SetTimeUntilUnstake(time.Duration)
-	// Mark when this node will unstake from a subnet.
-	SetTimeUntilSubnetUnstake(subnetID ids.ID, timeUntilUnstake time.Duration)
-	// Mark that this node is connected to this percent of a subnet's stake.
-	SetSubnetPercentConnected(subnetID ids.ID, percent float64)
+	// Mark when this node will unstake from a supernet.
+	SetTimeUntilSupernetUnstake(supernetID ids.ID, timeUntilUnstake time.Duration)
+	// Mark that this node is connected to this percent of a supernet's stake.
+	SetSupernetPercentConnected(supernetID ids.ID, percent float64)
 	// Mark that this node is connected to this percent of the Primary Network's
 	// stake.
 	SetPercentConnected(percent float64)
@@ -53,7 +53,7 @@ type Metrics interface {
 func New(
 	namespace string,
 	registerer prometheus.Registerer,
-	trackedSubnets set.Set[ids.ID],
+	trackedSupernets set.Set[ids.ID],
 ) (Metrics, error) {
 	blockMetrics, err := newBlockMetrics(namespace, registerer)
 	m := &metrics{
@@ -64,26 +64,26 @@ func New(
 			Name:      "percent_connected",
 			Help:      "Percent of connected stake",
 		}),
-		subnetPercentConnected: prometheus.NewGaugeVec(
+		supernetPercentConnected: prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Namespace: namespace,
-				Name:      "percent_connected_subnet",
-				Help:      "Percent of connected subnet weight",
+				Name:      "percent_connected_supernet",
+				Help:      "Percent of connected supernet weight",
 			},
-			[]string{"subnetID"},
+			[]string{"supernetID"},
 		),
 		timeUntilUnstake: prometheus.NewGauge(prometheus.GaugeOpts{
 			Namespace: namespace,
 			Name:      "time_until_unstake",
 			Help:      "Time (in ns) until this node leaves the Primary Network's validator set",
 		}),
-		timeUntilSubnetUnstake: prometheus.NewGaugeVec(
+		timeUntilSupernetUnstake: prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Namespace: namespace,
-				Name:      "time_until_unstake_subnet",
-				Help:      "Time (in ns) until this node leaves the subnet's validator set",
+				Name:      "time_until_unstake_supernet",
+				Help:      "Time (in ns) until this node leaves the supernet's validator set",
 			},
-			[]string{"subnetID"},
+			[]string{"supernetID"},
 		),
 		localStake: prometheus.NewGauge(prometheus.GaugeOpts{
 			Namespace: namespace,
@@ -136,9 +136,9 @@ func New(
 		err,
 
 		registerer.Register(m.percentConnected),
-		registerer.Register(m.subnetPercentConnected),
+		registerer.Register(m.supernetPercentConnected),
 		registerer.Register(m.timeUntilUnstake),
-		registerer.Register(m.timeUntilSubnetUnstake),
+		registerer.Register(m.timeUntilSupernetUnstake),
 		registerer.Register(m.localStake),
 		registerer.Register(m.totalStake),
 
@@ -151,10 +151,10 @@ func New(
 		registerer.Register(m.validatorSetsDuration),
 	)
 
-	// init subnet tracker metrics with tracked subnets
-	for subnetID := range trackedSubnets {
+	// init supernet tracker metrics with tracked supernets
+	for supernetID := range trackedSupernets {
 		// initialize to 0
-		m.subnetPercentConnected.WithLabelValues(subnetID.String()).Set(0)
+		m.supernetPercentConnected.WithLabelValues(supernetID.String()).Set(0)
 	}
 	return m, errs.Err
 }
@@ -164,12 +164,12 @@ type metrics struct {
 
 	blockMetrics *blockMetrics
 
-	percentConnected       prometheus.Gauge
-	subnetPercentConnected *prometheus.GaugeVec
-	timeUntilUnstake       prometheus.Gauge
-	timeUntilSubnetUnstake *prometheus.GaugeVec
-	localStake             prometheus.Gauge
-	totalStake             prometheus.Gauge
+	percentConnected         prometheus.Gauge
+	supernetPercentConnected *prometheus.GaugeVec
+	timeUntilUnstake         prometheus.Gauge
+	timeUntilSupernetUnstake *prometheus.GaugeVec
+	localStake               prometheus.Gauge
+	totalStake               prometheus.Gauge
 
 	numVotesWon, numVotesLost prometheus.Counter
 
@@ -219,12 +219,12 @@ func (m *metrics) SetTimeUntilUnstake(timeUntilUnstake time.Duration) {
 	m.timeUntilUnstake.Set(float64(timeUntilUnstake))
 }
 
-func (m *metrics) SetTimeUntilSubnetUnstake(subnetID ids.ID, timeUntilUnstake time.Duration) {
-	m.timeUntilSubnetUnstake.WithLabelValues(subnetID.String()).Set(float64(timeUntilUnstake))
+func (m *metrics) SetTimeUntilSupernetUnstake(supernetID ids.ID, timeUntilUnstake time.Duration) {
+	m.timeUntilSupernetUnstake.WithLabelValues(supernetID.String()).Set(float64(timeUntilUnstake))
 }
 
-func (m *metrics) SetSubnetPercentConnected(subnetID ids.ID, percent float64) {
-	m.subnetPercentConnected.WithLabelValues(subnetID.String()).Set(percent)
+func (m *metrics) SetSupernetPercentConnected(supernetID ids.ID, percent float64) {
+	m.supernetPercentConnected.WithLabelValues(supernetID.String()).Set(percent)
 }
 
 func (m *metrics) SetPercentConnected(percent float64) {

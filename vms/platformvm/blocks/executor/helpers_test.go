@@ -82,8 +82,8 @@ var (
 	xChainID                  = ids.Empty.Prefix(0)
 	cChainID                  = ids.Empty.Prefix(1)
 
-	genesisBlkID ids.ID
-	testSubnet1  *txs.Tx
+	genesisBlkID  ids.ID
+	testSupernet1 *txs.Tx
 
 	errMissingPrimaryValidators = errors.New("missing primary validator set")
 	errMissing                  = errors.New("missing")
@@ -98,12 +98,12 @@ type staker struct {
 }
 
 type test struct {
-	description           string
-	stakers               []staker
-	subnetStakers         []staker
-	advanceTimeTo         []time.Time
-	expectedStakers       map[ids.NodeID]stakerStatus
-	expectedSubnetStakers map[ids.NodeID]stakerStatus
+	description             string
+	stakers                 []staker
+	supernetStakers         []staker
+	advanceTimeTo           []time.Time
+	expectedStakers         map[ids.NodeID]stakerStatus
+	expectedSupernetStakers map[ids.NodeID]stakerStatus
 }
 
 type environment struct {
@@ -215,7 +215,7 @@ func newEnvironment(t *testing.T, ctrl *gomock.Controller) *environment {
 			res.backend,
 			window,
 		)
-		addSubnet(res)
+		addSupernet(res)
 	} else {
 		res.blkManager = NewManager(
 			res.mempool,
@@ -224,18 +224,18 @@ func newEnvironment(t *testing.T, ctrl *gomock.Controller) *environment {
 			res.backend,
 			window,
 		)
-		// we do not add any subnet to state, since we can mock
+		// we do not add any supernet to state, since we can mock
 		// whatever we need
 	}
 
 	return res
 }
 
-func addSubnet(env *environment) {
-	// Create a subnet
+func addSupernet(env *environment) {
+	// Create a supernet
 	var err error
-	testSubnet1, err = env.txBuilder.NewCreateSubnetTx(
-		2, // threshold; 2 sigs from keys[0], keys[1], keys[2] needed to add validator to this subnet
+	testSupernet1, err = env.txBuilder.NewCreateSupernetTx(
+		2, // threshold; 2 sigs from keys[0], keys[1], keys[2] needed to add validator to this supernet
 		[]ids.ShortID{ // control keys
 			preFundedKeys[0].PublicKey().Address(),
 			preFundedKeys[1].PublicKey().Address(),
@@ -258,14 +258,14 @@ func addSubnet(env *environment) {
 	executor := executor.StandardTxExecutor{
 		Backend: env.backend,
 		State:   stateDiff,
-		Tx:      testSubnet1,
+		Tx:      testSupernet1,
 	}
-	err = testSubnet1.Unsigned.Visit(&executor)
+	err = testSupernet1.Unsigned.Visit(&executor)
 	if err != nil {
 		panic(err)
 	}
 
-	stateDiff.AddTx(testSubnet1, status.Committed)
+	stateDiff.AddTx(testSupernet1, status.Committed)
 	if err := stateDiff.Apply(env.state); err != nil {
 		panic(err)
 	}
@@ -318,8 +318,8 @@ func defaultCtx(db database.Database) *snow.Context {
 	ctx.SharedMemory = m.NewSharedMemory(ctx.ChainID)
 
 	ctx.ValidatorState = &validators.TestState{
-		GetSubnetIDF: func(_ context.Context, chainID ids.ID) (ids.ID, error) {
-			subnetID, ok := map[ids.ID]ids.ID{
+		GetSupernetIDF: func(_ context.Context, chainID ids.ID) (ids.ID, error) {
+			supernetID, ok := map[ids.ID]ids.ID{
 				constants.PlatformChainID: constants.PrimaryNetworkID,
 				xChainID:                  constants.PrimaryNetworkID,
 				cChainID:                  constants.PrimaryNetworkID,
@@ -327,7 +327,7 @@ func defaultCtx(db database.Database) *snow.Context {
 			if !ok {
 				return ids.Empty, errMissing
 			}
-			return subnetID, nil
+			return supernetID, nil
 		},
 	}
 
@@ -343,7 +343,7 @@ func defaultConfig() *config.Config {
 		UptimeLockedCalculator: uptime.NewLockedCalculator(),
 		Validators:             vdrs,
 		TxFee:                  defaultTxFee,
-		CreateSubnetTxFee:      100 * defaultTxFee,
+		CreateSupernetTxFee:    100 * defaultTxFee,
 		CreateBlockchainTxFee:  100 * defaultTxFee,
 		MinValidatorStake:      5 * units.MilliAvax,
 		MaxValidatorStake:      500 * units.MilliAvax,

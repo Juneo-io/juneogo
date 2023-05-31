@@ -23,7 +23,7 @@ import (
 	"github.com/ava-labs/avalanchego/snow/uptime"
 	"github.com/ava-labs/avalanchego/snow/validators"
 	"github.com/ava-labs/avalanchego/staking"
-	"github.com/ava-labs/avalanchego/subnets"
+	"github.com/ava-labs/avalanchego/supernets"
 	"github.com/ava-labs/avalanchego/utils/constants"
 	"github.com/ava-labs/avalanchego/utils/ips"
 	"github.com/ava-labs/avalanchego/utils/logging"
@@ -36,8 +36,8 @@ import (
 var (
 	errClosed = errors.New("closed")
 
-	_ net.Listener    = (*noopListener)(nil)
-	_ subnets.Allower = (*nodeIDConnector)(nil)
+	_ net.Listener      = (*noopListener)(nil)
+	_ supernets.Allower = (*nodeIDConnector)(nil)
 )
 
 type noopListener struct {
@@ -74,7 +74,7 @@ func NewTestNetwork(
 	log logging.Logger,
 	networkID uint32,
 	currentValidators validators.Set,
-	trackedSubnets set.Set[ids.ID],
+	trackedSupernets set.Set[ids.ID],
 	router router.ExternalHandler,
 ) (Network, error) {
 	metrics := prometheus.NewRegistry()
@@ -176,7 +176,7 @@ func NewTestNetwork(
 	}
 
 	networkConfig.NetworkID = networkID
-	networkConfig.TrackedSubnets = trackedSubnets
+	networkConfig.TrackedSupernets = trackedSupernets
 
 	tlsCert, err := staking.NewTLSCert()
 	if err != nil {

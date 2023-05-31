@@ -19,7 +19,7 @@ import (
 	"github.com/ava-labs/avalanchego/vms/nftfx"
 	"github.com/ava-labs/avalanchego/vms/propertyfx"
 	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
-	"github.com/ava-labs/avalanchego/wallet/subnet/primary/common"
+	"github.com/ava-labs/avalanchego/wallet/supernet/primary/common"
 )
 
 var (

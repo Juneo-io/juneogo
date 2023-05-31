@@ -97,7 +97,7 @@ func NewServer(vm block.ChainVM) *VMServer {
 }
 
 func (vm *VMServer) Initialize(ctx context.Context, req *vmpb.InitializeRequest) (*vmpb.InitializeResponse, error) {
-	subnetID, err := ids.ToID(req.SubnetId)
+	supernetID, err := ids.ToID(req.SupernetId)
 	if err != nil {
 		return nil, err
 	}
@@ -227,11 +227,11 @@ func (vm *VMServer) Initialize(ctx context.Context, req *vmpb.InitializeRequest)
 	}()
 
 	vm.ctx = &snow.Context{
-		NetworkID: req.NetworkId,
-		SubnetID:  subnetID,
-		ChainID:   chainID,
-		NodeID:    nodeID,
-		PublicKey: publicKey,
+		NetworkID:  req.NetworkId,
+		SupernetID: supernetID,
+		ChainID:    chainID,
+		NodeID:     nodeID,
+		PublicKey:  publicKey,
 
 		XChainID:     xChainID,
 		CChainID:     cChainID,

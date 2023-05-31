@@ -23,7 +23,7 @@ import (
 	"github.com/ava-labs/avalanchego/snow/engine/common"
 	"github.com/ava-labs/avalanchego/snow/networking/tracker"
 	"github.com/ava-labs/avalanchego/snow/validators"
-	"github.com/ava-labs/avalanchego/subnets"
+	"github.com/ava-labs/avalanchego/supernets"
 	"github.com/ava-labs/avalanchego/utils/math/meter"
 	"github.com/ava-labs/avalanchego/utils/resource"
 )
@@ -56,8 +56,8 @@ func TestHandlerDropsTimedOutMessages(t *testing.T) {
 		time.Second,
 		testThreadPoolSize,
 		resourceTracker,
-		validators.UnhandledSubnetConnector,
-		subnets.New(ctx.NodeID, subnets.Config{}),
+		validators.UnhandledSupernetConnector,
+		supernets.New(ctx.NodeID, supernets.Config{}),
 	)
 	require.NoError(t, err)
 	handler := handlerIntf.(*handler)
@@ -151,8 +151,8 @@ func TestHandlerClosesOnError(t *testing.T) {
 		time.Second,
 		testThreadPoolSize,
 		resourceTracker,
-		validators.UnhandledSubnetConnector,
-		subnets.New(ctx.NodeID, subnets.Config{}),
+		validators.UnhandledSupernetConnector,
+		supernets.New(ctx.NodeID, supernets.Config{}),
 	)
 	require.NoError(t, err)
 	handler := handlerIntf.(*handler)
@@ -242,8 +242,8 @@ func TestHandlerDropsGossipDuringBootstrapping(t *testing.T) {
 		1,
 		testThreadPoolSize,
 		resourceTracker,
-		validators.UnhandledSubnetConnector,
-		subnets.New(ctx.NodeID, subnets.Config{}),
+		validators.UnhandledSupernetConnector,
+		supernets.New(ctx.NodeID, supernets.Config{}),
 	)
 	require.NoError(t, err)
 	handler := handlerIntf.(*handler)
@@ -322,8 +322,8 @@ func TestHandlerDispatchInternal(t *testing.T) {
 		time.Second,
 		testThreadPoolSize,
 		resourceTracker,
-		validators.UnhandledSubnetConnector,
-		subnets.New(ctx.NodeID, subnets.Config{}),
+		validators.UnhandledSupernetConnector,
+		supernets.New(ctx.NodeID, supernets.Config{}),
 	)
 	require.NoError(t, err)
 
@@ -373,7 +373,7 @@ func TestHandlerDispatchInternal(t *testing.T) {
 	}
 }
 
-func TestHandlerSubnetConnector(t *testing.T) {
+func TestHandlerSupernetConnector(t *testing.T) {
 	ctx := snow.DefaultConsensusContextTest()
 	vdrs := validators.NewSet()
 	err := vdrs.Add(ids.GenerateTestNodeID(), nil, ids.Empty, 1)
@@ -387,10 +387,10 @@ func TestHandlerSubnetConnector(t *testing.T) {
 	)
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	connector := validators.NewMockSubnetConnector(ctrl)
+	connector := validators.NewMockSupernetConnector(ctrl)
 
 	nodeID := ids.GenerateTestNodeID()
-	subnetID := ids.GenerateTestID()
+	supernetID := ids.GenerateTestID()
 
 	require.NoError(t, err)
 	handler, err := New(
@@ -401,7 +401,7 @@ func TestHandlerSubnetConnector(t *testing.T) {
 		testThreadPoolSize,
 		resourceTracker,
 		connector,
-		subnets.New(ctx.NodeID, subnets.Config{}),
+		supernets.New(ctx.NodeID, supernets.Config{}),
 	)
 	require.NoError(t, err)
 
@@ -438,9 +438,9 @@ func TestHandlerSubnetConnector(t *testing.T) {
 
 	handler.Start(context.Background(), false)
 
-	// Handler should call subnet connector when ConnectedSubnet message is received
+	// Handler should call supernet connector when ConnectedSupernet message is received
 	var wg sync.WaitGroup
-	connector.EXPECT().ConnectedSubnet(gomock.Any(), nodeID, subnetID).Do(
+	connector.EXPECT().ConnectedSupernet(gomock.Any(), nodeID, supernetID).Do(
 		func(context.Context, ids.NodeID, ids.ID) {
 			wg.Done()
 		})
@@ -448,11 +448,11 @@ func TestHandlerSubnetConnector(t *testing.T) {
 	wg.Add(1)
 	defer wg.Wait()
 
-	subnetInboundMessage := Message{
-		InboundMessage: message.InternalConnectedSubnet(nodeID, subnetID),
+	supernetInboundMessage := Message{
+		InboundMessage: message.InternalConnectedSupernet(nodeID, supernetID),
 		EngineType:     p2p.EngineType_ENGINE_TYPE_UNSPECIFIED,
 	}
-	handler.Push(context.Background(), subnetInboundMessage)
+	handler.Push(context.Background(), supernetInboundMessage)
 }
 
 // Tests that messages are routed to the correct engine type
@@ -570,8 +570,8 @@ func TestDynamicEngineTypeDispatch(t *testing.T) {
 				time.Second,
 				testThreadPoolSize,
 				resourceTracker,
-				validators.UnhandledSubnetConnector,
-				subnets.New(ids.EmptyNodeID, subnets.Config{}),
+				validators.UnhandledSupernetConnector,
+				supernets.New(ids.EmptyNodeID, supernets.Config{}),
 			)
 			require.NoError(t, err)
 

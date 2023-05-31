@@ -48,7 +48,7 @@ func (testManager) StartChainCreator(ChainParameters) error {
 	return nil
 }
 
-func (testManager) SubnetID(ids.ID) (ids.ID, error) {
+func (testManager) SupernetID(ids.ID) (ids.ID, error) {
 	return ids.ID{}, nil
 }
 

@@ -296,7 +296,7 @@ func (mr *MockOutboundMsgBuilderMockRecorder) Ping() *gomock.Call {
 }
 
 // Pong mocks base method.
-func (m *MockOutboundMsgBuilder) Pong(arg0 uint32, arg1 []*p2p.SubnetUptime) (OutboundMessage, error) {
+func (m *MockOutboundMsgBuilder) Pong(arg0 uint32, arg1 []*p2p.SupernetUptime) (OutboundMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Pong", arg0, arg1)
 	ret0, _ := ret[0].(OutboundMessage)

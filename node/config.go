@@ -16,7 +16,7 @@ import (
 	"github.com/ava-labs/avalanchego/snow/networking/benchlist"
 	"github.com/ava-labs/avalanchego/snow/networking/router"
 	"github.com/ava-labs/avalanchego/snow/networking/tracker"
-	"github.com/ava-labs/avalanchego/subnets"
+	"github.com/ava-labs/avalanchego/supernets"
 	"github.com/ava-labs/avalanchego/trace"
 	"github.com/ava-labs/avalanchego/utils/crypto/bls"
 	"github.com/ava-labs/avalanchego/utils/dynamicip"
@@ -183,9 +183,9 @@ type Config struct {
 	// handle App messages per chain.
 	ConsensusAppConcurrency int `json:"consensusAppConcurrency"`
 
-	TrackedSubnets set.Set[ids.ID] `json:"trackedSubnets"`
+	TrackedSupernets set.Set[ids.ID] `json:"trackedSupernets"`
 
-	SubnetConfigs map[ids.ID]subnets.Config `json:"subnetConfigs"`
+	SupernetConfigs map[ids.ID]supernets.Config `json:"supernetConfigs"`
 
 	ChainConfigs map[string]chains.ChainConfig `json:"-"`
 	ChainAliases map[ids.ID][]string           `json:"chainAliases"`
@@ -219,7 +219,7 @@ type Config struct {
 	TraceConfig trace.Config `json:"traceConfig"`
 
 	// See comment on [MinPercentConnectedStakeHealthy] in platformvm.Config
-	// TODO: consider moving to subnet config
+	// TODO: consider moving to supernet config
 	MinPercentConnectedStakeHealthy map[ids.ID]float64 `json:"minPercentConnectedStakeHealthy"`
 
 	// See comment on [UseCurrentHeight] in platformvm.Config

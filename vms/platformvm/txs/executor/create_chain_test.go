@@ -30,7 +30,7 @@ func TestCreateChainTxInsufficientControlSigs(t *testing.T) {
 	}()
 
 	tx, err := env.txBuilder.NewCreateChainTx(
-		testSubnet1.ID(),
+		testSupernet1.ID(),
 		nil,
 		constants.AVMID,
 		nil,
@@ -65,12 +65,12 @@ func TestCreateChainTxWrongControlSig(t *testing.T) {
 	}()
 
 	tx, err := env.txBuilder.NewCreateChainTx(
-		testSubnet1.ID(),
+		testSupernet1.ID(),
 		nil,
 		constants.AVMID,
 		nil,
 		"chain name",
-		[]*secp256k1.PrivateKey{testSubnet1ControlKeys[0], testSubnet1ControlKeys[1]},
+		[]*secp256k1.PrivateKey{testSupernet1ControlKeys[0], testSupernet1ControlKeys[1]},
 		ids.ShortEmpty,
 	)
 	require.NoError(err)
@@ -97,9 +97,9 @@ func TestCreateChainTxWrongControlSig(t *testing.T) {
 	require.Error(err, "should have failed verification because a sig is invalid")
 }
 
-// Ensure Execute fails when the Subnet the blockchain specifies as
+// Ensure Execute fails when the Supernet the blockchain specifies as
 // its validator set doesn't exist
-func TestCreateChainTxNoSuchSubnet(t *testing.T) {
+func TestCreateChainTxNoSuchSupernet(t *testing.T) {
 	require := require.New(t)
 	env := newEnvironment(true /*=postBanff*/, false /*=postCortina*/)
 	env.ctx.Lock.Lock()
@@ -108,17 +108,17 @@ func TestCreateChainTxNoSuchSubnet(t *testing.T) {
 	}()
 
 	tx, err := env.txBuilder.NewCreateChainTx(
-		testSubnet1.ID(),
+		testSupernet1.ID(),
 		nil,
 		constants.AVMID,
 		nil,
 		"chain name",
-		[]*secp256k1.PrivateKey{testSubnet1ControlKeys[0], testSubnet1ControlKeys[1]},
+		[]*secp256k1.PrivateKey{testSupernet1ControlKeys[0], testSupernet1ControlKeys[1]},
 		ids.ShortEmpty,
 	)
 	require.NoError(err)
 
-	tx.Unsigned.(*txs.CreateChainTx).SubnetID = ids.GenerateTestID()
+	tx.Unsigned.(*txs.CreateChainTx).SupernetID = ids.GenerateTestID()
 
 	stateDiff, err := state.NewDiff(lastAcceptedID, env)
 	require.NoError(err)
@@ -129,7 +129,7 @@ func TestCreateChainTxNoSuchSubnet(t *testing.T) {
 		Tx:      tx,
 	}
 	err = tx.Unsigned.Visit(&executor)
-	require.Error(err, "should have failed because subnet doesn't exist")
+	require.Error(err, "should have failed because supernet doesn't exist")
 }
 
 // Ensure valid tx passes semanticVerify
@@ -142,12 +142,12 @@ func TestCreateChainTxValid(t *testing.T) {
 	}()
 
 	tx, err := env.txBuilder.NewCreateChainTx(
-		testSubnet1.ID(),
+		testSupernet1.ID(),
 		nil,
 		constants.AVMID,
 		nil,
 		"chain name",
-		[]*secp256k1.PrivateKey{testSubnet1ControlKeys[0], testSubnet1ControlKeys[1]},
+		[]*secp256k1.PrivateKey{testSupernet1ControlKeys[0], testSupernet1ControlKeys[1]},
 		ids.ShortEmpty,
 	)
 	require.NoError(err)
@@ -204,10 +204,10 @@ func TestCreateChainTxAP3FeeChange(t *testing.T) {
 			ins, outs, _, signers, err := env.utxosHandler.Spend(env.state, preFundedKeys, 0, test.fee, ids.ShortEmpty)
 			require.NoError(err)
 
-			subnetAuth, subnetSigners, err := env.utxosHandler.Authorize(env.state, testSubnet1.ID(), preFundedKeys)
+			supernetAuth, supernetSigners, err := env.utxosHandler.Authorize(env.state, testSupernet1.ID(), preFundedKeys)
 			require.NoError(err)
 
-			signers = append(signers, subnetSigners)
+			signers = append(signers, supernetSigners)
 
 			// Create the tx
 
@@ -218,9 +218,9 @@ func TestCreateChainTxAP3FeeChange(t *testing.T) {
 					Ins:          ins,
 					Outs:         outs,
 				}},
-				SubnetID:   testSubnet1.ID(),
-				VMID:       constants.AVMID,
-				SubnetAuth: subnetAuth,
+				SupernetID:   testSupernet1.ID(),
+				VMID:         constants.AVMID,
+				SupernetAuth: supernetAuth,
 			}
 			tx := &txs.Tx{Unsigned: utx}
 			err = tx.Sign(txs.Codec, signers)

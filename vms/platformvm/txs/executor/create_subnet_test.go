@@ -17,7 +17,7 @@ import (
 	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
 )
 
-func TestCreateSubnetTxAP3FeeChange(t *testing.T) {
+func TestCreateSupernetTxAP3FeeChange(t *testing.T) {
 	ap3Time := defaultGenesisTime.Add(time.Hour)
 	tests := []struct {
 		name         string
@@ -59,7 +59,7 @@ func TestCreateSubnetTxAP3FeeChange(t *testing.T) {
 			require.NoError(err)
 
 			// Create the tx
-			utx := &txs.CreateSubnetTx{
+			utx := &txs.CreateSupernetTx{
 				BaseTx: txs.BaseTx{BaseTx: avax.BaseTx{
 					NetworkID:    env.ctx.NetworkID,
 					BlockchainID: env.ctx.ChainID,

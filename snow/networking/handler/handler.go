@@ -26,7 +26,7 @@ import (
 	"github.com/ava-labs/avalanchego/snow/networking/tracker"
 	"github.com/ava-labs/avalanchego/snow/networking/worker"
 	"github.com/ava-labs/avalanchego/snow/validators"
-	"github.com/ava-labs/avalanchego/subnets"
+	"github.com/ava-labs/avalanchego/supernets"
 	"github.com/ava-labs/avalanchego/utils"
 	"github.com/ava-labs/avalanchego/utils/timer/mockable"
 )
@@ -108,9 +108,9 @@ type handler struct {
 	// Closed when this handler and [engine] are done shutting down
 	closed chan struct{}
 
-	subnetConnector validators.SubnetConnector
+	supernetConnector validators.SupernetConnector
 
-	subnetAllower subnets.Allower
+	supernetAllower supernets.Allower
 }
 
 // Initialize this consensus handler
@@ -122,22 +122,22 @@ func New(
 	gossipFrequency time.Duration,
 	threadPoolSize int,
 	resourceTracker tracker.ResourceTracker,
-	subnetConnector validators.SubnetConnector,
-	subnet subnets.Subnet,
+	supernetConnector validators.SupernetConnector,
+	supernet supernets.Supernet,
 ) (Handler, error) {
 	h := &handler{
-		ctx:              ctx,
-		validators:       validators,
-		msgFromVMChan:    msgFromVMChan,
-		preemptTimeouts:  subnet.OnBootstrapCompleted(),
-		gossipFrequency:  gossipFrequency,
-		asyncMessagePool: worker.NewPool(threadPoolSize),
-		timeouts:         make(chan struct{}, 1),
-		closingChan:      make(chan struct{}),
-		closed:           make(chan struct{}),
-		resourceTracker:  resourceTracker,
-		subnetConnector:  subnetConnector,
-		subnetAllower:    subnet,
+		ctx:               ctx,
+		validators:        validators,
+		msgFromVMChan:     msgFromVMChan,
+		preemptTimeouts:   supernet.OnBootstrapCompleted(),
+		gossipFrequency:   gossipFrequency,
+		asyncMessagePool:  worker.NewPool(threadPoolSize),
+		timeouts:          make(chan struct{}, 1),
+		closingChan:       make(chan struct{}),
+		closed:            make(chan struct{}),
+		resourceTracker:   resourceTracker,
+		supernetConnector: supernetConnector,
+		supernetAllower:   supernet,
 	}
 
 	var err error
@@ -163,7 +163,7 @@ func (h *handler) Context() *snow.ConsensusContext {
 }
 
 func (h *handler) ShouldHandle(nodeID ids.NodeID) bool {
-	return h.subnetAllower.IsAllowed(nodeID, h.validators.Contains(nodeID))
+	return h.supernetAllower.IsAllowed(nodeID, h.validators.Contains(nodeID))
 }
 
 func (h *handler) SetEngineManager(engineManager *EngineManager) {
@@ -722,8 +722,8 @@ func (h *handler) handleSyncMsg(ctx context.Context, msg Message) error {
 	case *message.Connected:
 		return engine.Connected(ctx, nodeID, msg.NodeVersion)
 
-	case *message.ConnectedSubnet:
-		return h.subnetConnector.ConnectedSubnet(ctx, nodeID, msg.SubnetID)
+	case *message.ConnectedSupernet:
+		return h.supernetConnector.ConnectedSupernet(ctx, nodeID, msg.SupernetID)
 
 	case *message.Disconnected:
 		return engine.Disconnected(ctx, nodeID)

@@ -38,7 +38,7 @@ type Staker struct {
 	TxID            ids.ID
 	NodeID          ids.NodeID
 	PublicKey       *bls.PublicKey
-	SubnetID        ids.ID
+	SupernetID      ids.ID
 	Weight          uint64
 	StartTime       time.Time
 	EndTime         time.Time
@@ -93,7 +93,7 @@ func NewCurrentStaker(txID ids.ID, staker txs.Staker, potentialReward uint64) (*
 		TxID:            txID,
 		NodeID:          staker.NodeID(),
 		PublicKey:       publicKey,
-		SubnetID:        staker.SubnetID(),
+		SupernetID:      staker.SupernetID(),
 		Weight:          staker.Weight(),
 		StartTime:       staker.StartTime(),
 		EndTime:         endTime,
@@ -110,14 +110,14 @@ func NewPendingStaker(txID ids.ID, staker txs.Staker) (*Staker, error) {
 	}
 	startTime := staker.StartTime()
 	return &Staker{
-		TxID:      txID,
-		NodeID:    staker.NodeID(),
-		PublicKey: publicKey,
-		SubnetID:  staker.SubnetID(),
-		Weight:    staker.Weight(),
-		StartTime: startTime,
-		EndTime:   staker.EndTime(),
-		NextTime:  startTime,
-		Priority:  staker.PendingPriority(),
+		TxID:       txID,
+		NodeID:     staker.NodeID(),
+		PublicKey:  publicKey,
+		SupernetID: staker.SupernetID(),
+		Weight:     staker.Weight(),
+		StartTime:  startTime,
+		EndTime:    staker.EndTime(),
+		NextTime:   startTime,
+		Priority:   staker.PendingPriority(),
 	}, nil
 }

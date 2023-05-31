@@ -32,7 +32,7 @@ func TestGetCanonicalValidatorSet(t *testing.T) {
 			name: "can't get validator set",
 			stateF: func(ctrl *gomock.Controller) validators.State {
 				state := validators.NewMockState(ctrl)
-				state.EXPECT().GetValidatorSet(gomock.Any(), pChainHeight, subnetID).Return(nil, errTest)
+				state.EXPECT().GetValidatorSet(gomock.Any(), pChainHeight, supernetID).Return(nil, errTest)
 				return state
 			},
 			expectedErr: errTest,
@@ -41,7 +41,7 @@ func TestGetCanonicalValidatorSet(t *testing.T) {
 			name: "all validators have public keys; no duplicate pub keys",
 			stateF: func(ctrl *gomock.Controller) validators.State {
 				state := validators.NewMockState(ctrl)
-				state.EXPECT().GetValidatorSet(gomock.Any(), pChainHeight, subnetID).Return(
+				state.EXPECT().GetValidatorSet(gomock.Any(), pChainHeight, supernetID).Return(
 					map[ids.NodeID]*validators.GetValidatorOutput{
 						testVdrs[0].nodeID: {
 							NodeID:    testVdrs[0].nodeID,
@@ -66,7 +66,7 @@ func TestGetCanonicalValidatorSet(t *testing.T) {
 			name: "all validators have public keys; duplicate pub keys",
 			stateF: func(ctrl *gomock.Controller) validators.State {
 				state := validators.NewMockState(ctrl)
-				state.EXPECT().GetValidatorSet(gomock.Any(), pChainHeight, subnetID).Return(
+				state.EXPECT().GetValidatorSet(gomock.Any(), pChainHeight, supernetID).Return(
 					map[ids.NodeID]*validators.GetValidatorOutput{
 						testVdrs[0].nodeID: {
 							NodeID:    testVdrs[0].nodeID,
@@ -107,7 +107,7 @@ func TestGetCanonicalValidatorSet(t *testing.T) {
 			name: "validator without public key; no duplicate pub keys",
 			stateF: func(ctrl *gomock.Controller) validators.State {
 				state := validators.NewMockState(ctrl)
-				state.EXPECT().GetValidatorSet(gomock.Any(), pChainHeight, subnetID).Return(
+				state.EXPECT().GetValidatorSet(gomock.Any(), pChainHeight, supernetID).Return(
 					map[ids.NodeID]*validators.GetValidatorOutput{
 						testVdrs[0].nodeID: {
 							NodeID:    testVdrs[0].nodeID,
@@ -138,7 +138,7 @@ func TestGetCanonicalValidatorSet(t *testing.T) {
 
 			state := tt.stateF(ctrl)
 
-			vdrs, weight, err := GetCanonicalValidatorSet(context.Background(), state, pChainHeight, subnetID)
+			vdrs, weight, err := GetCanonicalValidatorSet(context.Background(), state, pChainHeight, supernetID)
 			require.ErrorIs(err, tt.expectedErr)
 			if err != nil {
 				return

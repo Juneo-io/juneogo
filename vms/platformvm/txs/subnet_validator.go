@@ -8,24 +8,24 @@ import (
 	"github.com/ava-labs/avalanchego/utils/constants"
 )
 
-// SubnetValidator validates a subnet on the Avalanche network.
-type SubnetValidator struct {
+// SupernetValidator validates a supernet on the Avalanche network.
+type SupernetValidator struct {
 	Validator `serialize:"true"`
 
-	// ID of the subnet this validator is validating
-	Subnet ids.ID `serialize:"true" json:"subnetID"`
+	// ID of the supernet this validator is validating
+	Supernet ids.ID `serialize:"true" json:"supernetID"`
 }
 
-// SubnetID is the ID of the subnet this validator is validating
-func (v *SubnetValidator) SubnetID() ids.ID {
-	return v.Subnet
+// SupernetID is the ID of the supernet this validator is validating
+func (v *SupernetValidator) SupernetID() ids.ID {
+	return v.Supernet
 }
 
 // Verify this validator is valid
-func (v *SubnetValidator) Verify() error {
-	switch v.Subnet {
+func (v *SupernetValidator) Verify() error {
+	switch v.Supernet {
 	case constants.PrimaryNetworkID:
-		return errBadSubnetID
+		return errBadSupernetID
 	default:
 		return v.Validator.Verify()
 	}

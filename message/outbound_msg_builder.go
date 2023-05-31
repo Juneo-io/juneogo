@@ -25,7 +25,7 @@ type OutboundMsgBuilder interface {
 		myVersion string,
 		myVersionTime uint64,
 		sig []byte,
-		trackedSubnets []ids.ID,
+		trackedSupernets []ids.ID,
 	) (OutboundMessage, error)
 
 	PeerList(
@@ -41,7 +41,7 @@ type OutboundMsgBuilder interface {
 
 	Pong(
 		primaryUptime uint32,
-		subnetUptimes []*p2p.SubnetUptime,
+		supernetUptimes []*p2p.SupernetUptime,
 	) (OutboundMessage, error)
 
 	GetStateSummaryFrontier(
@@ -196,14 +196,14 @@ func (b *outMsgBuilder) Ping() (OutboundMessage, error) {
 
 func (b *outMsgBuilder) Pong(
 	primaryUptime uint32,
-	subnetUptimes []*p2p.SubnetUptime,
+	supernetUptimes []*p2p.SupernetUptime,
 ) (OutboundMessage, error) {
 	return b.builder.createOutbound(
 		&p2p.Message{
 			Message: &p2p.Message_Pong{
 				Pong: &p2p.Pong{
-					Uptime:        primaryUptime,
-					SubnetUptimes: subnetUptimes,
+					Uptime:          primaryUptime,
+					SupernetUptimes: supernetUptimes,
 				},
 			},
 		},
@@ -219,22 +219,22 @@ func (b *outMsgBuilder) Version(
 	myVersion string,
 	myVersionTime uint64,
 	sig []byte,
-	trackedSubnets []ids.ID,
+	trackedSupernets []ids.ID,
 ) (OutboundMessage, error) {
-	subnetIDBytes := make([][]byte, len(trackedSubnets))
-	encodeIDs(trackedSubnets, subnetIDBytes)
+	supernetIDBytes := make([][]byte, len(trackedSupernets))
+	encodeIDs(trackedSupernets, supernetIDBytes)
 	return b.builder.createOutbound(
 		&p2p.Message{
 			Message: &p2p.Message_Version{
 				Version: &p2p.Version{
-					NetworkId:      networkID,
-					MyTime:         myTime,
-					IpAddr:         ip.IP.To16(),
-					IpPort:         uint32(ip.Port),
-					MyVersion:      myVersion,
-					MyVersionTime:  myVersionTime,
-					Sig:            sig,
-					TrackedSubnets: subnetIDBytes,
+					NetworkId:        networkID,
+					MyTime:           myTime,
+					IpAddr:           ip.IP.To16(),
+					IpPort:           uint32(ip.Port),
+					MyVersion:        myVersion,
+					MyVersionTime:    myVersionTime,
+					Sig:              sig,
+					TrackedSupernets: supernetIDBytes,
 				},
 			},
 		},

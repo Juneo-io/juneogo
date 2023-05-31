@@ -28,18 +28,18 @@ import (
 	"github.com/ava-labs/avalanchego/vms/platformvm/status"
 	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
 	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
-	"github.com/ava-labs/avalanchego/wallet/subnet/primary"
-	"github.com/ava-labs/avalanchego/wallet/subnet/primary/common"
+	"github.com/ava-labs/avalanchego/wallet/supernet/primary"
+	"github.com/ava-labs/avalanchego/wallet/supernet/primary/common"
 )
 
-var _ = e2e.DescribePChain("[Permissionless Subnets]", func() {
-	ginkgo.It("subnets operations",
+var _ = e2e.DescribePChain("[Permissionless Supernets]", func() {
+	ginkgo.It("supernets operations",
 		// use this for filtering tests by labels
 		// ref. https://onsi.github.io/ginkgo/#spec-labels
 		ginkgo.Label(
 			"require-network-runner",
 			"xp",
-			"permissionless-subnets",
+			"permissionless-supernets",
 		),
 		func() {
 			ginkgo.By("reload initial snapshot for test independence", func() {
@@ -77,28 +77,28 @@ var _ = e2e.DescribePChain("[Permissionless Subnets]", func() {
 				},
 			}
 
-			var subnetID ids.ID
-			ginkgo.By("create a permissioned subnet", func() {
+			var supernetID ids.ID
+			ginkgo.By("create a permissioned supernet", func() {
 				var err error
 				ctx, cancel := context.WithTimeout(context.Background(), e2e.DefaultConfirmTxTimeout)
-				subnetID, err = pWallet.IssueCreateSubnetTx(
+				supernetID, err = pWallet.IssueCreateSupernetTx(
 					owner,
 					common.WithContext(ctx),
 				)
 				cancel()
-				gomega.Expect(subnetID, err).Should(gomega.Not(gomega.Equal(constants.PrimaryNetworkID)))
+				gomega.Expect(supernetID, err).Should(gomega.Not(gomega.Equal(constants.PrimaryNetworkID)))
 
 				ctx, cancel = context.WithTimeout(context.Background(), e2e.DefaultConfirmTxTimeout)
-				txStatus, err := pChainClient.GetTxStatus(ctx, subnetID)
+				txStatus, err := pChainClient.GetTxStatus(ctx, supernetID)
 				cancel()
 				gomega.Expect(txStatus.Status, err).To(gomega.Equal(status.Committed))
 			})
 
-			var subnetAssetID ids.ID
-			ginkgo.By("create a custom asset for the permissionless subnet", func() {
+			var supernetAssetID ids.ID
+			ginkgo.By("create a custom asset for the permissionless supernet", func() {
 				var err error
 				ctx, cancel := context.WithTimeout(context.Background(), e2e.DefaultWalletCreationTimeout)
-				subnetAssetID, err = xWallet.IssueCreateAssetTx(
+				supernetAssetID, err = xWallet.IssueCreateAssetTx(
 					"RnM",
 					"RNM",
 					9,
@@ -116,19 +116,19 @@ var _ = e2e.DescribePChain("[Permissionless Subnets]", func() {
 				gomega.Expect(err).Should(gomega.BeNil())
 
 				ctx, cancel = context.WithTimeout(context.Background(), e2e.DefaultConfirmTxTimeout)
-				txStatus, err := xChainClient.GetTxStatus(ctx, subnetAssetID)
+				txStatus, err := xChainClient.GetTxStatus(ctx, supernetAssetID)
 				cancel()
 				gomega.Expect(txStatus, err).To(gomega.Equal(choices.Accepted))
 			})
 
-			ginkgo.By(fmt.Sprintf("Send 100 MegaAvax of asset %s to the P-chain", subnetAssetID), func() {
+			ginkgo.By(fmt.Sprintf("Send 100 MegaAvax of asset %s to the P-chain", supernetAssetID), func() {
 				ctx, cancel := context.WithTimeout(context.Background(), e2e.DefaultWalletCreationTimeout)
 				exportTxID, err := xWallet.IssueExportTx(
 					constants.PlatformChainID,
 					[]*avax.TransferableOutput{
 						{
 							Asset: avax.Asset{
-								ID: subnetAssetID,
+								ID: supernetAssetID,
 							},
 							Out: &secp256k1fx.TransferOutput{
 								Amt:          100 * units.MegaAvax,
@@ -147,7 +147,7 @@ var _ = e2e.DescribePChain("[Permissionless Subnets]", func() {
 				gomega.Expect(txStatus, err).To(gomega.Equal(choices.Accepted))
 			})
 
-			ginkgo.By(fmt.Sprintf("Import the 100 MegaAvax of asset %s from the X-chain into the P-chain", subnetAssetID), func() {
+			ginkgo.By(fmt.Sprintf("Import the 100 MegaAvax of asset %s from the X-chain into the P-chain", supernetAssetID), func() {
 				ctx, cancel := context.WithTimeout(context.Background(), e2e.DefaultWalletCreationTimeout)
 				importTxID, err := pWallet.IssueImportTx(
 					xChainID,
@@ -163,11 +163,11 @@ var _ = e2e.DescribePChain("[Permissionless Subnets]", func() {
 				gomega.Expect(txStatus.Status, err).To(gomega.Equal(status.Committed))
 			})
 
-			ginkgo.By("make subnet permissionless", func() {
+			ginkgo.By("make supernet permissionless", func() {
 				ctx, cancel := context.WithTimeout(context.Background(), e2e.DefaultConfirmTxTimeout)
-				transformSubnetTxID, err := pWallet.IssueTransformSubnetTx(
-					subnetID,
-					subnetAssetID,
+				transformSupernetTxID, err := pWallet.IssueTransformSupernetTx(
+					supernetID,
+					supernetAssetID,
 					50*units.MegaAvax,
 					100*units.MegaAvax,
 					reward.PercentDenominator,
@@ -186,7 +186,7 @@ var _ = e2e.DescribePChain("[Permissionless Subnets]", func() {
 				gomega.Expect(err).Should(gomega.BeNil())
 
 				ctx, cancel = context.WithTimeout(context.Background(), e2e.DefaultConfirmTxTimeout)
-				txStatus, err := pChainClient.GetTxStatus(ctx, transformSubnetTxID)
+				txStatus, err := pChainClient.GetTxStatus(ctx, transformSupernetTxID)
 				cancel()
 				gomega.Expect(txStatus.Status, err).To(gomega.Equal(status.Committed))
 			})
@@ -194,18 +194,18 @@ var _ = e2e.DescribePChain("[Permissionless Subnets]", func() {
 			validatorStartTime := time.Now().Add(time.Minute)
 			ginkgo.By("add permissionless validator", func() {
 				ctx, cancel := context.WithTimeout(context.Background(), e2e.DefaultConfirmTxTimeout)
-				addSubnetValidatorTxID, err := pWallet.IssueAddPermissionlessValidatorTx(
-					&txs.SubnetValidator{
+				addSupernetValidatorTxID, err := pWallet.IssueAddPermissionlessValidatorTx(
+					&txs.SupernetValidator{
 						Validator: txs.Validator{
 							NodeID: genesis.LocalConfig.InitialStakers[0].NodeID,
 							Start:  uint64(validatorStartTime.Unix()),
 							End:    uint64(validatorStartTime.Add(5 * time.Second).Unix()),
 							Wght:   25 * units.MegaAvax,
 						},
-						Subnet: subnetID,
+						Supernet: supernetID,
 					},
 					&signer.Empty{},
-					subnetAssetID,
+					supernetAssetID,
 					&secp256k1fx.OutputOwners{},
 					&secp256k1fx.OutputOwners{},
 					reward.PercentDenominator,
@@ -215,7 +215,7 @@ var _ = e2e.DescribePChain("[Permissionless Subnets]", func() {
 				gomega.Expect(err).Should(gomega.BeNil())
 
 				ctx, cancel = context.WithTimeout(context.Background(), e2e.DefaultConfirmTxTimeout)
-				txStatus, err := pChainClient.GetTxStatus(ctx, addSubnetValidatorTxID)
+				txStatus, err := pChainClient.GetTxStatus(ctx, addSupernetValidatorTxID)
 				cancel()
 				gomega.Expect(txStatus.Status, err).To(gomega.Equal(status.Committed))
 			})
@@ -223,17 +223,17 @@ var _ = e2e.DescribePChain("[Permissionless Subnets]", func() {
 			delegatorStartTime := validatorStartTime
 			ginkgo.By("add permissionless delegator", func() {
 				ctx, cancel := context.WithTimeout(context.Background(), e2e.DefaultConfirmTxTimeout)
-				addSubnetDelegatorTxID, err := pWallet.IssueAddPermissionlessDelegatorTx(
-					&txs.SubnetValidator{
+				addSupernetDelegatorTxID, err := pWallet.IssueAddPermissionlessDelegatorTx(
+					&txs.SupernetValidator{
 						Validator: txs.Validator{
 							NodeID: genesis.LocalConfig.InitialStakers[0].NodeID,
 							Start:  uint64(delegatorStartTime.Unix()),
 							End:    uint64(delegatorStartTime.Add(5 * time.Second).Unix()),
 							Wght:   25 * units.MegaAvax,
 						},
-						Subnet: subnetID,
+						Supernet: supernetID,
 					},
-					subnetAssetID,
+					supernetAssetID,
 					&secp256k1fx.OutputOwners{},
 					common.WithContext(ctx),
 				)
@@ -241,7 +241,7 @@ var _ = e2e.DescribePChain("[Permissionless Subnets]", func() {
 				gomega.Expect(err).Should(gomega.BeNil())
 
 				ctx, cancel = context.WithTimeout(context.Background(), e2e.DefaultConfirmTxTimeout)
-				txStatus, err := pChainClient.GetTxStatus(ctx, addSubnetDelegatorTxID)
+				txStatus, err := pChainClient.GetTxStatus(ctx, addSupernetDelegatorTxID)
 				cancel()
 				gomega.Expect(txStatus.Status, err).To(gomega.Equal(status.Committed))
 			})

@@ -16,16 +16,16 @@ var _ txs.Visitor = (*txMetrics)(nil)
 
 type txMetrics struct {
 	numAddDelegatorTxs,
-	numAddSubnetValidatorTxs,
+	numAddSupernetValidatorTxs,
 	numAddValidatorTxs,
 	numAdvanceTimeTxs,
 	numCreateChainTxs,
-	numCreateSubnetTxs,
+	numCreateSupernetTxs,
 	numExportTxs,
 	numImportTxs,
 	numRewardValidatorTxs,
-	numRemoveSubnetValidatorTxs,
-	numTransformSubnetTxs,
+	numRemoveSupernetValidatorTxs,
+	numTransformSupernetTxs,
 	numAddPermissionlessValidatorTxs,
 	numAddPermissionlessDelegatorTxs prometheus.Counter
 }
@@ -37,16 +37,16 @@ func newTxMetrics(
 	errs := wrappers.Errs{}
 	m := &txMetrics{
 		numAddDelegatorTxs:               newTxMetric(namespace, "add_delegator", registerer, &errs),
-		numAddSubnetValidatorTxs:         newTxMetric(namespace, "add_subnet_validator", registerer, &errs),
+		numAddSupernetValidatorTxs:       newTxMetric(namespace, "add_supernet_validator", registerer, &errs),
 		numAddValidatorTxs:               newTxMetric(namespace, "add_validator", registerer, &errs),
 		numAdvanceTimeTxs:                newTxMetric(namespace, "advance_time", registerer, &errs),
 		numCreateChainTxs:                newTxMetric(namespace, "create_chain", registerer, &errs),
-		numCreateSubnetTxs:               newTxMetric(namespace, "create_subnet", registerer, &errs),
+		numCreateSupernetTxs:             newTxMetric(namespace, "create_supernet", registerer, &errs),
 		numExportTxs:                     newTxMetric(namespace, "export", registerer, &errs),
 		numImportTxs:                     newTxMetric(namespace, "import", registerer, &errs),
 		numRewardValidatorTxs:            newTxMetric(namespace, "reward_validator", registerer, &errs),
-		numRemoveSubnetValidatorTxs:      newTxMetric(namespace, "remove_subnet_validator", registerer, &errs),
-		numTransformSubnetTxs:            newTxMetric(namespace, "transform_subnet", registerer, &errs),
+		numRemoveSupernetValidatorTxs:    newTxMetric(namespace, "remove_supernet_validator", registerer, &errs),
+		numTransformSupernetTxs:          newTxMetric(namespace, "transform_supernet", registerer, &errs),
 		numAddPermissionlessValidatorTxs: newTxMetric(namespace, "add_permissionless_validator", registerer, &errs),
 		numAddPermissionlessDelegatorTxs: newTxMetric(namespace, "add_permissionless_delegator", registerer, &errs),
 	}
@@ -73,8 +73,8 @@ func (m *txMetrics) AddValidatorTx(*txs.AddValidatorTx) error {
 	return nil
 }
 
-func (m *txMetrics) AddSubnetValidatorTx(*txs.AddSubnetValidatorTx) error {
-	m.numAddSubnetValidatorTxs.Inc()
+func (m *txMetrics) AddSupernetValidatorTx(*txs.AddSupernetValidatorTx) error {
+	m.numAddSupernetValidatorTxs.Inc()
 	return nil
 }
 
@@ -88,8 +88,8 @@ func (m *txMetrics) CreateChainTx(*txs.CreateChainTx) error {
 	return nil
 }
 
-func (m *txMetrics) CreateSubnetTx(*txs.CreateSubnetTx) error {
-	m.numCreateSubnetTxs.Inc()
+func (m *txMetrics) CreateSupernetTx(*txs.CreateSupernetTx) error {
+	m.numCreateSupernetTxs.Inc()
 	return nil
 }
 
@@ -113,13 +113,13 @@ func (m *txMetrics) RewardValidatorTx(*txs.RewardValidatorTx) error {
 	return nil
 }
 
-func (m *txMetrics) RemoveSubnetValidatorTx(*txs.RemoveSubnetValidatorTx) error {
-	m.numRemoveSubnetValidatorTxs.Inc()
+func (m *txMetrics) RemoveSupernetValidatorTx(*txs.RemoveSupernetValidatorTx) error {
+	m.numRemoveSupernetValidatorTxs.Inc()
 	return nil
 }
 
-func (m *txMetrics) TransformSubnetTx(*txs.TransformSubnetTx) error {
-	m.numTransformSubnetTxs.Inc()
+func (m *txMetrics) TransformSupernetTx(*txs.TransformSupernetTx) error {
+	m.numTransformSupernetTxs.Inc()
 	return nil
 }
 

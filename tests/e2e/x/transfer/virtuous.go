@@ -18,8 +18,8 @@ import (
 	"github.com/ava-labs/avalanchego/vms/avm"
 	"github.com/ava-labs/avalanchego/vms/components/avax"
 	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
-	"github.com/ava-labs/avalanchego/wallet/subnet/primary"
-	"github.com/ava-labs/avalanchego/wallet/subnet/primary/common"
+	"github.com/ava-labs/avalanchego/wallet/supernet/primary"
+	"github.com/ava-labs/avalanchego/wallet/supernet/primary/common"
 
 	ginkgo "github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"

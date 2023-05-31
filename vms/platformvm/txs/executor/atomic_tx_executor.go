@@ -32,7 +32,7 @@ func (*AtomicTxExecutor) AddValidatorTx(*txs.AddValidatorTx) error {
 	return errWrongTxType
 }
 
-func (*AtomicTxExecutor) AddSubnetValidatorTx(*txs.AddSubnetValidatorTx) error {
+func (*AtomicTxExecutor) AddSupernetValidatorTx(*txs.AddSupernetValidatorTx) error {
 	return errWrongTxType
 }
 
@@ -44,7 +44,7 @@ func (*AtomicTxExecutor) CreateChainTx(*txs.CreateChainTx) error {
 	return errWrongTxType
 }
 
-func (*AtomicTxExecutor) CreateSubnetTx(*txs.CreateSubnetTx) error {
+func (*AtomicTxExecutor) CreateSupernetTx(*txs.CreateSupernetTx) error {
 	return errWrongTxType
 }
 
@@ -56,11 +56,11 @@ func (*AtomicTxExecutor) RewardValidatorTx(*txs.RewardValidatorTx) error {
 	return errWrongTxType
 }
 
-func (*AtomicTxExecutor) RemoveSubnetValidatorTx(*txs.RemoveSubnetValidatorTx) error {
+func (*AtomicTxExecutor) RemoveSupernetValidatorTx(*txs.RemoveSupernetValidatorTx) error {
 	return errWrongTxType
 }
 
-func (*AtomicTxExecutor) TransformSubnetTx(*txs.TransformSubnetTx) error {
+func (*AtomicTxExecutor) TransformSupernetTx(*txs.TransformSupernetTx) error {
 	return errWrongTxType
 }
 

@@ -136,8 +136,8 @@ func TestAddPermissionlessValidatorTxSyntacticVerify(t *testing.T) {
 						NodeID: ids.GenerateTestNodeID(),
 						Wght:   1,
 					},
-					Subnet: ids.GenerateTestID(),
-					Signer: &signer.Empty{},
+					Supernet: ids.GenerateTestID(),
+					Signer:   &signer.Empty{},
 					StakeOuts: []*avax.TransferableOutput{
 						{
 							Asset: avax.Asset{
@@ -166,8 +166,8 @@ func TestAddPermissionlessValidatorTxSyntacticVerify(t *testing.T) {
 						NodeID: ids.GenerateTestNodeID(),
 						Wght:   1,
 					},
-					Subnet: constants.PrimaryNetworkID,
-					Signer: &signer.Empty{},
+					Supernet: constants.PrimaryNetworkID,
+					Signer:   &signer.Empty{},
 					StakeOuts: []*avax.TransferableOutput{
 						{
 							Asset: avax.Asset{
@@ -199,8 +199,8 @@ func TestAddPermissionlessValidatorTxSyntacticVerify(t *testing.T) {
 						NodeID: ids.GenerateTestNodeID(),
 						Wght:   1,
 					},
-					Subnet: ids.GenerateTestID(),
-					Signer: &signer.Empty{},
+					Supernet: ids.GenerateTestID(),
+					Signer:   &signer.Empty{},
 					StakeOuts: []*avax.TransferableOutput{
 						{
 							Asset: avax.Asset{
@@ -227,8 +227,8 @@ func TestAddPermissionlessValidatorTxSyntacticVerify(t *testing.T) {
 						NodeID: ids.GenerateTestNodeID(),
 						Wght:   1,
 					},
-					Subnet: ids.GenerateTestID(),
-					Signer: &signer.Empty{},
+					Supernet: ids.GenerateTestID(),
+					Signer:   &signer.Empty{},
 					StakeOuts: []*avax.TransferableOutput{
 						{
 							Asset: avax.Asset{
@@ -266,8 +266,8 @@ func TestAddPermissionlessValidatorTxSyntacticVerify(t *testing.T) {
 						NodeID: ids.GenerateTestNodeID(),
 						Wght:   1,
 					},
-					Subnet: ids.GenerateTestID(),
-					Signer: &signer.Empty{},
+					Supernet: ids.GenerateTestID(),
+					Signer:   &signer.Empty{},
 					StakeOuts: []*avax.TransferableOutput{
 						{
 							Asset: avax.Asset{
@@ -305,8 +305,8 @@ func TestAddPermissionlessValidatorTxSyntacticVerify(t *testing.T) {
 						NodeID: ids.GenerateTestNodeID(),
 						Wght:   1,
 					},
-					Subnet: ids.GenerateTestID(),
-					Signer: &signer.Empty{},
+					Supernet: ids.GenerateTestID(),
+					Signer:   &signer.Empty{},
 					StakeOuts: []*avax.TransferableOutput{
 						{
 							Asset: avax.Asset{
@@ -333,7 +333,7 @@ func TestAddPermissionlessValidatorTxSyntacticVerify(t *testing.T) {
 			err: errValidatorWeightMismatch,
 		},
 		{
-			name: "valid subnet validator",
+			name: "valid supernet validator",
 			txFunc: func(ctrl *gomock.Controller) *AddPermissionlessValidatorTx {
 				rewardsOwner := fx.NewMockOwner(ctrl)
 				rewardsOwner.EXPECT().Verify().Return(nil).AnyTimes()
@@ -344,8 +344,8 @@ func TestAddPermissionlessValidatorTxSyntacticVerify(t *testing.T) {
 						NodeID: ids.GenerateTestNodeID(),
 						Wght:   2,
 					},
-					Subnet: ids.GenerateTestID(),
-					Signer: &signer.Empty{},
+					Supernet: ids.GenerateTestID(),
+					Signer:   &signer.Empty{},
 					StakeOuts: []*avax.TransferableOutput{
 						{
 							Asset: avax.Asset{
@@ -383,8 +383,8 @@ func TestAddPermissionlessValidatorTxSyntacticVerify(t *testing.T) {
 						NodeID: ids.GenerateTestNodeID(),
 						Wght:   2,
 					},
-					Subnet: constants.PrimaryNetworkID,
-					Signer: blsPOP,
+					Supernet: constants.PrimaryNetworkID,
+					Signer:   blsPOP,
 					StakeOuts: []*avax.TransferableOutput{
 						{
 							Asset: avax.Asset{
@@ -458,8 +458,8 @@ func TestAddPermissionlessValidatorTxSyntacticVerify(t *testing.T) {
 				NodeID: ids.GenerateTestNodeID(),
 				Wght:   1,
 			},
-			Subnet: ids.GenerateTestID(),
-			Signer: &signer.Empty{},
+			Supernet: ids.GenerateTestID(),
+			Signer:   &signer.Empty{},
 			StakeOuts: []*avax.TransferableOutput{
 				{
 					Asset: avax.Asset{

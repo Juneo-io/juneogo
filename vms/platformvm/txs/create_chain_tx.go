@@ -36,8 +36,8 @@ var (
 type CreateChainTx struct {
 	// Metadata, inputs and outputs
 	BaseTx `serialize:"true"`
-	// ID of the Subnet that validates this blockchain
-	SubnetID ids.ID `serialize:"true" json:"subnetID"`
+	// ID of the Supernet that validates this blockchain
+	SupernetID ids.ID `serialize:"true" json:"supernetID"`
 	// A human readable name for the chain; need not be unique
 	ChainName string `serialize:"true" json:"chainName"`
 	// The main asset used by this chain to pay the fees
@@ -48,8 +48,8 @@ type CreateChainTx struct {
 	FxIDs []ids.ID `serialize:"true" json:"fxIDs"`
 	// Byte representation of genesis state of the new chain
 	GenesisData []byte `serialize:"true" json:"genesisData"`
-	// Authorizes this blockchain to be added to this subnet
-	SubnetAuth verify.Verifiable `serialize:"true" json:"subnetAuthorization"`
+	// Authorizes this blockchain to be added to this supernet
+	SupernetAuth verify.Verifiable `serialize:"true" json:"supernetAuthorization"`
 }
 
 func (tx *CreateChainTx) SyntacticVerify(ctx *snow.Context) error {
@@ -58,7 +58,7 @@ func (tx *CreateChainTx) SyntacticVerify(ctx *snow.Context) error {
 		return ErrNilTx
 	case tx.SyntacticallyVerified: // already passed syntactic verification
 		return nil
-	case tx.SubnetID == constants.PrimaryNetworkID:
+	case tx.SupernetID == constants.PrimaryNetworkID:
 		return ErrCantValidatePrimaryNetwork
 	case len(tx.ChainName) > MaxNameLen:
 		return errNameTooLong
@@ -79,7 +79,7 @@ func (tx *CreateChainTx) SyntacticVerify(ctx *snow.Context) error {
 	if err := tx.BaseTx.SyntacticVerify(ctx); err != nil {
 		return err
 	}
-	if err := tx.SubnetAuth.Verify(); err != nil {
+	if err := tx.SupernetAuth.Verify(); err != nil {
 		return err
 	}
 

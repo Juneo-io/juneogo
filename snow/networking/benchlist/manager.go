@@ -120,7 +120,7 @@ func (m *manager) RegisterChain(ctx *snow.ConsensusContext) error {
 		ok   bool
 	)
 	if m.config.StakingEnabled {
-		vdrs, ok = m.config.Validators.Get(ctx.SubnetID)
+		vdrs, ok = m.config.Validators.Get(ctx.SupernetID)
 	} else {
 		// If staking is disabled, everyone validates every chain
 		vdrs, ok = m.config.Validators.Get(constants.PrimaryNetworkID)

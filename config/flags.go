@@ -46,7 +46,7 @@ var (
 	defaultVMConfigDir          = filepath.Join(defaultConfigDir, "vms")
 	defaultVMAliasFilePath      = filepath.Join(defaultVMConfigDir, "aliases.json")
 	defaultChainAliasFilePath   = filepath.Join(defaultChainConfigDir, "aliases.json")
-	defaultSubnetConfigDir      = filepath.Join(defaultConfigDir, "subnets")
+	defaultSupernetConfigDir    = filepath.Join(defaultConfigDir, "supernets")
 	defaultPluginDir            = filepath.Join(defaultUnexpandedDataDir, "plugins")
 	defaultChainDataDir         = filepath.Join(defaultUnexpandedDataDir, "chainData")
 )
@@ -90,13 +90,13 @@ func addNodeFlags(fs *pflag.FlagSet) {
 	// AVAX fees
 	fs.Uint64(TxFeeKey, genesis.LocalParams.TxFee, "Transaction fee, in nAVAX")
 	fs.Uint64(CreateAssetTxFeeKey, genesis.LocalParams.CreateAssetTxFee, "Transaction fee, in nAVAX, for transactions that create new assets")
-	fs.Uint64(CreateSubnetTxFeeKey, genesis.LocalParams.CreateSubnetTxFee, "Transaction fee, in nAVAX, for transactions that create new subnets")
-	fs.Uint64(TransformSubnetTxFeeKey, genesis.LocalParams.TransformSubnetTxFee, "Transaction fee, in nAVAX, for transactions that transform subnets")
+	fs.Uint64(CreateSupernetTxFeeKey, genesis.LocalParams.CreateSupernetTxFee, "Transaction fee, in nAVAX, for transactions that create new supernets")
+	fs.Uint64(TransformSupernetTxFeeKey, genesis.LocalParams.TransformSupernetTxFee, "Transaction fee, in nAVAX, for transactions that transform supernets")
 	fs.Uint64(CreateBlockchainTxFeeKey, genesis.LocalParams.CreateBlockchainTxFee, "Transaction fee, in nAVAX, for transactions that create new blockchains")
 	fs.Uint64(AddPrimaryNetworkValidatorFeeKey, genesis.LocalParams.AddPrimaryNetworkValidatorFee, "Transaction fee, in nAVAX, for transactions that add new primary network validators")
 	fs.Uint64(AddPrimaryNetworkDelegatorFeeKey, genesis.LocalParams.AddPrimaryNetworkDelegatorFee, "Transaction fee, in nAVAX, for transactions that add new primary network delegators")
-	fs.Uint64(AddSubnetValidatorFeeKey, genesis.LocalParams.AddSubnetValidatorFee, "Transaction fee, in nAVAX, for transactions that add new subnet validators")
-	fs.Uint64(AddSubnetDelegatorFeeKey, genesis.LocalParams.AddSubnetDelegatorFee, "Transaction fee, in nAVAX, for transactions that add new subnet delegators")
+	fs.Uint64(AddSupernetValidatorFeeKey, genesis.LocalParams.AddSupernetValidatorFee, "Transaction fee, in nAVAX, for transactions that add new supernet validators")
+	fs.Uint64(AddSupernetDelegatorFeeKey, genesis.LocalParams.AddSupernetDelegatorFee, "Transaction fee, in nAVAX, for transactions that add new supernet delegators")
 
 	// Database
 	fs.String(DBTypeKey, leveldb.Name, fmt.Sprintf("Database type to use. Should be one of {%s, %s}", leveldb.Name, memdb.Name))
@@ -279,8 +279,8 @@ func addNodeFlags(fs *pflag.FlagSet) {
 	fs.Uint64(StakeMinConsumptionRateKey, genesis.LocalParams.RewardConfig.MinConsumptionRate, "Minimum consumption rate of the remaining tokens to mint in the staking function")
 	fs.Duration(StakeMintingPeriodKey, genesis.LocalParams.RewardConfig.MintingPeriod, "Consumption period of the staking function")
 	fs.Uint64(StakeSupplyCapKey, genesis.LocalParams.RewardConfig.SupplyCap, "Supply cap of the staking function")
-	// Subnets
-	fs.String(TrackSubnetsKey, "", "List of subnets for the node to track. A node tracking a subnet will track the uptimes of the subnet validators and attempt to sync all the chains in the subnet. Before validating a subnet, a node should be tracking the subnet to avoid impacting their subnet validation uptime")
+	// Supernets
+	fs.String(TrackSupernetsKey, "", "List of supernets for the node to track. A node tracking a supernet will track the uptimes of the supernet validators and attempt to sync all the chains in the supernet. Before validating a supernet, a node should be tracking the supernet to avoid impacting their supernet validation uptime")
 
 	// State syncing
 	fs.String(StateSyncIPsKey, "", "Comma separated list of state sync peer ips to connect to. Example: 127.0.0.1:9630,127.0.0.1:9631")
@@ -330,8 +330,8 @@ func addNodeFlags(fs *pflag.FlagSet) {
 	// Config Directories
 	fs.String(ChainConfigDirKey, defaultChainConfigDir, fmt.Sprintf("Chain specific configurations parent directory. Ignored if %s is specified", ChainConfigContentKey))
 	fs.String(ChainConfigContentKey, "", "Specifies base64 encoded chains configurations")
-	fs.String(SubnetConfigDirKey, defaultSubnetConfigDir, fmt.Sprintf("Subnet specific configurations parent directory. Ignored if %s is specified", SubnetConfigContentKey))
-	fs.String(SubnetConfigContentKey, "", "Specifies base64 encoded subnets configurations")
+	fs.String(SupernetConfigDirKey, defaultSupernetConfigDir, fmt.Sprintf("Supernet specific configurations parent directory. Ignored if %s is specified", SupernetConfigContentKey))
+	fs.String(SupernetConfigContentKey, "", "Specifies base64 encoded supernets configurations")
 
 	// Chain Data Directory
 	fs.String(ChainDataDirKey, defaultChainDataDir, "Chain specific data directory")

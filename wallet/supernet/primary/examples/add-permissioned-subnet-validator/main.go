@@ -14,21 +14,21 @@ import (
 	"github.com/ava-labs/avalanchego/utils/units"
 	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
 	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
-	"github.com/ava-labs/avalanchego/wallet/subnet/primary"
+	"github.com/ava-labs/avalanchego/wallet/supernet/primary"
 )
 
 func main() {
 	key := genesis.EWOQKey
 	uri := primary.LocalAPIURI
 	kc := secp256k1fx.NewKeychain(key)
-	subnetIDStr := "29uVeLPJB1eQJkzRemU8g8wZDw5uJRqpab5U2mX9euieVwiEbL"
+	supernetIDStr := "29uVeLPJB1eQJkzRemU8g8wZDw5uJRqpab5U2mX9euieVwiEbL"
 	startTime := time.Now().Add(time.Minute)
 	duration := 2 * 7 * 24 * time.Hour // 2 weeks
 	weight := units.Schmeckle
 
-	subnetID, err := ids.FromString(subnetIDStr)
+	supernetID, err := ids.FromString(supernetIDStr)
 	if err != nil {
-		log.Fatalf("failed to parse subnet ID: %s\n", err)
+		log.Fatalf("failed to parse supernet ID: %s\n", err)
 	}
 
 	ctx := context.Background()
@@ -42,9 +42,9 @@ func main() {
 	log.Printf("fetched node ID %s in %s\n", nodeID, time.Since(nodeInfoStartTime))
 
 	// NewWalletWithTxs fetches the available UTXOs owned by [kc] on the network
-	// that [uri] is hosting and registers [subnetID].
+	// that [uri] is hosting and registers [supernetID].
 	walletSyncStartTime := time.Now()
-	wallet, err := primary.NewWalletWithTxs(ctx, uri, kc, subnetID)
+	wallet, err := primary.NewWalletWithTxs(ctx, uri, kc, supernetID)
 	if err != nil {
 		log.Fatalf("failed to initialize wallet: %s\n", err)
 	}
@@ -54,17 +54,17 @@ func main() {
 	pWallet := wallet.P()
 
 	addValidatorStartTime := time.Now()
-	addValidatorTxID, err := pWallet.IssueAddSubnetValidatorTx(&txs.SubnetValidator{
+	addValidatorTxID, err := pWallet.IssueAddSupernetValidatorTx(&txs.SupernetValidator{
 		Validator: txs.Validator{
 			NodeID: nodeID,
 			Start:  uint64(startTime.Unix()),
 			End:    uint64(startTime.Add(duration).Unix()),
 			Wght:   weight,
 		},
-		Subnet: subnetID,
+		Supernet: supernetID,
 	})
 	if err != nil {
-		log.Fatalf("failed to issue add subnet validator transaction: %s\n", err)
+		log.Fatalf("failed to issue add supernet validator transaction: %s\n", err)
 	}
-	log.Printf("added new subnet validator %s to %s with %s in %s\n", nodeID, subnetID, addValidatorTxID, time.Since(addValidatorStartTime))
+	log.Printf("added new supernet validator %s to %s with %s in %s\n", nodeID, supernetID, addValidatorTxID, time.Since(addValidatorStartTime))
 }

@@ -43,7 +43,7 @@ type PermissionlessStaker interface {
 }
 
 type Staker interface {
-	SubnetID() ids.ID
+	SupernetID() ids.ID
 	NodeID() ids.NodeID
 	// PublicKey returns the BLS public key registered by this transaction. If
 	// there was no key registered by this transaction, it will return false.

@@ -1,7 +1,7 @@
 // Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
-package subnets
+package supernets
 
 import (
 	"errors"
@@ -30,12 +30,12 @@ type GossipConfig struct {
 type Config struct {
 	GossipConfig
 
-	// ValidatorOnly indicates that this Subnet's Chains are available to only subnet validators.
+	// ValidatorOnly indicates that this Supernet's Chains are available to only supernet validators.
 	// No chain related messages will go out to non-validators.
 	// Validators will drop messages received from non-validators.
-	// Also see [AllowedNodes] to allow non-validators to connect to this Subnet.
+	// Also see [AllowedNodes] to allow non-validators to connect to this Supernet.
 	ValidatorOnly bool `json:"validatorOnly" yaml:"validatorOnly"`
-	// AllowedNodes is the set of node IDs that are explicitly allowed to connect to this Subnet when
+	// AllowedNodes is the set of node IDs that are explicitly allowed to connect to this Supernet when
 	// ValidatorOnly is enabled.
 	AllowedNodes        set.Set[ids.NodeID]  `json:"allowedNodes" yaml:"allowedNodes"`
 	ConsensusParameters avalanche.Parameters `json:"consensusParameters" yaml:"consensusParameters"`

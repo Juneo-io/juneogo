@@ -69,8 +69,8 @@ var (
 	cChainID                  = ids.Empty.Prefix(1)
 	lastAcceptedID            = ids.GenerateTestID()
 
-	testSubnet1            *txs.Tx
-	testSubnet1ControlKeys = preFundedKeys[0:3]
+	testSupernet1            *txs.Tx
+	testSupernet1ControlKeys = preFundedKeys[0:3]
 
 	// Used to create and use keys.
 	testKeyfactory secp256k1.Factory
@@ -170,19 +170,19 @@ func newEnvironment(postBanff, postCortina bool) *environment {
 		backend:        backend,
 	}
 
-	addSubnet(env, txBuilder)
+	addSupernet(env, txBuilder)
 
 	return env
 }
 
-func addSubnet(
+func addSupernet(
 	env *environment,
 	txBuilder builder.Builder,
 ) {
-	// Create a subnet
+	// Create a supernet
 	var err error
-	testSubnet1, err = txBuilder.NewCreateSubnetTx(
-		2, // threshold; 2 sigs from keys[0], keys[1], keys[2] needed to add validator to this subnet
+	testSupernet1, err = txBuilder.NewCreateSupernetTx(
+		2, // threshold; 2 sigs from keys[0], keys[1], keys[2] needed to add validator to this supernet
 		[]ids.ShortID{ // control keys
 			preFundedKeys[0].PublicKey().Address(),
 			preFundedKeys[1].PublicKey().Address(),
@@ -204,14 +204,14 @@ func addSubnet(
 	executor := StandardTxExecutor{
 		Backend: &env.backend,
 		State:   stateDiff,
-		Tx:      testSubnet1,
+		Tx:      testSupernet1,
 	}
-	err = testSubnet1.Unsigned.Visit(&executor)
+	err = testSupernet1.Unsigned.Visit(&executor)
 	if err != nil {
 		panic(err)
 	}
 
-	stateDiff.AddTx(testSubnet1, status.Committed)
+	stateDiff.AddTx(testSupernet1, status.Committed)
 	if err := stateDiff.Apply(env.state); err != nil {
 		panic(err)
 	}
@@ -267,8 +267,8 @@ func defaultCtx(db database.Database) (*snow.Context, *mutableSharedMemory) {
 	ctx.SharedMemory = msm
 
 	ctx.ValidatorState = &validators.TestState{
-		GetSubnetIDF: func(_ context.Context, chainID ids.ID) (ids.ID, error) {
-			subnetID, ok := map[ids.ID]ids.ID{
+		GetSupernetIDF: func(_ context.Context, chainID ids.ID) (ids.ID, error) {
+			supernetID, ok := map[ids.ID]ids.ID{
 				constants.PlatformChainID: constants.PrimaryNetworkID,
 				xChainID:                  constants.PrimaryNetworkID,
 				cChainID:                  constants.PrimaryNetworkID,
@@ -276,7 +276,7 @@ func defaultCtx(db database.Database) (*snow.Context, *mutableSharedMemory) {
 			if !ok {
 				return ids.Empty, errMissing
 			}
-			return subnetID, nil
+			return supernetID, nil
 		},
 	}
 
@@ -301,7 +301,7 @@ func defaultConfig(postBanff, postCortina bool) config.Config {
 		UptimeLockedCalculator: uptime.NewLockedCalculator(),
 		Validators:             vdrs,
 		TxFee:                  defaultTxFee,
-		CreateSubnetTxFee:      100 * defaultTxFee,
+		CreateSupernetTxFee:    100 * defaultTxFee,
 		CreateBlockchainTxFee:  100 * defaultTxFee,
 		MinValidatorStake:      5 * units.MilliAvax,
 		MaxValidatorStake:      500 * units.MilliAvax,
@@ -449,8 +449,8 @@ func shutdownEnvironment(env *environment) error {
 			return err
 		}
 
-		for subnetID := range env.config.TrackedSubnets {
-			vdrs, exist := env.config.Validators.Get(subnetID)
+		for supernetID := range env.config.TrackedSupernets {
+			vdrs, exist := env.config.Validators.Get(supernetID)
 			if !exist {
 				return nil
 			}
@@ -460,7 +460,7 @@ func shutdownEnvironment(env *environment) error {
 			for i, vdr := range validators {
 				validatorIDs[i] = vdr.NodeID
 			}
-			if err := env.uptimes.StopTracking(validatorIDs, subnetID); err != nil {
+			if err := env.uptimes.StopTracking(validatorIDs, supernetID); err != nil {
 				return err
 			}
 		}

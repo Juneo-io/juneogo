@@ -333,7 +333,7 @@ func (n *Node) initNetworking(primaryNetVdrs validators.Set) error {
 	n.Config.NetworkConfig.Beacons = n.beacons
 	n.Config.NetworkConfig.TLSConfig = tlsConfig
 	n.Config.NetworkConfig.TLSKey = tlsKey
-	n.Config.NetworkConfig.TrackedSubnets = n.Config.TrackedSubnets
+	n.Config.NetworkConfig.TrackedSupernets = n.Config.TrackedSupernets
 	n.Config.NetworkConfig.UptimeCalculator = n.uptimeCalculator
 	n.Config.NetworkConfig.UptimeRequirement = n.Config.UptimeRequirement
 	n.Config.NetworkConfig.ResourceTracker = n.resourceTracker
@@ -562,7 +562,7 @@ func (n *Node) initChains(genesisBytes []byte) error {
 
 	platformChain := chains.ChainParameters{
 		ID:            constants.PlatformChainID,
-		SubnetID:      constants.PrimaryNetworkID,
+		SupernetID:    constants.PrimaryNetworkID,
 		GenesisData:   genesisBytes, // Specifies other chains to create
 		VMID:          constants.PlatformVMID,
 		CustomBeacons: n.beacons,
@@ -714,7 +714,7 @@ func (n *Node) initChainManager(avaxAssetID ids.ID) error {
 		n.Config.ConsensusShutdownTimeout,
 		criticalChains,
 		n.Config.EnableStaking,
-		n.Config.TrackedSubnets,
+		n.Config.TrackedSupernets,
 		n.Shutdown,
 		n.Config.RouterHealthConfig,
 		"requests",
@@ -755,7 +755,7 @@ func (n *Node) initChainManager(avaxAssetID ids.ID) error {
 		ShutdownNodeFunc:                        n.Shutdown,
 		MeterVMEnabled:                          n.Config.MeterVMEnabled,
 		Metrics:                                 n.MetricsGatherer,
-		SubnetConfigs:                           n.Config.SubnetConfigs,
+		SupernetConfigs:                         n.Config.SupernetConfigs,
 		ChainConfigs:                            n.Config.ChainConfigs,
 		ConsensusGossipFrequency:                n.Config.ConsensusGossipFrequency,
 		ConsensusAppConcurrency:                 n.Config.ConsensusAppConcurrency,
@@ -782,7 +782,7 @@ func (n *Node) initVMs() error {
 
 	vdrs := n.vdrs
 
-	// If staking is disabled, ignore updates to Subnets' validator sets
+	// If staking is disabled, ignore updates to Supernets' validator sets
 	// Instead of updating node's validator manager, platform chain makes changes
 	// to its own local validator manager (which isn't used for sampling)
 	if !n.Config.EnableStaking {
@@ -807,16 +807,16 @@ func (n *Node) initVMs() error {
 				Validators:                      vdrs,
 				UptimeLockedCalculator:          n.uptimeCalculator,
 				StakingEnabled:                  n.Config.EnableStaking,
-				TrackedSubnets:                  n.Config.TrackedSubnets,
+				TrackedSupernets:                n.Config.TrackedSupernets,
 				TxFee:                           n.Config.TxFee,
 				CreateAssetTxFee:                n.Config.CreateAssetTxFee,
-				CreateSubnetTxFee:               n.Config.CreateSubnetTxFee,
-				TransformSubnetTxFee:            n.Config.TransformSubnetTxFee,
+				CreateSupernetTxFee:             n.Config.CreateSupernetTxFee,
+				TransformSupernetTxFee:          n.Config.TransformSupernetTxFee,
 				CreateBlockchainTxFee:           n.Config.CreateBlockchainTxFee,
 				AddPrimaryNetworkValidatorFee:   n.Config.AddPrimaryNetworkValidatorFee,
 				AddPrimaryNetworkDelegatorFee:   n.Config.AddPrimaryNetworkDelegatorFee,
-				AddSubnetValidatorFee:           n.Config.AddSubnetValidatorFee,
-				AddSubnetDelegatorFee:           n.Config.AddSubnetDelegatorFee,
+				AddSupernetValidatorFee:         n.Config.AddSupernetValidatorFee,
+				AddSupernetDelegatorFee:         n.Config.AddSupernetDelegatorFee,
 				UptimePercentage:                n.Config.UptimeRequirement,
 				MinValidatorStake:               n.Config.MinValidatorStake,
 				MaxValidatorStake:               n.Config.MaxValidatorStake,
@@ -1010,13 +1010,13 @@ func (n *Node) initInfoAPI() error {
 			NetworkID:                     n.Config.NetworkID,
 			TxFee:                         n.Config.TxFee,
 			CreateAssetTxFee:              n.Config.CreateAssetTxFee,
-			CreateSubnetTxFee:             n.Config.CreateSubnetTxFee,
-			TransformSubnetTxFee:          n.Config.TransformSubnetTxFee,
+			CreateSupernetTxFee:           n.Config.CreateSupernetTxFee,
+			TransformSupernetTxFee:        n.Config.TransformSupernetTxFee,
 			CreateBlockchainTxFee:         n.Config.CreateBlockchainTxFee,
 			AddPrimaryNetworkValidatorFee: n.Config.AddPrimaryNetworkValidatorFee,
 			AddPrimaryNetworkDelegatorFee: n.Config.AddPrimaryNetworkDelegatorFee,
-			AddSubnetValidatorFee:         n.Config.AddSubnetValidatorFee,
-			AddSubnetDelegatorFee:         n.Config.AddSubnetDelegatorFee,
+			AddSupernetValidatorFee:       n.Config.AddSupernetValidatorFee,
+			AddSupernetDelegatorFee:       n.Config.AddSupernetDelegatorFee,
 			VMManager:                     n.VMManager,
 		},
 		n.Log,

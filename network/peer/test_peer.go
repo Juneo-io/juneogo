@@ -111,7 +111,7 @@ func StartTestPeer(
 			Network:              TestNetwork,
 			Router:               router,
 			VersionCompatibility: version.GetCompatibility(networkID),
-			MySubnets:            set.Set[ids.ID]{},
+			MySupernets:          set.Set[ids.ID]{},
 			Beacons:              validators.NewSet(),
 			NetworkID:            networkID,
 			PingFrequency:        constants.DefaultPingFrequency,

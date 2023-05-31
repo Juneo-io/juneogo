@@ -34,7 +34,7 @@ func (v *MempoolTxVerifier) AddValidatorTx(tx *txs.AddValidatorTx) error {
 	return v.standardTx(tx)
 }
 
-func (v *MempoolTxVerifier) AddSubnetValidatorTx(tx *txs.AddSubnetValidatorTx) error {
+func (v *MempoolTxVerifier) AddSupernetValidatorTx(tx *txs.AddSupernetValidatorTx) error {
 	return v.standardTx(tx)
 }
 
@@ -46,7 +46,7 @@ func (v *MempoolTxVerifier) CreateChainTx(tx *txs.CreateChainTx) error {
 	return v.standardTx(tx)
 }
 
-func (v *MempoolTxVerifier) CreateSubnetTx(tx *txs.CreateSubnetTx) error {
+func (v *MempoolTxVerifier) CreateSupernetTx(tx *txs.CreateSupernetTx) error {
 	return v.standardTx(tx)
 }
 
@@ -58,11 +58,11 @@ func (v *MempoolTxVerifier) ExportTx(tx *txs.ExportTx) error {
 	return v.standardTx(tx)
 }
 
-func (v *MempoolTxVerifier) RemoveSubnetValidatorTx(tx *txs.RemoveSubnetValidatorTx) error {
+func (v *MempoolTxVerifier) RemoveSupernetValidatorTx(tx *txs.RemoveSupernetValidatorTx) error {
 	return v.standardTx(tx)
 }
 
-func (v *MempoolTxVerifier) TransformSubnetTx(tx *txs.TransformSubnetTx) error {
+func (v *MempoolTxVerifier) TransformSupernetTx(tx *txs.TransformSupernetTx) error {
 	return v.standardTx(tx)
 }
 

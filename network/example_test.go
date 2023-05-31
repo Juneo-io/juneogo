@@ -42,12 +42,12 @@ func (t *testExternalHandler) HandleInbound(_ context.Context, message message.I
 	)
 }
 
-func (t *testExternalHandler) Connected(nodeID ids.NodeID, version *version.Application, subnetID ids.ID) {
+func (t *testExternalHandler) Connected(nodeID ids.NodeID, version *version.Application, supernetID ids.ID) {
 	t.log.Info(
 		"connected",
 		zap.Stringer("nodeID", nodeID),
 		zap.Stringer("version", version),
-		zap.Stringer("subnetID", subnetID),
+		zap.Stringer("supernetID", supernetID),
 	)
 }
 
@@ -82,9 +82,9 @@ func ExampleNewTestNetwork() {
 		Set: validators.NewSet(),
 	}
 
-	// If we want to be able to communicate with non-primary network subnets, we
+	// If we want to be able to communicate with non-primary network supernets, we
 	// should register them here.
-	trackedSubnets := set.Set[ids.ID]{}
+	trackedSupernets := set.Set[ids.ID]{}
 
 	// Messages and connections are handled by the external handler.
 	handler := &testExternalHandler{
@@ -95,7 +95,7 @@ func ExampleNewTestNetwork() {
 		log,
 		constants.FujiID,
 		validators,
-		trackedSubnets,
+		trackedSupernets,
 		handler,
 	)
 	if err != nil {

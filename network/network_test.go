@@ -25,7 +25,7 @@ import (
 	"github.com/ava-labs/avalanchego/snow/networking/tracker"
 	"github.com/ava-labs/avalanchego/snow/uptime"
 	"github.com/ava-labs/avalanchego/snow/validators"
-	"github.com/ava-labs/avalanchego/subnets"
+	"github.com/ava-labs/avalanchego/supernets"
 	"github.com/ava-labs/avalanchego/utils/constants"
 	"github.com/ava-labs/avalanchego/utils/ips"
 	"github.com/ava-labs/avalanchego/utils/logging"
@@ -339,7 +339,7 @@ func TestSend(t *testing.T) {
 
 	toSend := set.Set[ids.NodeID]{}
 	toSend.Add(nodeIDs[1])
-	sentTo := net0.Send(outboundGetMsg, toSend, constants.PrimaryNetworkID, subnets.NoOpAllower)
+	sentTo := net0.Send(outboundGetMsg, toSend, constants.PrimaryNetworkID, supernets.NoOpAllower)
 	require.EqualValues(toSend, sentTo)
 
 	inboundGetMsg := <-received

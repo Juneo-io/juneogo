@@ -41,7 +41,7 @@ func TestHealthCheckPrimaryNetwork(t *testing.T) {
 	}
 }
 
-func TestHealthCheckSubnet(t *testing.T) {
+func TestHealthCheckSupernet(t *testing.T) {
 	tests := map[string]struct {
 		minStake   float64
 		useDefault bool
@@ -66,16 +66,16 @@ func TestHealthCheckSubnet(t *testing.T) {
 				vm.ctx.Lock.Unlock()
 			}()
 
-			subnetID := ids.GenerateTestID()
-			subnetVdrs := validators.NewSet()
-			vm.TrackedSubnets.Add(subnetID)
+			supernetID := ids.GenerateTestID()
+			supernetVdrs := validators.NewSet()
+			vm.TrackedSupernets.Add(supernetID)
 			testVdrCount := 4
 			for i := 0; i < testVdrCount; i++ {
-				subnetVal := ids.GenerateTestNodeID()
-				err := subnetVdrs.Add(subnetVal, nil, ids.Empty, 100)
+				supernetVal := ids.GenerateTestNodeID()
+				err := supernetVdrs.Add(supernetVal, nil, ids.Empty, 100)
 				require.NoError(err)
 			}
-			ok := vm.Validators.Add(subnetID, subnetVdrs)
+			ok := vm.Validators.Add(supernetID, supernetVdrs)
 			require.True(ok)
 
 			// connect to all primary network validators first
@@ -90,18 +90,18 @@ func TestHealthCheckSubnet(t *testing.T) {
 			} else {
 				expectedMinStake = test.minStake
 				vm.MinPercentConnectedStakeHealthy = map[ids.ID]float64{
-					subnetID: expectedMinStake,
+					supernetID: expectedMinStake,
 				}
 			}
-			for index, vdr := range subnetVdrs.List() {
-				err := vm.ConnectedSubnet(context.Background(), vdr.NodeID, subnetID)
+			for index, vdr := range supernetVdrs.List() {
+				err := vm.ConnectedSupernet(context.Background(), vdr.NodeID, supernetID)
 				require.NoError(err)
 				details, err := vm.HealthCheck(context.Background())
 				connectedPerc := float64((index + 1) * (100 / testVdrCount))
 				if connectedPerc >= expectedMinStake*100 {
 					require.NoError(err)
 				} else {
-					require.Contains(details, fmt.Sprintf("%s-percentConnected", subnetID))
+					require.Contains(details, fmt.Sprintf("%s-percentConnected", supernetID))
 					require.ErrorIs(err, errNotEnoughStake)
 				}
 			}

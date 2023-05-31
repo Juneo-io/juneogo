@@ -9,7 +9,7 @@ import (
 	"github.com/ava-labs/avalanchego/ids"
 )
 
-// BootstrapTrackerTest is a test subnet
+// BootstrapTrackerTest is a test supernet
 type BootstrapTrackerTest struct {
 	T *testing.T
 

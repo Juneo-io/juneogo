@@ -271,12 +271,12 @@ func TestGetTx(t *testing.T) {
 			"standard block",
 			func(service *Service) (*txs.Tx, error) {
 				return service.vm.txBuilder.NewCreateChainTx( // Test GetTx works for standard blocks
-					testSubnet1.ID(),
+					testSupernet1.ID(),
 					nil,
 					constants.AVMID,
 					nil,
 					"chain name",
-					[]*secp256k1.PrivateKey{testSubnet1ControlKeys[0], testSubnet1ControlKeys[1]},
+					[]*secp256k1.PrivateKey{testSupernet1ControlKeys[0], testSupernet1ControlKeys[1]},
 					keys[0].PublicKey().Address(), // change addr
 				)
 			},
@@ -595,7 +595,7 @@ func TestGetCurrentValidators(t *testing.T) {
 	genesis, _ := defaultGenesis()
 
 	// Call getValidators
-	args := GetCurrentValidatorsArgs{SubnetID: constants.PrimaryNetworkID}
+	args := GetCurrentValidatorsArgs{SupernetID: constants.PrimaryNetworkID}
 	response := GetCurrentValidatorsReply{}
 
 	err := service.GetCurrentValidators(nil, &args, &response)
@@ -647,7 +647,7 @@ func TestGetCurrentValidators(t *testing.T) {
 	require.NoError(err)
 
 	// Call getCurrentValidators
-	args = GetCurrentValidatorsArgs{SubnetID: constants.PrimaryNetworkID}
+	args = GetCurrentValidatorsArgs{SupernetID: constants.PrimaryNetworkID}
 	err = service.GetCurrentValidators(nil, &args, &response)
 	require.NoError(err)
 	require.Equal(len(genesis.Validators), len(response.Validators))
@@ -664,8 +664,8 @@ func TestGetCurrentValidators(t *testing.T) {
 		require.Nil(vdr.Delegators)
 
 		innerArgs := GetCurrentValidatorsArgs{
-			SubnetID: constants.PrimaryNetworkID,
-			NodeIDs:  []ids.NodeID{vdr.NodeID},
+			SupernetID: constants.PrimaryNetworkID,
+			NodeIDs:    []ids.NodeID{vdr.NodeID},
 		}
 		innerResponse := GetCurrentValidatorsReply{}
 		err = service.GetCurrentValidators(nil, &innerArgs, &innerResponse)
@@ -690,7 +690,7 @@ func TestGetCurrentValidators(t *testing.T) {
 	require.NoError(err)
 	service.vm.state.AddTx(tx, status.Committed)
 	service.vm.state.DeleteCurrentDelegator(staker)
-	require.NoError(service.vm.state.SetDelegateeReward(staker.SubnetID, staker.NodeID, 100000))
+	require.NoError(service.vm.state.SetDelegateeReward(staker.SupernetID, staker.NodeID, 100000))
 	require.NoError(service.vm.state.Commit())
 
 	// Call getValidators
@@ -753,12 +753,12 @@ func TestGetBlock(t *testing.T) {
 
 			// Make a block an accept it, then check we can get it.
 			tx, err := service.vm.txBuilder.NewCreateChainTx( // Test GetTx works for standard blocks
-				testSubnet1.ID(),
+				testSupernet1.ID(),
 				nil,
 				constants.AVMID,
 				nil,
 				"chain name",
-				[]*secp256k1.PrivateKey{testSubnet1ControlKeys[0], testSubnet1ControlKeys[1]},
+				[]*secp256k1.PrivateKey{testSupernet1ControlKeys[0], testSupernet1ControlKeys[1]},
 				keys[0].PublicKey().Address(), // change addr
 			)
 			require.NoError(err)

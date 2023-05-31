@@ -1,7 +1,7 @@
 // Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
-package subnets
+package supernets
 
 import (
 	"testing"
@@ -12,7 +12,7 @@ import (
 	"github.com/ava-labs/avalanchego/utils/set"
 )
 
-func TestSubnet(t *testing.T) {
+func TestSupernet(t *testing.T) {
 	require := require.New(t)
 
 	myNodeID := ids.GenerateTestNodeID()
@@ -22,22 +22,22 @@ func TestSubnet(t *testing.T) {
 
 	s := New(myNodeID, Config{})
 	s.AddChain(chainID0)
-	require.False(s.IsBootstrapped(), "A subnet with one chain in bootstrapping shouldn't be considered bootstrapped")
+	require.False(s.IsBootstrapped(), "A supernet with one chain in bootstrapping shouldn't be considered bootstrapped")
 
 	s.Bootstrapped(chainID0)
-	require.True(s.IsBootstrapped(), "A subnet with only bootstrapped chains should be considered bootstrapped")
+	require.True(s.IsBootstrapped(), "A supernet with only bootstrapped chains should be considered bootstrapped")
 
 	s.AddChain(chainID1)
-	require.False(s.IsBootstrapped(), "A subnet with one chain in bootstrapping shouldn't be considered bootstrapped")
+	require.False(s.IsBootstrapped(), "A supernet with one chain in bootstrapping shouldn't be considered bootstrapped")
 
 	s.AddChain(chainID2)
-	require.False(s.IsBootstrapped(), "A subnet with one chain in bootstrapping shouldn't be considered bootstrapped")
+	require.False(s.IsBootstrapped(), "A supernet with one chain in bootstrapping shouldn't be considered bootstrapped")
 
 	s.Bootstrapped(chainID1)
-	require.False(s.IsBootstrapped(), "A subnet with one chain in bootstrapping shouldn't be considered bootstrapped")
+	require.False(s.IsBootstrapped(), "A supernet with one chain in bootstrapping shouldn't be considered bootstrapped")
 
 	s.Bootstrapped(chainID2)
-	require.True(s.IsBootstrapped(), "A subnet with only bootstrapped chains should be considered bootstrapped")
+	require.True(s.IsBootstrapped(), "A supernet with only bootstrapped chains should be considered bootstrapped")
 }
 
 func TestIsAllowed(t *testing.T) {

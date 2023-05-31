@@ -21,13 +21,13 @@ var (
 		TxFeeConfig: TxFeeConfig{
 			TxFee:                         10 * units.MilliAvax,
 			CreateAssetTxFee:              100 * units.MilliAvax,
-			CreateSubnetTxFee:             100 * units.MilliAvax,
-			TransformSubnetTxFee:          1 * units.Avax,
+			CreateSupernetTxFee:           100 * units.MilliAvax,
+			TransformSupernetTxFee:        1 * units.Avax,
 			CreateBlockchainTxFee:         100 * units.MilliAvax,
 			AddPrimaryNetworkValidatorFee: 0,
 			AddPrimaryNetworkDelegatorFee: 0,
-			AddSubnetValidatorFee:         100 * units.MilliAvax,
-			AddSubnetDelegatorFee:         100 * units.MilliAvax,
+			AddSupernetValidatorFee:       100 * units.MilliAvax,
+			AddSupernetDelegatorFee:       100 * units.MilliAvax,
 		},
 		StakingConfig: StakingConfig{
 			UptimeRequirement: .8, // 80%

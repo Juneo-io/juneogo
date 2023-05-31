@@ -17,7 +17,7 @@ func (r *remover) AddValidatorTx(*txs.AddValidatorTx) error {
 	return nil
 }
 
-func (r *remover) AddSubnetValidatorTx(*txs.AddSubnetValidatorTx) error {
+func (r *remover) AddSupernetValidatorTx(*txs.AddSupernetValidatorTx) error {
 	r.m.removeStakerTx(r.tx)
 	return nil
 }
@@ -27,7 +27,7 @@ func (r *remover) AddDelegatorTx(*txs.AddDelegatorTx) error {
 	return nil
 }
 
-func (r *remover) RemoveSubnetValidatorTx(*txs.RemoveSubnetValidatorTx) error {
+func (r *remover) RemoveSupernetValidatorTx(*txs.RemoveSupernetValidatorTx) error {
 	r.m.removeDecisionTxs([]*txs.Tx{r.tx})
 	return nil
 }
@@ -37,7 +37,7 @@ func (r *remover) CreateChainTx(*txs.CreateChainTx) error {
 	return nil
 }
 
-func (r *remover) CreateSubnetTx(*txs.CreateSubnetTx) error {
+func (r *remover) CreateSupernetTx(*txs.CreateSupernetTx) error {
 	r.m.removeDecisionTxs([]*txs.Tx{r.tx})
 	return nil
 }
@@ -52,7 +52,7 @@ func (r *remover) ExportTx(*txs.ExportTx) error {
 	return nil
 }
 
-func (r *remover) TransformSubnetTx(*txs.TransformSubnetTx) error {
+func (r *remover) TransformSupernetTx(*txs.TransformSupernetTx) error {
 	r.m.removeDecisionTxs([]*txs.Tx{r.tx})
 	return nil
 }

@@ -9,7 +9,7 @@ import (
 
 	"github.com/ava-labs/avalanchego/ids"
 	"github.com/ava-labs/avalanchego/message"
-	"github.com/ava-labs/avalanchego/subnets"
+	"github.com/ava-labs/avalanchego/supernets"
 	"github.com/ava-labs/avalanchego/utils/set"
 )
 
@@ -24,8 +24,8 @@ type ExternalSenderTest struct {
 
 	CantSend, CantGossip bool
 
-	SendF   func(msg message.OutboundMessage, nodeIDs set.Set[ids.NodeID], subnetID ids.ID, allower subnets.Allower) set.Set[ids.NodeID]
-	GossipF func(msg message.OutboundMessage, subnetID ids.ID, numValidatorsToSend, numNonValidatorsToSend, numPeersToSend int, allower subnets.Allower) set.Set[ids.NodeID]
+	SendF   func(msg message.OutboundMessage, nodeIDs set.Set[ids.NodeID], supernetID ids.ID, allower supernets.Allower) set.Set[ids.NodeID]
+	GossipF func(msg message.OutboundMessage, supernetID ids.ID, numValidatorsToSend, numNonValidatorsToSend, numPeersToSend int, allower supernets.Allower) set.Set[ids.NodeID]
 }
 
 // Default set the default callable value to [cant]
@@ -37,11 +37,11 @@ func (s *ExternalSenderTest) Default(cant bool) {
 func (s *ExternalSenderTest) Send(
 	msg message.OutboundMessage,
 	nodeIDs set.Set[ids.NodeID],
-	subnetID ids.ID,
-	allower subnets.Allower,
+	supernetID ids.ID,
+	allower supernets.Allower,
 ) set.Set[ids.NodeID] {
 	if s.SendF != nil {
-		return s.SendF(msg, nodeIDs, subnetID, allower)
+		return s.SendF(msg, nodeIDs, supernetID, allower)
 	}
 	if s.CantSend {
 		if s.TB != nil {
@@ -57,14 +57,14 @@ func (s *ExternalSenderTest) Send(
 // initialized, then testing will fail.
 func (s *ExternalSenderTest) Gossip(
 	msg message.OutboundMessage,
-	subnetID ids.ID,
+	supernetID ids.ID,
 	numValidatorsToSend int,
 	numNonValidatorsToSend int,
 	numPeersToSend int,
-	allower subnets.Allower,
+	allower supernets.Allower,
 ) set.Set[ids.NodeID] {
 	if s.GossipF != nil {
-		return s.GossipF(msg, subnetID, numValidatorsToSend, numNonValidatorsToSend, numPeersToSend, allower)
+		return s.GossipF(msg, supernetID, numValidatorsToSend, numNonValidatorsToSend, numPeersToSend, allower)
 	}
 	if s.CantGossip {
 		if s.TB != nil {

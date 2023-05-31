@@ -406,10 +406,10 @@ func getNextStakerToReward(
 	for currentStakerIterator.Next() {
 		currentStaker := currentStakerIterator.Value()
 		priority := currentStaker.Priority
-		// If the staker is a permissionless staker (not a permissioned subnet
+		// If the staker is a permissionless staker (not a permissioned supernet
 		// validator), it's the next staker we will want to remove with a
 		// RewardValidatorTx rather than an AdvanceTimeTx.
-		if priority != txs.SubnetPermissionedValidatorCurrentPriority {
+		if priority != txs.SupernetPermissionedValidatorCurrentPriority {
 			return currentStaker.TxID, chainTimestamp.Equal(currentStaker.EndTime), nil
 		}
 	}

@@ -68,10 +68,10 @@ message Message {
 // uptime value of the message sender in "pong" message.
 message Ping {}
 
-// Contains subnet id and the related observed subnet uptime of the message
+// Contains supernet id and the related observed supernet uptime of the message
 // receiver (remote peer).
-message SubnetUptime {
-  bytes subnet_id = 1;
+message SupernetUptime {
+  bytes supernet_id = 1;
   uint32 uptime = 2;
 }
 
@@ -81,8 +81,8 @@ message SubnetUptime {
 message Pong {
   // uptime is the primary network uptime percentage.
   uint32 uptime = 1;
-  // subnet_uptimes contains subnet uptime percentages.
-  repeated SubnetUptime subnet_uptimes = 2;
+  // supernet_uptimes contains supernet uptime percentages.
+  repeated SupernetUptime supernet_uptimes = 2;
 }
 
 // The first outbound message that the local node sends to its remote peer
@@ -100,7 +100,7 @@ message Version {
   string my_version = 5;
   uint64 my_version_time = 6;
   bytes sig = 7;
-  repeated bytes tracked_subnets = 8;
+  repeated bytes tracked_supernets = 8;
 }
 
 // ref. https://pkg.go.dev/github.com/ava-labs/avalanchego/utils/ips#ClaimedIPPort

@@ -72,12 +72,12 @@ func (s *BitSetSignature) Verify(
 	quorumNum uint64,
 	quorumDen uint64,
 ) error {
-	subnetID, err := pChainState.GetSubnetID(ctx, msg.SourceChainID)
+	supernetID, err := pChainState.GetSupernetID(ctx, msg.SourceChainID)
 	if err != nil {
 		return err
 	}
 
-	vdrs, totalWeight, err := GetCanonicalValidatorSet(ctx, pChainState, pChainHeight, subnetID)
+	vdrs, totalWeight, err := GetCanonicalValidatorSet(ctx, pChainState, pChainHeight, supernetID)
 	if err != nil {
 		return err
 	}

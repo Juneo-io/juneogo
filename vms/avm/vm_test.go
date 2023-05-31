@@ -104,15 +104,15 @@ func NewContext(tb testing.TB) *snow.Context {
 	}
 
 	ctx.ValidatorState = &validators.TestState{
-		GetSubnetIDF: func(_ context.Context, chainID ids.ID) (ids.ID, error) {
-			subnetID, ok := map[ids.ID]ids.ID{
-				constants.PlatformChainID: ctx.SubnetID,
-				chainID:                   ctx.SubnetID,
+		GetSupernetIDF: func(_ context.Context, chainID ids.ID) (ids.ID, error) {
+			supernetID, ok := map[ids.ID]ids.ID{
+				constants.PlatformChainID: ctx.SupernetID,
+				chainID:                   ctx.SupernetID,
 			}[chainID]
 			if !ok {
 				return ids.Empty, errMissing
 			}
-			return subnetID, nil
+			return supernetID, nil
 		},
 	}
 	return ctx

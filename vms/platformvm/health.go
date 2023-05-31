@@ -66,38 +66,38 @@ func (vm *VM) HealthCheck(context.Context) (interface{}, error) {
 		)
 	}
 
-	for subnetID := range vm.TrackedSubnets {
-		percentConnected, err := vm.getPercentConnected(subnetID)
+	for supernetID := range vm.TrackedSupernets {
+		percentConnected, err := vm.getPercentConnected(supernetID)
 		if err != nil {
-			return nil, fmt.Errorf("couldn't get percent connected for %q: %w", subnetID, err)
+			return nil, fmt.Errorf("couldn't get percent connected for %q: %w", supernetID, err)
 		}
-		minPercentConnected, ok := vm.MinPercentConnectedStakeHealthy[subnetID]
+		minPercentConnected, ok := vm.MinPercentConnectedStakeHealthy[supernetID]
 		if !ok {
 			minPercentConnected = primaryMinPercentConnected
 		}
 
-		vm.metrics.SetSubnetPercentConnected(subnetID, percentConnected)
-		key := fmt.Sprintf("%s-percentConnected", subnetID)
+		vm.metrics.SetSupernetPercentConnected(supernetID, percentConnected)
+		key := fmt.Sprintf("%s-percentConnected", supernetID)
 		details[key] = percentConnected
 
-		localSubnetValidator, err := vm.state.GetCurrentValidator(
-			subnetID,
+		localSupernetValidator, err := vm.state.GetCurrentValidator(
+			supernetID,
 			vm.ctx.NodeID,
 		)
 		switch err {
 		case nil:
-			vm.metrics.SetTimeUntilSubnetUnstake(subnetID, time.Until(localSubnetValidator.EndTime))
+			vm.metrics.SetTimeUntilSupernetUnstake(supernetID, time.Until(localSupernetValidator.EndTime))
 		case database.ErrNotFound:
-			vm.metrics.SetTimeUntilSubnetUnstake(subnetID, 0)
+			vm.metrics.SetTimeUntilSupernetUnstake(supernetID, 0)
 		default:
-			return nil, fmt.Errorf("couldn't get current subnet validator of %q: %w", subnetID, err)
+			return nil, fmt.Errorf("couldn't get current supernet validator of %q: %w", supernetID, err)
 		}
 
 		if percentConnected < minPercentConnected {
 			errorReasons = append(errorReasons,
 				fmt.Sprintf("connected to %f%% of %q weight; should be connected to at least %f%%",
 					percentConnected*100,
-					subnetID,
+					supernetID,
 					minPercentConnected*100,
 				),
 			)

@@ -152,13 +152,13 @@ type PrimaryDelegator struct {
 // [VMID] is the ID of the VM this chain runs.
 // [FxIDs] are the IDs of the Fxs the chain supports.
 // [Name] is a human-readable, non-unique name for the chain.
-// [SubnetID] is the ID of the subnet that validates the chain
+// [SupernetID] is the ID of the supernet that validates the chain
 type Chain struct {
 	GenesisData  string   `json:"genesisData"`
 	VMID         ids.ID   `json:"vmID"`
 	FxIDs        []ids.ID `json:"fxIDs"`
 	Name         string   `json:"name"`
-	SubnetID     ids.ID   `json:"subnetID"`
+	SupernetID   ids.ID   `json:"supernetID"`
 	ChainAssetID ids.ID   `json:"chainAssetID"`
 }
 
@@ -338,12 +338,12 @@ func (*StaticService) BuildGenesis(_ *http.Request, args *BuildGenesisArgs, repl
 				NetworkID:    uint32(args.NetworkID),
 				BlockchainID: ids.Empty,
 			}},
-			SubnetID:     chain.SubnetID,
+			SupernetID:   chain.SupernetID,
 			ChainName:    chain.Name,
 			VMID:         chain.VMID,
 			FxIDs:        chain.FxIDs,
 			GenesisData:  genesisBytes,
-			SubnetAuth:   &secp256k1fx.Input{},
+			SupernetAuth: &secp256k1fx.Input{},
 			ChainAssetID: chain.ChainAssetID,
 		}}
 		if err := tx.Initialize(txs.GenesisCodec); err != nil {

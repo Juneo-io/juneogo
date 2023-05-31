@@ -94,7 +94,7 @@ func TestGetValidatorWeightDiffs(t *testing.T) {
 
 	nodeID0 := ids.GenerateTestNodeID()
 
-	subnetID0 := ids.GenerateTestID()
+	supernetID0 := ids.GenerateTestID()
 
 	type stakerDiff struct {
 		validatorsToAdd    []*Staker
@@ -108,10 +108,10 @@ func TestGetValidatorWeightDiffs(t *testing.T) {
 		{
 			validatorsToAdd: []*Staker{
 				{
-					TxID:     txID0,
-					NodeID:   nodeID0,
-					SubnetID: constants.PrimaryNetworkID,
-					Weight:   1,
+					TxID:       txID0,
+					NodeID:     nodeID0,
+					SupernetID: constants.PrimaryNetworkID,
+					Weight:     1,
 				},
 			},
 			expectedValidatorWeightDiffs: map[ids.ID]map[ids.NodeID]*ValidatorWeightDiff{
@@ -126,18 +126,18 @@ func TestGetValidatorWeightDiffs(t *testing.T) {
 		{
 			validatorsToAdd: []*Staker{
 				{
-					TxID:     txID3,
-					NodeID:   nodeID0,
-					SubnetID: subnetID0,
-					Weight:   10,
+					TxID:       txID3,
+					NodeID:     nodeID0,
+					SupernetID: supernetID0,
+					Weight:     10,
 				},
 			},
 			delegatorsToAdd: []*Staker{
 				{
-					TxID:     txID1,
-					NodeID:   nodeID0,
-					SubnetID: constants.PrimaryNetworkID,
-					Weight:   5,
+					TxID:       txID1,
+					NodeID:     nodeID0,
+					SupernetID: constants.PrimaryNetworkID,
+					Weight:     5,
 				},
 			},
 			expectedValidatorWeightDiffs: map[ids.ID]map[ids.NodeID]*ValidatorWeightDiff{
@@ -147,7 +147,7 @@ func TestGetValidatorWeightDiffs(t *testing.T) {
 						Amount:   5,
 					},
 				},
-				subnetID0: {
+				supernetID0: {
 					nodeID0: {
 						Decrease: false,
 						Amount:   10,
@@ -158,18 +158,18 @@ func TestGetValidatorWeightDiffs(t *testing.T) {
 		{
 			delegatorsToAdd: []*Staker{
 				{
-					TxID:     txID2,
-					NodeID:   nodeID0,
-					SubnetID: constants.PrimaryNetworkID,
-					Weight:   15,
+					TxID:       txID2,
+					NodeID:     nodeID0,
+					SupernetID: constants.PrimaryNetworkID,
+					Weight:     15,
 				},
 			},
 			delegatorsToRemove: []*Staker{
 				{
-					TxID:     txID1,
-					NodeID:   nodeID0,
-					SubnetID: constants.PrimaryNetworkID,
-					Weight:   5,
+					TxID:       txID1,
+					NodeID:     nodeID0,
+					SupernetID: constants.PrimaryNetworkID,
+					Weight:     5,
 				},
 			},
 			expectedValidatorWeightDiffs: map[ids.ID]map[ids.NodeID]*ValidatorWeightDiff{
@@ -184,24 +184,24 @@ func TestGetValidatorWeightDiffs(t *testing.T) {
 		{
 			validatorsToRemove: []*Staker{
 				{
-					TxID:     txID0,
-					NodeID:   nodeID0,
-					SubnetID: constants.PrimaryNetworkID,
-					Weight:   1,
+					TxID:       txID0,
+					NodeID:     nodeID0,
+					SupernetID: constants.PrimaryNetworkID,
+					Weight:     1,
 				},
 				{
-					TxID:     txID3,
-					NodeID:   nodeID0,
-					SubnetID: subnetID0,
-					Weight:   10,
+					TxID:       txID3,
+					NodeID:     nodeID0,
+					SupernetID: supernetID0,
+					Weight:     10,
 				},
 			},
 			delegatorsToRemove: []*Staker{
 				{
-					TxID:     txID2,
-					NodeID:   nodeID0,
-					SubnetID: constants.PrimaryNetworkID,
-					Weight:   15,
+					TxID:       txID2,
+					NodeID:     nodeID0,
+					SupernetID: constants.PrimaryNetworkID,
+					Weight:     15,
 				},
 			},
 			expectedValidatorWeightDiffs: map[ids.ID]map[ids.NodeID]*ValidatorWeightDiff{
@@ -211,7 +211,7 @@ func TestGetValidatorWeightDiffs(t *testing.T) {
 						Amount:   16,
 					},
 				},
-				subnetID0: {
+				supernetID0: {
 					nodeID0: {
 						Decrease: true,
 						Amount:   10,
@@ -243,8 +243,8 @@ func TestGetValidatorWeightDiffs(t *testing.T) {
 		require.NoError(state.Commit())
 
 		for j, stakerDiff := range stakerDiffs[:i+1] {
-			for subnetID, expectedValidatorWeightDiffs := range stakerDiff.expectedValidatorWeightDiffs {
-				validatorWeightDiffs, err := state.GetValidatorWeightDiffs(uint64(j+1), subnetID)
+			for supernetID, expectedValidatorWeightDiffs := range stakerDiff.expectedValidatorWeightDiffs {
+				validatorWeightDiffs, err := state.GetValidatorWeightDiffs(uint64(j+1), supernetID)
 				require.NoError(err)
 				require.Equal(expectedValidatorWeightDiffs, validatorWeightDiffs)
 			}
@@ -446,10 +446,10 @@ func newInitializedState(require *require.Assertions) (State, database.Database)
 	require.NoError(initialValidatorTx.Initialize(txs.Codec))
 
 	initialChain := &txs.CreateChainTx{
-		SubnetID:   constants.PrimaryNetworkID,
-		ChainName:  "x",
-		VMID:       constants.AVMID,
-		SubnetAuth: &secp256k1fx.Input{},
+		SupernetID:   constants.PrimaryNetworkID,
+		ChainName:    "x",
+		VMID:         constants.AVMID,
+		SupernetAuth: &secp256k1fx.Input{},
 	}
 	initialChainTx := &txs.Tx{Unsigned: initialChain}
 	require.NoError(initialChainTx.Initialize(txs.Codec))
@@ -664,11 +664,11 @@ func TestStateAddRemoveValidator(t *testing.T) {
 	state, _ := newInitializedState(require)
 
 	var (
-		numNodes  = 3
-		subnetID  = ids.GenerateTestID()
-		startTime = time.Now()
-		endTime   = startTime.Add(24 * time.Hour)
-		stakers   = make([]Staker, numNodes)
+		numNodes   = 3
+		supernetID = ids.GenerateTestID()
+		startTime  = time.Now()
+		endTime    = startTime.Add(24 * time.Hour)
+		stakers    = make([]Staker, numNodes)
 	)
 	for i := 0; i < numNodes; i++ {
 		stakers[i] = Staker{
@@ -680,47 +680,47 @@ func TestStateAddRemoveValidator(t *testing.T) {
 			PotentialReward: uint64(i + 1),
 		}
 		if i%2 == 0 {
-			stakers[i].SubnetID = subnetID
+			stakers[i].SupernetID = supernetID
 		} else {
 			sk, err := bls.NewSecretKey()
 			require.NoError(err)
 			stakers[i].PublicKey = bls.PublicFromSecretKey(sk)
-			stakers[i].SubnetID = constants.PrimaryNetworkID
+			stakers[i].SupernetID = constants.PrimaryNetworkID
 		}
 	}
 
 	type diff struct {
 		added                            []Staker
 		removed                          []Staker
-		expectedSubnetWeightDiff         map[ids.NodeID]*ValidatorWeightDiff
+		expectedSupernetWeightDiff       map[ids.NodeID]*ValidatorWeightDiff
 		expectedPrimaryNetworkWeightDiff map[ids.NodeID]*ValidatorWeightDiff
 		expectedPublicKeyDiff            map[ids.NodeID]*bls.PublicKey
 	}
 	diffs := []diff{
 		{
-			// Add a subnet validator
+			// Add a supernet validator
 			added:                            []Staker{stakers[0]},
 			expectedPrimaryNetworkWeightDiff: map[ids.NodeID]*ValidatorWeightDiff{},
-			expectedSubnetWeightDiff: map[ids.NodeID]*ValidatorWeightDiff{
+			expectedSupernetWeightDiff: map[ids.NodeID]*ValidatorWeightDiff{
 				stakers[0].NodeID: {
 					Decrease: false,
 					Amount:   stakers[0].Weight,
 				},
 			},
-			// No diff because this is a subnet validator
+			// No diff because this is a supernet validator
 			expectedPublicKeyDiff: map[ids.NodeID]*bls.PublicKey{},
 		},
 		{
-			// Remove a subnet validator
+			// Remove a supernet validator
 			removed:                          []Staker{stakers[0]},
 			expectedPrimaryNetworkWeightDiff: map[ids.NodeID]*ValidatorWeightDiff{},
-			expectedSubnetWeightDiff: map[ids.NodeID]*ValidatorWeightDiff{
+			expectedSupernetWeightDiff: map[ids.NodeID]*ValidatorWeightDiff{
 				stakers[0].NodeID: {
 					Decrease: true,
 					Amount:   stakers[0].Weight,
 				},
 			},
-			// No diff because this is a subnet validator
+			// No diff because this is a supernet validator
 			expectedPublicKeyDiff: map[ids.NodeID]*bls.PublicKey{},
 		},
 		{ // Add a primary network validator
@@ -731,8 +731,8 @@ func TestStateAddRemoveValidator(t *testing.T) {
 					Amount:   stakers[1].Weight,
 				},
 			},
-			expectedSubnetWeightDiff: map[ids.NodeID]*ValidatorWeightDiff{},
-			expectedPublicKeyDiff:    map[ids.NodeID]*bls.PublicKey{},
+			expectedSupernetWeightDiff: map[ids.NodeID]*ValidatorWeightDiff{},
+			expectedPublicKeyDiff:      map[ids.NodeID]*bls.PublicKey{},
 		},
 		{ // Remove a primary network validator
 			removed: []Staker{stakers[1]},
@@ -742,13 +742,13 @@ func TestStateAddRemoveValidator(t *testing.T) {
 					Amount:   stakers[1].Weight,
 				},
 			},
-			expectedSubnetWeightDiff: map[ids.NodeID]*ValidatorWeightDiff{},
+			expectedSupernetWeightDiff: map[ids.NodeID]*ValidatorWeightDiff{},
 			expectedPublicKeyDiff: map[ids.NodeID]*bls.PublicKey{
 				stakers[1].NodeID: stakers[1].PublicKey,
 			},
 		},
 		{
-			// Add 2 subnet validators and a primary network validator
+			// Add 2 supernet validators and a primary network validator
 			added: []Staker{stakers[0], stakers[1], stakers[2]},
 			expectedPrimaryNetworkWeightDiff: map[ids.NodeID]*ValidatorWeightDiff{
 				stakers[1].NodeID: {
@@ -756,7 +756,7 @@ func TestStateAddRemoveValidator(t *testing.T) {
 					Amount:   stakers[1].Weight,
 				},
 			},
-			expectedSubnetWeightDiff: map[ids.NodeID]*ValidatorWeightDiff{
+			expectedSupernetWeightDiff: map[ids.NodeID]*ValidatorWeightDiff{
 				stakers[0].NodeID: {
 					Decrease: false,
 					Amount:   stakers[0].Weight,
@@ -769,7 +769,7 @@ func TestStateAddRemoveValidator(t *testing.T) {
 			expectedPublicKeyDiff: map[ids.NodeID]*bls.PublicKey{},
 		},
 		{
-			// Remove 2 subnet validators and a primary network validator.
+			// Remove 2 supernet validators and a primary network validator.
 			removed: []Staker{stakers[0], stakers[1], stakers[2]},
 			expectedPrimaryNetworkWeightDiff: map[ids.NodeID]*ValidatorWeightDiff{
 				stakers[1].NodeID: {
@@ -777,7 +777,7 @@ func TestStateAddRemoveValidator(t *testing.T) {
 					Amount:   stakers[1].Weight,
 				},
 			},
-			expectedSubnetWeightDiff: map[ids.NodeID]*ValidatorWeightDiff{
+			expectedSupernetWeightDiff: map[ids.NodeID]*ValidatorWeightDiff{
 				stakers[0].NodeID: {
 					Decrease: true,
 					Amount:   stakers[0].Weight,
@@ -809,20 +809,20 @@ func TestStateAddRemoveValidator(t *testing.T) {
 		require.NoError(state.Commit())
 
 		for _, added := range diff.added {
-			gotValidator, err := state.GetCurrentValidator(added.SubnetID, added.NodeID)
+			gotValidator, err := state.GetCurrentValidator(added.SupernetID, added.NodeID)
 			require.NoError(err)
 			require.Equal(added, *gotValidator)
 		}
 
 		for _, removed := range diff.removed {
-			_, err := state.GetCurrentValidator(removed.SubnetID, removed.NodeID)
+			_, err := state.GetCurrentValidator(removed.SupernetID, removed.NodeID)
 			require.ErrorIs(err, database.ErrNotFound)
 		}
 
 		// Assert that we get the expected weight diffs
-		gotSubnetWeightDiffs, err := state.GetValidatorWeightDiffs(newHeight, subnetID)
+		gotSupernetWeightDiffs, err := state.GetValidatorWeightDiffs(newHeight, supernetID)
 		require.NoError(err)
-		require.Equal(diff.expectedSubnetWeightDiff, gotSubnetWeightDiffs)
+		require.Equal(diff.expectedSupernetWeightDiff, gotSupernetWeightDiffs)
 
 		gotWeightDiffs, err := state.GetValidatorWeightDiffs(newHeight, constants.PrimaryNetworkID)
 		require.NoError(err)

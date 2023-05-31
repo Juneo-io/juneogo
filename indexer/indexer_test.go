@@ -519,7 +519,7 @@ func TestIgnoreNonDefaultChains(t *testing.T) {
 	// Assert state is right
 	chain1Ctx := snow.DefaultConsensusContextTest()
 	chain1Ctx.ChainID = ids.GenerateTestID()
-	chain1Ctx.SubnetID = ids.GenerateTestID()
+	chain1Ctx.SupernetID = ids.GenerateTestID()
 
 	// RegisterChain should return without adding an index for this chain
 	chainVM := mocks.NewMockChainVM(ctrl)

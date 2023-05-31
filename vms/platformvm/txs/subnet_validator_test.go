@@ -12,22 +12,22 @@ import (
 	"github.com/ava-labs/avalanchego/utils/constants"
 )
 
-func TestSubnetValidatorVerifySubnetID(t *testing.T) {
+func TestSupernetValidatorVerifySupernetID(t *testing.T) {
 	require := require.New(t)
 
 	// Error path
 	{
-		vdr := &SubnetValidator{
-			Subnet: constants.PrimaryNetworkID,
+		vdr := &SupernetValidator{
+			Supernet: constants.PrimaryNetworkID,
 		}
 
-		require.ErrorIs(vdr.Verify(), errBadSubnetID)
+		require.ErrorIs(vdr.Verify(), errBadSupernetID)
 	}
 
 	// Happy path
 	{
-		vdr := &SubnetValidator{
-			Subnet: ids.GenerateTestID(),
+		vdr := &SupernetValidator{
+			Supernet: ids.GenerateTestID(),
 			Validator: Validator{
 				Wght: 1,
 			},

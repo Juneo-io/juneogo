@@ -155,20 +155,20 @@ func TestGetNextStakerToReward(t *testing.T) {
 			},
 		},
 		{
-			name:      "expired subnet validator/delegator",
+			name:      "expired supernet validator/delegator",
 			timestamp: now,
 			stateF: func(ctrl *gomock.Controller) state.Chain {
 				currentStakerIter := state.NewMockStakerIterator(ctrl)
 
 				currentStakerIter.EXPECT().Next().Return(true)
 				currentStakerIter.EXPECT().Value().Return(&state.Staker{
-					Priority: txs.SubnetPermissionedValidatorCurrentPriority,
+					Priority: txs.SupernetPermissionedValidatorCurrentPriority,
 					EndTime:  now,
 				})
 				currentStakerIter.EXPECT().Next().Return(true)
 				currentStakerIter.EXPECT().Value().Return(&state.Staker{
 					TxID:     txID,
-					Priority: txs.SubnetPermissionlessDelegatorCurrentPriority,
+					Priority: txs.SupernetPermissionlessDelegatorCurrentPriority,
 					EndTime:  now,
 				})
 				currentStakerIter.EXPECT().Release()
@@ -182,14 +182,14 @@ func TestGetNextStakerToReward(t *testing.T) {
 			expectedShouldReward: true,
 		},
 		{
-			name:      "expired primary network validator after subnet expired subnet validator",
+			name:      "expired primary network validator after supernet expired supernet validator",
 			timestamp: now,
 			stateF: func(ctrl *gomock.Controller) state.Chain {
 				currentStakerIter := state.NewMockStakerIterator(ctrl)
 
 				currentStakerIter.EXPECT().Next().Return(true)
 				currentStakerIter.EXPECT().Value().Return(&state.Staker{
-					Priority: txs.SubnetPermissionedValidatorCurrentPriority,
+					Priority: txs.SupernetPermissionedValidatorCurrentPriority,
 					EndTime:  now,
 				})
 				currentStakerIter.EXPECT().Next().Return(true)
@@ -209,14 +209,14 @@ func TestGetNextStakerToReward(t *testing.T) {
 			expectedShouldReward: true,
 		},
 		{
-			name:      "expired primary network delegator after subnet expired subnet validator",
+			name:      "expired primary network delegator after supernet expired supernet validator",
 			timestamp: now,
 			stateF: func(ctrl *gomock.Controller) state.Chain {
 				currentStakerIter := state.NewMockStakerIterator(ctrl)
 
 				currentStakerIter.EXPECT().Next().Return(true)
 				currentStakerIter.EXPECT().Value().Return(&state.Staker{
-					Priority: txs.SubnetPermissionedValidatorCurrentPriority,
+					Priority: txs.SupernetPermissionedValidatorCurrentPriority,
 					EndTime:  now,
 				})
 				currentStakerIter.EXPECT().Next().Return(true)

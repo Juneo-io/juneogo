@@ -26,7 +26,7 @@ import (
 	"github.com/ava-labs/avalanchego/snow/networking/timeout"
 	"github.com/ava-labs/avalanchego/snow/networking/tracker"
 	"github.com/ava-labs/avalanchego/snow/validators"
-	"github.com/ava-labs/avalanchego/subnets"
+	"github.com/ava-labs/avalanchego/supernets"
 	"github.com/ava-labs/avalanchego/utils/constants"
 	"github.com/ava-labs/avalanchego/utils/logging"
 	"github.com/ava-labs/avalanchego/utils/math/meter"
@@ -94,8 +94,8 @@ func TestShutdown(t *testing.T) {
 		time.Second,
 		testThreadPoolSize,
 		resourceTracker,
-		validators.UnhandledSubnetConnector,
-		subnets.New(ctx.NodeID, subnets.Config{}),
+		validators.UnhandledSupernetConnector,
+		supernets.New(ctx.NodeID, supernets.Config{}),
 	)
 	require.NoError(t, err)
 
@@ -230,8 +230,8 @@ func TestShutdownTimesOut(t *testing.T) {
 		time.Second,
 		testThreadPoolSize,
 		resourceTracker,
-		validators.UnhandledSubnetConnector,
-		subnets.New(ctx.NodeID, subnets.Config{}),
+		validators.UnhandledSupernetConnector,
+		supernets.New(ctx.NodeID, supernets.Config{}),
 	)
 	require.NoError(t, err)
 
@@ -387,8 +387,8 @@ func TestRouterTimeout(t *testing.T) {
 		time.Second,
 		testThreadPoolSize,
 		resourceTracker,
-		validators.UnhandledSubnetConnector,
-		subnets.New(ctx.NodeID, subnets.Config{}),
+		validators.UnhandledSupernetConnector,
+		supernets.New(ctx.NodeID, supernets.Config{}),
 	)
 	require.NoError(err)
 
@@ -856,8 +856,8 @@ func TestRouterClearTimeouts(t *testing.T) {
 		time.Second,
 		testThreadPoolSize,
 		resourceTracker,
-		validators.UnhandledSubnetConnector,
-		subnets.New(ctx.NodeID, subnets.Config{}),
+		validators.UnhandledSupernetConnector,
+		supernets.New(ctx.NodeID, supernets.Config{}),
 	)
 	require.NoError(t, err)
 
@@ -1128,7 +1128,7 @@ func TestValidatorOnlyMessageDrops(t *testing.T) {
 	wg := sync.WaitGroup{}
 
 	ctx := snow.DefaultConsensusContextTest()
-	sb := subnets.New(ctx.NodeID, subnets.Config{ValidatorOnly: true})
+	sb := supernets.New(ctx.NodeID, supernets.Config{ValidatorOnly: true})
 	vdrs := validators.NewSet()
 	vID := ids.GenerateTestNodeID()
 	err = vdrs.Add(vID, nil, ids.Empty, 1)
@@ -1147,7 +1147,7 @@ func TestValidatorOnlyMessageDrops(t *testing.T) {
 		time.Second,
 		testThreadPoolSize,
 		resourceTracker,
-		validators.UnhandledSubnetConnector,
+		validators.UnhandledSupernetConnector,
 		sb,
 	)
 	require.NoError(t, err)
@@ -1297,8 +1297,8 @@ func TestRouterCrossChainMessages(t *testing.T) {
 		time.Second,
 		testThreadPoolSize,
 		resourceTracker,
-		validators.UnhandledSubnetConnector,
-		subnets.New(requester.NodeID, subnets.Config{}),
+		validators.UnhandledSupernetConnector,
+		supernets.New(requester.NodeID, supernets.Config{}),
 	)
 	require.NoError(t, err)
 
@@ -1315,8 +1315,8 @@ func TestRouterCrossChainMessages(t *testing.T) {
 		time.Second,
 		testThreadPoolSize,
 		resourceTracker,
-		validators.UnhandledSubnetConnector,
-		subnets.New(responder.NodeID, subnets.Config{}),
+		validators.UnhandledSupernetConnector,
+		supernets.New(responder.NodeID, supernets.Config{}),
 	)
 	require.NoError(t, err)
 
@@ -1380,7 +1380,7 @@ func TestRouterCrossChainMessages(t *testing.T) {
 	require.Equal(t, 2, chainRouter.chainHandlers[requester.ChainID].Len())
 }
 
-func TestConnectedSubnet(t *testing.T) {
+func TestConnectedSupernet(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -1402,10 +1402,10 @@ func TestConnectedSubnet(t *testing.T) {
 	// Create chain router
 	myNodeID := ids.GenerateTestNodeID()
 	peerNodeID := ids.GenerateTestNodeID()
-	subnetID0 := ids.GenerateTestID()
-	subnetID1 := ids.GenerateTestID()
-	trackedSubnets := set.Set[ids.ID]{}
-	trackedSubnets.Add(subnetID0, subnetID1)
+	supernetID0 := ids.GenerateTestID()
+	supernetID1 := ids.GenerateTestID()
+	trackedSupernets := set.Set[ids.ID]{}
+	trackedSupernets.Add(supernetID0, supernetID1)
 	chainRouter := ChainRouter{}
 	err = chainRouter.Initialize(
 		myNodeID,
@@ -1414,7 +1414,7 @@ func TestConnectedSubnet(t *testing.T) {
 		time.Millisecond,
 		set.Set[ids.ID]{},
 		true,
-		trackedSubnets,
+		trackedSupernets,
 		nil,
 		HealthConfig{},
 		"",
@@ -1425,7 +1425,7 @@ func TestConnectedSubnet(t *testing.T) {
 	// Create bootstrapper, engine and handler
 	platform := snow.DefaultConsensusContextTest()
 	platform.ChainID = constants.PlatformChainID
-	platform.SubnetID = constants.PrimaryNetworkID
+	platform.SupernetID = constants.PrimaryNetworkID
 	platform.Registerer = prometheus.NewRegistry()
 	platform.Metrics = metrics.NewOptionalGatherer()
 	platform.Executing.Set(false)
@@ -1438,12 +1438,12 @@ func TestConnectedSubnet(t *testing.T) {
 		InboundMessage: message.InternalConnected(myNodeID, version.CurrentApp),
 		EngineType:     p2p.EngineType_ENGINE_TYPE_UNSPECIFIED,
 	}
-	mySubnetConnectedMsg0 := handler.Message{
-		InboundMessage: message.InternalConnectedSubnet(myNodeID, subnetID0),
+	mySupernetConnectedMsg0 := handler.Message{
+		InboundMessage: message.InternalConnectedSupernet(myNodeID, supernetID0),
 		EngineType:     p2p.EngineType_ENGINE_TYPE_UNSPECIFIED,
 	}
-	mySubnetConnectedMsg1 := handler.Message{
-		InboundMessage: message.InternalConnectedSubnet(myNodeID, subnetID1),
+	mySupernetConnectedMsg1 := handler.Message{
+		InboundMessage: message.InternalConnectedSupernet(myNodeID, supernetID1),
 		EngineType:     p2p.EngineType_ENGINE_TYPE_UNSPECIFIED,
 	}
 
@@ -1451,8 +1451,8 @@ func TestConnectedSubnet(t *testing.T) {
 	platformHandler.EXPECT().Context().Return(platform).AnyTimes()
 	platformHandler.EXPECT().SetOnStopped(gomock.Any()).AnyTimes()
 	platformHandler.EXPECT().Push(gomock.Any(), myConnectedMsg).Times(1)
-	platformHandler.EXPECT().Push(gomock.Any(), mySubnetConnectedMsg0).Times(1)
-	platformHandler.EXPECT().Push(gomock.Any(), mySubnetConnectedMsg1).Times(1)
+	platformHandler.EXPECT().Push(gomock.Any(), mySupernetConnectedMsg0).Times(1)
+	platformHandler.EXPECT().Push(gomock.Any(), mySupernetConnectedMsg1).Times(1)
 
 	chainRouter.AddChain(context.Background(), platformHandler)
 
@@ -1463,12 +1463,12 @@ func TestConnectedSubnet(t *testing.T) {
 	platformHandler.EXPECT().Push(gomock.Any(), peerConnectedMsg).Times(1)
 	chainRouter.Connected(peerNodeID, version.CurrentApp, constants.PrimaryNetworkID)
 
-	peerSubnetConnectedMsg0 := handler.Message{
-		InboundMessage: message.InternalConnectedSubnet(peerNodeID, subnetID0),
+	peerSupernetConnectedMsg0 := handler.Message{
+		InboundMessage: message.InternalConnectedSupernet(peerNodeID, supernetID0),
 		EngineType:     p2p.EngineType_ENGINE_TYPE_UNSPECIFIED,
 	}
-	platformHandler.EXPECT().Push(gomock.Any(), peerSubnetConnectedMsg0).Times(1)
-	chainRouter.Connected(peerNodeID, version.CurrentApp, subnetID0)
+	platformHandler.EXPECT().Push(gomock.Any(), peerSupernetConnectedMsg0).Times(1)
+	chainRouter.Connected(peerNodeID, version.CurrentApp, supernetID0)
 
 	myDisconnectedMsg := handler.Message{
 		InboundMessage: message.InternalDisconnected(myNodeID),
@@ -1485,13 +1485,13 @@ func TestConnectedSubnet(t *testing.T) {
 	chainRouter.Benched(constants.PlatformChainID, peerNodeID)
 
 	platformHandler.EXPECT().Push(gomock.Any(), myConnectedMsg).Times(1)
-	platformHandler.EXPECT().Push(gomock.Any(), mySubnetConnectedMsg0).Times(1)
-	platformHandler.EXPECT().Push(gomock.Any(), mySubnetConnectedMsg1).Times(1)
+	platformHandler.EXPECT().Push(gomock.Any(), mySupernetConnectedMsg0).Times(1)
+	platformHandler.EXPECT().Push(gomock.Any(), mySupernetConnectedMsg1).Times(1)
 
 	chainRouter.Unbenched(constants.PlatformChainID, myNodeID)
 
 	platformHandler.EXPECT().Push(gomock.Any(), peerConnectedMsg).Times(1)
-	platformHandler.EXPECT().Push(gomock.Any(), peerSubnetConnectedMsg0).Times(1)
+	platformHandler.EXPECT().Push(gomock.Any(), peerSupernetConnectedMsg0).Times(1)
 
 	chainRouter.Unbenched(constants.PlatformChainID, peerNodeID)
 
@@ -1542,7 +1542,7 @@ func TestValidatorOnlyAllowedNodeMessageDrops(t *testing.T) {
 	allowedID := ids.GenerateTestNodeID()
 	allowedSet := set.NewSet[ids.NodeID](1)
 	allowedSet.Add(allowedID)
-	sb := subnets.New(ctx.NodeID, subnets.Config{ValidatorOnly: true, AllowedNodes: allowedSet})
+	sb := supernets.New(ctx.NodeID, supernets.Config{ValidatorOnly: true, AllowedNodes: allowedSet})
 
 	vdrs := validators.NewSet()
 	vID := ids.GenerateTestNodeID()
@@ -1564,7 +1564,7 @@ func TestValidatorOnlyAllowedNodeMessageDrops(t *testing.T) {
 		time.Second,
 		testThreadPoolSize,
 		resourceTracker,
-		validators.UnhandledSubnetConnector,
+		validators.UnhandledSupernetConnector,
 		sb,
 	)
 	require.NoError(t, err)

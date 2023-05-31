@@ -71,10 +71,10 @@ func RegisterUnsignedTxsTypes(targetCodec codec.Registry) error {
 		targetCodec.RegisterType(&secp256k1fx.OutputOwners{}),
 
 		targetCodec.RegisterType(&AddValidatorTx{}),
-		targetCodec.RegisterType(&AddSubnetValidatorTx{}),
+		targetCodec.RegisterType(&AddSupernetValidatorTx{}),
 		targetCodec.RegisterType(&AddDelegatorTx{}),
 		targetCodec.RegisterType(&CreateChainTx{}),
-		targetCodec.RegisterType(&CreateSubnetTx{}),
+		targetCodec.RegisterType(&CreateSupernetTx{}),
 		targetCodec.RegisterType(&ImportTx{}),
 		targetCodec.RegisterType(&ExportTx{}),
 		targetCodec.RegisterType(&AdvanceTimeTx{}),
@@ -84,8 +84,8 @@ func RegisterUnsignedTxsTypes(targetCodec codec.Registry) error {
 		targetCodec.RegisterType(&stakeable.LockOut{}),
 
 		// Banff additions:
-		targetCodec.RegisterType(&RemoveSubnetValidatorTx{}),
-		targetCodec.RegisterType(&TransformSubnetTx{}),
+		targetCodec.RegisterType(&RemoveSupernetValidatorTx{}),
+		targetCodec.RegisterType(&TransformSupernetTx{}),
 		targetCodec.RegisterType(&AddPermissionlessValidatorTx{}),
 		targetCodec.RegisterType(&AddPermissionlessDelegatorTx{}),
 

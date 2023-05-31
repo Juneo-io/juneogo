@@ -62,7 +62,7 @@ func (tx *AddDelegatorTx) ConsumedValue(assetID ids.ID) uint64 {
 	return value
 }
 
-func (*AddDelegatorTx) SubnetID() ids.ID {
+func (*AddDelegatorTx) SupernetID() ids.ID {
 	return constants.PrimaryNetworkID
 }
 

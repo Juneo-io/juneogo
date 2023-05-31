@@ -36,25 +36,25 @@ func (s *Server) GetCurrentHeight(ctx context.Context, _ *emptypb.Empty) (*pb.Ge
 	return &pb.GetCurrentHeightResponse{Height: height}, err
 }
 
-func (s *Server) GetSubnetID(ctx context.Context, req *pb.GetSubnetIDRequest) (*pb.GetSubnetIDResponse, error) {
+func (s *Server) GetSupernetID(ctx context.Context, req *pb.GetSupernetIDRequest) (*pb.GetSupernetIDResponse, error) {
 	chainID, err := ids.ToID(req.ChainId)
 	if err != nil {
 		return nil, err
 	}
 
-	subnetID, err := s.state.GetSubnetID(ctx, chainID)
-	return &pb.GetSubnetIDResponse{
-		SubnetId: subnetID[:],
+	supernetID, err := s.state.GetSupernetID(ctx, chainID)
+	return &pb.GetSupernetIDResponse{
+		SupernetId: supernetID[:],
 	}, err
 }
 
 func (s *Server) GetValidatorSet(ctx context.Context, req *pb.GetValidatorSetRequest) (*pb.GetValidatorSetResponse, error) {
-	subnetID, err := ids.ToID(req.SubnetId)
+	supernetID, err := ids.ToID(req.SupernetId)
 	if err != nil {
 		return nil, err
 	}
 
-	vdrs, err := s.state.GetValidatorSet(ctx, req.Height, subnetID)
+	vdrs, err := s.state.GetValidatorSet(ctx, req.Height, supernetID)
 	if err != nil {
 		return nil, err
 	}

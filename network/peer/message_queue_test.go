@@ -36,9 +36,9 @@ func TestMessageQueue(t *testing.T) {
 		testID := ids.GenerateTestID()
 		testID2 := ids.GenerateTestID()
 		m, err := mc.Pong(uint32(i),
-			[]*p2p.SubnetUptime{
-				{SubnetId: testID[:], Uptime: uint32(i)},
-				{SubnetId: testID2[:], Uptime: uint32(i)},
+			[]*p2p.SupernetUptime{
+				{SupernetId: testID[:], Uptime: uint32(i)},
+				{SupernetId: testID2[:], Uptime: uint32(i)},
 			})
 		require.NoError(err)
 		msgs = append(msgs, m)

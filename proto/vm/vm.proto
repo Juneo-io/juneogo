@@ -115,7 +115,7 @@ enum Error {
 
 message InitializeRequest {
   uint32 network_id = 1;
-  bytes subnet_id = 2;
+  bytes supernet_id = 2;
   bytes chain_id = 3;
   bytes node_id = 4;
   // public_key is the BLS public key that would correspond with any signatures
@@ -132,7 +132,7 @@ message InitializeRequest {
   repeated VersionedDBServer db_servers = 14;
   // server_addr is the address of the gRPC server which serves
   // the messenger, keystore, shared memory, blockchain alias,
-  // subnet alias, and appSender services
+  // supernet alias, and appSender services
   string server_addr = 15;
 }
 

@@ -532,19 +532,19 @@ func (*Ping) Descriptor() ([]byte, []int) {
 	return file_p2p_p2p_proto_rawDescGZIP(), []int{1}
 }
 
-// Contains subnet id and the related observed subnet uptime of the message
+// Contains supernet id and the related observed supernet uptime of the message
 // receiver (remote peer).
-type SubnetUptime struct {
+type SupernetUptime struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	SubnetId []byte `protobuf:"bytes,1,opt,name=subnet_id,json=subnetId,proto3" json:"subnet_id,omitempty"`
+	SupernetId []byte `protobuf:"bytes,1,opt,name=supernet_id,json=supernetId,proto3" json:"supernet_id,omitempty"`
 	Uptime   uint32 `protobuf:"varint,2,opt,name=uptime,proto3" json:"uptime,omitempty"`
 }
 
-func (x *SubnetUptime) Reset() {
-	*x = SubnetUptime{}
+func (x *SupernetUptime) Reset() {
+	*x = SupernetUptime{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_p2p_p2p_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -552,13 +552,13 @@ func (x *SubnetUptime) Reset() {
 	}
 }
 
-func (x *SubnetUptime) String() string {
+func (x *SupernetUptime) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*SubnetUptime) ProtoMessage() {}
+func (*SupernetUptime) ProtoMessage() {}
 
-func (x *SubnetUptime) ProtoReflect() protoreflect.Message {
+func (x *SupernetUptime) ProtoReflect() protoreflect.Message {
 	mi := &file_p2p_p2p_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -570,19 +570,19 @@ func (x *SubnetUptime) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use SubnetUptime.ProtoReflect.Descriptor instead.
-func (*SubnetUptime) Descriptor() ([]byte, []int) {
+// Deprecated: Use SupernetUptime.ProtoReflect.Descriptor instead.
+func (*SupernetUptime) Descriptor() ([]byte, []int) {
 	return file_p2p_p2p_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *SubnetUptime) GetSubnetId() []byte {
+func (x *SupernetUptime) GetSupernetId() []byte {
 	if x != nil {
-		return x.SubnetId
+		return x.SupernetId
 	}
 	return nil
 }
 
-func (x *SubnetUptime) GetUptime() uint32 {
+func (x *SupernetUptime) GetUptime() uint32 {
 	if x != nil {
 		return x.Uptime
 	}
@@ -599,8 +599,8 @@ type Pong struct {
 
 	// uptime is the primary network uptime percentage.
 	Uptime uint32 `protobuf:"varint,1,opt,name=uptime,proto3" json:"uptime,omitempty"`
-	// subnet_uptimes contains subnet uptime percentages.
-	SubnetUptimes []*SubnetUptime `protobuf:"bytes,2,rep,name=subnet_uptimes,json=subnetUptimes,proto3" json:"subnet_uptimes,omitempty"`
+	// supernet_uptimes contains supernet uptime percentages.
+	SupernetUptimes []*SupernetUptime `protobuf:"bytes,2,rep,name=supernet_uptimes,json=supernetUptimes,proto3" json:"supernet_uptimes,omitempty"`
 }
 
 func (x *Pong) Reset() {
@@ -642,9 +642,9 @@ func (x *Pong) GetUptime() uint32 {
 	return 0
 }
 
-func (x *Pong) GetSubnetUptimes() []*SubnetUptime {
+func (x *Pong) GetSupernetUptimes() []*SupernetUptime {
 	if x != nil {
-		return x.SubnetUptimes
+		return x.SupernetUptimes
 	}
 	return nil
 }
@@ -668,7 +668,7 @@ type Version struct {
 	MyVersion      string   `protobuf:"bytes,5,opt,name=my_version,json=myVersion,proto3" json:"my_version,omitempty"`
 	MyVersionTime  uint64   `protobuf:"varint,6,opt,name=my_version_time,json=myVersionTime,proto3" json:"my_version_time,omitempty"`
 	Sig            []byte   `protobuf:"bytes,7,opt,name=sig,proto3" json:"sig,omitempty"`
-	TrackedSubnets [][]byte `protobuf:"bytes,8,rep,name=tracked_subnets,json=trackedSubnets,proto3" json:"tracked_subnets,omitempty"`
+	TrackedSupernets [][]byte `protobuf:"bytes,8,rep,name=tracked_supernets,json=trackedSupernets,proto3" json:"tracked_supernets,omitempty"`
 }
 
 func (x *Version) Reset() {
@@ -752,9 +752,9 @@ func (x *Version) GetSig() []byte {
 	return nil
 }
 
-func (x *Version) GetTrackedSubnets() [][]byte {
+func (x *Version) GetTrackedSupernets() [][]byte {
 	if x != nil {
-		return x.TrackedSubnets
+		return x.TrackedSupernets
 	}
 	return nil
 }
@@ -2657,7 +2657,7 @@ var file_p2p_p2p_proto_goTypes = []interface{}{
 	(EngineType)(0),                 // 0: p2p.EngineType
 	(*Message)(nil),                 // 1: p2p.Message
 	(*Ping)(nil),                    // 2: p2p.Ping
-	(*SubnetUptime)(nil),            // 3: p2p.SubnetUptime
+	(*SupernetUptime)(nil),            // 3: p2p.SupernetUptime
 	(*Pong)(nil),                    // 4: p2p.Pong
 	(*Version)(nil),                 // 5: p2p.Version
 	(*ClaimedIpPort)(nil),           // 6: p2p.ClaimedIpPort
@@ -2707,7 +2707,7 @@ var file_p2p_p2p_proto_depIdxs = []int32{
 	26, // 20: p2p.Message.app_response:type_name -> p2p.AppResponse
 	27, // 21: p2p.Message.app_gossip:type_name -> p2p.AppGossip
 	9,  // 22: p2p.Message.peer_list_ack:type_name -> p2p.PeerListAck
-	3,  // 23: p2p.Pong.subnet_uptimes:type_name -> p2p.SubnetUptime
+	3,  // 23: p2p.Pong.supernet_uptimes:type_name -> p2p.SupernetUptime
 	6,  // 24: p2p.PeerList.claimed_ip_ports:type_name -> p2p.ClaimedIpPort
 	8,  // 25: p2p.PeerListAck.peer_acks:type_name -> p2p.PeerAck
 	0,  // 26: p2p.GetAcceptedFrontier.engine_type:type_name -> p2p.EngineType
@@ -2755,7 +2755,7 @@ func file_p2p_p2p_proto_init() {
 			}
 		}
 		file_p2p_p2p_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*SubnetUptime); i {
+			switch v := v.(*SupernetUptime); i {
 			case 0:
 				return &v.state
 			case 1:

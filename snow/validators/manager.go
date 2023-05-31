@@ -22,53 +22,53 @@ var (
 	errMissingValidators = errors.New("missing validators")
 )
 
-// Manager holds the validator set of each subnet
+// Manager holds the validator set of each supernet
 type Manager interface {
 	fmt.Stringer
 
-	// Add a subnet's validator set to the manager.
+	// Add a supernet's validator set to the manager.
 	//
-	// If the subnet had previously registered a validator set, false will be
+	// If the supernet had previously registered a validator set, false will be
 	// returned and the manager will not be modified.
-	Add(subnetID ids.ID, set Set) bool
+	Add(supernetID ids.ID, set Set) bool
 
-	// Get returns the validator set for the given subnet
-	// Returns false if the subnet doesn't exist
+	// Get returns the validator set for the given supernet
+	// Returns false if the supernet doesn't exist
 	Get(ids.ID) (Set, bool)
 }
 
 // NewManager returns a new, empty manager
 func NewManager() Manager {
 	return &manager{
-		subnetToVdrs: make(map[ids.ID]Set),
+		supernetToVdrs: make(map[ids.ID]Set),
 	}
 }
 
 type manager struct {
 	lock sync.RWMutex
 
-	// Key: Subnet ID
-	// Value: The validators that validate the subnet
-	subnetToVdrs map[ids.ID]Set
+	// Key: Supernet ID
+	// Value: The validators that validate the supernet
+	supernetToVdrs map[ids.ID]Set
 }
 
-func (m *manager) Add(subnetID ids.ID, set Set) bool {
+func (m *manager) Add(supernetID ids.ID, set Set) bool {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
-	if _, exists := m.subnetToVdrs[subnetID]; exists {
+	if _, exists := m.supernetToVdrs[supernetID]; exists {
 		return false
 	}
 
-	m.subnetToVdrs[subnetID] = set
+	m.supernetToVdrs[supernetID] = set
 	return true
 }
 
-func (m *manager) Get(subnetID ids.ID) (Set, bool) {
+func (m *manager) Get(supernetID ids.ID) (Set, bool) {
 	m.lock.RLock()
 	defer m.lock.RUnlock()
 
-	vdrs, ok := m.subnetToVdrs[subnetID]
+	vdrs, ok := m.supernetToVdrs[supernetID]
 	return vdrs, ok
 }
 
@@ -76,19 +76,19 @@ func (m *manager) String() string {
 	m.lock.RLock()
 	defer m.lock.RUnlock()
 
-	subnets := maps.Keys(m.subnetToVdrs)
-	utils.Sort(subnets)
+	supernets := maps.Keys(m.supernetToVdrs)
+	utils.Sort(supernets)
 
 	sb := strings.Builder{}
 
 	sb.WriteString(fmt.Sprintf("Validator Manager: (Size = %d)",
-		len(subnets),
+		len(supernets),
 	))
-	for _, subnetID := range subnets {
-		vdrs := m.subnetToVdrs[subnetID]
+	for _, supernetID := range supernets {
+		vdrs := m.supernetToVdrs[supernetID]
 		sb.WriteString(fmt.Sprintf(
-			"\n    Subnet[%s]: %s",
-			subnetID,
+			"\n    Supernet[%s]: %s",
+			supernetID,
 			vdrs.PrefixedString("    "),
 		))
 	}
@@ -96,50 +96,50 @@ func (m *manager) String() string {
 	return sb.String()
 }
 
-// Add is a helper that fetches the validator set of [subnetID] from [m] and
+// Add is a helper that fetches the validator set of [supernetID] from [m] and
 // adds [nodeID] to the validator set.
 // Returns an error if:
-// - [subnetID] does not have a registered validator set in [m]
+// - [supernetID] does not have a registered validator set in [m]
 // - adding [nodeID] to the validator set returns an error
-func Add(m Manager, subnetID ids.ID, nodeID ids.NodeID, pk *bls.PublicKey, txID ids.ID, weight uint64) error {
-	vdrs, ok := m.Get(subnetID)
+func Add(m Manager, supernetID ids.ID, nodeID ids.NodeID, pk *bls.PublicKey, txID ids.ID, weight uint64) error {
+	vdrs, ok := m.Get(supernetID)
 	if !ok {
-		return fmt.Errorf("%w: %s", errMissingValidators, subnetID)
+		return fmt.Errorf("%w: %s", errMissingValidators, supernetID)
 	}
 	return vdrs.Add(nodeID, pk, txID, weight)
 }
 
-// AddWeight is a helper that fetches the validator set of [subnetID] from [m]
+// AddWeight is a helper that fetches the validator set of [supernetID] from [m]
 // and adds [weight] to [nodeID] in the validator set.
 // Returns an error if:
-// - [subnetID] does not have a registered validator set in [m]
+// - [supernetID] does not have a registered validator set in [m]
 // - adding [weight] to [nodeID] in the validator set returns an error
-func AddWeight(m Manager, subnetID ids.ID, nodeID ids.NodeID, weight uint64) error {
-	vdrs, ok := m.Get(subnetID)
+func AddWeight(m Manager, supernetID ids.ID, nodeID ids.NodeID, weight uint64) error {
+	vdrs, ok := m.Get(supernetID)
 	if !ok {
-		return fmt.Errorf("%w: %s", errMissingValidators, subnetID)
+		return fmt.Errorf("%w: %s", errMissingValidators, supernetID)
 	}
 	return vdrs.AddWeight(nodeID, weight)
 }
 
-// RemoveWeight is a helper that fetches the validator set of [subnetID] from
+// RemoveWeight is a helper that fetches the validator set of [supernetID] from
 // [m] and removes [weight] from [nodeID] in the validator set.
 // Returns an error if:
-// - [subnetID] does not have a registered validator set in [m]
+// - [supernetID] does not have a registered validator set in [m]
 // - removing [weight] from [nodeID] in the validator set returns an error
-func RemoveWeight(m Manager, subnetID ids.ID, nodeID ids.NodeID, weight uint64) error {
-	vdrs, ok := m.Get(subnetID)
+func RemoveWeight(m Manager, supernetID ids.ID, nodeID ids.NodeID, weight uint64) error {
+	vdrs, ok := m.Get(supernetID)
 	if !ok {
-		return fmt.Errorf("%w: %s", errMissingValidators, subnetID)
+		return fmt.Errorf("%w: %s", errMissingValidators, supernetID)
 	}
 	return vdrs.RemoveWeight(nodeID, weight)
 }
 
-// Contains is a helper that fetches the validator set of [subnetID] from [m]
+// Contains is a helper that fetches the validator set of [supernetID] from [m]
 // and returns if the validator set contains [nodeID]. If [m] does not contain a
-// validator set for [subnetID], false is returned.
-func Contains(m Manager, subnetID ids.ID, nodeID ids.NodeID) bool {
-	vdrs, ok := m.Get(subnetID)
+// validator set for [supernetID], false is returned.
+func Contains(m Manager, supernetID ids.ID, nodeID ids.NodeID) bool {
+	vdrs, ok := m.Get(supernetID)
 	if !ok {
 		return false
 	}

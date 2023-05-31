@@ -60,7 +60,7 @@ const (
 	CrossChainAppResponseOp
 	// Internal:
 	ConnectedOp
-	ConnectedSubnetOp
+	ConnectedSupernetOp
 	DisconnectedOp
 	NotifyOp
 	GossipRequestOp
@@ -120,7 +120,7 @@ var (
 		CrossChainAppRequestFailedOp,
 		CrossChainAppResponseOp,
 		ConnectedOp,
-		ConnectedSubnetOp,
+		ConnectedSupernetOp,
 		DisconnectedOp,
 		NotifyOp,
 		GossipRequestOp,
@@ -158,7 +158,7 @@ var (
 		ChitsOp,
 		// Internal
 		ConnectedOp,
-		ConnectedSubnetOp,
+		ConnectedSupernetOp,
 		DisconnectedOp,
 	}
 
@@ -281,8 +281,8 @@ func (op Op) String() string {
 		// Internal
 	case ConnectedOp:
 		return "connected"
-	case ConnectedSubnetOp:
-		return "connected_subnet"
+	case ConnectedSupernetOp:
+		return "connected_supernet"
 	case DisconnectedOp:
 		return "disconnected"
 	case NotifyOp:

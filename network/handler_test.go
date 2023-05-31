@@ -13,13 +13,13 @@ var _ router.ExternalHandler = (*testHandler)(nil)
 
 type testHandler struct {
 	router.InboundHandler
-	ConnectedF    func(nodeID ids.NodeID, nodeVersion *version.Application, subnetID ids.ID)
+	ConnectedF    func(nodeID ids.NodeID, nodeVersion *version.Application, supernetID ids.ID)
 	DisconnectedF func(nodeID ids.NodeID)
 }
 
-func (h *testHandler) Connected(id ids.NodeID, nodeVersion *version.Application, subnetID ids.ID) {
+func (h *testHandler) Connected(id ids.NodeID, nodeVersion *version.Application, supernetID ids.ID) {
 	if h.ConnectedF != nil {
-		h.ConnectedF(id, nodeVersion, subnetID)
+		h.ConnectedF(id, nodeVersion, supernetID)
 	}
 }
 

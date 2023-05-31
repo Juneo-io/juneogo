@@ -10,15 +10,17 @@ import (
 
 	"github.com/ava-labs/avalanchego/genesis"
 	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/utils/units"
+	"github.com/ava-labs/avalanchego/vms/components/verify"
 	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
-	"github.com/ava-labs/avalanchego/wallet/subnet/primary"
+	"github.com/ava-labs/avalanchego/wallet/supernet/primary"
 )
 
 func main() {
 	key := genesis.EWOQKey
 	uri := primary.LocalAPIURI
 	kc := secp256k1fx.NewKeychain(key)
-	subnetOwner := key.Address()
+	supernetOwner := key.Address()
 
 	ctx := context.Background()
 
@@ -31,21 +33,33 @@ func main() {
 	}
 	log.Printf("synced wallet in %s\n", time.Since(walletSyncStartTime))
 
-	// Get the P-chain wallet
-	pWallet := wallet.P()
+	// Get the X-chain wallet
+	xWallet := wallet.X()
 
 	// Pull out useful constants to use when issuing transactions.
 	owner := &secp256k1fx.OutputOwners{
 		Threshold: 1,
 		Addrs: []ids.ShortID{
-			subnetOwner,
+			supernetOwner,
 		},
 	}
 
-	createSubnetStartTime := time.Now()
-	createSubnetTxID, err := pWallet.IssueCreateSubnetTx(owner)
+	createAssetStartTime := time.Now()
+	createAssetTxID, err := xWallet.IssueCreateAssetTx(
+		"HI",
+		"HI",
+		1,
+		map[uint32][]verify.State{
+			0: {
+				&secp256k1fx.TransferOutput{
+					Amt:          units.Schmeckle,
+					OutputOwners: *owner,
+				},
+			},
+		},
+	)
 	if err != nil {
-		log.Fatalf("failed to issue create subnet transaction: %s\n", err)
+		log.Fatalf("failed to issue create asset transaction: %s\n", err)
 	}
-	log.Printf("created new subnet %s in %s\n", createSubnetTxID, time.Since(createSubnetStartTime))
+	log.Printf("created new asset %s in %s\n", createAssetTxID, time.Since(createAssetStartTime))
 }

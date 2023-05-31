@@ -11,23 +11,23 @@ const (
 	PrimaryNetworkValidatorPendingPriority
 	// then primary network banff delegators,
 	PrimaryNetworkDelegatorBanffPendingPriority
-	// then permissionless subnet validators,
-	SubnetPermissionlessValidatorPendingPriority
-	// then permissionless subnet delegators.
-	SubnetPermissionlessDelegatorPendingPriority
-	// then permissioned subnet validators,
-	SubnetPermissionedValidatorPendingPriority
+	// then permissionless supernet validators,
+	SupernetPermissionlessValidatorPendingPriority
+	// then permissionless supernet delegators.
+	SupernetPermissionlessDelegatorPendingPriority
+	// then permissioned supernet validators,
+	SupernetPermissionedValidatorPendingPriority
 
-	// First permissioned subnet validators are removed from the current
+	// First permissioned supernet validators are removed from the current
 	// validator set,
 	// Invariant: All permissioned stakers must be removed first because they
 	//            are removed by the advancement of time. Permissionless stakers
 	//            are removed with a RewardValidatorTx after time has advanced.
-	SubnetPermissionedValidatorCurrentPriority
-	// then permissionless subnet delegators,
-	SubnetPermissionlessDelegatorCurrentPriority
-	// then permissionless subnet validators,
-	SubnetPermissionlessValidatorCurrentPriority
+	SupernetPermissionedValidatorCurrentPriority
+	// then permissionless supernet delegators,
+	SupernetPermissionlessDelegatorCurrentPriority
+	// then permissionless supernet validators,
+	SupernetPermissionlessValidatorCurrentPriority
 	// then primary network delegators,
 	PrimaryNetworkDelegatorCurrentPriority
 	// then primary network validators.
@@ -35,12 +35,12 @@ const (
 )
 
 var PendingToCurrentPriorities = []Priority{
-	PrimaryNetworkDelegatorApricotPendingPriority: PrimaryNetworkDelegatorCurrentPriority,
-	PrimaryNetworkValidatorPendingPriority:        PrimaryNetworkValidatorCurrentPriority,
-	PrimaryNetworkDelegatorBanffPendingPriority:   PrimaryNetworkDelegatorCurrentPriority,
-	SubnetPermissionlessValidatorPendingPriority:  SubnetPermissionlessValidatorCurrentPriority,
-	SubnetPermissionlessDelegatorPendingPriority:  SubnetPermissionlessDelegatorCurrentPriority,
-	SubnetPermissionedValidatorPendingPriority:    SubnetPermissionedValidatorCurrentPriority,
+	PrimaryNetworkDelegatorApricotPendingPriority:  PrimaryNetworkDelegatorCurrentPriority,
+	PrimaryNetworkValidatorPendingPriority:         PrimaryNetworkValidatorCurrentPriority,
+	PrimaryNetworkDelegatorBanffPendingPriority:    PrimaryNetworkDelegatorCurrentPriority,
+	SupernetPermissionlessValidatorPendingPriority: SupernetPermissionlessValidatorCurrentPriority,
+	SupernetPermissionlessDelegatorPendingPriority: SupernetPermissionlessDelegatorCurrentPriority,
+	SupernetPermissionedValidatorPendingPriority:   SupernetPermissionedValidatorCurrentPriority,
 }
 
 type Priority byte

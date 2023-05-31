@@ -19,26 +19,26 @@ import (
 )
 
 // TODO use table tests here
-func TestAddSubnetValidatorTxSyntacticVerify(t *testing.T) {
+func TestAddSupernetValidatorTxSyntacticVerify(t *testing.T) {
 	require := require.New(t)
 	clk := mockable.Clock{}
 	ctx := snow.DefaultContextTest()
 	signers := [][]*secp256k1.PrivateKey{preFundedKeys}
 
 	var (
-		stx                  *Tx
-		addSubnetValidatorTx *AddSubnetValidatorTx
-		err                  error
+		stx                    *Tx
+		addSupernetValidatorTx *AddSupernetValidatorTx
+		err                    error
 	)
 
 	// Case : signed tx is nil
 	require.ErrorIs(stx.SyntacticVerify(ctx), ErrNilSignedTx)
 
 	// Case : unsigned tx is nil
-	require.ErrorIs(addSubnetValidatorTx.SyntacticVerify(ctx), ErrNilTx)
+	require.ErrorIs(addSupernetValidatorTx.SyntacticVerify(ctx), ErrNilTx)
 
 	validatorWeight := uint64(2022)
-	subnetID := ids.ID{'s', 'u', 'b', 'n', 'e', 't', 'I', 'D'}
+	supernetID := ids.ID{'s', 'u', 'b', 'n', 'e', 't', 'I', 'D'}
 	inputs := []*avax.TransferableInput{{
 		UTXOID: avax.UTXOID{
 			TxID:        ids.ID{'t', 'x', 'I', 'D'},
@@ -60,10 +60,10 @@ func TestAddSubnetValidatorTxSyntacticVerify(t *testing.T) {
 			},
 		},
 	}}
-	subnetAuth := &secp256k1fx.Input{
+	supernetAuth := &secp256k1fx.Input{
 		SigIndices: []uint32{0, 1},
 	}
-	addSubnetValidatorTx = &AddSubnetValidatorTx{
+	addSupernetValidatorTx = &AddSupernetValidatorTx{
 		BaseTx: BaseTx{BaseTx: avax.BaseTx{
 			NetworkID:    ctx.NetworkID,
 			BlockchainID: ctx.ChainID,
@@ -71,85 +71,85 @@ func TestAddSubnetValidatorTxSyntacticVerify(t *testing.T) {
 			Outs:         outputs,
 			Memo:         []byte{1, 2, 3, 4, 5, 6, 7, 8},
 		}},
-		SubnetValidator: SubnetValidator{
+		SupernetValidator: SupernetValidator{
 			Validator: Validator{
 				NodeID: ctx.NodeID,
 				Start:  uint64(clk.Time().Unix()),
 				End:    uint64(clk.Time().Add(time.Hour).Unix()),
 				Wght:   validatorWeight,
 			},
-			Subnet: subnetID,
+			Supernet: supernetID,
 		},
-		SubnetAuth: subnetAuth,
+		SupernetAuth: supernetAuth,
 	}
 
 	// Case: valid tx
-	stx, err = NewSigned(addSubnetValidatorTx, Codec, signers)
+	stx, err = NewSigned(addSupernetValidatorTx, Codec, signers)
 	require.NoError(err)
 	require.NoError(stx.SyntacticVerify(ctx))
 
 	// Case: Wrong network ID
-	addSubnetValidatorTx.SyntacticallyVerified = false
-	addSubnetValidatorTx.NetworkID++
-	stx, err = NewSigned(addSubnetValidatorTx, Codec, signers)
+	addSupernetValidatorTx.SyntacticallyVerified = false
+	addSupernetValidatorTx.NetworkID++
+	stx, err = NewSigned(addSupernetValidatorTx, Codec, signers)
 	require.NoError(err)
 	err = stx.SyntacticVerify(ctx)
 	require.Error(err)
-	addSubnetValidatorTx.NetworkID--
+	addSupernetValidatorTx.NetworkID--
 
-	// Case: Missing Subnet ID
-	addSubnetValidatorTx.SyntacticallyVerified = false
-	addSubnetValidatorTx.Subnet = ids.Empty
-	stx, err = NewSigned(addSubnetValidatorTx, Codec, signers)
+	// Case: Missing Supernet ID
+	addSupernetValidatorTx.SyntacticallyVerified = false
+	addSupernetValidatorTx.Supernet = ids.Empty
+	stx, err = NewSigned(addSupernetValidatorTx, Codec, signers)
 	require.NoError(err)
 	err = stx.SyntacticVerify(ctx)
 	require.Error(err)
-	addSubnetValidatorTx.Subnet = subnetID
+	addSupernetValidatorTx.Supernet = supernetID
 
 	// Case: No weight
-	addSubnetValidatorTx.SyntacticallyVerified = false
-	addSubnetValidatorTx.Wght = 0
-	stx, err = NewSigned(addSubnetValidatorTx, Codec, signers)
+	addSupernetValidatorTx.SyntacticallyVerified = false
+	addSupernetValidatorTx.Wght = 0
+	stx, err = NewSigned(addSupernetValidatorTx, Codec, signers)
 	require.NoError(err)
 	err = stx.SyntacticVerify(ctx)
 	require.Error(err)
-	addSubnetValidatorTx.Wght = validatorWeight
+	addSupernetValidatorTx.Wght = validatorWeight
 
-	// Case: Subnet auth indices not unique
-	addSubnetValidatorTx.SyntacticallyVerified = false
-	input := addSubnetValidatorTx.SubnetAuth.(*secp256k1fx.Input)
+	// Case: Supernet auth indices not unique
+	addSupernetValidatorTx.SyntacticallyVerified = false
+	input := addSupernetValidatorTx.SupernetAuth.(*secp256k1fx.Input)
 	oldInput := *input
 	input.SigIndices[0] = input.SigIndices[1]
-	stx, err = NewSigned(addSubnetValidatorTx, Codec, signers)
+	stx, err = NewSigned(addSupernetValidatorTx, Codec, signers)
 	require.NoError(err)
 	err = stx.SyntacticVerify(ctx)
 	require.Error(err)
 	*input = oldInput
 
 	// Case: adding to Primary Network
-	addSubnetValidatorTx.SyntacticallyVerified = false
-	addSubnetValidatorTx.Subnet = constants.PrimaryNetworkID
-	stx, err = NewSigned(addSubnetValidatorTx, Codec, signers)
+	addSupernetValidatorTx.SyntacticallyVerified = false
+	addSupernetValidatorTx.Supernet = constants.PrimaryNetworkID
+	stx, err = NewSigned(addSupernetValidatorTx, Codec, signers)
 	require.NoError(err)
 	err = stx.SyntacticVerify(ctx)
 	require.ErrorIs(err, errAddPrimaryNetworkValidator)
 }
 
-func TestAddSubnetValidatorMarshal(t *testing.T) {
+func TestAddSupernetValidatorMarshal(t *testing.T) {
 	require := require.New(t)
 	clk := mockable.Clock{}
 	ctx := snow.DefaultContextTest()
 	signers := [][]*secp256k1.PrivateKey{preFundedKeys}
 
 	var (
-		stx                  *Tx
-		addSubnetValidatorTx *AddSubnetValidatorTx
-		err                  error
+		stx                    *Tx
+		addSupernetValidatorTx *AddSupernetValidatorTx
+		err                    error
 	)
 
 	// create a valid tx
 	validatorWeight := uint64(2022)
-	subnetID := ids.ID{'s', 'u', 'b', 'n', 'e', 't', 'I', 'D'}
+	supernetID := ids.ID{'s', 'u', 'b', 'n', 'e', 't', 'I', 'D'}
 	inputs := []*avax.TransferableInput{{
 		UTXOID: avax.UTXOID{
 			TxID:        ids.ID{'t', 'x', 'I', 'D'},
@@ -171,10 +171,10 @@ func TestAddSubnetValidatorMarshal(t *testing.T) {
 			},
 		},
 	}}
-	subnetAuth := &secp256k1fx.Input{
+	supernetAuth := &secp256k1fx.Input{
 		SigIndices: []uint32{0, 1},
 	}
-	addSubnetValidatorTx = &AddSubnetValidatorTx{
+	addSupernetValidatorTx = &AddSupernetValidatorTx{
 		BaseTx: BaseTx{BaseTx: avax.BaseTx{
 			NetworkID:    ctx.NetworkID,
 			BlockchainID: ctx.ChainID,
@@ -182,20 +182,20 @@ func TestAddSubnetValidatorMarshal(t *testing.T) {
 			Outs:         outputs,
 			Memo:         []byte{1, 2, 3, 4, 5, 6, 7, 8},
 		}},
-		SubnetValidator: SubnetValidator{
+		SupernetValidator: SupernetValidator{
 			Validator: Validator{
 				NodeID: ctx.NodeID,
 				Start:  uint64(clk.Time().Unix()),
 				End:    uint64(clk.Time().Add(time.Hour).Unix()),
 				Wght:   validatorWeight,
 			},
-			Subnet: subnetID,
+			Supernet: supernetID,
 		},
-		SubnetAuth: subnetAuth,
+		SupernetAuth: supernetAuth,
 	}
 
 	// Case: valid tx
-	stx, err = NewSigned(addSubnetValidatorTx, Codec, signers)
+	stx, err = NewSigned(addSupernetValidatorTx, Codec, signers)
 	require.NoError(err)
 	require.NoError(stx.SyntacticVerify(ctx))
 
@@ -209,20 +209,20 @@ func TestAddSubnetValidatorMarshal(t *testing.T) {
 	require.Equal(stx, parsedTx)
 }
 
-func TestAddSubnetValidatorTxNotValidatorTx(t *testing.T) {
-	txIntf := any((*AddSubnetValidatorTx)(nil))
+func TestAddSupernetValidatorTxNotValidatorTx(t *testing.T) {
+	txIntf := any((*AddSupernetValidatorTx)(nil))
 	_, ok := txIntf.(ValidatorTx)
 	require.False(t, ok)
 }
 
-func TestAddSubnetValidatorTxNotDelegatorTx(t *testing.T) {
-	txIntf := any((*AddSubnetValidatorTx)(nil))
+func TestAddSupernetValidatorTxNotDelegatorTx(t *testing.T) {
+	txIntf := any((*AddSupernetValidatorTx)(nil))
 	_, ok := txIntf.(DelegatorTx)
 	require.False(t, ok)
 }
 
-func TestAddSubnetValidatorTxNotPermissionlessStaker(t *testing.T) {
-	txIntf := any((*AddSubnetValidatorTx)(nil))
+func TestAddSupernetValidatorTxNotPermissionlessStaker(t *testing.T) {
+	txIntf := any((*AddSupernetValidatorTx)(nil))
 	_, ok := txIntf.(PermissionlessStaker)
 	require.False(t, ok)
 }

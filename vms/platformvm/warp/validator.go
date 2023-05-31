@@ -37,19 +37,19 @@ func (v *Validator) Less(o *Validator) bool {
 	return bytes.Compare(v.PublicKeyBytes, o.PublicKeyBytes) < 0
 }
 
-// GetCanonicalValidatorSet returns the validator set of [subnetID] at
+// GetCanonicalValidatorSet returns the validator set of [supernetID] at
 // [pChcainHeight] in a canonical ordering. Also returns the total weight on
-// [subnetID].
+// [supernetID].
 func GetCanonicalValidatorSet(
 	ctx context.Context,
 	pChainState validators.State,
 	pChainHeight uint64,
-	subnetID ids.ID,
+	supernetID ids.ID,
 ) ([]*Validator, uint64, error) {
 	// Get the validator set at the given height.
-	vdrSet, err := pChainState.GetValidatorSet(ctx, pChainHeight, subnetID)
+	vdrSet, err := pChainState.GetValidatorSet(ctx, pChainHeight, supernetID)
 	if err != nil {
-		return nil, 0, fmt.Errorf("failed to fetch validator set (P-Chain Height: %d, SubnetID: %s): %w", pChainHeight, subnetID, err)
+		return nil, 0, fmt.Errorf("failed to fetch validator set (P-Chain Height: %d, SupernetID: %s): %w", pChainHeight, supernetID, err)
 	}
 
 	var (

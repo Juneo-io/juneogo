@@ -17,10 +17,10 @@ import (
 var _ SetCallbackListener = (*logger)(nil)
 
 type logger struct {
-	log      logging.Logger
-	enabled  *utils.Atomic[bool]
-	subnetID ids.ID
-	nodeIDs  set.Set[ids.NodeID]
+	log        logging.Logger
+	enabled    *utils.Atomic[bool]
+	supernetID ids.ID
+	nodeIDs    set.Set[ids.NodeID]
 }
 
 // NewLogger returns a callback listener that will log validator set changes for
@@ -28,16 +28,16 @@ type logger struct {
 func NewLogger(
 	log logging.Logger,
 	enabled *utils.Atomic[bool],
-	subnetID ids.ID,
+	supernetID ids.ID,
 	nodeIDs ...ids.NodeID,
 ) SetCallbackListener {
 	nodeIDSet := set.NewSet[ids.NodeID](len(nodeIDs))
 	nodeIDSet.Add(nodeIDs...)
 	return &logger{
-		log:      log,
-		enabled:  enabled,
-		subnetID: subnetID,
-		nodeIDs:  nodeIDSet,
+		log:        log,
+		enabled:    enabled,
+		supernetID: supernetID,
+		nodeIDs:    nodeIDSet,
 	}
 }
 
@@ -53,7 +53,7 @@ func (l *logger) OnValidatorAdded(
 			pkBytes = bls.PublicKeyToBytes(pk)
 		}
 		l.log.Info("node added to validator set",
-			zap.Stringer("subnetID", l.subnetID),
+			zap.Stringer("supernetID", l.supernetID),
 			zap.Stringer("nodeID", nodeID),
 			zap.Reflect("publicKey", types.JSONByteSlice(pkBytes)),
 			zap.Stringer("txID", txID),
@@ -68,7 +68,7 @@ func (l *logger) OnValidatorRemoved(
 ) {
 	if l.enabled.Get() && l.nodeIDs.Contains(nodeID) {
 		l.log.Info("node removed from validator set",
-			zap.Stringer("subnetID", l.subnetID),
+			zap.Stringer("supernetID", l.supernetID),
 			zap.Stringer("nodeID", nodeID),
 			zap.Uint64("weight", weight),
 		)
@@ -82,7 +82,7 @@ func (l *logger) OnValidatorWeightChanged(
 ) {
 	if l.enabled.Get() && l.nodeIDs.Contains(nodeID) {
 		l.log.Info("validator weight changed",
-			zap.Stringer("subnetID", l.subnetID),
+			zap.Stringer("supernetID", l.supernetID),
 			zap.Stringer("nodeID", nodeID),
 			zap.Uint64("previousWeight ", oldWeight),
 			zap.Uint64("newWeight ", newWeight),

@@ -98,7 +98,7 @@ func makeRawTestPeers(t *testing.T) (*rawTestPeer, *rawTestPeer) {
 		Log:                  logging.NoLog{},
 		InboundMsgThrottler:  throttling.NewNoInboundThrottler(),
 		VersionCompatibility: version.GetCompatibility(constants.LocalID),
-		MySubnets:            set.Set[ids.ID]{},
+		MySupernets:          set.Set[ids.ID]{},
 		Beacons:              validators.NewSet(),
 		NetworkID:            constants.LocalID,
 		PingFrequency:        constants.DefaultPingFrequency,

@@ -94,14 +94,14 @@ func TestDiffCurrentValidator(t *testing.T) {
 
 	// Put a current validator
 	currentValidator := &Staker{
-		TxID:     ids.GenerateTestID(),
-		SubnetID: ids.GenerateTestID(),
-		NodeID:   ids.GenerateTestNodeID(),
+		TxID:       ids.GenerateTestID(),
+		SupernetID: ids.GenerateTestID(),
+		NodeID:     ids.GenerateTestNodeID(),
 	}
 	d.PutCurrentValidator(currentValidator)
 
 	// Assert that we get the current validator back
-	gotCurrentValidator, err := d.GetCurrentValidator(currentValidator.SubnetID, currentValidator.NodeID)
+	gotCurrentValidator, err := d.GetCurrentValidator(currentValidator.SupernetID, currentValidator.NodeID)
 	require.NoError(err)
 	require.Equal(currentValidator, gotCurrentValidator)
 
@@ -109,8 +109,8 @@ func TestDiffCurrentValidator(t *testing.T) {
 	d.DeleteCurrentValidator(currentValidator)
 
 	// Make sure the deletion worked
-	state.EXPECT().GetCurrentValidator(currentValidator.SubnetID, currentValidator.NodeID).Return(nil, database.ErrNotFound).Times(1)
-	_, err = d.GetCurrentValidator(currentValidator.SubnetID, currentValidator.NodeID)
+	state.EXPECT().GetCurrentValidator(currentValidator.SupernetID, currentValidator.NodeID).Return(nil, database.ErrNotFound).Times(1)
+	_, err = d.GetCurrentValidator(currentValidator.SupernetID, currentValidator.NodeID)
 	require.ErrorIs(err, database.ErrNotFound)
 }
 
@@ -132,14 +132,14 @@ func TestDiffPendingValidator(t *testing.T) {
 
 	// Put a pending validator
 	pendingValidator := &Staker{
-		TxID:     ids.GenerateTestID(),
-		SubnetID: ids.GenerateTestID(),
-		NodeID:   ids.GenerateTestNodeID(),
+		TxID:       ids.GenerateTestID(),
+		SupernetID: ids.GenerateTestID(),
+		NodeID:     ids.GenerateTestNodeID(),
 	}
 	d.PutPendingValidator(pendingValidator)
 
 	// Assert that we get the pending validator back
-	gotPendingValidator, err := d.GetPendingValidator(pendingValidator.SubnetID, pendingValidator.NodeID)
+	gotPendingValidator, err := d.GetPendingValidator(pendingValidator.SupernetID, pendingValidator.NodeID)
 	require.NoError(err)
 	require.Equal(pendingValidator, gotPendingValidator)
 
@@ -147,8 +147,8 @@ func TestDiffPendingValidator(t *testing.T) {
 	d.DeletePendingValidator(pendingValidator)
 
 	// Make sure the deletion worked
-	state.EXPECT().GetPendingValidator(pendingValidator.SubnetID, pendingValidator.NodeID).Return(nil, database.ErrNotFound).Times(1)
-	_, err = d.GetPendingValidator(pendingValidator.SubnetID, pendingValidator.NodeID)
+	state.EXPECT().GetPendingValidator(pendingValidator.SupernetID, pendingValidator.NodeID).Return(nil, database.ErrNotFound).Times(1)
+	_, err = d.GetPendingValidator(pendingValidator.SupernetID, pendingValidator.NodeID)
 	require.ErrorIs(err, database.ErrNotFound)
 }
 
@@ -158,9 +158,9 @@ func TestDiffCurrentDelegator(t *testing.T) {
 	defer ctrl.Finish()
 
 	currentDelegator := &Staker{
-		TxID:     ids.GenerateTestID(),
-		SubnetID: ids.GenerateTestID(),
-		NodeID:   ids.GenerateTestNodeID(),
+		TxID:       ids.GenerateTestID(),
+		SupernetID: ids.GenerateTestID(),
+		NodeID:     ids.GenerateTestNodeID(),
 	}
 
 	state := NewMockState(ctrl)
@@ -183,10 +183,10 @@ func TestDiffCurrentDelegator(t *testing.T) {
 	stateCurrentDelegatorIter.EXPECT().Next().Return(false).Times(2)
 	stateCurrentDelegatorIter.EXPECT().Release().Times(2)
 	state.EXPECT().GetCurrentDelegatorIterator(
-		currentDelegator.SubnetID,
+		currentDelegator.SupernetID,
 		currentDelegator.NodeID,
 	).Return(stateCurrentDelegatorIter, nil).Times(2)
-	gotCurrentDelegatorIter, err := d.GetCurrentDelegatorIterator(currentDelegator.SubnetID, currentDelegator.NodeID)
+	gotCurrentDelegatorIter, err := d.GetCurrentDelegatorIterator(currentDelegator.SupernetID, currentDelegator.NodeID)
 	require.NoError(err)
 	// The iterator should have the 1 delegator we put in [d]
 	require.True(gotCurrentDelegatorIter.Next())
@@ -197,7 +197,7 @@ func TestDiffCurrentDelegator(t *testing.T) {
 
 	// Make sure the deletion worked.
 	// The iterator should have no elements.
-	gotCurrentDelegatorIter, err = d.GetCurrentDelegatorIterator(currentDelegator.SubnetID, currentDelegator.NodeID)
+	gotCurrentDelegatorIter, err = d.GetCurrentDelegatorIterator(currentDelegator.SupernetID, currentDelegator.NodeID)
 	require.NoError(err)
 	require.False(gotCurrentDelegatorIter.Next())
 }
@@ -208,9 +208,9 @@ func TestDiffPendingDelegator(t *testing.T) {
 	defer ctrl.Finish()
 
 	pendingDelegator := &Staker{
-		TxID:     ids.GenerateTestID(),
-		SubnetID: ids.GenerateTestID(),
-		NodeID:   ids.GenerateTestNodeID(),
+		TxID:       ids.GenerateTestID(),
+		SupernetID: ids.GenerateTestID(),
+		NodeID:     ids.GenerateTestNodeID(),
 	}
 
 	state := NewMockState(ctrl)
@@ -233,10 +233,10 @@ func TestDiffPendingDelegator(t *testing.T) {
 	statePendingDelegatorIter.EXPECT().Next().Return(false).Times(2)
 	statePendingDelegatorIter.EXPECT().Release().Times(2)
 	state.EXPECT().GetPendingDelegatorIterator(
-		pendingDelegator.SubnetID,
+		pendingDelegator.SupernetID,
 		pendingDelegator.NodeID,
 	).Return(statePendingDelegatorIter, nil).Times(2)
-	gotPendingDelegatorIter, err := d.GetPendingDelegatorIterator(pendingDelegator.SubnetID, pendingDelegator.NodeID)
+	gotPendingDelegatorIter, err := d.GetPendingDelegatorIterator(pendingDelegator.SupernetID, pendingDelegator.NodeID)
 	require.NoError(err)
 	// The iterator should have the 1 delegator we put in [d]
 	require.True(gotPendingDelegatorIter.Next())
@@ -247,12 +247,12 @@ func TestDiffPendingDelegator(t *testing.T) {
 
 	// Make sure the deletion worked.
 	// The iterator should have no elements.
-	gotPendingDelegatorIter, err = d.GetPendingDelegatorIterator(pendingDelegator.SubnetID, pendingDelegator.NodeID)
+	gotPendingDelegatorIter, err = d.GetPendingDelegatorIterator(pendingDelegator.SupernetID, pendingDelegator.NodeID)
 	require.NoError(err)
 	require.False(gotPendingDelegatorIter.Next())
 }
 
-func TestDiffSubnet(t *testing.T) {
+func TestDiffSupernet(t *testing.T) {
 	require := require.New(t)
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -268,19 +268,19 @@ func TestDiffSubnet(t *testing.T) {
 	d, err := NewDiff(lastAcceptedID, states)
 	require.NoError(err)
 
-	// Put a subnet
-	createSubnetTx := &txs.Tx{}
-	d.AddSubnet(createSubnetTx)
+	// Put a supernet
+	createSupernetTx := &txs.Tx{}
+	d.AddSupernet(createSupernetTx)
 
-	// Assert that we get the subnet back
-	// [state] returns 1 subnet.
-	parentStateCreateSubnetTx := &txs.Tx{}
-	state.EXPECT().GetSubnets().Return([]*txs.Tx{parentStateCreateSubnetTx}, nil).Times(1)
-	gotSubnets, err := d.GetSubnets()
+	// Assert that we get the supernet back
+	// [state] returns 1 supernet.
+	parentStateCreateSupernetTx := &txs.Tx{}
+	state.EXPECT().GetSupernets().Return([]*txs.Tx{parentStateCreateSupernetTx}, nil).Times(1)
+	gotSupernets, err := d.GetSupernets()
 	require.NoError(err)
-	require.Len(gotSubnets, 2)
-	require.Equal(gotSubnets[0], parentStateCreateSubnetTx)
-	require.Equal(gotSubnets[1], createSubnetTx)
+	require.Len(gotSupernets, 2)
+	require.Equal(gotSupernets[0], parentStateCreateSupernetTx)
+	require.Equal(gotSupernets[1], createSupernetTx)
 }
 
 func TestDiffChain(t *testing.T) {
@@ -300,10 +300,10 @@ func TestDiffChain(t *testing.T) {
 	require.NoError(err)
 
 	// Put a chain
-	subnetID := ids.GenerateTestID()
+	supernetID := ids.GenerateTestID()
 	createChainTx := &txs.Tx{
 		Unsigned: &txs.CreateChainTx{
-			SubnetID: subnetID,
+			SupernetID: supernetID,
 		},
 	}
 	d.AddChain(createChainTx)
@@ -312,11 +312,11 @@ func TestDiffChain(t *testing.T) {
 	// [state] returns 1 chain.
 	parentStateCreateChainTx := &txs.Tx{
 		Unsigned: &txs.CreateChainTx{
-			SubnetID: subnetID, // note this is the same subnet as [createChainTx]
+			SupernetID: supernetID, // note this is the same supernet as [createChainTx]
 		},
 	}
-	state.EXPECT().GetChains(subnetID).Return([]*txs.Tx{parentStateCreateChainTx}, nil).Times(1)
-	gotChains, err := d.GetChains(subnetID)
+	state.EXPECT().GetChains(supernetID).Return([]*txs.Tx{parentStateCreateChainTx}, nil).Times(1)
+	gotChains, err := d.GetChains(supernetID)
 	require.NoError(err)
 	require.Len(gotChains, 2)
 	require.Equal(parentStateCreateChainTx, gotChains[0])
@@ -340,10 +340,10 @@ func TestDiffTx(t *testing.T) {
 	require.NoError(err)
 
 	// Put a tx
-	subnetID := ids.GenerateTestID()
+	supernetID := ids.GenerateTestID()
 	tx := &txs.Tx{
 		Unsigned: &txs.CreateChainTx{
-			SubnetID: subnetID,
+			SupernetID: supernetID,
 		},
 	}
 	tx.SetBytes(utils.RandomBytes(16), utils.RandomBytes(16))
@@ -362,7 +362,7 @@ func TestDiffTx(t *testing.T) {
 		// [state] returns 1 tx.
 		parentTx := &txs.Tx{
 			Unsigned: &txs.CreateChainTx{
-				SubnetID: subnetID,
+				SupernetID: supernetID,
 			},
 		}
 		parentTx.SetBytes(utils.RandomBytes(16), utils.RandomBytes(16))
@@ -498,17 +498,17 @@ func assertChainsEqual(t *testing.T, expected, actual Chain) {
 
 	require.Equal(t, expectedCurrentSupply, actualCurrentSupply)
 
-	expectedSubnets, expectedErr := expected.GetSubnets()
-	actualSubnets, actualErr := actual.GetSubnets()
+	expectedSupernets, expectedErr := expected.GetSupernets()
+	actualSupernets, actualErr := actual.GetSupernets()
 	require.Equal(t, expectedErr, actualErr)
 	if expectedErr == nil {
-		require.Equal(t, expectedSubnets, actualSubnets)
+		require.Equal(t, expectedSupernets, actualSupernets)
 
-		for _, subnet := range expectedSubnets {
-			subnetID := subnet.ID()
+		for _, supernet := range expectedSupernets {
+			supernetID := supernet.ID()
 
-			expectedChains, expectedErr := expected.GetChains(subnetID)
-			actualChains, actualErr := actual.GetChains(subnetID)
+			expectedChains, expectedErr := expected.GetChains(supernetID)
+			actualChains, actualErr := actual.GetChains(supernetID)
 			require.Equal(t, expectedErr, actualErr)
 			if expectedErr == nil {
 				require.Equal(t, expectedChains, actualChains)

@@ -12,7 +12,7 @@ import (
 	"github.com/ava-labs/avalanchego/indexer"
 	"github.com/ava-labs/avalanchego/vms/platformvm/blocks"
 	"github.com/ava-labs/avalanchego/vms/proposervm/block"
-	"github.com/ava-labs/avalanchego/wallet/subnet/primary"
+	"github.com/ava-labs/avalanchego/wallet/supernet/primary"
 )
 
 // This example program continuously polls for the next P-Chain block

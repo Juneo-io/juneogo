@@ -169,7 +169,7 @@ func (vm *VM) Initialize(
 	prefixDB := prefixdb.New(dbPrefix, rawDB)
 	vm.db = versiondb.New(prefixDB)
 	vm.State = state.New(vm.db)
-	vm.Windower = proposer.New(chainCtx.ValidatorState, chainCtx.SubnetID, chainCtx.ChainID)
+	vm.Windower = proposer.New(chainCtx.ValidatorState, chainCtx.SupernetID, chainCtx.ChainID)
 	vm.Tree = tree.New()
 	innerBlkCache, err := metercacher.New[ids.ID, snowman.Block](
 		"inner_block_cache",
@@ -311,7 +311,7 @@ func (vm *VM) SetPreference(ctx context.Context, preferred ids.ID) error {
 	// avoid fast runs of blocks there is an additional minimum delay that
 	// validators can specify. This delay may be an issue for high performance,
 	// custom VMs. Until the P-chain is modified to target a specific block
-	// time, ProposerMinBlockDelay can be configured in the subnet config.
+	// time, ProposerMinBlockDelay can be configured in the supernet config.
 	if minDelay < vm.minBlkDelay {
 		minDelay = vm.minBlkDelay
 	}

@@ -31,11 +31,11 @@ type ContextInitializable interface {
 // [ChainID] is the ID of the chain this context exists within.
 // [NodeID] is the ID of this node
 type Context struct {
-	NetworkID uint32
-	SubnetID  ids.ID
-	ChainID   ids.ID
-	NodeID    ids.NodeID
-	PublicKey *bls.PublicKey
+	NetworkID  uint32
+	SupernetID ids.ID
+	ChainID    ids.ID
+	NodeID     ids.NodeID
+	PublicKey  *bls.PublicKey
 
 	XChainID     ids.ID
 	CChainID     ids.ID
@@ -106,7 +106,7 @@ func DefaultContextTest() *Context {
 	pk := bls.PublicFromSecretKey(sk)
 	return &Context{
 		NetworkID:    0,
-		SubnetID:     ids.Empty,
+		SupernetID:   ids.Empty,
 		ChainID:      ids.Empty,
 		NodeID:       ids.EmptyNodeID,
 		PublicKey:    pk,

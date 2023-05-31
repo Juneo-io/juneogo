@@ -12,7 +12,7 @@ import (
 
 var (
 	ErrWeightTooSmall = errors.New("weight of this validator is too low")
-	errBadSubnetID    = errors.New("subnet ID can't be primary network ID")
+	errBadSupernetID  = errors.New("supernet ID can't be primary network ID")
 )
 
 // Validator is a validator.
