@@ -35,7 +35,7 @@ var (
 			MaxValidatorStake: 1 * units.MegaAvax,
 			MinDelegatorStake: 10 * units.MilliAvax,
 			MinDelegationFee:  120000, // 12%
-			MinStakeDuration:  2 * 7 * 24 * time.Hour,
+			MinStakeDuration:  24 * time.Hour,
 			MaxStakeDuration:  365 * 24 * time.Hour,
 			RewardConfig: reward.Config{
 				MaxConsumptionRate: .12 * reward.PercentDenominator,
