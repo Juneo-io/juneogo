@@ -11,7 +11,7 @@ import (
 	reflect "reflect"
 	time "time"
 
-	ids "github.com/ava-labs/avalanchego/ids"
+	ids "github.com/Juneo-io/juneogo/ids"
 	gomock "github.com/golang/mock/gomock"
 )
 

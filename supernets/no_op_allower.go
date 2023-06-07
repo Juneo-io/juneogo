@@ -3,7 +3,7 @@
 
 package supernets
 
-import "github.com/ava-labs/avalanchego/ids"
+import "github.com/Juneo-io/juneogo/ids"
 
 // NoOpAllower is an Allower that always returns true
 var NoOpAllower Allower = noOpAllower{}

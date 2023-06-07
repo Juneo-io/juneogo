@@ -17,9 +17,9 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/chains"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/supernets"
+	"github.com/Juneo-io/juneogo/chains"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/supernets"
 )
 
 func TestGetChainConfigsFromFiles(t *testing.T) {

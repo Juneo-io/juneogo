@@ -6,8 +6,8 @@ package poll
 import (
 	"testing"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils/bag"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils/bag"
 )
 
 func TestNoEarlyTermResults(t *testing.T) {

@@ -10,8 +10,8 @@ package registry
 import (
 	reflect "reflect"
 
-	ids "github.com/ava-labs/avalanchego/ids"
-	vms "github.com/ava-labs/avalanchego/vms"
+	ids "github.com/Juneo-io/juneogo/ids"
+	vms "github.com/Juneo-io/juneogo/vms"
 	gomock "github.com/golang/mock/gomock"
 )
 

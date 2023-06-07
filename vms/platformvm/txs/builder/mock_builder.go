@@ -11,9 +11,9 @@ import (
 	reflect "reflect"
 	time "time"
 
-	ids "github.com/ava-labs/avalanchego/ids"
-	secp256k1 "github.com/ava-labs/avalanchego/utils/crypto/secp256k1"
-	txs "github.com/ava-labs/avalanchego/vms/platformvm/txs"
+	ids "github.com/Juneo-io/juneogo/ids"
+	secp256k1 "github.com/Juneo-io/juneogo/utils/crypto/secp256k1"
+	txs "github.com/Juneo-io/juneogo/vms/platformvm/txs"
 	gomock "github.com/golang/mock/gomock"
 )
 

@@ -4,7 +4,7 @@
 package blocks
 
 import (
-	"github.com/ava-labs/avalanchego/codec"
+	"github.com/Juneo-io/juneogo/codec"
 )
 
 func Parse(c codec.Manager, b []byte) (Block, error) {

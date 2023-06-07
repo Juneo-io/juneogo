@@ -3,7 +3,7 @@
 
 package mempool
 
-import "github.com/ava-labs/avalanchego/vms/platformvm/txs"
+import "github.com/Juneo-io/juneogo/vms/platformvm/txs"
 
 var _ txs.Visitor = (*remover)(nil)
 

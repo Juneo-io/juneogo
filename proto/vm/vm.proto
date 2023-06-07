@@ -6,7 +6,7 @@ import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 import "io/prometheus/client/metrics.proto";
 
-option go_package = "github.com/ava-labs/avalanchego/proto/pb/vm";
+option go_package = "github.com/Juneo-io/juneogo/proto/pb/vm";
 
 // ref. https://pkg.go.dev/github.com/ava-labs/avalanchego/snow/engine/snowman/block
 // ref. https://pkg.go.dev/github.com/ava-labs/avalanchego/snow/consensus/snowman#Block

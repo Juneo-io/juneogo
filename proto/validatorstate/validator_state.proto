@@ -4,7 +4,7 @@ package validatorstate;
 
 import "google/protobuf/empty.proto";
 
-option go_package = "github.com/ava-labs/avalanchego/proto/pb/validatorstate";
+option go_package = "github.com/Juneo-io/juneogo/proto/pb/validatorstate";
 
 service ValidatorState {
   // GetMinimumHeight returns the minimum height of the blocks in the optimal

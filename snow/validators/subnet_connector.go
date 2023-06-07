@@ -6,7 +6,7 @@ package validators
 import (
 	"context"
 
-	"github.com/ava-labs/avalanchego/ids"
+	"github.com/Juneo-io/juneogo/ids"
 )
 
 // SupernetConnector represents a handler that is called when a connection is

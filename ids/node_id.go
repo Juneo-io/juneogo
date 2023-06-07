@@ -8,8 +8,8 @@ import (
 	"crypto/x509"
 	"fmt"
 
-	"github.com/ava-labs/avalanchego/utils"
-	"github.com/ava-labs/avalanchego/utils/hashing"
+	"github.com/Juneo-io/juneogo/utils"
+	"github.com/Juneo-io/juneogo/utils/hashing"
 )
 
 const NodeIDPrefix = "NodeID-"

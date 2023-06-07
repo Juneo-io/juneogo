@@ -6,7 +6,7 @@ package cache
 import (
 	"testing"
 
-	"github.com/ava-labs/avalanchego/ids"
+	"github.com/Juneo-io/juneogo/ids"
 )
 
 type evictable[K comparable] struct {

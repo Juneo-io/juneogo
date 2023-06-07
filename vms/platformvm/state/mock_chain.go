@@ -11,10 +11,10 @@ import (
 	reflect "reflect"
 	time "time"
 
-	ids "github.com/ava-labs/avalanchego/ids"
-	avax "github.com/ava-labs/avalanchego/vms/components/avax"
-	status "github.com/ava-labs/avalanchego/vms/platformvm/status"
-	txs "github.com/ava-labs/avalanchego/vms/platformvm/txs"
+	ids "github.com/Juneo-io/juneogo/ids"
+	avax "github.com/Juneo-io/juneogo/vms/components/avax"
+	status "github.com/Juneo-io/juneogo/vms/platformvm/status"
+	txs "github.com/Juneo-io/juneogo/vms/platformvm/txs"
 	gomock "github.com/golang/mock/gomock"
 )
 

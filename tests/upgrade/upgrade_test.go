@@ -16,7 +16,7 @@ import (
 	"github.com/onsi/gomega"
 
 	runner_sdk "github.com/ava-labs/avalanche-network-runner-sdk"
-	"github.com/ava-labs/avalanchego/tests"
+	"github.com/Juneo-io/juneogo/tests"
 )
 
 func TestUpgrade(t *testing.T) {

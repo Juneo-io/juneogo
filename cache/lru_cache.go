@@ -6,8 +6,8 @@ package cache
 import (
 	"sync"
 
-	"github.com/ava-labs/avalanchego/utils"
-	"github.com/ava-labs/avalanchego/utils/linkedhashmap"
+	"github.com/Juneo-io/juneogo/utils"
+	"github.com/Juneo-io/juneogo/utils/linkedhashmap"
 )
 
 var _ Cacher[struct{}, struct{}] = (*LRU[struct{}, struct{}])(nil)

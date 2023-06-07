@@ -10,10 +10,10 @@ package txs
 import (
 	reflect "reflect"
 
-	ids "github.com/ava-labs/avalanchego/ids"
-	snow "github.com/ava-labs/avalanchego/snow"
-	set "github.com/ava-labs/avalanchego/utils/set"
-	avax "github.com/ava-labs/avalanchego/vms/components/avax"
+	ids "github.com/Juneo-io/juneogo/ids"
+	snow "github.com/Juneo-io/juneogo/snow"
+	set "github.com/Juneo-io/juneogo/utils/set"
+	avax "github.com/Juneo-io/juneogo/vms/components/avax"
 	gomock "github.com/golang/mock/gomock"
 )
 

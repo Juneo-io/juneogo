@@ -6,7 +6,7 @@ package state
 import (
 	"container/heap"
 
-	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
+	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
 )
 
 var (

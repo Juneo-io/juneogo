@@ -7,18 +7,18 @@ import (
 	"context"
 	"errors"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow/consensus/snowman"
-	"github.com/ava-labs/avalanchego/utils/set"
-	"github.com/ava-labs/avalanchego/utils/timer/mockable"
-	"github.com/ava-labs/avalanchego/utils/units"
-	"github.com/ava-labs/avalanchego/vms/avm/blocks"
-	"github.com/ava-labs/avalanchego/vms/avm/states"
-	"github.com/ava-labs/avalanchego/vms/avm/txs"
-	"github.com/ava-labs/avalanchego/vms/avm/txs/mempool"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow/consensus/snowman"
+	"github.com/Juneo-io/juneogo/utils/set"
+	"github.com/Juneo-io/juneogo/utils/timer/mockable"
+	"github.com/Juneo-io/juneogo/utils/units"
+	"github.com/Juneo-io/juneogo/vms/avm/blocks"
+	"github.com/Juneo-io/juneogo/vms/avm/states"
+	"github.com/Juneo-io/juneogo/vms/avm/txs"
+	"github.com/Juneo-io/juneogo/vms/avm/txs/mempool"
 
-	blockexecutor "github.com/ava-labs/avalanchego/vms/avm/blocks/executor"
-	txexecutor "github.com/ava-labs/avalanchego/vms/avm/txs/executor"
+	blockexecutor "github.com/Juneo-io/juneogo/vms/avm/blocks/executor"
+	txexecutor "github.com/Juneo-io/juneogo/vms/avm/txs/executor"
 )
 
 // targetBlockSize is the max block size we aim to produce

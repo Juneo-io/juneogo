@@ -6,7 +6,7 @@ package math
 import (
 	"container/heap"
 
-	"github.com/ava-labs/avalanchego/ids"
+	"github.com/Juneo-io/juneogo/ids"
 )
 
 var (
