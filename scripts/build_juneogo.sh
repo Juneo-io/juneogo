@@ -15,7 +15,7 @@ jeth_path=$( cd "$JUNE_PATH"; cd ..; cd jeth && pwd)
 build_dir="$JUNE_PATH/build"
 junego_path="$build_dir/juneogo"
 plugin_dir="$build_dir/plugins"
-evm_path="$plugin_dir/evm"
+evm_path="$plugin_dir/jevm"
 
 # Static compilation
 static_ld_flags=''
