@@ -21,8 +21,6 @@ import (
 
 	"go.uber.org/zap"
 
-	coreth "github.com/ava-labs/coreth/plugin/evm"
-
 	"github.com/Juneo-io/juneogo/api/admin"
 	"github.com/Juneo-io/juneogo/api/auth"
 	"github.com/Juneo-io/juneogo/api/health"
@@ -833,7 +831,6 @@ func (n *Node) initVMs() error {
 				UseCurrentHeight:                n.Config.UseCurrentHeight,
 			},
 		}),
-		vmRegisterer.Register(context.TODO(), constants.EVMID, &coreth.Factory{}),
 		vmRegisterer.Register(context.TODO(), constants.AVMID, &avm.Factory{
 			Config: avmconfig.Config{
 				TxFee:            n.Config.TxFee,
