@@ -222,7 +222,11 @@ func (fx *Fx) VerifyCredentials(utx UnsignedTx, in *Input, cred *Credential, out
 func (*Fx) CreateOutput(amount uint64, ownerIntf interface{}) (interface{}, error) {
 	owner, ok := ownerIntf.(*OutputOwners)
 	if !ok {
-		return nil, ErrWrongOwnerType
+		output, ok := ownerIntf.(*TransferOutput)
+		if !ok {
+			return nil, ErrWrongOwnerType
+		}
+		owner = &output.OutputOwners
 	}
 	if err := owner.Verify(); err != nil {
 		return nil, err

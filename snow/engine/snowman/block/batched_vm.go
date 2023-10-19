@@ -68,6 +68,9 @@ func GetAncestors(
 		return nil, err
 	}
 
+	if maxBlocksNum < 1 {
+		maxBlocksNum = 1
+	}
 	// First elt is byte repr. of [blk], then its parent, then grandparent, etc.
 	ancestorsBytes := make([][]byte, 1, maxBlocksNum)
 	ancestorsBytes[0] = blk.Bytes()
