@@ -15,16 +15,14 @@ import (
 	"github.com/Juneo-io/juneogo/vms/platformvm/reward"
 )
 
-// PrivateKey-vmRQiZeXEXYMyJhEiqdC2z5JhuDbxL8ix9UVvjgMu2Er1NepE => P-local1g65uqn6t77p656w64023nh8nd9updzmxyymev2
-// PrivateKey-ewoqjP7PxY4yr3iLTpLisriqt94hdyDFNgchSxGGztUrTXtNN => X-local18jma8ppw3nhx5r4ap8clazz0dps7rv5u00z96u
-// 56289e99c94b6912bfc12adc093c9b51124f0dc54ac7a766b2bc5ccf558d8027 => 0x8db97C7cEcE249c2b98bDC0226Cc4C2A57BF52FC
+// cushion valley very silver fragile car syrup slam army roast conduct jacket
+// PrivateKey-VWEazFMoKnnFQuHyTsZKZwmTxj7ocC5mwCF7Wtm6XehLFy3E => P-local1f7z7rcerz4s5t4luth53tfystzly040phf94nm
+// PrivateKey-VWEazFMoKnnFQuHyTsZKZwmTxj7ocC5mwCF7Wtm6XehLFy3E => JVM-local1f7z7rcerz4s5t4luth53tfystzly040phf94nm
+// 4a51d8e8baff7fb8d08ea07ff1e8a62f60f490d46e4f917433cfd43cd280315e => 0xb4a56D9dBaB331eF6983dE1E7702d650D0154A53
 
 const (
-	VMRQKeyStr          = "vmRQiZeXEXYMyJhEiqdC2z5JhuDbxL8ix9UVvjgMu2Er1NepE"
-	VMRQKeyFormattedStr = secp256k1.PrivateKeyPrefix + VMRQKeyStr
-
-	EWOQKeyStr          = "ewoqjP7PxY4yr3iLTpLisriqt94hdyDFNgchSxGGztUrTXtNN"
-	EWOQKeyFormattedStr = secp256k1.PrivateKeyPrefix + EWOQKeyStr
+	VWEAKeyStr          = "VWEazFMoKnnFQuHyTsZKZwmTxj7ocC5mwCF7Wtm6XehLFy3E"
+	VWEAKeyFormattedStr = secp256k1.PrivateKeyPrefix + VWEAKeyStr
 )
 
 var (
@@ -37,22 +35,22 @@ var (
 	// LocalParams are the params used for local networks
 	LocalParams = Params{
 		TxFeeConfig: TxFeeConfig{
-			TxFee:                         units.MilliAvax,
-			CreateAssetTxFee:              units.MilliAvax,
+			TxFee:                         10 * units.MilliAvax,
+			CreateAssetTxFee:              100 * units.MilliAvax,
 			CreateSupernetTxFee:           100 * units.MilliAvax,
-			TransformSupernetTxFee:        100 * units.MilliAvax,
+			TransformSupernetTxFee:        1 * units.Avax,
 			CreateBlockchainTxFee:         100 * units.MilliAvax,
 			AddPrimaryNetworkValidatorFee: 0,
 			AddPrimaryNetworkDelegatorFee: 0,
-			AddSupernetValidatorFee:       units.MilliAvax,
-			AddSupernetDelegatorFee:       units.MilliAvax,
+			AddSupernetValidatorFee:       100 * units.MilliAvax,
+			AddSupernetDelegatorFee:       100 * units.MilliAvax,
 		},
 		StakingConfig: StakingConfig{
 			UptimeRequirement: .8, // 80%
-			MinValidatorStake: 2 * units.KiloAvax,
-			MaxValidatorStake: 3 * units.MegaAvax,
-			MinDelegatorStake: 25 * units.Avax,
-			MinDelegationFee:  20000, // 2%
+			MinValidatorStake: 1 * units.Avax,
+			MaxValidatorStake: 1 * units.MegaAvax,
+			MinDelegatorStake: 10 * units.MilliAvax,
+			MinDelegationFee:  120000, // 12%
 			MinStakeDuration:  24 * time.Hour,
 			MaxStakeDuration:  365 * 24 * time.Hour,
 			RewardConfig: reward.Config{
@@ -67,15 +65,11 @@ var (
 
 func init() {
 	errs := wrappers.Errs{}
-	vmrqBytes, err := cb58.Decode(VMRQKeyStr)
-	errs.Add(err)
-	ewoqBytes, err := cb58.Decode(EWOQKeyStr)
+	vmrqBytes, err := cb58.Decode(VWEAKeyStr)
 	errs.Add(err)
 
 	factory := secp256k1.Factory{}
 	VMRQKey, err = factory.ToPrivateKey(vmrqBytes)
-	errs.Add(err)
-	EWOQKey, err = factory.ToPrivateKey(ewoqBytes)
 	errs.Add(err)
 
 	if errs.Err != nil {
