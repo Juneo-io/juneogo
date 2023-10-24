@@ -272,9 +272,7 @@ func GetRewardsCalculator(
 	}
 
 	return reward.NewCalculator(reward.Config{
-		MaxConsumptionRate: transformSupernet.RewardShare,
-		MinConsumptionRate: transformSupernet.RewardShare,
-		MintingPeriod:      backend.Config.RewardConfig.MintingPeriod,
-		SupplyCap:          transformSupernet.InitialRewardsPoolSupply,
+		MintingPeriod: backend.Config.RewardConfig.MintingPeriod,
+		RewardShare:   transformSupernet.RewardShare,
 	}), nil
 }

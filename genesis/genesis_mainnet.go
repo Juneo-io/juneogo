@@ -38,10 +38,8 @@ var (
 			MinStakeDuration:  2 * 7 * 24 * time.Hour,
 			MaxStakeDuration:  365 * 24 * time.Hour,
 			RewardConfig: reward.Config{
-				MaxConsumptionRate: .12 * reward.PercentDenominator,
-				MinConsumptionRate: .10 * reward.PercentDenominator,
-				MintingPeriod:      365 * 24 * time.Hour,
-				SupplyCap:          720 * units.MegaAvax,
+				MintingPeriod: 365 * 24 * time.Hour,
+				RewardShare:   50000, // 5%,
 			},
 		},
 	}

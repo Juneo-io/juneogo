@@ -275,10 +275,8 @@ func addNodeFlags(fs *pflag.FlagSet) {
 	// Maximum Stake Duration
 	fs.Duration(MaxStakeDurationKey, genesis.LocalParams.MaxStakeDuration, "Maximum staking duration")
 	// Stake Reward Configs
-	fs.Uint64(StakeMaxConsumptionRateKey, genesis.LocalParams.RewardConfig.MaxConsumptionRate, "Maximum consumption rate of the remaining tokens to mint in the staking function")
-	fs.Uint64(StakeMinConsumptionRateKey, genesis.LocalParams.RewardConfig.MinConsumptionRate, "Minimum consumption rate of the remaining tokens to mint in the staking function")
 	fs.Duration(StakeMintingPeriodKey, genesis.LocalParams.RewardConfig.MintingPeriod, "Consumption period of the staking function")
-	fs.Uint64(StakeSupplyCapKey, genesis.LocalParams.RewardConfig.SupplyCap, "Supply cap of the staking function")
+	fs.Uint64(StakeRewardShareKey, genesis.LocalParams.RewardConfig.RewardShare, "Reward share of the staking function")
 	// Supernets
 	fs.String(TrackSupernetsKey, "", "List of supernets for the node to track. A node tracking a supernet will track the uptimes of the supernet validators and attempt to sync all the chains in the supernet. Before validating a supernet, a node should be tracking the supernet to avoid impacting their supernet validation uptime")
 

@@ -19,15 +19,13 @@ type calculator struct {
 	maxSubMinConsumptionRate *big.Int
 	minConsumptionRate       *big.Int
 	mintingPeriod            *big.Int
-	supplyCap                uint64
+	rewardShare              uint64
 }
 
 func NewCalculator(c Config) Calculator {
 	return &calculator{
-		maxSubMinConsumptionRate: new(big.Int).SetUint64(c.MaxConsumptionRate - c.MinConsumptionRate),
-		minConsumptionRate:       new(big.Int).SetUint64(c.MinConsumptionRate),
-		mintingPeriod:            new(big.Int).SetUint64(uint64(c.MintingPeriod)),
-		supplyCap:                c.SupplyCap,
+		mintingPeriod: new(big.Int).SetUint64(uint64(c.MintingPeriod)),
+		rewardShare:   c.RewardShare,
 	}
 }
 
@@ -50,7 +48,7 @@ func (c *calculator) Calculate(stakedDuration time.Duration, currentTime time.Ti
 	bonusRewards.Div(bonusRewards, c.mintingPeriod)
 	bonusRewards.Mul(bonusRewards, maxBonusRewardShare)
 	bonusRewards.Div(bonusRewards, rewardShareDenominator)
-	return GetTimeRewardsValue(rewardShare, rewardShare, bonusRewards, timePercentage, rewardShareDenominator, stakedAmount).Uint64()
+	return GetTimeRewardsValue(c.rewardShare, c.rewardShare, bonusRewards, timePercentage, rewardShareDenominator, stakedAmount).Uint64()
 }
 
 // Reward returns the amount of tokens to reward the staker with in the primary supernet.
