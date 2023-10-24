@@ -384,7 +384,7 @@ func (e *StandardTxExecutor) TransformSupernetTx(tx *txs.TransformSupernetTx) er
 		return err
 	}
 
-	totalRewardAmount := tx.MaximumSupply - tx.InitialSupply
+	totalRewardAmount := tx.InitialRewardsPoolSupply
 	if err := e.Backend.FlowChecker.VerifySpend(
 		tx,
 		e.State,
@@ -410,7 +410,7 @@ func (e *StandardTxExecutor) TransformSupernetTx(tx *txs.TransformSupernetTx) er
 	avax.Produce(e.State, txID, tx.Outs)
 	// Transform the new supernet in the database
 	e.State.AddSupernetTransformation(e.Tx)
-	e.State.SetCurrentSupply(tx.Supernet, tx.InitialSupply)
+	e.State.SetRewardsPoolSupply(tx.Supernet, tx.InitialRewardsPoolSupply)
 	return nil
 }
 

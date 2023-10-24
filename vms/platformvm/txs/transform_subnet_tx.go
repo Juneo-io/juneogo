@@ -17,23 +17,20 @@ import (
 var (
 	_ UnsignedTx = (*TransformSupernetTx)(nil)
 
-	errCantTransformPrimaryNetwork       = errors.New("cannot transform primary network")
-	errEmptyAssetID                      = errors.New("empty asset ID is not valid")
-	errAssetIDCantBeAVAX                 = errors.New("asset ID can't be AVAX")
-	errInitialSupplyZero                 = errors.New("initial supply must be non-0")
-	errInitialSupplyGreaterThanMaxSupply = errors.New("initial supply can't be greater than maximum supply")
-	errMinConsumptionRateTooLarge        = errors.New("min consumption rate must be less than or equal to max consumption rate")
-	errMaxConsumptionRateTooLarge        = fmt.Errorf("max consumption rate must be less than or equal to %d", reward.PercentDenominator)
-	errMinValidatorStakeZero             = errors.New("min validator stake must be non-0")
-	errMinValidatorStakeAboveSupply      = errors.New("min validator stake must be less than or equal to initial supply")
-	errMinValidatorStakeAboveMax         = errors.New("min validator stake must be less than or equal to max validator stake")
-	errMaxValidatorStakeTooLarge         = errors.New("max validator stake must be less than or equal to max supply")
-	errMinStakeDurationZero              = errors.New("min stake duration must be non-0")
-	errMinStakeDurationTooLarge          = errors.New("min stake duration must be less than or equal to max stake duration")
-	errMinDelegationFeeTooLarge          = fmt.Errorf("min delegation fee must be less than or equal to %d", reward.PercentDenominator)
-	errMinDelegatorStakeZero             = errors.New("min delegator stake must be non-0")
-	errMaxValidatorWeightFactorZero      = errors.New("max validator weight factor must be non-0")
-	errUptimeRequirementTooLarge         = fmt.Errorf("uptime requirement must be less than or equal to %d", reward.PercentDenominator)
+	errCantTransformPrimaryNetwork  = errors.New("cannot transform primary network")
+	errEmptyAssetID                 = errors.New("empty asset ID is not valid")
+	errAssetIDCantBeAVAX            = errors.New("asset ID can't be AVAX")
+	errInitialRewardsPoolSupplyZero = errors.New("initial rewards pool supply must be non-0")
+	errRewardShareZero              = errors.New("reward share must be non-0")
+	errRewardShareTooLarge          = fmt.Errorf("reward share must be less than or equal to %d", reward.PercentDenominator)
+	errMinValidatorStakeZero        = errors.New("min validator stake must be non-0")
+	errMinValidatorStakeAboveMax    = errors.New("min validator stake must be less than or equal to max validator stake")
+	errMinStakeDurationZero         = errors.New("min stake duration must be non-0")
+	errMinStakeDurationTooLarge     = errors.New("min stake duration must be less than or equal to max stake duration")
+	errMinDelegationFeeTooLarge     = fmt.Errorf("min delegation fee must be less than or equal to %d", reward.PercentDenominator)
+	errMinDelegatorStakeZero        = errors.New("min delegator stake must be non-0")
+	errMaxValidatorWeightFactorZero = errors.New("max validator weight factor must be non-0")
+	errUptimeRequirementTooLarge    = fmt.Errorf("uptime requirement must be less than or equal to %d", reward.PercentDenominator)
 )
 
 // TransformSupernetTx is an unsigned transformSupernetTx
@@ -49,23 +46,16 @@ type TransformSupernetTx struct {
 	// - Must not be the Empty ID
 	// - Must not be the AVAX ID
 	AssetID ids.ID `serialize:"true" json:"assetID"`
-	// Amount to initially specify as the current supply
+	// Amount to specify as the amount of rewards that will be initially
+	// available in the rewards pool of the subnet.
 	// Restrictions:
 	// - Must be > 0
-	InitialSupply uint64 `serialize:"true" json:"initialSupply"`
-	// Amount to specify as the maximum token supply
+	InitialRewardsPoolSupply uint64 `serialize:"true" json:"initialRewardsPoolSupply"`
+	// RewardShare is the share of rewards given for validators.
 	// Restrictions:
-	// - Must be >= [InitialSupply]
-	MaximumSupply uint64 `serialize:"true" json:"maximumSupply"`
-	// MinConsumptionRate is the rate to allocate funds if the validator's stake
-	// duration is 0
-	MinConsumptionRate uint64 `serialize:"true" json:"minConsumptionRate"`
-	// MaxConsumptionRate is the rate to allocate funds if the validator's stake
-	// duration is equal to the minting period
-	// Restrictions:
-	// - Must be >= [MinConsumptionRate]
-	// - Must be <= [reward.PercentDenominator]
-	MaxConsumptionRate uint64 `serialize:"true" json:"maxConsumptionRate"`
+	// - Must be > 0
+	// - Must be < [reward.PercentDenominator]
+	RewardShare uint64 `serialize:"true" json:"rewardShare"`
 	// MinValidatorStake is the minimum amount of funds required to become a
 	// validator.
 	// Restrictions:
@@ -124,22 +114,16 @@ func (tx *TransformSupernetTx) SyntacticVerify(ctx *snow.Context) error {
 		return errEmptyAssetID
 	case tx.AssetID == ctx.AVAXAssetID:
 		return errAssetIDCantBeAVAX
-	case tx.InitialSupply == 0:
-		return errInitialSupplyZero
-	case tx.InitialSupply > tx.MaximumSupply:
-		return errInitialSupplyGreaterThanMaxSupply
-	case tx.MinConsumptionRate > tx.MaxConsumptionRate:
-		return errMinConsumptionRateTooLarge
-	case tx.MaxConsumptionRate > reward.PercentDenominator:
-		return errMaxConsumptionRateTooLarge
+	case tx.InitialRewardsPoolSupply == 0:
+		return errInitialRewardsPoolSupplyZero
+	case tx.RewardShare == 0:
+		return errRewardShareZero
+	case tx.RewardShare > reward.PercentDenominator:
+		return errRewardShareTooLarge
 	case tx.MinValidatorStake == 0:
 		return errMinValidatorStakeZero
-	case tx.MinValidatorStake > tx.InitialSupply:
-		return errMinValidatorStakeAboveSupply
 	case tx.MinValidatorStake > tx.MaxValidatorStake:
 		return errMinValidatorStakeAboveMax
-	case tx.MaxValidatorStake > tx.MaximumSupply:
-		return errMaxValidatorStakeTooLarge
 	case tx.MinStakeDuration == 0:
 		return errMinStakeDurationZero
 	case tx.MinStakeDuration > tx.MaxStakeDuration:
