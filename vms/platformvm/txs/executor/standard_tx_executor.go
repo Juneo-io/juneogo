@@ -410,7 +410,8 @@ func (e *StandardTxExecutor) TransformSupernetTx(tx *txs.TransformSupernetTx) er
 	avax.Produce(e.State, txID, tx.Outs)
 	// Transform the new supernet in the database
 	e.State.AddSupernetTransformation(e.Tx)
-	e.State.SetRewardsPoolSupply(tx.Supernet, tx.InitialRewardsPoolSupply)
+	e.State.SetCurrentSupply(tx.Supernet, uint64(0))
+	e.State.SetRewardsPoolSupply(tx.Supernet, totalRewardAmount)
 	return nil
 }
 
