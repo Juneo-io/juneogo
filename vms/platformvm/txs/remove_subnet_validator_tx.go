@@ -6,44 +6,44 @@ package txs
 import (
 	"errors"
 
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/snow"
-	"github.com/Juneo-io/juneogo/utils/constants"
-	"github.com/Juneo-io/juneogo/vms/components/verify"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/snow"
+	"github.com/ava-labs/avalanchego/utils/constants"
+	"github.com/ava-labs/avalanchego/vms/components/verify"
 )
 
 var (
-	_ UnsignedTx = (*RemoveSupernetValidatorTx)(nil)
+	_ UnsignedTx = (*RemoveSubnetValidatorTx)(nil)
 
-	errRemovePrimaryNetworkValidator = errors.New("can't remove primary network validator with RemoveSupernetValidatorTx")
+	errRemovePrimaryNetworkValidator = errors.New("can't remove primary network validator with RemoveSubnetValidatorTx")
 )
 
-// Removes a validator from a supernet.
-type RemoveSupernetValidatorTx struct {
+// Removes a validator from a subnet.
+type RemoveSubnetValidatorTx struct {
 	BaseTx `serialize:"true"`
-	// The node to remove from the supernet.
+	// The node to remove from the subnet.
 	NodeID ids.NodeID `serialize:"true" json:"nodeID"`
-	// The supernet to remove the node from.
-	Supernet ids.ID `serialize:"true" json:"supernetID"`
-	// Proves that the issuer has the right to remove the node from the supernet.
-	SupernetAuth verify.Verifiable `serialize:"true" json:"supernetAuthorization"`
+	// The subnet to remove the node from.
+	Subnet ids.ID `serialize:"true" json:"subnetID"`
+	// Proves that the issuer has the right to remove the node from the subnet.
+	SubnetAuth verify.Verifiable `serialize:"true" json:"subnetAuthorization"`
 }
 
-func (tx *RemoveSupernetValidatorTx) SyntacticVerify(ctx *snow.Context) error {
+func (tx *RemoveSubnetValidatorTx) SyntacticVerify(ctx *snow.Context) error {
 	switch {
 	case tx == nil:
 		return ErrNilTx
 	case tx.SyntacticallyVerified:
 		// already passed syntactic verification
 		return nil
-	case tx.Supernet == constants.PrimaryNetworkID:
+	case tx.Subnet == constants.PrimaryNetworkID:
 		return errRemovePrimaryNetworkValidator
 	}
 
 	if err := tx.BaseTx.SyntacticVerify(ctx); err != nil {
 		return err
 	}
-	if err := tx.SupernetAuth.Verify(); err != nil {
+	if err := tx.SubnetAuth.Verify(); err != nil {
 		return err
 	}
 
@@ -51,6 +51,6 @@ func (tx *RemoveSupernetValidatorTx) SyntacticVerify(ctx *snow.Context) error {
 	return nil
 }
 
-func (tx *RemoveSupernetValidatorTx) Visit(visitor Visitor) error {
-	return visitor.RemoveSupernetValidatorTx(tx)
+func (tx *RemoveSubnetValidatorTx) Visit(visitor Visitor) error {
+	return visitor.RemoveSubnetValidatorTx(tx)
 }

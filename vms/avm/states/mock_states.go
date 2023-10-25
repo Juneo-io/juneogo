@@ -11,12 +11,12 @@ import (
 	reflect "reflect"
 	time "time"
 
-	database "github.com/Juneo-io/juneogo/database"
-	ids "github.com/Juneo-io/juneogo/ids"
-	choices "github.com/Juneo-io/juneogo/snow/choices"
-	blocks "github.com/Juneo-io/juneogo/vms/avm/blocks"
-	txs "github.com/Juneo-io/juneogo/vms/avm/txs"
-	avax "github.com/Juneo-io/juneogo/vms/components/avax"
+	database "github.com/ava-labs/avalanchego/database"
+	ids "github.com/ava-labs/avalanchego/ids"
+	choices "github.com/ava-labs/avalanchego/snow/choices"
+	blocks "github.com/ava-labs/avalanchego/vms/avm/blocks"
+	txs "github.com/ava-labs/avalanchego/vms/avm/txs"
+	avax "github.com/ava-labs/avalanchego/vms/components/avax"
 	gomock "github.com/golang/mock/gomock"
 )
 

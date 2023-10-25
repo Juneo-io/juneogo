@@ -11,14 +11,14 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/utils/crypto/secp256k1"
-	"github.com/Juneo-io/juneogo/utils/hashing"
-	"github.com/Juneo-io/juneogo/vms/platformvm/reward"
-	"github.com/Juneo-io/juneogo/vms/platformvm/state"
-	"github.com/Juneo-io/juneogo/vms/platformvm/status"
-	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
-	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/utils/crypto/secp256k1"
+	"github.com/ava-labs/avalanchego/utils/hashing"
+	"github.com/ava-labs/avalanchego/vms/platformvm/reward"
+	"github.com/ava-labs/avalanchego/vms/platformvm/state"
+	"github.com/ava-labs/avalanchego/vms/platformvm/status"
+	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
+	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
 )
 
 func TestProposalTxExecuteAddDelegator(t *testing.T) {
@@ -115,7 +115,7 @@ func TestProposalTxExecuteAddDelegator(t *testing.T) {
 			setup:         nil,
 			AP3Time:       defaultGenesisTime,
 			shouldErr:     true,
-			description:   "validator stops validating primary network earlier than supernet",
+			description:   "validator stops validating primary network earlier than subnet",
 		},
 		{
 			stakeAmount:   dummyH.config.MinDelegatorStake,
@@ -151,11 +151,11 @@ func TestProposalTxExecuteAddDelegator(t *testing.T) {
 			setup:         nil,
 			AP3Time:       defaultGenesisTime,
 			shouldErr:     true,
-			description:   "validator not in the current or pending validator sets of the supernet",
+			description:   "validator not in the current or pending validator sets of the subnet",
 		},
 		{
 			stakeAmount:   dummyH.config.MinDelegatorStake,
-			startTime:     newValidatorStartTime - 1, // start validating supernet before primary network
+			startTime:     newValidatorStartTime - 1, // start validating subnet before primary network
 			endTime:       newValidatorEndTime,
 			nodeID:        newValidatorID,
 			rewardAddress: rewardAddress,
@@ -163,19 +163,19 @@ func TestProposalTxExecuteAddDelegator(t *testing.T) {
 			setup:         addMinStakeValidator,
 			AP3Time:       defaultGenesisTime,
 			shouldErr:     true,
-			description:   "validator starts validating supernet before primary network",
+			description:   "validator starts validating subnet before primary network",
 		},
 		{
 			stakeAmount:   dummyH.config.MinDelegatorStake,
 			startTime:     newValidatorStartTime,
-			endTime:       newValidatorEndTime + 1, // stop validating supernet after stopping validating primary network
+			endTime:       newValidatorEndTime + 1, // stop validating subnet after stopping validating primary network
 			nodeID:        newValidatorID,
 			rewardAddress: rewardAddress,
 			feeKeys:       []*secp256k1.PrivateKey{preFundedKeys[0]},
 			setup:         addMinStakeValidator,
 			AP3Time:       defaultGenesisTime,
 			shouldErr:     true,
-			description:   "validator stops validating primary network before supernet",
+			description:   "validator stops validating primary network before subnet",
 		},
 		{
 			stakeAmount:   dummyH.config.MinDelegatorStake,
@@ -298,7 +298,7 @@ func TestProposalTxExecuteAddDelegator(t *testing.T) {
 	}
 }
 
-func TestProposalTxExecuteAddSupernetValidator(t *testing.T) {
+func TestProposalTxExecuteAddSubnetValidator(t *testing.T) {
 	require := require.New(t)
 	env := newEnvironment(false /*=postBanff*/, false /*=postCortina*/)
 	env.ctx.Lock.Lock()
@@ -310,15 +310,15 @@ func TestProposalTxExecuteAddSupernetValidator(t *testing.T) {
 
 	{
 		// Case: Proposed validator currently validating primary network
-		// but stops validating supernet after stops validating primary network
+		// but stops validating subnet after stops validating primary network
 		// (note that keys[0] is a genesis validator)
-		tx, err := env.txBuilder.NewAddSupernetValidatorTx(
+		tx, err := env.txBuilder.NewAddSubnetValidatorTx(
 			defaultWeight,
 			uint64(defaultValidateStartTime.Unix()),
 			uint64(defaultValidateEndTime.Unix())+1,
 			ids.NodeID(nodeID),
-			testSupernet1.ID(),
-			[]*secp256k1.PrivateKey{testSupernet1ControlKeys[0], testSupernet1ControlKeys[1]},
+			testSubnet1.ID(),
+			[]*secp256k1.PrivateKey{testSubnet1ControlKeys[0], testSubnet1ControlKeys[1]},
 			ids.ShortEmpty, // change addr
 		)
 		require.NoError(err)
@@ -336,21 +336,21 @@ func TestProposalTxExecuteAddSupernetValidator(t *testing.T) {
 			Tx:            tx,
 		}
 		err = tx.Unsigned.Visit(&executor)
-		require.Error(err, "should have failed because validator stops validating primary network earlier than supernet")
+		require.Error(err, "should have failed because validator stops validating primary network earlier than subnet")
 	}
 
 	{
 		// Case: Proposed validator currently validating primary network
-		// and proposed supernet validation period is subset of
+		// and proposed subnet validation period is subset of
 		// primary network validation period
 		// (note that keys[0] is a genesis validator)
-		tx, err := env.txBuilder.NewAddSupernetValidatorTx(
+		tx, err := env.txBuilder.NewAddSubnetValidatorTx(
 			defaultWeight,
 			uint64(defaultValidateStartTime.Unix()+1),
 			uint64(defaultValidateEndTime.Unix()),
 			ids.NodeID(nodeID),
-			testSupernet1.ID(),
-			[]*secp256k1.PrivateKey{testSupernet1ControlKeys[0], testSupernet1ControlKeys[1]},
+			testSubnet1.ID(),
+			[]*secp256k1.PrivateKey{testSubnet1ControlKeys[0], testSubnet1ControlKeys[1]},
 			ids.ShortEmpty, // change addr
 		)
 		require.NoError(err)
@@ -394,13 +394,13 @@ func TestProposalTxExecuteAddSupernetValidator(t *testing.T) {
 
 	{
 		// Case: Proposed validator isn't in pending or current validator sets
-		tx, err := env.txBuilder.NewAddSupernetValidatorTx(
+		tx, err := env.txBuilder.NewAddSubnetValidatorTx(
 			defaultWeight,
-			uint64(dsStartTime.Unix()), // start validating supernet before primary network
+			uint64(dsStartTime.Unix()), // start validating subnet before primary network
 			uint64(dsEndTime.Unix()),
 			pendingDSValidatorID,
-			testSupernet1.ID(),
-			[]*secp256k1.PrivateKey{testSupernet1ControlKeys[0], testSupernet1ControlKeys[1]},
+			testSubnet1.ID(),
+			[]*secp256k1.PrivateKey{testSubnet1ControlKeys[0], testSubnet1ControlKeys[1]},
 			ids.ShortEmpty, // change addr
 		)
 		require.NoError(err)
@@ -439,14 +439,14 @@ func TestProposalTxExecuteAddSupernetValidator(t *testing.T) {
 
 	{
 		// Case: Proposed validator is pending validator of primary network
-		// but starts validating supernet before primary network
-		tx, err := env.txBuilder.NewAddSupernetValidatorTx(
+		// but starts validating subnet before primary network
+		tx, err := env.txBuilder.NewAddSubnetValidatorTx(
 			defaultWeight,
-			uint64(dsStartTime.Unix())-1, // start validating supernet before primary network
+			uint64(dsStartTime.Unix())-1, // start validating subnet before primary network
 			uint64(dsEndTime.Unix()),
 			pendingDSValidatorID,
-			testSupernet1.ID(),
-			[]*secp256k1.PrivateKey{testSupernet1ControlKeys[0], testSupernet1ControlKeys[1]},
+			testSubnet1.ID(),
+			[]*secp256k1.PrivateKey{testSubnet1ControlKeys[0], testSubnet1ControlKeys[1]},
 			ids.ShortEmpty, // change addr
 		)
 		require.NoError(err)
@@ -469,14 +469,14 @@ func TestProposalTxExecuteAddSupernetValidator(t *testing.T) {
 
 	{
 		// Case: Proposed validator is pending validator of primary network
-		// but stops validating supernet after primary network
-		tx, err := env.txBuilder.NewAddSupernetValidatorTx(
+		// but stops validating subnet after primary network
+		tx, err := env.txBuilder.NewAddSubnetValidatorTx(
 			defaultWeight,
 			uint64(dsStartTime.Unix()),
-			uint64(dsEndTime.Unix())+1, // stop validating supernet after stopping validating primary network
+			uint64(dsEndTime.Unix())+1, // stop validating subnet after stopping validating primary network
 			pendingDSValidatorID,
-			testSupernet1.ID(),
-			[]*secp256k1.PrivateKey{testSupernet1ControlKeys[0], testSupernet1ControlKeys[1]},
+			testSubnet1.ID(),
+			[]*secp256k1.PrivateKey{testSubnet1ControlKeys[0], testSubnet1ControlKeys[1]},
 			ids.ShortEmpty, // change addr
 		)
 		require.NoError(err)
@@ -499,14 +499,14 @@ func TestProposalTxExecuteAddSupernetValidator(t *testing.T) {
 
 	{
 		// Case: Proposed validator is pending validator of primary network and
-		// period validating supernet is subset of time validating primary network
-		tx, err := env.txBuilder.NewAddSupernetValidatorTx(
+		// period validating subnet is subset of time validating primary network
+		tx, err := env.txBuilder.NewAddSubnetValidatorTx(
 			defaultWeight,
 			uint64(dsStartTime.Unix()), // same start time as for primary network
 			uint64(dsEndTime.Unix()),   // same end time as for primary network
 			pendingDSValidatorID,
-			testSupernet1.ID(),
-			[]*secp256k1.PrivateKey{testSupernet1ControlKeys[0], testSupernet1ControlKeys[1]},
+			testSubnet1.ID(),
+			[]*secp256k1.PrivateKey{testSubnet1ControlKeys[0], testSubnet1ControlKeys[1]},
 			ids.ShortEmpty, // change addr
 		)
 		require.NoError(err)
@@ -533,13 +533,13 @@ func TestProposalTxExecuteAddSupernetValidator(t *testing.T) {
 	env.state.SetTimestamp(newTimestamp)
 
 	{
-		tx, err := env.txBuilder.NewAddSupernetValidatorTx(
+		tx, err := env.txBuilder.NewAddSubnetValidatorTx(
 			defaultWeight,               // weight
 			uint64(newTimestamp.Unix()), // start time
 			uint64(newTimestamp.Add(defaultMinStakingDuration).Unix()), // end time
 			ids.NodeID(nodeID), // node ID
-			testSupernet1.ID(), // supernet ID
-			[]*secp256k1.PrivateKey{testSupernet1ControlKeys[0], testSupernet1ControlKeys[1]},
+			testSubnet1.ID(), // subnet ID
+			[]*secp256k1.PrivateKey{testSubnet1ControlKeys[0], testSubnet1ControlKeys[1]},
 			ids.ShortEmpty, // change addr
 		)
 		require.NoError(err)
@@ -563,41 +563,41 @@ func TestProposalTxExecuteAddSupernetValidator(t *testing.T) {
 	// reset the timestamp
 	env.state.SetTimestamp(defaultGenesisTime)
 
-	// Case: Proposed validator already validating the supernet
-	// First, add validator as validator of supernet
-	supernetTx, err := env.txBuilder.NewAddSupernetValidatorTx(
+	// Case: Proposed validator already validating the subnet
+	// First, add validator as validator of subnet
+	subnetTx, err := env.txBuilder.NewAddSubnetValidatorTx(
 		defaultWeight,                           // weight
 		uint64(defaultValidateStartTime.Unix()), // start time
 		uint64(defaultValidateEndTime.Unix()),   // end time
 		ids.NodeID(nodeID),                      // node ID
-		testSupernet1.ID(),                      // supernet ID
-		[]*secp256k1.PrivateKey{testSupernet1ControlKeys[0], testSupernet1ControlKeys[1]},
+		testSubnet1.ID(),                      // subnet ID
+		[]*secp256k1.PrivateKey{testSubnet1ControlKeys[0], testSubnet1ControlKeys[1]},
 		ids.ShortEmpty,
 	)
 	require.NoError(err)
 
 	staker, err = state.NewCurrentStaker(
-		supernetTx.ID(),
-		supernetTx.Unsigned.(*txs.AddSupernetValidatorTx),
+		subnetTx.ID(),
+		subnetTx.Unsigned.(*txs.AddSubnetValidatorTx),
 		0,
 	)
 	require.NoError(err)
 
 	env.state.PutCurrentValidator(staker)
-	env.state.AddTx(supernetTx, status.Committed)
+	env.state.AddTx(subnetTx, status.Committed)
 	env.state.SetHeight(dummyHeight)
 	err = env.state.Commit()
 	require.NoError(err)
 
 	{
-		// Node with ID nodeIDKey.PublicKey().Address() now validating supernet with ID testSupernet1.ID
-		duplicateSupernetTx, err := env.txBuilder.NewAddSupernetValidatorTx(
+		// Node with ID nodeIDKey.PublicKey().Address() now validating subnet with ID testSubnet1.ID
+		duplicateSubnetTx, err := env.txBuilder.NewAddSubnetValidatorTx(
 			defaultWeight,                           // weight
 			uint64(defaultValidateStartTime.Unix()), // start time
 			uint64(defaultValidateEndTime.Unix()),   // end time
 			ids.NodeID(nodeID),                      // node ID
-			testSupernet1.ID(),                      // supernet ID
-			[]*secp256k1.PrivateKey{testSupernet1ControlKeys[0], testSupernet1ControlKeys[1]},
+			testSubnet1.ID(),                      // subnet ID
+			[]*secp256k1.PrivateKey{testSubnet1ControlKeys[0], testSubnet1ControlKeys[1]},
 			ids.ShortEmpty, // change addr
 		)
 		require.NoError(err)
@@ -612,10 +612,10 @@ func TestProposalTxExecuteAddSupernetValidator(t *testing.T) {
 			OnCommitState: onCommitState,
 			OnAbortState:  onAbortState,
 			Backend:       &env.backend,
-			Tx:            duplicateSupernetTx,
+			Tx:            duplicateSubnetTx,
 		}
-		err = duplicateSupernetTx.Unsigned.Visit(&executor)
-		require.Error(err, "should have failed verification because validator already validating the specified supernet")
+		err = duplicateSubnetTx.Unsigned.Visit(&executor)
+		require.Error(err, "should have failed verification because validator already validating the specified subnet")
 	}
 
 	env.state.DeleteCurrentValidator(staker)
@@ -625,13 +625,13 @@ func TestProposalTxExecuteAddSupernetValidator(t *testing.T) {
 
 	{
 		// Case: Too many signatures
-		tx, err := env.txBuilder.NewAddSupernetValidatorTx(
+		tx, err := env.txBuilder.NewAddSubnetValidatorTx(
 			defaultWeight,                     // weight
 			uint64(defaultGenesisTime.Unix()), // start time
 			uint64(defaultGenesisTime.Add(defaultMinStakingDuration).Unix())+1, // end time
 			ids.NodeID(nodeID), // node ID
-			testSupernet1.ID(), // supernet ID
-			[]*secp256k1.PrivateKey{testSupernet1ControlKeys[0], testSupernet1ControlKeys[1], testSupernet1ControlKeys[2]},
+			testSubnet1.ID(), // subnet ID
+			[]*secp256k1.PrivateKey{testSubnet1ControlKeys[0], testSubnet1ControlKeys[1], testSubnet1ControlKeys[2]},
 			ids.ShortEmpty, // change addr
 		)
 		require.NoError(err)
@@ -654,23 +654,23 @@ func TestProposalTxExecuteAddSupernetValidator(t *testing.T) {
 
 	{
 		// Case: Too few signatures
-		tx, err := env.txBuilder.NewAddSupernetValidatorTx(
+		tx, err := env.txBuilder.NewAddSubnetValidatorTx(
 			defaultWeight,                     // weight
 			uint64(defaultGenesisTime.Unix()), // start time
 			uint64(defaultGenesisTime.Add(defaultMinStakingDuration).Unix()), // end time
 			ids.NodeID(nodeID), // node ID
-			testSupernet1.ID(), // supernet ID
-			[]*secp256k1.PrivateKey{testSupernet1ControlKeys[0], testSupernet1ControlKeys[2]},
+			testSubnet1.ID(), // subnet ID
+			[]*secp256k1.PrivateKey{testSubnet1ControlKeys[0], testSubnet1ControlKeys[2]},
 			ids.ShortEmpty, // change addr
 		)
 		require.NoError(err)
 
 		// Remove a signature
-		addSupernetValidatorTx := tx.Unsigned.(*txs.AddSupernetValidatorTx)
-		input := addSupernetValidatorTx.SupernetAuth.(*secp256k1fx.Input)
+		addSubnetValidatorTx := tx.Unsigned.(*txs.AddSubnetValidatorTx)
+		input := addSubnetValidatorTx.SubnetAuth.(*secp256k1fx.Input)
 		input.SigIndices = input.SigIndices[1:]
 		// This tx was syntactically verified when it was created...pretend it wasn't so we don't use cache
-		addSupernetValidatorTx.SyntacticallyVerified = false
+		addSubnetValidatorTx.SyntacticallyVerified = false
 
 		onCommitState, err := state.NewDiff(lastAcceptedID, env)
 		require.NoError(err)
@@ -690,13 +690,13 @@ func TestProposalTxExecuteAddSupernetValidator(t *testing.T) {
 
 	{
 		// Case: Control Signature from invalid key (keys[3] is not a control key)
-		tx, err := env.txBuilder.NewAddSupernetValidatorTx(
+		tx, err := env.txBuilder.NewAddSubnetValidatorTx(
 			defaultWeight,                     // weight
 			uint64(defaultGenesisTime.Unix()), // start time
 			uint64(defaultGenesisTime.Add(defaultMinStakingDuration).Unix()), // end time
 			ids.NodeID(nodeID), // node ID
-			testSupernet1.ID(), // supernet ID
-			[]*secp256k1.PrivateKey{testSupernet1ControlKeys[0], preFundedKeys[1]},
+			testSubnet1.ID(), // subnet ID
+			[]*secp256k1.PrivateKey{testSubnet1ControlKeys[0], preFundedKeys[1]},
 			ids.ShortEmpty, // change addr
 		)
 		require.NoError(err)
@@ -723,22 +723,22 @@ func TestProposalTxExecuteAddSupernetValidator(t *testing.T) {
 	}
 
 	{
-		// Case: Proposed validator in pending validator set for supernet
-		// First, add validator to pending validator set of supernet
-		tx, err := env.txBuilder.NewAddSupernetValidatorTx(
+		// Case: Proposed validator in pending validator set for subnet
+		// First, add validator to pending validator set of subnet
+		tx, err := env.txBuilder.NewAddSubnetValidatorTx(
 			defaultWeight,                       // weight
 			uint64(defaultGenesisTime.Unix())+1, // start time
 			uint64(defaultGenesisTime.Add(defaultMinStakingDuration).Unix())+1, // end time
 			ids.NodeID(nodeID), // node ID
-			testSupernet1.ID(), // supernet ID
-			[]*secp256k1.PrivateKey{testSupernet1ControlKeys[0], testSupernet1ControlKeys[1]},
+			testSubnet1.ID(), // subnet ID
+			[]*secp256k1.PrivateKey{testSubnet1ControlKeys[0], testSubnet1ControlKeys[1]},
 			ids.ShortEmpty, // change addr
 		)
 		require.NoError(err)
 
 		staker, err = state.NewCurrentStaker(
-			supernetTx.ID(),
-			supernetTx.Unsigned.(*txs.AddSupernetValidatorTx),
+			subnetTx.ID(),
+			subnetTx.Unsigned.(*txs.AddSubnetValidatorTx),
 			0,
 		)
 		require.NoError(err)
@@ -762,7 +762,7 @@ func TestProposalTxExecuteAddSupernetValidator(t *testing.T) {
 			Tx:            tx,
 		}
 		err = tx.Unsigned.Visit(&executor)
-		require.Error(err, "should have failed verification because validator already in pending validator set of the specified supernet")
+		require.Error(err, "should have failed verification because validator already in pending validator set of the specified subnet")
 	}
 }
 

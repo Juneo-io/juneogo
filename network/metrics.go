@@ -9,17 +9,17 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/network/peer"
-	"github.com/Juneo-io/juneogo/utils/constants"
-	"github.com/Juneo-io/juneogo/utils/set"
-	"github.com/Juneo-io/juneogo/utils/wrappers"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/network/peer"
+	"github.com/ava-labs/avalanchego/utils/constants"
+	"github.com/ava-labs/avalanchego/utils/set"
+	"github.com/ava-labs/avalanchego/utils/wrappers"
 )
 
 type metrics struct {
 	numTracked                        prometheus.Gauge
 	numPeers                          prometheus.Gauge
-	numSupernetPeers                  *prometheus.GaugeVec
+	numSubnetPeers                  *prometheus.GaugeVec
 	timeSinceLastMsgSent              prometheus.Gauge
 	timeSinceLastMsgReceived          prometheus.Gauge
 	sendQueuePortionFull              prometheus.Gauge
@@ -32,8 +32,8 @@ type metrics struct {
 	numUselessPeerListBytes           prometheus.Counter
 	nodeUptimeWeightedAverage         prometheus.Gauge
 	nodeUptimeRewardingStake          prometheus.Gauge
-	nodeSupernetUptimeWeightedAverage *prometheus.GaugeVec
-	nodeSupernetUptimeRewardingStake  *prometheus.GaugeVec
+	nodeSubnetUptimeWeightedAverage *prometheus.GaugeVec
+	nodeSubnetUptimeRewardingStake  *prometheus.GaugeVec
 	peerConnectedLifetimeAverage      prometheus.Gauge
 
 	lock                       sync.RWMutex
@@ -41,7 +41,7 @@ type metrics struct {
 	peerConnectedStartTimesSum float64
 }
 
-func newMetrics(namespace string, registerer prometheus.Registerer, initialSupernetIDs set.Set[ids.ID]) (*metrics, error) {
+func newMetrics(namespace string, registerer prometheus.Registerer, initialSubnetIDs set.Set[ids.ID]) (*metrics, error) {
 	m := &metrics{
 		numPeers: prometheus.NewGauge(prometheus.GaugeOpts{
 			Namespace: namespace,
@@ -53,13 +53,13 @@ func newMetrics(namespace string, registerer prometheus.Registerer, initialSuper
 			Name:      "tracked",
 			Help:      "Number of currently tracked IPs attempting to be connected to",
 		}),
-		numSupernetPeers: prometheus.NewGaugeVec(
+		numSubnetPeers: prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Namespace: namespace,
-				Name:      "peers_supernet",
-				Help:      "Number of peers that are validating a particular supernet",
+				Name:      "peers_subnet",
+				Help:      "Number of peers that are validating a particular subnet",
 			},
-			[]string{"supernetID"},
+			[]string{"subnetID"},
 		),
 		timeSinceLastMsgReceived: prometheus.NewGauge(prometheus.GaugeOpts{
 			Namespace: namespace,
@@ -121,21 +121,21 @@ func newMetrics(namespace string, registerer prometheus.Registerer, initialSuper
 			Name:      "node_uptime_rewarding_stake",
 			Help:      "The percentage of total stake which thinks this node is eligible for rewards",
 		}),
-		nodeSupernetUptimeWeightedAverage: prometheus.NewGaugeVec(
+		nodeSubnetUptimeWeightedAverage: prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Namespace: namespace,
-				Name:      "node_supernet_uptime_weighted_average",
-				Help:      "This node's supernet uptime averages weighted by observing supernet peer stakes",
+				Name:      "node_subnet_uptime_weighted_average",
+				Help:      "This node's subnet uptime averages weighted by observing subnet peer stakes",
 			},
-			[]string{"supernetID"},
+			[]string{"subnetID"},
 		),
-		nodeSupernetUptimeRewardingStake: prometheus.NewGaugeVec(
+		nodeSubnetUptimeRewardingStake: prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Namespace: namespace,
-				Name:      "node_supernet_uptime_rewarding_stake",
-				Help:      "The percentage of supernet's total stake which thinks this node is eligible for supernet's rewards",
+				Name:      "node_subnet_uptime_rewarding_stake",
+				Help:      "The percentage of subnet's total stake which thinks this node is eligible for subnet's rewards",
 			},
-			[]string{"supernetID"},
+			[]string{"subnetID"},
 		),
 		peerConnectedLifetimeAverage: prometheus.NewGauge(
 			prometheus.GaugeOpts{
@@ -151,7 +151,7 @@ func newMetrics(namespace string, registerer prometheus.Registerer, initialSuper
 	errs.Add(
 		registerer.Register(m.numTracked),
 		registerer.Register(m.numPeers),
-		registerer.Register(m.numSupernetPeers),
+		registerer.Register(m.numSubnetPeers),
 		registerer.Register(m.timeSinceLastMsgReceived),
 		registerer.Register(m.timeSinceLastMsgSent),
 		registerer.Register(m.sendQueuePortionFull),
@@ -164,22 +164,22 @@ func newMetrics(namespace string, registerer prometheus.Registerer, initialSuper
 		registerer.Register(m.inboundConnRateLimited),
 		registerer.Register(m.nodeUptimeWeightedAverage),
 		registerer.Register(m.nodeUptimeRewardingStake),
-		registerer.Register(m.nodeSupernetUptimeWeightedAverage),
-		registerer.Register(m.nodeSupernetUptimeRewardingStake),
+		registerer.Register(m.nodeSubnetUptimeWeightedAverage),
+		registerer.Register(m.nodeSubnetUptimeRewardingStake),
 		registerer.Register(m.peerConnectedLifetimeAverage),
 	)
 
-	// init supernet tracker metrics with tracked supernets
-	for supernetID := range initialSupernetIDs {
+	// init subnet tracker metrics with tracked subnets
+	for subnetID := range initialSubnetIDs {
 		// no need to track primary network ID
-		if supernetID == constants.PrimaryNetworkID {
+		if subnetID == constants.PrimaryNetworkID {
 			continue
 		}
 		// initialize to 0
-		supernetIDStr := supernetID.String()
-		m.numSupernetPeers.WithLabelValues(supernetIDStr).Set(0)
-		m.nodeSupernetUptimeWeightedAverage.WithLabelValues(supernetIDStr).Set(0)
-		m.nodeSupernetUptimeRewardingStake.WithLabelValues(supernetIDStr).Set(0)
+		subnetIDStr := subnetID.String()
+		m.numSubnetPeers.WithLabelValues(subnetIDStr).Set(0)
+		m.nodeSubnetUptimeWeightedAverage.WithLabelValues(subnetIDStr).Set(0)
+		m.nodeSubnetUptimeRewardingStake.WithLabelValues(subnetIDStr).Set(0)
 	}
 
 	return m, errs.Err
@@ -189,9 +189,9 @@ func (m *metrics) markConnected(peer peer.Peer) {
 	m.numPeers.Inc()
 	m.connected.Inc()
 
-	trackedSupernets := peer.TrackedSupernets()
-	for supernetID := range trackedSupernets {
-		m.numSupernetPeers.WithLabelValues(supernetID.String()).Inc()
+	trackedSubnets := peer.TrackedSubnets()
+	for subnetID := range trackedSubnets {
+		m.numSubnetPeers.WithLabelValues(subnetID.String()).Inc()
 	}
 
 	m.lock.Lock()
@@ -206,9 +206,9 @@ func (m *metrics) markDisconnected(peer peer.Peer) {
 	m.numPeers.Dec()
 	m.disconnected.Inc()
 
-	trackedSupernets := peer.TrackedSupernets()
-	for supernetID := range trackedSupernets {
-		m.numSupernetPeers.WithLabelValues(supernetID.String()).Dec()
+	trackedSubnets := peer.TrackedSubnets()
+	for subnetID := range trackedSubnets {
+		m.numSubnetPeers.WithLabelValues(subnetID.String()).Dec()
 	}
 
 	m.lock.Lock()

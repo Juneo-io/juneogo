@@ -12,9 +12,9 @@ import (
 
 	"golang.org/x/term"
 
-	"github.com/Juneo-io/juneogo/app"
-	"github.com/Juneo-io/juneogo/config"
-	"github.com/Juneo-io/juneogo/version"
+	"github.com/ava-labs/avalanchego/app"
+	"github.com/ava-labs/avalanchego/config"
+	"github.com/ava-labs/avalanchego/version"
 )
 
 func main() {

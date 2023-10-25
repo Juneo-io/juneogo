@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package io.writer;
 
-option go_package = "github.com/Juneo-io/juneogo/proto/pb/io/writer";
+option go_package = "github.com/ava-labs/avalanchego/proto/pb/io/writer";
 
 // Writer see: io.Writer https://pkg.go.dev/io#Writer
 service Writer {

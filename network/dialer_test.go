@@ -8,8 +8,8 @@ import (
 	"errors"
 	"net"
 
-	"github.com/Juneo-io/juneogo/network/dialer"
-	"github.com/Juneo-io/juneogo/utils/ips"
+	"github.com/ava-labs/avalanchego/network/dialer"
+	"github.com/ava-labs/avalanchego/utils/ips"
 )
 
 var (

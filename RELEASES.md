@@ -155,7 +155,7 @@ This version is backwards compatible to [v1.9.0](https://github.com/ava-labs/ava
 
 ### Examples
 
-- Added P-chain `RemoveSupernetValidatorTx` example using the wallet
+- Added P-chain `RemoveSubnetValidatorTx` example using the wallet
 - Added X-chain `CreateAssetTx` example using the wallet
 
 ### Configs
@@ -213,11 +213,11 @@ This version is backwards compatible to [v1.9.0](https://github.com/ava-labs/ava
   - `platform.getBalance`
   - `platform.createAddress`
   - `platform.listAddresses`
-  - `platform.getSupernets`
+  - `platform.getSubnets`
   - `platform.addValidator`
   - `platform.addDelegator`
-  - `platform.addSupernetValidator`
-  - `platform.createSupernet`
+  - `platform.addSubnetValidator`
+  - `platform.createSubnet`
   - `platform.exportAVAX`
   - `platform.importAVAX`
   - `platform.createBlockchain`
@@ -276,7 +276,7 @@ This version is backwards compatible to [v1.9.0](https://github.com/ava-labs/ava
 
 ### Cleanup
 
-- Removed support for the `--whitelisted-supernets` flag
+- Removed support for the `--whitelisted-subnets` flag
 - Removed unnecessary abstractions from the `app` package
 - Removed `Factory` embedding from `platformvm.VM` and `avm.VM`
 - Removed `validator` package from the `platformvm`
@@ -288,7 +288,7 @@ This version is backwards compatible to [v1.9.0](https://github.com/ava-labs/ava
 
 This version is backwards compatible to [v1.9.0](https://github.com/ava-labs/avalanchego/releases/tag/v1.9.0). It is optional, but encouraged. The supported plugin version is `23`.
 
-**Note: The `--whitelisted-supernets` flag was deprecated in `v1.9.6`. This is the last release in which it will be supported. Use `--track-supernets` instead.**
+**Note: The `--whitelisted-subnets` flag was deprecated in `v1.9.6`. This is the last release in which it will be supported. Use `--track-subnets` instead.**
 
 ### Monitoring
 
@@ -332,7 +332,7 @@ This version is backwards compatible to [v1.9.0](https://github.com/ava-labs/ava
 
 ### Miscellaneous
 
-- Added `allowedNodes` to the supernet config for `validatorOnly` supernets
+- Added `allowedNodes` to the subnet config for `validatorOnly` subnets
 - Removed the `hashicorp/go-plugin` dependency to improve plugin flexibility
 - Replaced specialized `bag` implementations with generic `bag` implementations
 - Added `mempool` package to the `avm`
@@ -345,7 +345,7 @@ This version is backwards compatible to [v1.9.0](https://github.com/ava-labs/ava
 
 - Renamed `teleporter` package to `warp`
 - Replaced `bool` flags in P-chain state diffs with an `enum`
-- Refactored supernet configs to more closely align between the primary network and supernets
+- Refactored subnet configs to more closely align between the primary network and subnets
 - Simplified the `utxo.Spender` interface
 - Removed unused field `common.Config#Validators`
 
@@ -380,7 +380,7 @@ This version is backwards compatible to [v1.9.0](https://github.com/ava-labs/ava
 
 ### Fixes
 
-- Fixed `RemoveSupernetValidatorTx` weight diff corruption
+- Fixed `RemoveSubnetValidatorTx` weight diff corruption
 - Released network lock before attempting to close a peer connection
 - Fixed X-Chain last accepted block initialization to use the genesis block, not the stop vertex after linearization
 - Removed plugin directory handling from AMI generation
@@ -410,7 +410,7 @@ This version is backwards compatible to [v1.9.0](https://github.com/ava-labs/ava
 
 ### Fixes
 
-- Fixed supernet validator lookup regression
+- Fixed subnet validator lookup regression
 
 ## [v1.9.6](https://github.com/ava-labs/avalanchego/releases/tag/v1.9.6)
 
@@ -427,14 +427,14 @@ This version is backwards compatible to [v1.9.0](https://github.com/ava-labs/ava
 ### Configs
 
 - Added `--plugin-dir` flag. The default value is `[DATADIR]/plugins`
-- Removed `--build-dir` flag. The location of the avalanchego binary is no longer considered when looking for the `plugins` directory. Supernet maintainers should ensure that their node is able to properly discover plugins, as the default location is likely changed. See `--plugin-dir`
+- Removed `--build-dir` flag. The location of the avalanchego binary is no longer considered when looking for the `plugins` directory. Subnet maintainers should ensure that their node is able to properly discover plugins, as the default location is likely changed. See `--plugin-dir`
 - Changed the default value of `--api-keystore-enabled` to `false`
-- Added `--track-supernets` flag as a replacement of `--whitelisted-supernets`
+- Added `--track-subnets` flag as a replacement of `--whitelisted-subnets`
 
 ### Fixes
 
 - Fixed NAT-PMP router discovery and port mapping
-- Fixed `--staking-enabled=false` setting to correctly start supernet chains and report healthy
+- Fixed `--staking-enabled=false` setting to correctly start subnet chains and report healthy
 - Fixed message logging in the consensus handler
 
 ### VMs
@@ -469,15 +469,15 @@ This version is backwards compatible to [v1.9.0](https://github.com/ava-labs/ava
 
 This version is backwards compatible to [v1.9.0](https://github.com/ava-labs/avalanchego/releases/tag/v1.9.0). It is optional, but encouraged. The supported plugin version is `21`.
 
-### Supernet Messaging
+### Subnet Messaging
 
-- Added supernet message serialization format
-- Added supernet message signing
+- Added subnet message serialization format
+- Added subnet message signing
 - Replaced `bls.SecretKey` with a `teleporter.Signer` in the `snow.Context`
-- Moved `SNLookup` into the `validators.State` interface to support non-whitelisted chainID to supernetID lookups
-- Added support for non-whitelisted supernetIDs for fetching the validator set at a given height
-- Added supernet message verification
-- Added `teleporter.AnycastID` to denote a supernet message not intended for a specific chain
+- Moved `SNLookup` into the `validators.State` interface to support non-whitelisted chainID to subnetID lookups
+- Added support for non-whitelisted subnetIDs for fetching the validator set at a given height
+- Added subnet message verification
+- Added `teleporter.AnycastID` to denote a subnet message not intended for a specific chain
 
 ### Fixes
 
@@ -534,11 +534,11 @@ This version is backwards compatible to [v1.9.0](https://github.com/ava-labs/ava
 
 ### Uptime Tracking
 
-- Added ConnectedSupernet message handling to the chain handler
-- Added SupernetConnector interface and implemented it in the platformvm
-- Added supernet uptimes to p2p `pong` messages
-- Added supernet uptimes to `platform.getCurrentValidators`
-- Added `supernetID` as an argument to `info.Uptime`
+- Added ConnectedSubnet message handling to the chain handler
+- Added SubnetConnector interface and implemented it in the platformvm
+- Added subnet uptimes to p2p `pong` messages
+- Added subnet uptimes to `platform.getCurrentValidators`
+- Added `subnetID` as an argument to `info.Uptime`
 
 ### Fixes
 
@@ -598,7 +598,7 @@ This version is backwards compatible to [v1.9.0](https://github.com/ava-labs/ava
 
 ### Configs
 
-- Added `proposerMinBlockDelay` support to supernet configs
+- Added `proposerMinBlockDelay` support to subnet configs
 - Added `providedFlags` field to the `initializing node` for easily observing custom node configs
 - Added `--chain-aliases-file` and `--chain-aliases-file-content` CLI flags
 - Added `--proposervm-use-current-height` CLI flag
@@ -641,13 +641,13 @@ This version is backwards compatible to [v1.9.0](https://github.com/ava-labs/ava
 ### Miscellaneous
 
 - Added peer gossip tracker
-- Added `avalanche_P_vm_time_until_unstake` and `avalanche_P_vm_time_until_unstake_supernet` metrics
+- Added `avalanche_P_vm_time_until_unstake` and `avalanche_P_vm_time_until_unstake_subnet` metrics
 - Added `keychain.NewLedgerKeychainFromIndices`
 - Removed usage of `Temporary` error handling after `listener#Accept`
 - Removed `Parameters` from all `Consensus` interfaces
 - Updated `avalanche-network-runner` to `v1.3.0`
 - Added `ids.BigBitSet` to extend `ids.BitSet64` for arbitrarily large sets
-- Added support for parsing future supernet uptime tracking data to the P-chain's state implementation
+- Added support for parsing future subnet uptime tracking data to the P-chain's state implementation
 - Increased validator set cache size
 - Added `avax.UTXOIDFromString` helper for managing `UTXOID`s more easily
 
@@ -728,7 +728,7 @@ This version is backwards compatible to [v1.9.0](https://github.com/ava-labs/ava
 
 ## [v1.9.0](https://github.com/ava-labs/avalanchego/releases/tag/v1.9.0)
 
-This upgrade adds support for creating Proof-of-Stake Supernets.
+This upgrade adds support for creating Proof-of-Stake Subnets.
 
 This version is not backwards compatible. The changes in the upgrade go into effect at 12 PM EDT, October 18th 2022 on Mainnet.
 
@@ -742,8 +742,8 @@ The supported plugin version is `17`.
 - Activated non-AVAX `ImportTx`/`ExportTx`s to/from the P-chain
 - Activated `Banff*` blocks on the P-chain
 - Deactivated `Apricot*` blocks on the P-chain
-- Activated `RemoveSupernetValidatorTx`s on the P-chain
-- Activated `TransformSupernetTx`s on the P-chain
+- Activated `RemoveSubnetValidatorTx`s on the P-chain
+- Activated `TransformSubnetTx`s on the P-chain
 - Activated `AddPermissionlessValidatorTx`s on the P-chain
 - Activated `AddPermissionlessDelegatorTx`s on the P-chain
 - Deactivated ANT `ImportTx`/`ExportTx`s on the C-chain
@@ -869,13 +869,13 @@ The supported plugin version is `16`.
 ### PlatformVM APIs
 
 - Fixed `GetBlock` API when requesting the encoding as `json`
-- Changed the json key in `AddSupernetValidatorTx`s from `supernet` to `supernetID`
+- Changed the json key in `AddSubnetValidatorTx`s from `subnet` to `subnetID`
 - Added multiple asset support to `getBalance`
 - Updated `PermissionlessValidator`s returned from `getCurrentValidators` and `getPendingValidators` to include `validationRewardOwner` and `delegationRewardOwner`
 - Deprecated `rewardOwner` in `PermissionlessValidator`s returned from `getCurrentValidators` and `getPendingValidators`
-- Added `supernetID` argument to `getCurrentSupply`
+- Added `subnetID` argument to `getCurrentSupply`
 - Added multiple asset support to `getStake`
-- Added `supernetID` argument to `getMinStake`
+- Added `subnetID` argument to `getMinStake`
 
 ### PlatformVM Structures
 
@@ -895,18 +895,18 @@ The supported plugin version is `16`.
   - `BlueberryStandardBlock`
     - Introduces a `Time` field before the remaining `ApricotStandardBlock` fields
 - Added new transaction types **to be enabled in a future release**
-  - `RemoveSupernetValidatorTx`
+  - `RemoveSubnetValidatorTx`
     - Can be included into `BlueberryStandardBlock`s
-    - Allows a supernet owner to remove a validator from their supernet
-  - `TransformSupernetTx`
+    - Allows a subnet owner to remove a validator from their subnet
+  - `TransformSubnetTx`
     - Can be included into `BlueberryStandardBlock`s
-    - Allows a supernet owner to convert their supernet into a permissionless supernet
+    - Allows a subnet owner to convert their subnet into a permissionless subnet
   - `AddPermissionlessValidatorTx`
     - Can be included into `BlueberryStandardBlock`s
-    - Adds a new validator to the requested permissionless supernet
+    - Adds a new validator to the requested permissionless subnet
   - `AddPermissionlessDelegatorTx`
     - Can be included into `BlueberryStandardBlock`s
-    - Adds a new delegator to the requested permissionless validator on the requested supernet
+    - Adds a new delegator to the requested permissionless validator on the requested subnet
 
 ### PlatformVM Block Building
 
@@ -919,11 +919,11 @@ The supported plugin version is `16`.
 
 ### PlatformVM Block Execution
 
-- Added support for executing `AddValidatorTx`, `AddDelegatorTx`, and `AddSupernetValidatorTx` inside of a `BlueberryStandardBlock`
+- Added support for executing `AddValidatorTx`, `AddDelegatorTx`, and `AddSubnetValidatorTx` inside of a `BlueberryStandardBlock`
 - Refactored time advancement into a standard state modification structure
 - Refactored `ProposalTxExecutor` to abstract state diff creation
 - Standardized upgrade checking rules
-- Refactored supernet authorization checking
+- Refactored subnet authorization checking
 
 ### Wallet
 
@@ -1062,7 +1062,7 @@ This version is backwards compatible to [v1.7.0](https://github.com/ava-labs/ava
 - Updated Snowman and Avalanche consensus engines to report original container preferences before processing the provided container
 - Fixed inbound message byte throttler context cancellation cleanup
 - Removed case sensitivity of IP resolver services
-- Added failing health check when a whitelisted supernet fails to initialize a chain
+- Added failing health check when a whitelisted subnet fails to initialize a chain
 
 ### Miscellaneous
 
@@ -1103,7 +1103,7 @@ This version is backwards compatible to [v1.7.0](https://github.com/ava-labs/ava
 
 ### Networking
 
-- Updated `Connected` and `Disconnected` messages to only be sent to chains if the peer is tracking the supernet
+- Updated `Connected` and `Disconnected` messages to only be sent to chains if the peer is tracking the subnet
 - Updated the minimum TLS version on the p2p network to `v1.3`
 - Supported context cancellation in the networking rate limiters
 - Added `ChitsV2` message format for the p2p network to be used in a future upgrade
@@ -1115,7 +1115,7 @@ This version is backwards compatible to [v1.7.0](https://github.com/ava-labs/ava
 - Suppressed the super cool `avalanchego` banner when `stdout` is not directed to a terminal
 - Updated linter version
 - Improved various comments and documentation
-- Standardized primary network handling across supernet maps
+- Standardized primary network handling across subnet maps
 
 ## [v1.7.13](https://github.com/ava-labs/avalanchego/releases/tag/v1.7.13)
 
@@ -1133,7 +1133,7 @@ This version is backwards compatible to [v1.7.0](https://github.com/ava-labs/ava
 
 ### Miscellaneous
 
-- Fixed `platform.getCurrentValidators` API to correctly mark a node as connected to itself on supernets.
+- Fixed `platform.getCurrentValidators` API to correctly mark a node as connected to itself on subnets.
 - Fixed `platform.getBlockchainStatus` to correctly report `Unknown` for blockchains that are not managed by the `P-Chain`
 - Added process metrics by default in the `rpcchainvm#Server`
 - Added `Database` health checks
@@ -1228,8 +1228,8 @@ This version is backwards compatible to [v1.7.0](https://github.com/ava-labs/ava
 - Supported client implementations pointing to non-standard URIs
 - Introduced `ids.NodeID` type to standardize logging and simplify API service and client implementations
 - Changed client implementations to use standard types rather than `string`s wherever possible
-- Added `supernetID` as an argument to `platform.getTotalStake`
-- Added `connected` to the supernet validators in responses to `platform.getCurrentValidators` and `platform.getPendingValidators`
+- Added `subnetID` as an argument to `platform.getTotalStake`
+- Added `connected` to the subnet validators in responses to `platform.getCurrentValidators` and `platform.getPendingValidators`
 - Add missing `admin` API client methods
 - Improved `indexer` API client implementation to avoid encoding edge cases
 
@@ -1280,8 +1280,8 @@ This version is backwards compatible to [v1.7.0](https://github.com/ava-labs/ava
 ### Networking
 
 - Improved vertex and block gossiping for validators with low stake weight.
-- Added peers metric by supernet.
-- Added percentage of stake connected metric by supernet.
+- Added peers metric by subnet.
+- Added percentage of stake connected metric by subnet.
 
 ### APIs
 
@@ -1310,7 +1310,7 @@ This version is backwards compatible to [v1.7.0](https://github.com/ava-labs/ava
 
 ### Logging
 
-- Added piping of supernet logs to stdout.
+- Added piping of subnet logs to stdout.
 - Lazily initialized logs to avoid opening files that are never written to.
 - Added support for arbitrarily deleted log files while avalanchego is running.
 - Removed redundant logging configs.
@@ -1318,7 +1318,7 @@ This version is backwards compatible to [v1.7.0](https://github.com/ava-labs/ava
 ### Miscellaneous
 
 - Updated minimum go version to `v1.17.9`.
-- Added supernet bootstrapping health checks.
+- Added subnet bootstrapping health checks.
 - Supported multiple tags per codec instantiation.
 - Added minor fail-fast optimization to string packing.
 - Removed dead code.
@@ -1332,7 +1332,7 @@ This version is backwards compatible to [v1.7.0](https://github.com/ava-labs/ava
 
 ### Updates
 
-- Improved supernet gossip to only send messages to nodes participating in that supernet.
+- Improved subnet gossip to only send messages to nodes participating in that subnet.
 - Fixed inlined VM initialization to correctly register static APIs.
 - Added logging for file descriptor limit errors.
 - Removed dead code from network packer.
@@ -1365,7 +1365,7 @@ This version is backwards compatible to [v1.7.0](https://github.com/ava-labs/ava
 - Fixed incorrect `OutputOwners` in the P-chain `ImportTx` builder.
 - Improved FD limit error logging and warnings.
 - Rounded bootstrapping ETAs to the nearest second.
-- Added gossip config support to the supernet configs.
+- Added gossip config support to the subnet configs.
 - Optimized various queue removals for improved memory freeing.
 - Added a basic X-chain E2E usage test to the new testing framework.
 
@@ -1467,7 +1467,7 @@ This version is backwards compatible to [v1.7.0](https://github.com/ava-labs/ava
 
 ### Miscellaneous
 
-- Added tracked supernets to be reported in calls to the `info.peers` API.
+- Added tracked subnets to be reported in calls to the `info.peers` API.
 - Updated gRPC implementations to use `buf` tooling and standardized naming and locations.
 - Added a consistent hashing implementation to be used in future improvements.
 - Fixed database iteration invariants to report `ErrClosed` rather than silently exiting.
@@ -1709,7 +1709,7 @@ This version is backwards compatible to [v1.6.0](https://github.com/ava-labs/ava
 - Added a new admin API for updating the log level and measuring performance.
 - Added a new `--allow-unprotected-txs` flag to allow issuance of transactions without EIP-155 replay protection.
 
-### Supernet & Custom VMs
+### Subnet & Custom VMs
 
 - Ensured that all possible chains are run in `--staking-enabled=false` networks.
 

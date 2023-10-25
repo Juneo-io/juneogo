@@ -16,14 +16,14 @@ import (
 
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 
-	"github.com/Juneo-io/juneogo/snow/engine/snowman/block"
-	"github.com/Juneo-io/juneogo/version"
-	"github.com/Juneo-io/juneogo/vms/rpcchainvm/grpcutils"
-	"github.com/Juneo-io/juneogo/vms/rpcchainvm/gruntime"
-	"github.com/Juneo-io/juneogo/vms/rpcchainvm/runtime"
+	"github.com/ava-labs/avalanchego/snow/engine/snowman/block"
+	"github.com/ava-labs/avalanchego/version"
+	"github.com/ava-labs/avalanchego/vms/rpcchainvm/grpcutils"
+	"github.com/ava-labs/avalanchego/vms/rpcchainvm/gruntime"
+	"github.com/ava-labs/avalanchego/vms/rpcchainvm/runtime"
 
-	vmpb "github.com/Juneo-io/juneogo/proto/pb/vm"
-	runtimepb "github.com/Juneo-io/juneogo/proto/pb/vm/runtime"
+	vmpb "github.com/ava-labs/avalanchego/proto/pb/vm"
+	runtimepb "github.com/ava-labs/avalanchego/proto/pb/vm/runtime"
 )
 
 const defaultRuntimeDialTimeout = 5 * time.Second

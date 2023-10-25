@@ -3,7 +3,7 @@
 
 package mempool
 
-import "github.com/Juneo-io/juneogo/vms/platformvm/txs"
+import "github.com/ava-labs/avalanchego/vms/platformvm/txs"
 
 var _ txs.Visitor = (*remover)(nil)
 
@@ -17,7 +17,7 @@ func (r *remover) AddValidatorTx(*txs.AddValidatorTx) error {
 	return nil
 }
 
-func (r *remover) AddSupernetValidatorTx(*txs.AddSupernetValidatorTx) error {
+func (r *remover) AddSubnetValidatorTx(*txs.AddSubnetValidatorTx) error {
 	r.m.removeStakerTx(r.tx)
 	return nil
 }
@@ -27,7 +27,7 @@ func (r *remover) AddDelegatorTx(*txs.AddDelegatorTx) error {
 	return nil
 }
 
-func (r *remover) RemoveSupernetValidatorTx(*txs.RemoveSupernetValidatorTx) error {
+func (r *remover) RemoveSubnetValidatorTx(*txs.RemoveSubnetValidatorTx) error {
 	r.m.removeDecisionTxs([]*txs.Tx{r.tx})
 	return nil
 }
@@ -37,7 +37,7 @@ func (r *remover) CreateChainTx(*txs.CreateChainTx) error {
 	return nil
 }
 
-func (r *remover) CreateSupernetTx(*txs.CreateSupernetTx) error {
+func (r *remover) CreateSubnetTx(*txs.CreateSubnetTx) error {
 	r.m.removeDecisionTxs([]*txs.Tx{r.tx})
 	return nil
 }
@@ -52,7 +52,7 @@ func (r *remover) ExportTx(*txs.ExportTx) error {
 	return nil
 }
 
-func (r *remover) TransformSupernetTx(*txs.TransformSupernetTx) error {
+func (r *remover) TransformSubnetTx(*txs.TransformSubnetTx) error {
 	r.m.removeDecisionTxs([]*txs.Tx{r.tx})
 	return nil
 }

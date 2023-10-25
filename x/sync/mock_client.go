@@ -11,7 +11,7 @@ import (
 	context "context"
 	reflect "reflect"
 
-	merkledb "github.com/Juneo-io/juneogo/x/merkledb"
+	merkledb "github.com/ava-labs/avalanchego/x/merkledb"
 	gomock "github.com/golang/mock/gomock"
 )
 

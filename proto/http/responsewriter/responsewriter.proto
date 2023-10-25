@@ -4,7 +4,7 @@ package http.responsewriter;
 
 import "google/protobuf/empty.proto";
 
-option go_package = "github.com/Juneo-io/juneogo/proto/pb/http/responsewriter";
+option go_package = "github.com/ava-labs/avalanchego/proto/pb/http/responsewriter";
 
 // Writer is an http.ResponseWriter see: https://pkg.go.dev/net/http#ResponseWriter
 service Writer {

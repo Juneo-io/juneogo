@@ -6,9 +6,9 @@ package avax
 import (
 	"testing"
 
-	"github.com/Juneo-io/juneogo/codec"
-	"github.com/Juneo-io/juneogo/codec/linearcodec"
-	"github.com/Juneo-io/juneogo/ids"
+	"github.com/ava-labs/avalanchego/codec"
+	"github.com/ava-labs/avalanchego/codec/linearcodec"
+	"github.com/ava-labs/avalanchego/ids"
 )
 
 func TestAssetVerifyNil(t *testing.T) {

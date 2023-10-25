@@ -8,9 +8,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/vms/platformvm/state"
-	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/vms/platformvm/state"
+	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
 )
 
 var _ txs.Visitor = (*MempoolTxVerifier)(nil)
@@ -34,7 +34,7 @@ func (v *MempoolTxVerifier) AddValidatorTx(tx *txs.AddValidatorTx) error {
 	return v.standardTx(tx)
 }
 
-func (v *MempoolTxVerifier) AddSupernetValidatorTx(tx *txs.AddSupernetValidatorTx) error {
+func (v *MempoolTxVerifier) AddSubnetValidatorTx(tx *txs.AddSubnetValidatorTx) error {
 	return v.standardTx(tx)
 }
 
@@ -46,7 +46,7 @@ func (v *MempoolTxVerifier) CreateChainTx(tx *txs.CreateChainTx) error {
 	return v.standardTx(tx)
 }
 
-func (v *MempoolTxVerifier) CreateSupernetTx(tx *txs.CreateSupernetTx) error {
+func (v *MempoolTxVerifier) CreateSubnetTx(tx *txs.CreateSubnetTx) error {
 	return v.standardTx(tx)
 }
 
@@ -58,11 +58,11 @@ func (v *MempoolTxVerifier) ExportTx(tx *txs.ExportTx) error {
 	return v.standardTx(tx)
 }
 
-func (v *MempoolTxVerifier) RemoveSupernetValidatorTx(tx *txs.RemoveSupernetValidatorTx) error {
+func (v *MempoolTxVerifier) RemoveSubnetValidatorTx(tx *txs.RemoveSubnetValidatorTx) error {
 	return v.standardTx(tx)
 }
 
-func (v *MempoolTxVerifier) TransformSupernetTx(tx *txs.TransformSupernetTx) error {
+func (v *MempoolTxVerifier) TransformSubnetTx(tx *txs.TransformSubnetTx) error {
 	return v.standardTx(tx)
 }
 

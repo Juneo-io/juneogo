@@ -11,15 +11,15 @@ import (
 
 	"github.com/onsi/gomega"
 
-	"github.com/Juneo-io/juneogo/tests/e2e"
+	"github.com/ava-labs/avalanchego/tests/e2e"
 
 	// ensure test packages are scanned by ginkgo
-	_ "github.com/Juneo-io/juneogo/tests/e2e/banff"
-	_ "github.com/Juneo-io/juneogo/tests/e2e/p"
-	_ "github.com/Juneo-io/juneogo/tests/e2e/ping"
-	_ "github.com/Juneo-io/juneogo/tests/e2e/static-handlers"
-	_ "github.com/Juneo-io/juneogo/tests/e2e/x/transfer"
-	_ "github.com/Juneo-io/juneogo/tests/e2e/x/whitelist-vtx"
+	_ "github.com/ava-labs/avalanchego/tests/e2e/banff"
+	_ "github.com/ava-labs/avalanchego/tests/e2e/p"
+	_ "github.com/ava-labs/avalanchego/tests/e2e/ping"
+	_ "github.com/ava-labs/avalanchego/tests/e2e/static-handlers"
+	_ "github.com/ava-labs/avalanchego/tests/e2e/x/transfer"
+	_ "github.com/ava-labs/avalanchego/tests/e2e/x/whitelist-vtx"
 )
 
 func TestE2E(t *testing.T) {

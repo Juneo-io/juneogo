@@ -7,7 +7,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/Juneo-io/juneogo/utils/rpc"
+	"github.com/ava-labs/avalanchego/utils/rpc"
 )
 
 var _ Client = (*client)(nil)

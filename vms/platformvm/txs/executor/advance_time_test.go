@@ -10,15 +10,15 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/Juneo-io/juneogo/database"
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/snow/validators"
-	"github.com/Juneo-io/juneogo/utils/constants"
-	"github.com/Juneo-io/juneogo/utils/crypto/secp256k1"
-	"github.com/Juneo-io/juneogo/vms/platformvm/reward"
-	"github.com/Juneo-io/juneogo/vms/platformvm/state"
-	"github.com/Juneo-io/juneogo/vms/platformvm/status"
-	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
+	"github.com/ava-labs/avalanchego/database"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/snow/validators"
+	"github.com/ava-labs/avalanchego/utils/constants"
+	"github.com/ava-labs/avalanchego/utils/crypto/secp256k1"
+	"github.com/ava-labs/avalanchego/vms/platformvm/reward"
+	"github.com/ava-labs/avalanchego/vms/platformvm/state"
+	"github.com/ava-labs/avalanchego/vms/platformvm/status"
+	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
 )
 
 // Ensure semantic verification updates the current and pending staker set
@@ -193,10 +193,10 @@ func TestAdvanceTimeTxUpdateStakers(t *testing.T) {
 	type test struct {
 		description             string
 		stakers                 []staker
-		supernetStakers         []staker
+		subnetStakers         []staker
 		advanceTimeTo           []time.Time
 		expectedStakers         map[ids.NodeID]stakerStatus
-		expectedSupernetStakers map[ids.NodeID]stakerStatus
+		expectedSubnetStakers map[ids.NodeID]stakerStatus
 	}
 
 	// Chronological order (not in scale):
@@ -239,9 +239,9 @@ func TestAdvanceTimeTxUpdateStakers(t *testing.T) {
 
 	tests := []test{
 		{
-			description:     "advance time to before staker1 start with supernet",
+			description:     "advance time to before staker1 start with subnet",
 			stakers:         []staker{staker1, staker2, staker3, staker4, staker5},
-			supernetStakers: []staker{staker1, staker2, staker3, staker4, staker5},
+			subnetStakers: []staker{staker1, staker2, staker3, staker4, staker5},
 			advanceTimeTo:   []time.Time{staker1.startTime.Add(-1 * time.Second)},
 			expectedStakers: map[ids.NodeID]stakerStatus{
 				staker1.nodeID: pending,
@@ -250,7 +250,7 @@ func TestAdvanceTimeTxUpdateStakers(t *testing.T) {
 				staker4.nodeID: pending,
 				staker5.nodeID: pending,
 			},
-			expectedSupernetStakers: map[ids.NodeID]stakerStatus{
+			expectedSubnetStakers: map[ids.NodeID]stakerStatus{
 				staker1.nodeID: pending,
 				staker2.nodeID: pending,
 				staker3.nodeID: pending,
@@ -259,9 +259,9 @@ func TestAdvanceTimeTxUpdateStakers(t *testing.T) {
 			},
 		},
 		{
-			description:     "advance time to staker 1 start with supernet",
+			description:     "advance time to staker 1 start with subnet",
 			stakers:         []staker{staker1, staker2, staker3, staker4, staker5},
-			supernetStakers: []staker{staker1},
+			subnetStakers: []staker{staker1},
 			advanceTimeTo:   []time.Time{staker1.startTime},
 			expectedStakers: map[ids.NodeID]stakerStatus{
 				staker1.nodeID: current,
@@ -270,7 +270,7 @@ func TestAdvanceTimeTxUpdateStakers(t *testing.T) {
 				staker4.nodeID: pending,
 				staker5.nodeID: pending,
 			},
-			expectedSupernetStakers: map[ids.NodeID]stakerStatus{
+			expectedSubnetStakers: map[ids.NodeID]stakerStatus{
 				staker1.nodeID: current,
 				staker2.nodeID: pending,
 				staker3.nodeID: pending,
@@ -293,7 +293,7 @@ func TestAdvanceTimeTxUpdateStakers(t *testing.T) {
 		{
 			description:     "staker3 should validate only primary network",
 			stakers:         []staker{staker1, staker2, staker3, staker4, staker5},
-			supernetStakers: []staker{staker1, staker2, staker3Sub, staker4, staker5},
+			subnetStakers: []staker{staker1, staker2, staker3Sub, staker4, staker5},
 			advanceTimeTo:   []time.Time{staker1.startTime, staker2.startTime, staker3.startTime},
 			expectedStakers: map[ids.NodeID]stakerStatus{
 				staker1.nodeID: current,
@@ -302,7 +302,7 @@ func TestAdvanceTimeTxUpdateStakers(t *testing.T) {
 				staker4.nodeID: current,
 				staker5.nodeID: pending,
 			},
-			expectedSupernetStakers: map[ids.NodeID]stakerStatus{
+			expectedSubnetStakers: map[ids.NodeID]stakerStatus{
 				staker1.nodeID:    current,
 				staker2.nodeID:    current,
 				staker3Sub.nodeID: pending,
@@ -311,9 +311,9 @@ func TestAdvanceTimeTxUpdateStakers(t *testing.T) {
 			},
 		},
 		{
-			description:     "advance time to staker3 start with supernet",
+			description:     "advance time to staker3 start with subnet",
 			stakers:         []staker{staker1, staker2, staker3, staker4, staker5},
-			supernetStakers: []staker{staker1, staker2, staker3Sub, staker4, staker5},
+			subnetStakers: []staker{staker1, staker2, staker3Sub, staker4, staker5},
 			advanceTimeTo:   []time.Time{staker1.startTime, staker2.startTime, staker3.startTime, staker3Sub.startTime},
 			expectedStakers: map[ids.NodeID]stakerStatus{
 				staker1.nodeID: current,
@@ -322,7 +322,7 @@ func TestAdvanceTimeTxUpdateStakers(t *testing.T) {
 				staker4.nodeID: current,
 				staker5.nodeID: pending,
 			},
-			expectedSupernetStakers: map[ids.NodeID]stakerStatus{
+			expectedSubnetStakers: map[ids.NodeID]stakerStatus{
 				staker1.nodeID: current,
 				staker2.nodeID: current,
 				staker3.nodeID: current,
@@ -355,9 +355,9 @@ func TestAdvanceTimeTxUpdateStakers(t *testing.T) {
 
 			dummyHeight := uint64(1)
 
-			supernetID := testSupernet1.ID()
-			env.config.TrackedSupernets.Add(supernetID)
-			env.config.Validators.Add(supernetID, validators.NewSet())
+			subnetID := testSubnet1.ID()
+			env.config.TrackedSubnets.Add(subnetID)
+			env.config.Validators.Add(subnetID, validators.NewSet())
 
 			for _, staker := range test.stakers {
 				_, err := addPendingValidator(
@@ -370,13 +370,13 @@ func TestAdvanceTimeTxUpdateStakers(t *testing.T) {
 				require.NoError(err)
 			}
 
-			for _, staker := range test.supernetStakers {
-				tx, err := env.txBuilder.NewAddSupernetValidatorTx(
+			for _, staker := range test.subnetStakers {
+				tx, err := env.txBuilder.NewAddSubnetValidatorTx(
 					10, // Weight
 					uint64(staker.startTime.Unix()),
 					uint64(staker.endTime.Unix()),
 					staker.nodeID, // validator ID
-					supernetID,    // Supernet ID
+					subnetID,    // Subnet ID
 					[]*secp256k1.PrivateKey{preFundedKeys[0], preFundedKeys[1]},
 					ids.ShortEmpty,
 				)
@@ -384,7 +384,7 @@ func TestAdvanceTimeTxUpdateStakers(t *testing.T) {
 
 				staker, err := state.NewPendingStaker(
 					tx.ID(),
-					tx.Unsigned.(*txs.AddSupernetValidatorTx),
+					tx.Unsigned.(*txs.AddSubnetValidatorTx),
 				)
 				require.NoError(err)
 
@@ -431,12 +431,12 @@ func TestAdvanceTimeTxUpdateStakers(t *testing.T) {
 				}
 			}
 
-			for stakerNodeID, status := range test.expectedSupernetStakers {
+			for stakerNodeID, status := range test.expectedSubnetStakers {
 				switch status {
 				case pending:
-					require.False(validators.Contains(env.config.Validators, supernetID, stakerNodeID))
+					require.False(validators.Contains(env.config.Validators, subnetID, stakerNodeID))
 				case current:
-					require.True(validators.Contains(env.config.Validators, supernetID, stakerNodeID))
+					require.True(validators.Contains(env.config.Validators, subnetID, stakerNodeID))
 				}
 			}
 		})
@@ -444,10 +444,10 @@ func TestAdvanceTimeTxUpdateStakers(t *testing.T) {
 }
 
 // Regression test for https://github.com/ava-labs/avalanchego/pull/584
-// that ensures it fixes a bug where supernet validators are not removed
+// that ensures it fixes a bug where subnet validators are not removed
 // when timestamp is advanced and there is a pending staker whose start time
 // is after the new timestamp
-func TestAdvanceTimeTxRemoveSupernetValidator(t *testing.T) {
+func TestAdvanceTimeTxRemoveSubnetValidator(t *testing.T) {
 	require := require.New(t)
 	env := newEnvironment(false /*=postBanff*/, false /*=postCortina*/)
 	env.ctx.Lock.Lock()
@@ -455,22 +455,22 @@ func TestAdvanceTimeTxRemoveSupernetValidator(t *testing.T) {
 		require.NoError(shutdownEnvironment(env))
 	}()
 
-	supernetID := testSupernet1.ID()
-	env.config.TrackedSupernets.Add(supernetID)
-	env.config.Validators.Add(supernetID, validators.NewSet())
+	subnetID := testSubnet1.ID()
+	env.config.TrackedSubnets.Add(subnetID)
+	env.config.Validators.Add(subnetID, validators.NewSet())
 
 	dummyHeight := uint64(1)
-	// Add a supernet validator to the staker set
-	supernetValidatorNodeID := ids.NodeID(preFundedKeys[0].PublicKey().Address())
+	// Add a subnet validator to the staker set
+	subnetValidatorNodeID := ids.NodeID(preFundedKeys[0].PublicKey().Address())
 	// Starts after the corre
-	supernetVdr1StartTime := defaultValidateStartTime
-	supernetVdr1EndTime := defaultValidateStartTime.Add(defaultMinStakingDuration)
-	tx, err := env.txBuilder.NewAddSupernetValidatorTx(
+	subnetVdr1StartTime := defaultValidateStartTime
+	subnetVdr1EndTime := defaultValidateStartTime.Add(defaultMinStakingDuration)
+	tx, err := env.txBuilder.NewAddSubnetValidatorTx(
 		1,                                    // Weight
-		uint64(supernetVdr1StartTime.Unix()), // Start time
-		uint64(supernetVdr1EndTime.Unix()),   // end time
-		supernetValidatorNodeID,              // Node ID
-		supernetID,                           // Supernet ID
+		uint64(subnetVdr1StartTime.Unix()), // Start time
+		uint64(subnetVdr1EndTime.Unix()),   // end time
+		subnetValidatorNodeID,              // Node ID
+		subnetID,                           // Subnet ID
 		[]*secp256k1.PrivateKey{preFundedKeys[0], preFundedKeys[1]},
 		ids.ShortEmpty,
 	)
@@ -478,7 +478,7 @@ func TestAdvanceTimeTxRemoveSupernetValidator(t *testing.T) {
 
 	staker, err := state.NewCurrentStaker(
 		tx.ID(),
-		tx.Unsigned.(*txs.AddSupernetValidatorTx),
+		tx.Unsigned.(*txs.AddSubnetValidatorTx),
 		0,
 	)
 	require.NoError(err)
@@ -491,13 +491,13 @@ func TestAdvanceTimeTxRemoveSupernetValidator(t *testing.T) {
 	// The above validator is now part of the staking set
 
 	// Queue a staker that joins the staker set after the above validator leaves
-	supernetVdr2NodeID := ids.NodeID(preFundedKeys[1].PublicKey().Address())
-	tx, err = env.txBuilder.NewAddSupernetValidatorTx(
+	subnetVdr2NodeID := ids.NodeID(preFundedKeys[1].PublicKey().Address())
+	tx, err = env.txBuilder.NewAddSubnetValidatorTx(
 		1, // Weight
-		uint64(supernetVdr1EndTime.Add(time.Second).Unix()),                                // Start time
-		uint64(supernetVdr1EndTime.Add(time.Second).Add(defaultMinStakingDuration).Unix()), // end time
-		supernetVdr2NodeID, // Node ID
-		supernetID,         // Supernet ID
+		uint64(subnetVdr1EndTime.Add(time.Second).Unix()),                                // Start time
+		uint64(subnetVdr1EndTime.Add(time.Second).Add(defaultMinStakingDuration).Unix()), // end time
+		subnetVdr2NodeID, // Node ID
+		subnetID,         // Subnet ID
 		[]*secp256k1.PrivateKey{preFundedKeys[0], preFundedKeys[1]}, // Keys
 		ids.ShortEmpty, // reward address
 	)
@@ -505,7 +505,7 @@ func TestAdvanceTimeTxRemoveSupernetValidator(t *testing.T) {
 
 	staker, err = state.NewPendingStaker(
 		tx.ID(),
-		tx.Unsigned.(*txs.AddSupernetValidatorTx),
+		tx.Unsigned.(*txs.AddSubnetValidatorTx),
 	)
 	require.NoError(err)
 
@@ -517,8 +517,8 @@ func TestAdvanceTimeTxRemoveSupernetValidator(t *testing.T) {
 	// The above validator is now in the pending staker set
 
 	// Advance time to the first staker's end time.
-	env.clk.Set(supernetVdr1EndTime)
-	tx, err = env.txBuilder.NewAdvanceTimeTx(supernetVdr1EndTime)
+	env.clk.Set(subnetVdr1EndTime)
+	tx, err = env.txBuilder.NewAdvanceTimeTx(subnetVdr1EndTime)
 	require.NoError(err)
 
 	onCommitState, err := state.NewDiff(lastAcceptedID, env)
@@ -535,7 +535,7 @@ func TestAdvanceTimeTxRemoveSupernetValidator(t *testing.T) {
 	}
 	require.NoError(tx.Unsigned.Visit(&executor))
 
-	_, err = executor.OnCommitState.GetCurrentValidator(supernetID, supernetValidatorNodeID)
+	_, err = executor.OnCommitState.GetCurrentValidator(subnetID, subnetValidatorNodeID)
 	require.ErrorIs(err, database.ErrNotFound)
 
 	// Check VM Validators are removed successfully
@@ -543,11 +543,11 @@ func TestAdvanceTimeTxRemoveSupernetValidator(t *testing.T) {
 
 	env.state.SetHeight(dummyHeight)
 	require.NoError(env.state.Commit())
-	require.False(validators.Contains(env.config.Validators, supernetID, supernetVdr2NodeID))
-	require.False(validators.Contains(env.config.Validators, supernetID, supernetValidatorNodeID))
+	require.False(validators.Contains(env.config.Validators, subnetID, subnetVdr2NodeID))
+	require.False(validators.Contains(env.config.Validators, subnetID, subnetValidatorNodeID))
 }
 
-func TestTrackedSupernet(t *testing.T) {
+func TestTrackedSubnet(t *testing.T) {
 	for _, tracked := range []bool{true, false} {
 		t.Run(fmt.Sprintf("tracked %t", tracked), func(t *testing.T) {
 			require := require.New(t)
@@ -558,23 +558,23 @@ func TestTrackedSupernet(t *testing.T) {
 			}()
 			dummyHeight := uint64(1)
 
-			supernetID := testSupernet1.ID()
+			subnetID := testSubnet1.ID()
 			if tracked {
-				env.config.TrackedSupernets.Add(supernetID)
-				env.config.Validators.Add(supernetID, validators.NewSet())
+				env.config.TrackedSubnets.Add(subnetID)
+				env.config.Validators.Add(subnetID, validators.NewSet())
 			}
 
-			// Add a supernet validator to the staker set
-			supernetValidatorNodeID := preFundedKeys[0].PublicKey().Address()
+			// Add a subnet validator to the staker set
+			subnetValidatorNodeID := preFundedKeys[0].PublicKey().Address()
 
-			supernetVdr1StartTime := defaultGenesisTime.Add(1 * time.Minute)
-			supernetVdr1EndTime := defaultGenesisTime.Add(10 * defaultMinStakingDuration).Add(1 * time.Minute)
-			tx, err := env.txBuilder.NewAddSupernetValidatorTx(
+			subnetVdr1StartTime := defaultGenesisTime.Add(1 * time.Minute)
+			subnetVdr1EndTime := defaultGenesisTime.Add(10 * defaultMinStakingDuration).Add(1 * time.Minute)
+			tx, err := env.txBuilder.NewAddSubnetValidatorTx(
 				1,                                    // Weight
-				uint64(supernetVdr1StartTime.Unix()), // Start time
-				uint64(supernetVdr1EndTime.Unix()),   // end time
-				ids.NodeID(supernetValidatorNodeID),  // Node ID
-				supernetID,                           // Supernet ID
+				uint64(subnetVdr1StartTime.Unix()), // Start time
+				uint64(subnetVdr1EndTime.Unix()),   // end time
+				ids.NodeID(subnetValidatorNodeID),  // Node ID
+				subnetID,                           // Subnet ID
 				[]*secp256k1.PrivateKey{preFundedKeys[0], preFundedKeys[1]},
 				ids.ShortEmpty,
 			)
@@ -582,7 +582,7 @@ func TestTrackedSupernet(t *testing.T) {
 
 			staker, err := state.NewPendingStaker(
 				tx.ID(),
-				tx.Unsigned.(*txs.AddSupernetValidatorTx),
+				tx.Unsigned.(*txs.AddSubnetValidatorTx),
 			)
 			require.NoError(err)
 
@@ -593,8 +593,8 @@ func TestTrackedSupernet(t *testing.T) {
 			require.NoError(err)
 
 			// Advance time to the staker's start time.
-			env.clk.Set(supernetVdr1StartTime)
-			tx, err = env.txBuilder.NewAdvanceTimeTx(supernetVdr1StartTime)
+			env.clk.Set(subnetVdr1StartTime)
+			tx, err = env.txBuilder.NewAdvanceTimeTx(subnetVdr1StartTime)
 			require.NoError(err)
 
 			onCommitState, err := state.NewDiff(lastAcceptedID, env)
@@ -616,7 +616,7 @@ func TestTrackedSupernet(t *testing.T) {
 
 			env.state.SetHeight(dummyHeight)
 			require.NoError(env.state.Commit())
-			require.Equal(tracked, validators.Contains(env.config.Validators, supernetID, ids.NodeID(supernetValidatorNodeID)))
+			require.Equal(tracked, validators.Contains(env.config.Validators, subnetID, ids.NodeID(subnetValidatorNodeID)))
 		})
 	}
 }

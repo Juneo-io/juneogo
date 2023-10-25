@@ -6,8 +6,8 @@ package queue
 import (
 	"context"
 
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/utils/set"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/utils/set"
 )
 
 // Job defines the interface required to be placed on the job queue.

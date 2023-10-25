@@ -3,7 +3,7 @@
 
 package avax
 
-import "github.com/Juneo-io/juneogo/snow"
+import "github.com/ava-labs/avalanchego/snow"
 
 type TestVerifiable struct{ Err error }
 

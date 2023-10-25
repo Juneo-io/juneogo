@@ -10,7 +10,7 @@ package avax
 import (
 	reflect "reflect"
 
-	snow "github.com/Juneo-io/juneogo/snow"
+	snow "github.com/ava-labs/avalanchego/snow"
 	gomock "github.com/golang/mock/gomock"
 )
 

@@ -15,44 +15,44 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/Juneo-io/juneogo/cache"
-	"github.com/Juneo-io/juneogo/codec"
-	"github.com/Juneo-io/juneogo/codec/linearcodec"
-	"github.com/Juneo-io/juneogo/database"
-	"github.com/Juneo-io/juneogo/database/manager"
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/snow"
-	"github.com/Juneo-io/juneogo/snow/consensus/snowman"
-	"github.com/Juneo-io/juneogo/snow/engine/common"
-	"github.com/Juneo-io/juneogo/snow/engine/snowman/block"
-	"github.com/Juneo-io/juneogo/snow/uptime"
-	"github.com/Juneo-io/juneogo/snow/validators"
-	"github.com/Juneo-io/juneogo/utils"
-	"github.com/Juneo-io/juneogo/utils/constants"
-	"github.com/Juneo-io/juneogo/utils/json"
-	"github.com/Juneo-io/juneogo/utils/logging"
-	"github.com/Juneo-io/juneogo/utils/math"
-	"github.com/Juneo-io/juneogo/utils/timer/mockable"
-	"github.com/Juneo-io/juneogo/utils/window"
-	"github.com/Juneo-io/juneogo/utils/wrappers"
-	"github.com/Juneo-io/juneogo/version"
-	"github.com/Juneo-io/juneogo/vms/components/avax"
-	"github.com/Juneo-io/juneogo/vms/platformvm/api"
-	"github.com/Juneo-io/juneogo/vms/platformvm/blocks"
-	"github.com/Juneo-io/juneogo/vms/platformvm/config"
-	"github.com/Juneo-io/juneogo/vms/platformvm/fx"
-	"github.com/Juneo-io/juneogo/vms/platformvm/metrics"
-	"github.com/Juneo-io/juneogo/vms/platformvm/reward"
-	"github.com/Juneo-io/juneogo/vms/platformvm/state"
-	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
-	"github.com/Juneo-io/juneogo/vms/platformvm/txs/mempool"
-	"github.com/Juneo-io/juneogo/vms/platformvm/utxo"
-	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
+	"github.com/ava-labs/avalanchego/cache"
+	"github.com/ava-labs/avalanchego/codec"
+	"github.com/ava-labs/avalanchego/codec/linearcodec"
+	"github.com/ava-labs/avalanchego/database"
+	"github.com/ava-labs/avalanchego/database/manager"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/snow"
+	"github.com/ava-labs/avalanchego/snow/consensus/snowman"
+	"github.com/ava-labs/avalanchego/snow/engine/common"
+	"github.com/ava-labs/avalanchego/snow/engine/snowman/block"
+	"github.com/ava-labs/avalanchego/snow/uptime"
+	"github.com/ava-labs/avalanchego/snow/validators"
+	"github.com/ava-labs/avalanchego/utils"
+	"github.com/ava-labs/avalanchego/utils/constants"
+	"github.com/ava-labs/avalanchego/utils/json"
+	"github.com/ava-labs/avalanchego/utils/logging"
+	"github.com/ava-labs/avalanchego/utils/math"
+	"github.com/ava-labs/avalanchego/utils/timer/mockable"
+	"github.com/ava-labs/avalanchego/utils/window"
+	"github.com/ava-labs/avalanchego/utils/wrappers"
+	"github.com/ava-labs/avalanchego/version"
+	"github.com/ava-labs/avalanchego/vms/components/avax"
+	"github.com/ava-labs/avalanchego/vms/platformvm/api"
+	"github.com/ava-labs/avalanchego/vms/platformvm/blocks"
+	"github.com/ava-labs/avalanchego/vms/platformvm/config"
+	"github.com/ava-labs/avalanchego/vms/platformvm/fx"
+	"github.com/ava-labs/avalanchego/vms/platformvm/metrics"
+	"github.com/ava-labs/avalanchego/vms/platformvm/reward"
+	"github.com/ava-labs/avalanchego/vms/platformvm/state"
+	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
+	"github.com/ava-labs/avalanchego/vms/platformvm/txs/mempool"
+	"github.com/ava-labs/avalanchego/vms/platformvm/utxo"
+	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
 
-	blockbuilder "github.com/Juneo-io/juneogo/vms/platformvm/blocks/builder"
-	blockexecutor "github.com/Juneo-io/juneogo/vms/platformvm/blocks/executor"
-	txbuilder "github.com/Juneo-io/juneogo/vms/platformvm/txs/builder"
-	txexecutor "github.com/Juneo-io/juneogo/vms/platformvm/txs/executor"
+	blockbuilder "github.com/ava-labs/avalanchego/vms/platformvm/blocks/builder"
+	blockexecutor "github.com/ava-labs/avalanchego/vms/platformvm/blocks/executor"
+	txbuilder "github.com/ava-labs/avalanchego/vms/platformvm/txs/builder"
+	txexecutor "github.com/ava-labs/avalanchego/vms/platformvm/txs/executor"
 )
 
 const (
@@ -65,7 +65,7 @@ var (
 	_ block.ChainVM                = (*VM)(nil)
 	_ secp256k1fx.VM               = (*VM)(nil)
 	_ validators.State             = (*VM)(nil)
-	_ validators.SupernetConnector = (*VM)(nil)
+	_ validators.SubnetConnector = (*VM)(nil)
 
 	errMissingValidatorSet = errors.New("missing validator set")
 	errMissingValidator    = errors.New("missing validator")
@@ -95,8 +95,8 @@ type VM struct {
 	// Bootstrapped remembers if this chain has finished bootstrapping or not
 	bootstrapped utils.Atomic[bool]
 
-	// Maps caches for each supernet that is currently tracked.
-	// Key: Supernet ID
+	// Maps caches for each subnet that is currently tracked.
+	// Key: Subnet ID
 	// Value: cache mapping height -> validator set map
 	validatorSetCaches map[ids.ID]cache.Cacher[uint64, map[ids.NodeID]*validators.GetValidatorOutput]
 
@@ -129,7 +129,7 @@ func (vm *VM) Initialize(
 
 	// Initialize metrics as soon as possible
 	var err error
-	vm.metrics, err = metrics.New("", registerer, vm.TrackedSupernets)
+	vm.metrics, err = metrics.New("", registerer, vm.TrackedSubnets)
 	if err != nil {
 		return fmt.Errorf("failed to initialize metrics: %w", err)
 	}
@@ -233,23 +233,23 @@ func (vm *VM) Initialize(
 
 // Create all chains that exist that this node validates.
 func (vm *VM) initBlockchains() error {
-	if err := vm.createSupernet(constants.PrimaryNetworkID); err != nil {
+	if err := vm.createSubnet(constants.PrimaryNetworkID); err != nil {
 		return err
 	}
 
 	if vm.StakingEnabled {
-		for supernetID := range vm.TrackedSupernets {
-			if err := vm.createSupernet(supernetID); err != nil {
+		for subnetID := range vm.TrackedSubnets {
+			if err := vm.createSubnet(subnetID); err != nil {
 				return err
 			}
 		}
 	} else {
-		supernets, err := vm.state.GetSupernets()
+		subnets, err := vm.state.GetSubnets()
 		if err != nil {
 			return err
 		}
-		for _, supernet := range supernets {
-			if err := vm.createSupernet(supernet.ID()); err != nil {
+		for _, subnet := range subnets {
+			if err := vm.createSubnet(subnet.ID()); err != nil {
 				return err
 			}
 		}
@@ -257,9 +257,9 @@ func (vm *VM) initBlockchains() error {
 	return nil
 }
 
-// Create the supernet with ID [supernetID]
-func (vm *VM) createSupernet(supernetID ids.ID) error {
-	chains, err := vm.state.GetChains(supernetID)
+// Create the subnet with ID [subnetID]
+func (vm *VM) createSubnet(subnetID ids.ID) error {
+	chains, err := vm.state.GetChains(subnetID)
 	if err != nil {
 		return err
 	}
@@ -298,12 +298,12 @@ func (vm *VM) onNormalOperationsStarted() error {
 		return err
 	}
 
-	for supernetID := range vm.TrackedSupernets {
-		vdrIDs, exists := vm.getValidatorIDs(supernetID)
+	for subnetID := range vm.TrackedSubnets {
+		vdrIDs, exists := vm.getValidatorIDs(subnetID)
 		if !exists {
 			return errMissingValidatorSet
 		}
-		if err := vm.uptimeManager.StartTracking(vdrIDs, supernetID); err != nil {
+		if err := vm.uptimeManager.StartTracking(vdrIDs, subnetID); err != nil {
 			return err
 		}
 	}
@@ -345,12 +345,12 @@ func (vm *VM) Shutdown(context.Context) error {
 			return err
 		}
 
-		for supernetID := range vm.TrackedSupernets {
-			vdrIDs, exists := vm.getValidatorIDs(supernetID)
+		for subnetID := range vm.TrackedSubnets {
+			vdrIDs, exists := vm.getValidatorIDs(subnetID)
 			if !exists {
 				return errMissingValidatorSet
 			}
-			if err := vm.uptimeManager.StopTracking(vdrIDs, supernetID); err != nil {
+			if err := vm.uptimeManager.StopTracking(vdrIDs, subnetID); err != nil {
 				return err
 			}
 		}
@@ -368,8 +368,8 @@ func (vm *VM) Shutdown(context.Context) error {
 	return errs.Err
 }
 
-func (vm *VM) getValidatorIDs(supernetID ids.ID) ([]ids.NodeID, bool) {
-	validatorSet, exist := vm.Validators.Get(supernetID)
+func (vm *VM) getValidatorIDs(subnetID ids.ID) ([]ids.NodeID, bool) {
+	validatorSet, exist := vm.Validators.Get(subnetID)
 	if !exist {
 		return nil, false
 	}
@@ -464,8 +464,8 @@ func (vm *VM) Connected(_ context.Context, nodeID ids.NodeID, _ *version.Applica
 	return vm.uptimeManager.Connect(nodeID, constants.PrimaryNetworkID)
 }
 
-func (vm *VM) ConnectedSupernet(_ context.Context, nodeID ids.NodeID, supernetID ids.ID) error {
-	return vm.uptimeManager.Connect(nodeID, supernetID)
+func (vm *VM) ConnectedSubnet(_ context.Context, nodeID ids.NodeID, subnetID ids.ID) error {
+	return vm.uptimeManager.Connect(nodeID, subnetID)
 }
 
 func (vm *VM) Disconnected(_ context.Context, nodeID ids.NodeID) error {
@@ -476,14 +476,14 @@ func (vm *VM) Disconnected(_ context.Context, nodeID ids.NodeID) error {
 }
 
 // GetValidatorSet returns the validator set at the specified height for the
-// provided supernetID.
-func (vm *VM) GetValidatorSet(ctx context.Context, height uint64, supernetID ids.ID) (map[ids.NodeID]*validators.GetValidatorOutput, error) {
-	validatorSetsCache, exists := vm.validatorSetCaches[supernetID]
+// provided subnetID.
+func (vm *VM) GetValidatorSet(ctx context.Context, height uint64, subnetID ids.ID) (map[ids.NodeID]*validators.GetValidatorOutput, error) {
+	validatorSetsCache, exists := vm.validatorSetCaches[subnetID]
 	if !exists {
 		validatorSetsCache = &cache.LRU[uint64, map[ids.NodeID]*validators.GetValidatorOutput]{Size: validatorSetsCacheSize}
-		// Only cache tracked supernets
-		if supernetID == constants.PrimaryNetworkID || vm.TrackedSupernets.Contains(supernetID) {
-			vm.validatorSetCaches[supernetID] = validatorSetsCache
+		// Only cache tracked subnets
+		if subnetID == constants.PrimaryNetworkID || vm.TrackedSubnets.Contains(subnetID) {
+			vm.validatorSetCaches[subnetID] = validatorSetsCache
 		}
 	}
 
@@ -503,10 +503,10 @@ func (vm *VM) GetValidatorSet(ctx context.Context, height uint64, supernetID ids
 	// get the start time to track metrics
 	startTime := vm.Clock().Time()
 
-	currentSupernetValidators, ok := vm.Validators.Get(supernetID)
+	currentSubnetValidators, ok := vm.Validators.Get(subnetID)
 	if !ok {
-		currentSupernetValidators = validators.NewSet()
-		if err := vm.state.ValidatorSet(supernetID, currentSupernetValidators); err != nil {
+		currentSubnetValidators = validators.NewSet()
+		if err := vm.state.ValidatorSet(subnetID, currentSubnetValidators); err != nil {
 			return nil, err
 		}
 	}
@@ -516,9 +516,9 @@ func (vm *VM) GetValidatorSet(ctx context.Context, height uint64, supernetID ids
 		return nil, errMissingValidatorSet
 	}
 
-	currentSupernetValidatorList := currentSupernetValidators.List()
-	vdrSet := make(map[ids.NodeID]*validators.GetValidatorOutput, len(currentSupernetValidatorList))
-	for _, vdr := range currentSupernetValidatorList {
+	currentSubnetValidatorList := currentSubnetValidators.List()
+	vdrSet := make(map[ids.NodeID]*validators.GetValidatorOutput, len(currentSubnetValidatorList))
+	for _, vdr := range currentSubnetValidatorList {
 		primaryVdr, ok := currentPrimaryNetworkValidators.Get(vdr.NodeID)
 		if !ok {
 			// This should never happen
@@ -532,7 +532,7 @@ func (vm *VM) GetValidatorSet(ctx context.Context, height uint64, supernetID ids
 	}
 
 	for i := lastAcceptedHeight; i > height; i-- {
-		weightDiffs, err := vm.state.GetValidatorWeightDiffs(i, supernetID)
+		weightDiffs, err := vm.state.GetValidatorWeightDiffs(i, subnetID)
 		if err != nil {
 			return nil, err
 		}
@@ -579,7 +579,7 @@ func (vm *VM) GetValidatorSet(ctx context.Context, height uint64, supernetID ids
 
 		for nodeID, pk := range pkDiffs {
 			// pkDiffs includes all primary network key diffs, if we are
-			// fetching a supernet's validator set, we should ignore non-supernet
+			// fetching a subnet's validator set, we should ignore non-subnet
 			// validators.
 			if vdr, ok := vdrSet[nodeID]; ok {
 				// The validator's public key was removed at this block, so it
@@ -600,7 +600,7 @@ func (vm *VM) GetValidatorSet(ctx context.Context, height uint64, supernetID ids
 }
 
 // GetCurrentHeight returns the height of the last accepted block
-func (vm *VM) GetSupernetID(_ context.Context, chainID ids.ID) (ids.ID, error) {
+func (vm *VM) GetSubnetID(_ context.Context, chainID ids.ID) (ids.ID, error) {
 	if chainID == constants.PlatformChainID {
 		return constants.PrimaryNetworkID, nil
 	}
@@ -617,7 +617,7 @@ func (vm *VM) GetSupernetID(_ context.Context, chainID ids.ID) (ids.ID, error) {
 	if !ok {
 		return ids.Empty, fmt.Errorf("%q is not a blockchain", chainID)
 	}
-	return chain.SupernetID, nil
+	return chain.SubnetID, nil
 }
 
 // GetMinimumHeight returns the height of the most recent block beyond the
@@ -636,7 +636,7 @@ func (vm *VM) GetSupernetID(_ context.Context, chainID ids.ID) (ids.ID, error) {
 //
 // If [UseCurrentHeight] is true, we will always return the last accepted block
 // height as the minimum. This is used to trigger the proposervm on recently
-// created supernets before [recentlyAcceptedWindowTTL].
+// created subnets before [recentlyAcceptedWindowTTL].
 func (vm *VM) GetMinimumHeight(ctx context.Context) (uint64, error) {
 	if vm.Config.UseCurrentHeight {
 		return vm.GetCurrentHeight(ctx)
@@ -681,10 +681,10 @@ func (vm *VM) Logger() logging.Logger {
 	return vm.ctx.Log
 }
 
-// Returns the percentage of the total stake of the supernet connected to this
+// Returns the percentage of the total stake of the subnet connected to this
 // node.
-func (vm *VM) getPercentConnected(supernetID ids.ID) (float64, error) {
-	vdrSet, exists := vm.Validators.Get(supernetID)
+func (vm *VM) getPercentConnected(subnetID ids.ID) (float64, error) {
+	vdrSet, exists := vm.Validators.Get(subnetID)
 	if !exists {
 		return 0, errMissingValidatorSet
 	}
@@ -699,7 +699,7 @@ func (vm *VM) getPercentConnected(supernetID ids.ID) (float64, error) {
 		err            error
 	)
 	for _, vdr := range vdrSet.List() {
-		if !vm.uptimeManager.IsConnected(vdr.NodeID, supernetID) {
+		if !vm.uptimeManager.IsConnected(vdr.NodeID, subnetID) {
 			continue // not connected to us --> don't include
 		}
 		connectedStake, err = math.Add64(connectedStake, vdr.Weight)

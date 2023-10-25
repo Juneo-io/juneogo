@@ -4,9 +4,9 @@
 package secp256k1fx
 
 import (
-	"github.com/Juneo-io/juneogo/codec"
-	"github.com/Juneo-io/juneogo/utils/logging"
-	"github.com/Juneo-io/juneogo/utils/timer/mockable"
+	"github.com/ava-labs/avalanchego/codec"
+	"github.com/ava-labs/avalanchego/utils/logging"
+	"github.com/ava-labs/avalanchego/utils/timer/mockable"
 )
 
 // VM that this Fx must be run by

@@ -6,8 +6,8 @@ package nftfx
 import (
 	"testing"
 
-	"github.com/Juneo-io/juneogo/vms/components/verify"
-	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
+	"github.com/ava-labs/avalanchego/vms/components/verify"
+	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
 )
 
 func TestMintOperationVerifyNil(t *testing.T) {

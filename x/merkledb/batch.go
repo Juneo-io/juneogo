@@ -4,7 +4,7 @@
 package merkledb
 
 import (
-	"github.com/Juneo-io/juneogo/database"
+	"github.com/ava-labs/avalanchego/database"
 )
 
 var _ database.Batch = &batch{}

@@ -11,19 +11,19 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/snow"
-	"github.com/Juneo-io/juneogo/utils/constants"
-	"github.com/Juneo-io/juneogo/vms/components/avax"
-	"github.com/Juneo-io/juneogo/vms/components/verify"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/snow"
+	"github.com/ava-labs/avalanchego/utils/constants"
+	"github.com/ava-labs/avalanchego/vms/components/avax"
+	"github.com/ava-labs/avalanchego/vms/components/verify"
 )
 
-var errInvalidSupernetAuth = errors.New("invalid supernet auth")
+var errInvalidSubnetAuth = errors.New("invalid subnet auth")
 
-func TestRemoveSupernetValidatorTxSyntacticVerify(t *testing.T) {
+func TestRemoveSubnetValidatorTxSyntacticVerify(t *testing.T) {
 	type test struct {
 		name      string
-		txFunc    func(*gomock.Controller) *RemoveSupernetValidatorTx
+		txFunc    func(*gomock.Controller) *RemoveSubnetValidatorTx
 		shouldErr bool
 		// If [shouldErr] and [requireSpecificErr] != nil,
 		// require that the error we get is [requireSpecificErr].
@@ -67,24 +67,24 @@ func TestRemoveSupernetValidatorTxSyntacticVerify(t *testing.T) {
 	tests := []test{
 		{
 			name: "nil tx",
-			txFunc: func(*gomock.Controller) *RemoveSupernetValidatorTx {
+			txFunc: func(*gomock.Controller) *RemoveSubnetValidatorTx {
 				return nil
 			},
 			shouldErr: true,
 		},
 		{
 			name: "already verified",
-			txFunc: func(*gomock.Controller) *RemoveSupernetValidatorTx {
-				return &RemoveSupernetValidatorTx{BaseTx: verifiedBaseTx}
+			txFunc: func(*gomock.Controller) *RemoveSubnetValidatorTx {
+				return &RemoveSubnetValidatorTx{BaseTx: verifiedBaseTx}
 			},
 			shouldErr: false,
 		},
 		{
 			name: "invalid BaseTx",
-			txFunc: func(*gomock.Controller) *RemoveSupernetValidatorTx {
-				return &RemoveSupernetValidatorTx{
-					// Set supernetID so we don't error on that check.
-					Supernet: ids.GenerateTestID(),
+			txFunc: func(*gomock.Controller) *RemoveSubnetValidatorTx {
+				return &RemoveSubnetValidatorTx{
+					// Set subnetID so we don't error on that check.
+					Subnet: ids.GenerateTestID(),
 					// Set NodeID so we don't error on that check.
 					NodeID: ids.GenerateTestNodeID(),
 					BaseTx: invalidBaseTx,
@@ -93,49 +93,49 @@ func TestRemoveSupernetValidatorTxSyntacticVerify(t *testing.T) {
 			shouldErr: true,
 		},
 		{
-			name: "invalid supernetID",
-			txFunc: func(*gomock.Controller) *RemoveSupernetValidatorTx {
-				return &RemoveSupernetValidatorTx{
+			name: "invalid subnetID",
+			txFunc: func(*gomock.Controller) *RemoveSubnetValidatorTx {
+				return &RemoveSubnetValidatorTx{
 					BaseTx: validBaseTx,
 					// Set NodeID so we don't error on that check.
 					NodeID:   ids.GenerateTestNodeID(),
-					Supernet: constants.PrimaryNetworkID,
+					Subnet: constants.PrimaryNetworkID,
 				}
 			},
 			shouldErr:          true,
 			requireSpecificErr: errRemovePrimaryNetworkValidator,
 		},
 		{
-			name: "invalid supernetAuth",
-			txFunc: func(ctrl *gomock.Controller) *RemoveSupernetValidatorTx {
-				// This SupernetAuth fails verification.
-				invalidSupernetAuth := verify.NewMockVerifiable(ctrl)
-				invalidSupernetAuth.EXPECT().Verify().Return(errInvalidSupernetAuth)
-				return &RemoveSupernetValidatorTx{
-					// Set supernetID so we don't error on that check.
-					Supernet: ids.GenerateTestID(),
+			name: "invalid subnetAuth",
+			txFunc: func(ctrl *gomock.Controller) *RemoveSubnetValidatorTx {
+				// This SubnetAuth fails verification.
+				invalidSubnetAuth := verify.NewMockVerifiable(ctrl)
+				invalidSubnetAuth.EXPECT().Verify().Return(errInvalidSubnetAuth)
+				return &RemoveSubnetValidatorTx{
+					// Set subnetID so we don't error on that check.
+					Subnet: ids.GenerateTestID(),
 					// Set NodeID so we don't error on that check.
 					NodeID:       ids.GenerateTestNodeID(),
 					BaseTx:       validBaseTx,
-					SupernetAuth: invalidSupernetAuth,
+					SubnetAuth: invalidSubnetAuth,
 				}
 			},
 			shouldErr:          true,
-			requireSpecificErr: errInvalidSupernetAuth,
+			requireSpecificErr: errInvalidSubnetAuth,
 		},
 		{
 			name: "passes verification",
-			txFunc: func(ctrl *gomock.Controller) *RemoveSupernetValidatorTx {
-				// This SupernetAuth passes verification.
-				validSupernetAuth := verify.NewMockVerifiable(ctrl)
-				validSupernetAuth.EXPECT().Verify().Return(nil)
-				return &RemoveSupernetValidatorTx{
-					// Set supernetID so we don't error on that check.
-					Supernet: ids.GenerateTestID(),
+			txFunc: func(ctrl *gomock.Controller) *RemoveSubnetValidatorTx {
+				// This SubnetAuth passes verification.
+				validSubnetAuth := verify.NewMockVerifiable(ctrl)
+				validSubnetAuth.EXPECT().Verify().Return(nil)
+				return &RemoveSubnetValidatorTx{
+					// Set subnetID so we don't error on that check.
+					Subnet: ids.GenerateTestID(),
 					// Set NodeID so we don't error on that check.
 					NodeID:       ids.GenerateTestNodeID(),
 					BaseTx:       validBaseTx,
-					SupernetAuth: validSupernetAuth,
+					SubnetAuth: validSubnetAuth,
 				}
 			},
 			shouldErr: false,

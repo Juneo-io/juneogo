@@ -10,13 +10,13 @@ Apricot allows the following block types with the following content:
 
 - _Standard Blocks_ may contain multiple transactions of the following types:
   - CreateChainTx
-  - CreateSupernetTx
+  - CreateSubnetTx
   - ImportTx
   - ExportTx
 - _Proposal Blocks_ may contain a single transaction of the following types:
   - AddValidatorTx
   - AddDelegatorTx
-  - AddSupernetValidatorTx
+  - AddSubnetValidatorTx
   - RewardValidatorTx
   - AdvanceTimeTx
 - _Options Blocks_, i.e. _Commit Block_ and _Abort Block_ do not contain any transactions.
@@ -61,14 +61,14 @@ Banff allows the following block types with the following content:
 
 - _Standard Blocks_ may contain multiple transactions of the following types:
   - CreateChainTx
-  - CreateSupernetTx
+  - CreateSubnetTx
   - ImportTx
   - ExportTx
   - AddValidatorTx
   - AddDelegatorTx
-  - AddSupernetValidatorTx
-  - RemoveSupernetValidatorTx
-  - TransformSupernetTx
+  - AddSubnetValidatorTx
+  - RemoveSubnetValidatorTx
+  - TransformSubnetTx
   - AddPermissionlessValidatorTx
   - AddPermissionlessDelegatorTx
 - _Proposal Blocks_ may contain a single transaction of the following types:
@@ -83,8 +83,8 @@ Note that each block has a header containing:
 
 So the main differences with respect to Apricot are:
 
-- _AddValidatorTx_, _AddDelegatorTx_, _AddSupernetValidatorTx_ are included into Standard Blocks rather than Proposal Blocks so that they don't need to be voted on (i.e. followed by a Commit/Abort Block).
-- New Transaction types: _RemoveSupernetValidatorTx_, _TransformSupernetTx_, _AddPermissionlessValidatorTx_, _AddPermissionlessDelegatorTx_ have been added into Standard Blocks.
+- _AddValidatorTx_, _AddDelegatorTx_, _AddSubnetValidatorTx_ are included into Standard Blocks rather than Proposal Blocks so that they don't need to be voted on (i.e. followed by a Commit/Abort Block).
+- New Transaction types: _RemoveSubnetValidatorTx_, _TransformSubnetTx_, _AddPermissionlessValidatorTx_, _AddPermissionlessDelegatorTx_ have been added into Standard Blocks.
 - Block timestamp is explicitly serialized into block header, to allow chain time update.
 
 ### Banff Block Formation Logic
@@ -98,4 +98,4 @@ Operations are carried out in the following order:
 - We try to fill a Standard Block with mempool decision transactions.
 
 [^1]: Proposal transactions whose start time is too close to local time are dropped first and won't be included in any block.
-[^2]: Advance time transactions are proposal transactions and they do change chain time. But advance time transactions are generated just in time and never stored in the mempool. Here mempool proposal transactions refer to AddValidator, AddDelegator and AddSupernetValidator transactions. Reward validator transactions are proposal transactions which do not change chain time but which never in mempool (they are generated just in time).
+[^2]: Advance time transactions are proposal transactions and they do change chain time. But advance time transactions are generated just in time and never stored in the mempool. Here mempool proposal transactions refer to AddValidator, AddDelegator and AddSubnetValidator transactions. Reward validator transactions are proposal transactions which do not change chain time but which never in mempool (they are generated just in time).

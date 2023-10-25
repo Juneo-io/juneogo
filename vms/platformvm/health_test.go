@@ -10,9 +10,9 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/snow/validators"
-	"github.com/Juneo-io/juneogo/version"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/snow/validators"
+	"github.com/ava-labs/avalanchego/version"
 )
 
 const defaultMinConnectedStake = 0.8
@@ -41,7 +41,7 @@ func TestHealthCheckPrimaryNetwork(t *testing.T) {
 	}
 }
 
-func TestHealthCheckSupernet(t *testing.T) {
+func TestHealthCheckSubnet(t *testing.T) {
 	tests := map[string]struct {
 		minStake   float64
 		useDefault bool
@@ -66,16 +66,16 @@ func TestHealthCheckSupernet(t *testing.T) {
 				vm.ctx.Lock.Unlock()
 			}()
 
-			supernetID := ids.GenerateTestID()
-			supernetVdrs := validators.NewSet()
-			vm.TrackedSupernets.Add(supernetID)
+			subnetID := ids.GenerateTestID()
+			subnetVdrs := validators.NewSet()
+			vm.TrackedSubnets.Add(subnetID)
 			testVdrCount := 4
 			for i := 0; i < testVdrCount; i++ {
-				supernetVal := ids.GenerateTestNodeID()
-				err := supernetVdrs.Add(supernetVal, nil, ids.Empty, 100)
+				subnetVal := ids.GenerateTestNodeID()
+				err := subnetVdrs.Add(subnetVal, nil, ids.Empty, 100)
 				require.NoError(err)
 			}
-			ok := vm.Validators.Add(supernetID, supernetVdrs)
+			ok := vm.Validators.Add(subnetID, subnetVdrs)
 			require.True(ok)
 
 			// connect to all primary network validators first
@@ -90,18 +90,18 @@ func TestHealthCheckSupernet(t *testing.T) {
 			} else {
 				expectedMinStake = test.minStake
 				vm.MinPercentConnectedStakeHealthy = map[ids.ID]float64{
-					supernetID: expectedMinStake,
+					subnetID: expectedMinStake,
 				}
 			}
-			for index, vdr := range supernetVdrs.List() {
-				err := vm.ConnectedSupernet(context.Background(), vdr.NodeID, supernetID)
+			for index, vdr := range subnetVdrs.List() {
+				err := vm.ConnectedSubnet(context.Background(), vdr.NodeID, subnetID)
 				require.NoError(err)
 				details, err := vm.HealthCheck(context.Background())
 				connectedPerc := float64((index + 1) * (100 / testVdrCount))
 				if connectedPerc >= expectedMinStake*100 {
 					require.NoError(err)
 				} else {
-					require.Contains(details, fmt.Sprintf("%s-percentConnected", supernetID))
+					require.Contains(details, fmt.Sprintf("%s-percentConnected", subnetID))
 					require.ErrorIs(err, errNotEnoughStake)
 				}
 			}

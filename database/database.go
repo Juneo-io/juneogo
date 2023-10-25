@@ -10,7 +10,7 @@ package database
 import (
 	"io"
 
-	"github.com/Juneo-io/juneogo/api/health"
+	"github.com/ava-labs/avalanchego/api/health"
 )
 
 // KeyValueReader wraps the Has and Get method of a backing data store.

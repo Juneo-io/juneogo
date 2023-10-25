@@ -6,8 +6,8 @@ package executor
 import (
 	"fmt"
 
-	"github.com/Juneo-io/juneogo/snow/consensus/snowman"
-	"github.com/Juneo-io/juneogo/vms/platformvm/blocks"
+	"github.com/ava-labs/avalanchego/snow/consensus/snowman"
+	"github.com/ava-labs/avalanchego/vms/platformvm/blocks"
 )
 
 var _ blocks.Visitor = (*verifier)(nil)

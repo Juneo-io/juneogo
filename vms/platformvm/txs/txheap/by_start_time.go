@@ -6,7 +6,7 @@ package txheap
 import (
 	"time"
 
-	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
+	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
 )
 
 var _ TimedHeap = (*byStartTime)(nil)

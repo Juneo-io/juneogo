@@ -11,8 +11,8 @@ import (
 	context "context"
 	reflect "reflect"
 
-	snowman "github.com/Juneo-io/juneogo/snow/consensus/snowman"
-	block "github.com/Juneo-io/juneogo/snow/engine/snowman/block"
+	snowman "github.com/ava-labs/avalanchego/snow/consensus/snowman"
+	block "github.com/ava-labs/avalanchego/snow/engine/snowman/block"
 	gomock "github.com/golang/mock/gomock"
 )
 

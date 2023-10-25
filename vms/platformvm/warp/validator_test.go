@@ -12,10 +12,10 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/snow/validators"
-	"github.com/Juneo-io/juneogo/utils/crypto/bls"
-	"github.com/Juneo-io/juneogo/utils/set"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/snow/validators"
+	"github.com/ava-labs/avalanchego/utils/crypto/bls"
+	"github.com/ava-labs/avalanchego/utils/set"
 )
 
 func TestGetCanonicalValidatorSet(t *testing.T) {
@@ -32,7 +32,7 @@ func TestGetCanonicalValidatorSet(t *testing.T) {
 			name: "can't get validator set",
 			stateF: func(ctrl *gomock.Controller) validators.State {
 				state := validators.NewMockState(ctrl)
-				state.EXPECT().GetValidatorSet(gomock.Any(), pChainHeight, supernetID).Return(nil, errTest)
+				state.EXPECT().GetValidatorSet(gomock.Any(), pChainHeight, subnetID).Return(nil, errTest)
 				return state
 			},
 			expectedErr: errTest,
@@ -41,7 +41,7 @@ func TestGetCanonicalValidatorSet(t *testing.T) {
 			name: "all validators have public keys; no duplicate pub keys",
 			stateF: func(ctrl *gomock.Controller) validators.State {
 				state := validators.NewMockState(ctrl)
-				state.EXPECT().GetValidatorSet(gomock.Any(), pChainHeight, supernetID).Return(
+				state.EXPECT().GetValidatorSet(gomock.Any(), pChainHeight, subnetID).Return(
 					map[ids.NodeID]*validators.GetValidatorOutput{
 						testVdrs[0].nodeID: {
 							NodeID:    testVdrs[0].nodeID,
@@ -66,7 +66,7 @@ func TestGetCanonicalValidatorSet(t *testing.T) {
 			name: "all validators have public keys; duplicate pub keys",
 			stateF: func(ctrl *gomock.Controller) validators.State {
 				state := validators.NewMockState(ctrl)
-				state.EXPECT().GetValidatorSet(gomock.Any(), pChainHeight, supernetID).Return(
+				state.EXPECT().GetValidatorSet(gomock.Any(), pChainHeight, subnetID).Return(
 					map[ids.NodeID]*validators.GetValidatorOutput{
 						testVdrs[0].nodeID: {
 							NodeID:    testVdrs[0].nodeID,
@@ -107,7 +107,7 @@ func TestGetCanonicalValidatorSet(t *testing.T) {
 			name: "validator without public key; no duplicate pub keys",
 			stateF: func(ctrl *gomock.Controller) validators.State {
 				state := validators.NewMockState(ctrl)
-				state.EXPECT().GetValidatorSet(gomock.Any(), pChainHeight, supernetID).Return(
+				state.EXPECT().GetValidatorSet(gomock.Any(), pChainHeight, subnetID).Return(
 					map[ids.NodeID]*validators.GetValidatorOutput{
 						testVdrs[0].nodeID: {
 							NodeID:    testVdrs[0].nodeID,
@@ -138,7 +138,7 @@ func TestGetCanonicalValidatorSet(t *testing.T) {
 
 			state := tt.stateF(ctrl)
 
-			vdrs, weight, err := GetCanonicalValidatorSet(context.Background(), state, pChainHeight, supernetID)
+			vdrs, weight, err := GetCanonicalValidatorSet(context.Background(), state, pChainHeight, subnetID)
 			require.ErrorIs(err, tt.expectedErr)
 			if err != nil {
 				return

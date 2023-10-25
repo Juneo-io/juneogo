@@ -6,7 +6,7 @@ package ips
 import (
 	"crypto/x509"
 
-	"github.com/Juneo-io/juneogo/ids"
+	"github.com/ava-labs/avalanchego/ids"
 )
 
 // Can't import these from wrappers package due to circular import.

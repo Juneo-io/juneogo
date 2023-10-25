@@ -11,10 +11,10 @@ import (
 	reflect "reflect"
 	time "time"
 
-	ids "github.com/Juneo-io/juneogo/ids"
-	avax "github.com/Juneo-io/juneogo/vms/components/avax"
-	status "github.com/Juneo-io/juneogo/vms/platformvm/status"
-	txs "github.com/Juneo-io/juneogo/vms/platformvm/txs"
+	ids "github.com/ava-labs/avalanchego/ids"
+	avax "github.com/ava-labs/avalanchego/vms/components/avax"
+	status "github.com/ava-labs/avalanchego/vms/platformvm/status"
+	txs "github.com/ava-labs/avalanchego/vms/platformvm/txs"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -65,28 +65,28 @@ func (mr *MockDiffMockRecorder) AddRewardUTXO(arg0, arg1 interface{}) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddRewardUTXO", reflect.TypeOf((*MockDiff)(nil).AddRewardUTXO), arg0, arg1)
 }
 
-// AddSupernet mocks base method.
-func (m *MockDiff) AddSupernet(arg0 *txs.Tx) {
+// AddSubnet mocks base method.
+func (m *MockDiff) AddSubnet(arg0 *txs.Tx) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "AddSupernet", arg0)
+	m.ctrl.Call(m, "AddSubnet", arg0)
 }
 
-// AddSupernet indicates an expected call of AddSupernet.
-func (mr *MockDiffMockRecorder) AddSupernet(arg0 interface{}) *gomock.Call {
+// AddSubnet indicates an expected call of AddSubnet.
+func (mr *MockDiffMockRecorder) AddSubnet(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddSupernet", reflect.TypeOf((*MockDiff)(nil).AddSupernet), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddSubnet", reflect.TypeOf((*MockDiff)(nil).AddSubnet), arg0)
 }
 
-// AddSupernetTransformation mocks base method.
-func (m *MockDiff) AddSupernetTransformation(arg0 *txs.Tx) {
+// AddSubnetTransformation mocks base method.
+func (m *MockDiff) AddSubnetTransformation(arg0 *txs.Tx) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "AddSupernetTransformation", arg0)
+	m.ctrl.Call(m, "AddSubnetTransformation", arg0)
 }
 
-// AddSupernetTransformation indicates an expected call of AddSupernetTransformation.
-func (mr *MockDiffMockRecorder) AddSupernetTransformation(arg0 interface{}) *gomock.Call {
+// AddSubnetTransformation indicates an expected call of AddSubnetTransformation.
+func (mr *MockDiffMockRecorder) AddSubnetTransformation(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddSupernetTransformation", reflect.TypeOf((*MockDiff)(nil).AddSupernetTransformation), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddSubnetTransformation", reflect.TypeOf((*MockDiff)(nil).AddSubnetTransformation), arg0)
 }
 
 // AddTx mocks base method.
@@ -337,34 +337,34 @@ func (mr *MockDiffMockRecorder) GetRewardUTXOs(arg0 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRewardUTXOs", reflect.TypeOf((*MockDiff)(nil).GetRewardUTXOs), arg0)
 }
 
-// GetSupernetTransformation mocks base method.
-func (m *MockDiff) GetSupernetTransformation(arg0 ids.ID) (*txs.Tx, error) {
+// GetSubnetTransformation mocks base method.
+func (m *MockDiff) GetSubnetTransformation(arg0 ids.ID) (*txs.Tx, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetSupernetTransformation", arg0)
+	ret := m.ctrl.Call(m, "GetSubnetTransformation", arg0)
 	ret0, _ := ret[0].(*txs.Tx)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetSupernetTransformation indicates an expected call of GetSupernetTransformation.
-func (mr *MockDiffMockRecorder) GetSupernetTransformation(arg0 interface{}) *gomock.Call {
+// GetSubnetTransformation indicates an expected call of GetSubnetTransformation.
+func (mr *MockDiffMockRecorder) GetSubnetTransformation(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSupernetTransformation", reflect.TypeOf((*MockDiff)(nil).GetSupernetTransformation), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSubnetTransformation", reflect.TypeOf((*MockDiff)(nil).GetSubnetTransformation), arg0)
 }
 
-// GetSupernets mocks base method.
-func (m *MockDiff) GetSupernets() ([]*txs.Tx, error) {
+// GetSubnets mocks base method.
+func (m *MockDiff) GetSubnets() ([]*txs.Tx, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetSupernets")
+	ret := m.ctrl.Call(m, "GetSubnets")
 	ret0, _ := ret[0].([]*txs.Tx)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetSupernets indicates an expected call of GetSupernets.
-func (mr *MockDiffMockRecorder) GetSupernets() *gomock.Call {
+// GetSubnets indicates an expected call of GetSubnets.
+func (mr *MockDiffMockRecorder) GetSubnets() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSupernets", reflect.TypeOf((*MockDiff)(nil).GetSupernets))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSubnets", reflect.TypeOf((*MockDiff)(nil).GetSubnets))
 }
 
 // GetTimestamp mocks base method.

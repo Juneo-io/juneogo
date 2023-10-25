@@ -4,9 +4,9 @@
 package bootstrap
 
 import (
-	"github.com/Juneo-io/juneogo/snow/engine/avalanche/vertex"
-	"github.com/Juneo-io/juneogo/snow/engine/common"
-	"github.com/Juneo-io/juneogo/snow/engine/common/queue"
+	"github.com/ava-labs/avalanchego/snow/engine/avalanche/vertex"
+	"github.com/ava-labs/avalanchego/snow/engine/common"
+	"github.com/ava-labs/avalanchego/snow/engine/common/queue"
 )
 
 type Config struct {

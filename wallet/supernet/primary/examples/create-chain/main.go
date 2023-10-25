@@ -9,24 +9,24 @@ import (
 	"log"
 	"time"
 
-	"github.com/Juneo-io/juneogo/genesis"
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
-	"github.com/Juneo-io/juneogo/wallet/supernet/primary"
+	"github.com/ava-labs/avalanchego/genesis"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
+	"github.com/ava-labs/avalanchego/wallet/subnet/primary"
 )
 
 func main() {
 	key := genesis.EWOQKey
 	uri := primary.LocalAPIURI
 	kc := secp256k1fx.NewKeychain(key)
-	supernetIDStr := "29uVeLPJB1eQJkzRemU8g8wZDw5uJRqpab5U2mX9euieVwiEbL"
+	subnetIDStr := "29uVeLPJB1eQJkzRemU8g8wZDw5uJRqpab5U2mX9euieVwiEbL"
 	genesisHex := "00000000000000000000000000017b5490493f8a2fff444ac8b54e27b3339d7c60dcffffffffffffffff"
 	vmID := ids.ID{'x', 's', 'v', 'm'}
 	name := "let there"
 
-	supernetID, err := ids.FromString(supernetIDStr)
+	subnetID, err := ids.FromString(subnetIDStr)
 	if err != nil {
-		log.Fatalf("failed to parse supernet ID: %s\n", err)
+		log.Fatalf("failed to parse subnet ID: %s\n", err)
 	}
 
 	genesisBytes, err := hex.DecodeString(genesisHex)
@@ -37,9 +37,9 @@ func main() {
 	ctx := context.Background()
 
 	// NewWalletWithTxs fetches the available UTXOs owned by [kc] on the network
-	// that [uri] is hosting and registers [supernetID].
+	// that [uri] is hosting and registers [subnetID].
 	walletSyncStartTime := time.Now()
-	wallet, err := primary.NewWalletWithTxs(ctx, uri, kc, supernetID)
+	wallet, err := primary.NewWalletWithTxs(ctx, uri, kc, subnetID)
 	if err != nil {
 		log.Fatalf("failed to initialize wallet: %s\n", err)
 	}
@@ -50,7 +50,7 @@ func main() {
 
 	createChainStartTime := time.Now()
 	createChainTxID, err := pWallet.IssueCreateChainTx(
-		supernetID,
+		subnetID,
 		genesisBytes,
 		vmID,
 		nil,

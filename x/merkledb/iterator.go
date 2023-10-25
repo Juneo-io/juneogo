@@ -3,7 +3,7 @@
 
 package merkledb
 
-import "github.com/Juneo-io/juneogo/database"
+import "github.com/ava-labs/avalanchego/database"
 
 var _ database.Iterator = &iterator{}
 

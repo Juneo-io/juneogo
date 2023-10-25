@@ -38,7 +38,7 @@ var (
 	y6Value = uint64(65000)  // 8.5% - 2% = 6.5%
 )
 
-// Reward returns the amount of tokens to reward the staker with in a permissionless supernet.
+// Reward returns the amount of tokens to reward the staker with in a permissionless subnet.
 func (c *calculator) Calculate(stakedDuration time.Duration, currentTime time.Time, stakedAmount uint64) uint64 {
 	timePercentage := new(big.Int).SetUint64(uint64(stakedDuration))
 	timePercentage.Mul(timePercentage, rewardShareDenominator)
@@ -51,7 +51,7 @@ func (c *calculator) Calculate(stakedDuration time.Duration, currentTime time.Ti
 	return GetTimeRewardsValue(c.rewardShare, c.rewardShare, bonusRewards, timePercentage, rewardShareDenominator, stakedAmount).Uint64()
 }
 
-// Reward returns the amount of tokens to reward the staker with in the primary supernet.
+// Reward returns the amount of tokens to reward the staker with in the primary subnet.
 func (c *calculator) CalculatePrimary(stakedDuration time.Duration, currentTime time.Time, stakedAmount uint64) uint64 {
 	timePercentage := new(big.Int).SetUint64(uint64(stakedDuration))
 	timePercentage.Mul(timePercentage, rewardShareDenominator)

@@ -4,7 +4,7 @@
 package address
 
 import (
-	"github.com/Juneo-io/juneogo/ids"
+	"github.com/ava-labs/avalanchego/ids"
 )
 
 func ParseToID(addrStr string) (ids.ShortID, error) {

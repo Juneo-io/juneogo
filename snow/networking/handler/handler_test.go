@@ -16,16 +16,16 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/message"
-	"github.com/Juneo-io/juneogo/proto/pb/p2p"
-	"github.com/Juneo-io/juneogo/snow"
-	"github.com/Juneo-io/juneogo/snow/engine/common"
-	"github.com/Juneo-io/juneogo/snow/networking/tracker"
-	"github.com/Juneo-io/juneogo/snow/validators"
-	"github.com/Juneo-io/juneogo/supernets"
-	"github.com/Juneo-io/juneogo/utils/math/meter"
-	"github.com/Juneo-io/juneogo/utils/resource"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/message"
+	"github.com/ava-labs/avalanchego/proto/pb/p2p"
+	"github.com/ava-labs/avalanchego/snow"
+	"github.com/ava-labs/avalanchego/snow/engine/common"
+	"github.com/ava-labs/avalanchego/snow/networking/tracker"
+	"github.com/ava-labs/avalanchego/snow/validators"
+	"github.com/ava-labs/avalanchego/subnets"
+	"github.com/ava-labs/avalanchego/utils/math/meter"
+	"github.com/ava-labs/avalanchego/utils/resource"
 )
 
 const testThreadPoolSize = 2
@@ -56,8 +56,8 @@ func TestHandlerDropsTimedOutMessages(t *testing.T) {
 		time.Second,
 		testThreadPoolSize,
 		resourceTracker,
-		validators.UnhandledSupernetConnector,
-		supernets.New(ctx.NodeID, supernets.Config{}),
+		validators.UnhandledSubnetConnector,
+		subnets.New(ctx.NodeID, subnets.Config{}),
 	)
 	require.NoError(t, err)
 	handler := handlerIntf.(*handler)
@@ -151,8 +151,8 @@ func TestHandlerClosesOnError(t *testing.T) {
 		time.Second,
 		testThreadPoolSize,
 		resourceTracker,
-		validators.UnhandledSupernetConnector,
-		supernets.New(ctx.NodeID, supernets.Config{}),
+		validators.UnhandledSubnetConnector,
+		subnets.New(ctx.NodeID, subnets.Config{}),
 	)
 	require.NoError(t, err)
 	handler := handlerIntf.(*handler)
@@ -242,8 +242,8 @@ func TestHandlerDropsGossipDuringBootstrapping(t *testing.T) {
 		1,
 		testThreadPoolSize,
 		resourceTracker,
-		validators.UnhandledSupernetConnector,
-		supernets.New(ctx.NodeID, supernets.Config{}),
+		validators.UnhandledSubnetConnector,
+		subnets.New(ctx.NodeID, subnets.Config{}),
 	)
 	require.NoError(t, err)
 	handler := handlerIntf.(*handler)
@@ -322,8 +322,8 @@ func TestHandlerDispatchInternal(t *testing.T) {
 		time.Second,
 		testThreadPoolSize,
 		resourceTracker,
-		validators.UnhandledSupernetConnector,
-		supernets.New(ctx.NodeID, supernets.Config{}),
+		validators.UnhandledSubnetConnector,
+		subnets.New(ctx.NodeID, subnets.Config{}),
 	)
 	require.NoError(t, err)
 
@@ -373,7 +373,7 @@ func TestHandlerDispatchInternal(t *testing.T) {
 	}
 }
 
-func TestHandlerSupernetConnector(t *testing.T) {
+func TestHandlerSubnetConnector(t *testing.T) {
 	ctx := snow.DefaultConsensusContextTest()
 	vdrs := validators.NewSet()
 	err := vdrs.Add(ids.GenerateTestNodeID(), nil, ids.Empty, 1)
@@ -387,10 +387,10 @@ func TestHandlerSupernetConnector(t *testing.T) {
 	)
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	connector := validators.NewMockSupernetConnector(ctrl)
+	connector := validators.NewMockSubnetConnector(ctrl)
 
 	nodeID := ids.GenerateTestNodeID()
-	supernetID := ids.GenerateTestID()
+	subnetID := ids.GenerateTestID()
 
 	require.NoError(t, err)
 	handler, err := New(
@@ -401,7 +401,7 @@ func TestHandlerSupernetConnector(t *testing.T) {
 		testThreadPoolSize,
 		resourceTracker,
 		connector,
-		supernets.New(ctx.NodeID, supernets.Config{}),
+		subnets.New(ctx.NodeID, subnets.Config{}),
 	)
 	require.NoError(t, err)
 
@@ -438,9 +438,9 @@ func TestHandlerSupernetConnector(t *testing.T) {
 
 	handler.Start(context.Background(), false)
 
-	// Handler should call supernet connector when ConnectedSupernet message is received
+	// Handler should call subnet connector when ConnectedSubnet message is received
 	var wg sync.WaitGroup
-	connector.EXPECT().ConnectedSupernet(gomock.Any(), nodeID, supernetID).Do(
+	connector.EXPECT().ConnectedSubnet(gomock.Any(), nodeID, subnetID).Do(
 		func(context.Context, ids.NodeID, ids.ID) {
 			wg.Done()
 		})
@@ -448,11 +448,11 @@ func TestHandlerSupernetConnector(t *testing.T) {
 	wg.Add(1)
 	defer wg.Wait()
 
-	supernetInboundMessage := Message{
-		InboundMessage: message.InternalConnectedSupernet(nodeID, supernetID),
+	subnetInboundMessage := Message{
+		InboundMessage: message.InternalConnectedSubnet(nodeID, subnetID),
 		EngineType:     p2p.EngineType_ENGINE_TYPE_UNSPECIFIED,
 	}
-	handler.Push(context.Background(), supernetInboundMessage)
+	handler.Push(context.Background(), subnetInboundMessage)
 }
 
 // Tests that messages are routed to the correct engine type
@@ -570,8 +570,8 @@ func TestDynamicEngineTypeDispatch(t *testing.T) {
 				time.Second,
 				testThreadPoolSize,
 				resourceTracker,
-				validators.UnhandledSupernetConnector,
-				supernets.New(ids.EmptyNodeID, supernets.Config{}),
+				validators.UnhandledSubnetConnector,
+				subnets.New(ids.EmptyNodeID, subnets.Config{}),
 			)
 			require.NoError(t, err)
 

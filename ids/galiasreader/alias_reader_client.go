@@ -6,9 +6,9 @@ package galiasreader
 import (
 	"context"
 
-	"github.com/Juneo-io/juneogo/ids"
+	"github.com/ava-labs/avalanchego/ids"
 
-	aliasreaderpb "github.com/Juneo-io/juneogo/proto/pb/aliasreader"
+	aliasreaderpb "github.com/ava-labs/avalanchego/proto/pb/aliasreader"
 )
 
 var _ ids.AliaserReader = (*Client)(nil)

@@ -12,8 +12,8 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/Juneo-io/juneogo/database"
-	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/ava-labs/avalanchego/database"
+	"github.com/ava-labs/avalanchego/utils/constants"
 )
 
 const fallbackMinPercentConnected = 0.8
@@ -66,38 +66,38 @@ func (vm *VM) HealthCheck(context.Context) (interface{}, error) {
 		)
 	}
 
-	for supernetID := range vm.TrackedSupernets {
-		percentConnected, err := vm.getPercentConnected(supernetID)
+	for subnetID := range vm.TrackedSubnets {
+		percentConnected, err := vm.getPercentConnected(subnetID)
 		if err != nil {
-			return nil, fmt.Errorf("couldn't get percent connected for %q: %w", supernetID, err)
+			return nil, fmt.Errorf("couldn't get percent connected for %q: %w", subnetID, err)
 		}
-		minPercentConnected, ok := vm.MinPercentConnectedStakeHealthy[supernetID]
+		minPercentConnected, ok := vm.MinPercentConnectedStakeHealthy[subnetID]
 		if !ok {
 			minPercentConnected = primaryMinPercentConnected
 		}
 
-		vm.metrics.SetSupernetPercentConnected(supernetID, percentConnected)
-		key := fmt.Sprintf("%s-percentConnected", supernetID)
+		vm.metrics.SetSubnetPercentConnected(subnetID, percentConnected)
+		key := fmt.Sprintf("%s-percentConnected", subnetID)
 		details[key] = percentConnected
 
-		localSupernetValidator, err := vm.state.GetCurrentValidator(
-			supernetID,
+		localSubnetValidator, err := vm.state.GetCurrentValidator(
+			subnetID,
 			vm.ctx.NodeID,
 		)
 		switch err {
 		case nil:
-			vm.metrics.SetTimeUntilSupernetUnstake(supernetID, time.Until(localSupernetValidator.EndTime))
+			vm.metrics.SetTimeUntilSubnetUnstake(subnetID, time.Until(localSubnetValidator.EndTime))
 		case database.ErrNotFound:
-			vm.metrics.SetTimeUntilSupernetUnstake(supernetID, 0)
+			vm.metrics.SetTimeUntilSubnetUnstake(subnetID, 0)
 		default:
-			return nil, fmt.Errorf("couldn't get current supernet validator of %q: %w", supernetID, err)
+			return nil, fmt.Errorf("couldn't get current subnet validator of %q: %w", subnetID, err)
 		}
 
 		if percentConnected < minPercentConnected {
 			errorReasons = append(errorReasons,
 				fmt.Sprintf("connected to %f%% of %q weight; should be connected to at least %f%%",
 					percentConnected*100,
-					supernetID,
+					subnetID,
 					minPercentConnected*100,
 				),
 			)

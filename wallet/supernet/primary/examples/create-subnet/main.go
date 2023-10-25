@@ -8,17 +8,17 @@ import (
 	"log"
 	"time"
 
-	"github.com/Juneo-io/juneogo/genesis"
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
-	"github.com/Juneo-io/juneogo/wallet/supernet/primary"
+	"github.com/ava-labs/avalanchego/genesis"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
+	"github.com/ava-labs/avalanchego/wallet/subnet/primary"
 )
 
 func main() {
 	key := genesis.EWOQKey
 	uri := primary.LocalAPIURI
 	kc := secp256k1fx.NewKeychain(key)
-	supernetOwner := key.Address()
+	subnetOwner := key.Address()
 
 	ctx := context.Background()
 
@@ -38,14 +38,14 @@ func main() {
 	owner := &secp256k1fx.OutputOwners{
 		Threshold: 1,
 		Addrs: []ids.ShortID{
-			supernetOwner,
+			subnetOwner,
 		},
 	}
 
-	createSupernetStartTime := time.Now()
-	createSupernetTxID, err := pWallet.IssueCreateSupernetTx(owner)
+	createSubnetStartTime := time.Now()
+	createSubnetTxID, err := pWallet.IssueCreateSubnetTx(owner)
 	if err != nil {
-		log.Fatalf("failed to issue create supernet transaction: %s\n", err)
+		log.Fatalf("failed to issue create subnet transaction: %s\n", err)
 	}
-	log.Printf("created new supernet %s in %s\n", createSupernetTxID, time.Since(createSupernetStartTime))
+	log.Printf("created new subnet %s in %s\n", createSubnetTxID, time.Since(createSubnetStartTime))
 }

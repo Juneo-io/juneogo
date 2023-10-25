@@ -6,8 +6,8 @@ package validators
 import (
 	"context"
 
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/version"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/version"
 )
 
 // Connector represents a handler that is called when a connection is marked as

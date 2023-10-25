@@ -6,10 +6,10 @@ package uptime
 import (
 	"time"
 
-	"github.com/Juneo-io/juneogo/database"
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/utils/set"
-	"github.com/Juneo-io/juneogo/utils/timer/mockable"
+	"github.com/ava-labs/avalanchego/database"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/utils/set"
+	"github.com/ava-labs/avalanchego/utils/timer/mockable"
 )
 
 var _ TestManager = (*manager)(nil)
@@ -20,19 +20,19 @@ type Manager interface {
 }
 
 type Tracker interface {
-	StartTracking(nodeIDs []ids.NodeID, supernetID ids.ID) error
-	StopTracking(nodeIDs []ids.NodeID, supernetID ids.ID) error
+	StartTracking(nodeIDs []ids.NodeID, subnetID ids.ID) error
+	StopTracking(nodeIDs []ids.NodeID, subnetID ids.ID) error
 
-	Connect(nodeID ids.NodeID, supernetID ids.ID) error
-	IsConnected(nodeID ids.NodeID, supernetID ids.ID) bool
+	Connect(nodeID ids.NodeID, subnetID ids.ID) error
+	IsConnected(nodeID ids.NodeID, subnetID ids.ID) bool
 	Disconnect(nodeID ids.NodeID) error
 }
 
 type Calculator interface {
-	CalculateUptime(nodeID ids.NodeID, supernetID ids.ID) (time.Duration, time.Time, error)
-	CalculateUptimePercent(nodeID ids.NodeID, supernetID ids.ID) (float64, error)
+	CalculateUptime(nodeID ids.NodeID, subnetID ids.ID) (time.Duration, time.Time, error)
+	CalculateUptimePercent(nodeID ids.NodeID, subnetID ids.ID) (float64, error)
 	// CalculateUptimePercentFrom expects [startTime] to be truncated (floored) to the nearest second
-	CalculateUptimePercentFrom(nodeID ids.NodeID, supernetID ids.ID, startTime time.Time) (float64, error)
+	CalculateUptimePercentFrom(nodeID ids.NodeID, subnetID ids.ID, startTime time.Time) (float64, error)
 }
 
 type TestManager interface {
@@ -45,8 +45,8 @@ type manager struct {
 	clock mockable.Clock
 
 	state            State
-	connections      map[ids.NodeID]map[ids.ID]time.Time // nodeID -> supernetID -> time
-	trackedSupernets set.Set[ids.ID]
+	connections      map[ids.NodeID]map[ids.ID]time.Time // nodeID -> subnetID -> time
+	trackedSubnets set.Set[ids.ID]
 }
 
 func NewManager(state State) Manager {
@@ -56,10 +56,10 @@ func NewManager(state State) Manager {
 	}
 }
 
-func (m *manager) StartTracking(nodeIDs []ids.NodeID, supernetID ids.ID) error {
+func (m *manager) StartTracking(nodeIDs []ids.NodeID, subnetID ids.ID) error {
 	now := m.clock.UnixTime()
 	for _, nodeID := range nodeIDs {
-		upDuration, lastUpdated, err := m.state.GetUptime(nodeID, supernetID)
+		upDuration, lastUpdated, err := m.state.GetUptime(nodeID, subnetID)
 		if err != nil {
 			return err
 		}
@@ -72,33 +72,33 @@ func (m *manager) StartTracking(nodeIDs []ids.NodeID, supernetID ids.ID) error {
 
 		durationOffline := now.Sub(lastUpdated)
 		newUpDuration := upDuration + durationOffline
-		if err := m.state.SetUptime(nodeID, supernetID, newUpDuration, now); err != nil {
+		if err := m.state.SetUptime(nodeID, subnetID, newUpDuration, now); err != nil {
 			return err
 		}
 	}
-	m.trackedSupernets.Add(supernetID)
+	m.trackedSubnets.Add(subnetID)
 	return nil
 }
 
-func (m *manager) StopTracking(nodeIDs []ids.NodeID, supernetID ids.ID) error {
+func (m *manager) StopTracking(nodeIDs []ids.NodeID, subnetID ids.ID) error {
 	now := m.clock.UnixTime()
 	for _, nodeID := range nodeIDs {
-		connectedSupernets := m.connections[nodeID]
-		// If the node is already connected to this supernet, then we can just
+		connectedSubnets := m.connections[nodeID]
+		// If the node is already connected to this subnet, then we can just
 		// update the uptime in the state and remove the connection
-		if _, isConnected := connectedSupernets[supernetID]; isConnected {
-			if err := m.updateSupernetUptime(nodeID, supernetID); err != nil {
-				delete(connectedSupernets, supernetID)
+		if _, isConnected := connectedSubnets[subnetID]; isConnected {
+			if err := m.updateSubnetUptime(nodeID, subnetID); err != nil {
+				delete(connectedSubnets, subnetID)
 				return err
 			}
-			delete(connectedSupernets, supernetID)
+			delete(connectedSubnets, subnetID)
 			continue
 		}
 
-		// if the node is not connected to this supernet, then we need to update
+		// if the node is not connected to this subnet, then we need to update
 		// the uptime in the state from the last time the node was connected to
-		// this supernet to now.
-		upDuration, lastUpdated, err := m.state.GetUptime(nodeID, supernetID)
+		// this subnet to now.
+		upDuration, lastUpdated, err := m.state.GetUptime(nodeID, subnetID)
 		if err != nil {
 			return err
 		}
@@ -109,32 +109,32 @@ func (m *manager) StopTracking(nodeIDs []ids.NodeID, supernetID ids.ID) error {
 			continue
 		}
 
-		if err := m.state.SetUptime(nodeID, supernetID, upDuration, now); err != nil {
+		if err := m.state.SetUptime(nodeID, subnetID, upDuration, now); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func (m *manager) Connect(nodeID ids.NodeID, supernetID ids.ID) error {
-	supernetConnections, ok := m.connections[nodeID]
+func (m *manager) Connect(nodeID ids.NodeID, subnetID ids.ID) error {
+	subnetConnections, ok := m.connections[nodeID]
 	if !ok {
-		supernetConnections = make(map[ids.ID]time.Time)
-		m.connections[nodeID] = supernetConnections
+		subnetConnections = make(map[ids.ID]time.Time)
+		m.connections[nodeID] = subnetConnections
 	}
-	supernetConnections[supernetID] = m.clock.UnixTime()
+	subnetConnections[subnetID] = m.clock.UnixTime()
 	return nil
 }
 
-func (m *manager) IsConnected(nodeID ids.NodeID, supernetID ids.ID) bool {
-	_, connected := m.connections[nodeID][supernetID]
+func (m *manager) IsConnected(nodeID ids.NodeID, subnetID ids.ID) bool {
+	_, connected := m.connections[nodeID][subnetID]
 	return connected
 }
 
 func (m *manager) Disconnect(nodeID ids.NodeID) error {
-	// Update every supernet that this node was connected to
-	for supernetID := range m.connections[nodeID] {
-		if err := m.updateSupernetUptime(nodeID, supernetID); err != nil {
+	// Update every subnet that this node was connected to
+	for subnetID := range m.connections[nodeID] {
+		if err := m.updateSubnetUptime(nodeID, subnetID); err != nil {
 			return err
 		}
 	}
@@ -142,8 +142,8 @@ func (m *manager) Disconnect(nodeID ids.NodeID) error {
 	return nil
 }
 
-func (m *manager) CalculateUptime(nodeID ids.NodeID, supernetID ids.ID) (time.Duration, time.Time, error) {
-	upDuration, lastUpdated, err := m.state.GetUptime(nodeID, supernetID)
+func (m *manager) CalculateUptime(nodeID ids.NodeID, subnetID ids.ID) (time.Duration, time.Time, error) {
+	upDuration, lastUpdated, err := m.state.GetUptime(nodeID, subnetID)
 	if err != nil {
 		return 0, time.Time{}, err
 	}
@@ -155,13 +155,13 @@ func (m *manager) CalculateUptime(nodeID ids.NodeID, supernetID ids.ID) (time.Du
 		return upDuration, lastUpdated, nil
 	}
 
-	if !m.trackedSupernets.Contains(supernetID) {
+	if !m.trackedSubnets.Contains(subnetID) {
 		durationOffline := now.Sub(lastUpdated)
 		newUpDuration := upDuration + durationOffline
 		return newUpDuration, now, nil
 	}
 
-	timeConnected, isConnected := m.connections[nodeID][supernetID]
+	timeConnected, isConnected := m.connections[nodeID][subnetID]
 	if !isConnected {
 		return upDuration, now, nil
 	}
@@ -185,16 +185,16 @@ func (m *manager) CalculateUptime(nodeID ids.NodeID, supernetID ids.ID) (time.Du
 	return newUpDuration, now, nil
 }
 
-func (m *manager) CalculateUptimePercent(nodeID ids.NodeID, supernetID ids.ID) (float64, error) {
-	startTime, err := m.state.GetStartTime(nodeID, supernetID)
+func (m *manager) CalculateUptimePercent(nodeID ids.NodeID, subnetID ids.ID) (float64, error) {
+	startTime, err := m.state.GetStartTime(nodeID, subnetID)
 	if err != nil {
 		return 0, err
 	}
-	return m.CalculateUptimePercentFrom(nodeID, supernetID, startTime)
+	return m.CalculateUptimePercentFrom(nodeID, subnetID, startTime)
 }
 
-func (m *manager) CalculateUptimePercentFrom(nodeID ids.NodeID, supernetID ids.ID, startTime time.Time) (float64, error) {
-	upDuration, now, err := m.CalculateUptime(nodeID, supernetID)
+func (m *manager) CalculateUptimePercentFrom(nodeID ids.NodeID, subnetID ids.ID, startTime time.Time) (float64, error) {
+	upDuration, now, err := m.CalculateUptime(nodeID, subnetID)
 	if err != nil {
 		return 0, err
 	}
@@ -210,15 +210,15 @@ func (m *manager) SetTime(newTime time.Time) {
 	m.clock.Set(newTime)
 }
 
-// updateSupernetUptime updates the supernet uptime of the node on the state by the amount
-// of time that the node has been connected to the supernet.
-func (m *manager) updateSupernetUptime(nodeID ids.NodeID, supernetID ids.ID) error {
-	// we're not tracking this supernet, skip updating it.
-	if !m.trackedSupernets.Contains(supernetID) {
+// updateSubnetUptime updates the subnet uptime of the node on the state by the amount
+// of time that the node has been connected to the subnet.
+func (m *manager) updateSubnetUptime(nodeID ids.NodeID, subnetID ids.ID) error {
+	// we're not tracking this subnet, skip updating it.
+	if !m.trackedSubnets.Contains(subnetID) {
 		return nil
 	}
 
-	newDuration, newLastUpdated, err := m.CalculateUptime(nodeID, supernetID)
+	newDuration, newLastUpdated, err := m.CalculateUptime(nodeID, subnetID)
 	if err == database.ErrNotFound {
 		// If a non-validator disconnects, we don't care
 		return nil
@@ -227,5 +227,5 @@ func (m *manager) updateSupernetUptime(nodeID ids.NodeID, supernetID ids.ID) err
 		return err
 	}
 
-	return m.state.SetUptime(nodeID, supernetID, newDuration, newLastUpdated)
+	return m.state.SetUptime(nodeID, subnetID, newDuration, newLastUpdated)
 }

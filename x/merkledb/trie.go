@@ -7,8 +7,8 @@ import (
 	"context"
 	"errors"
 
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/utils/set"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/utils/set"
 )
 
 var errNoNewRoot = errors.New("there was no updated root in change list")

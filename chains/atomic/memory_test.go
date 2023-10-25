@@ -6,8 +6,8 @@ package atomic
 import (
 	"testing"
 
-	"github.com/Juneo-io/juneogo/database/memdb"
-	"github.com/Juneo-io/juneogo/ids"
+	"github.com/ava-labs/avalanchego/database/memdb"
+	"github.com/ava-labs/avalanchego/ids"
 )
 
 var (

@@ -4,7 +4,7 @@
 package genesis
 
 import (
-	"github.com/Juneo-io/juneogo/vms/platformvm/blocks"
+	"github.com/ava-labs/avalanchego/vms/platformvm/blocks"
 )
 
 const Version = blocks.Version

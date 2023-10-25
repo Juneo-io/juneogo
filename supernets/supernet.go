@@ -1,39 +1,39 @@
 // Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
-package supernets
+package subnets
 
 import (
 	"sync"
 
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/snow/engine/common"
-	"github.com/Juneo-io/juneogo/utils/set"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/snow/engine/common"
+	"github.com/ava-labs/avalanchego/utils/set"
 )
 
-var _ Supernet = (*supernet)(nil)
+var _ Subnet = (*subnet)(nil)
 
 type Allower interface {
-	// IsAllowed filters out nodes that are not allowed to connect to this supernet
+	// IsAllowed filters out nodes that are not allowed to connect to this subnet
 	IsAllowed(nodeID ids.NodeID, isValidator bool) bool
 }
 
-// Supernet keeps track of the currently bootstrapping chains in a supernet. If no
-// chains in the supernet are currently bootstrapping, the supernet is considered
+// Subnet keeps track of the currently bootstrapping chains in a subnet. If no
+// chains in the subnet are currently bootstrapping, the subnet is considered
 // bootstrapped.
-type Supernet interface {
+type Subnet interface {
 	common.BootstrapTracker
 
-	// AddChain adds a chain to this Supernet
+	// AddChain adds a chain to this Subnet
 	AddChain(chainID ids.ID) bool
 
-	// Config returns config of this Supernet
+	// Config returns config of this Subnet
 	Config() Config
 
 	Allower
 }
 
-type supernet struct {
+type subnet struct {
 	lock             sync.RWMutex
 	bootstrapping    set.Set[ids.ID]
 	bootstrapped     set.Set[ids.ID]
@@ -43,22 +43,22 @@ type supernet struct {
 	myNodeID         ids.NodeID
 }
 
-func New(myNodeID ids.NodeID, config Config) Supernet {
-	return &supernet{
+func New(myNodeID ids.NodeID, config Config) Subnet {
+	return &subnet{
 		bootstrappedSema: make(chan struct{}),
 		config:           config,
 		myNodeID:         myNodeID,
 	}
 }
 
-func (s *supernet) IsBootstrapped() bool {
+func (s *subnet) IsBootstrapped() bool {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 
 	return s.bootstrapping.Len() == 0
 }
 
-func (s *supernet) Bootstrapped(chainID ids.ID) {
+func (s *subnet) Bootstrapped(chainID ids.ID) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
@@ -73,11 +73,11 @@ func (s *supernet) Bootstrapped(chainID ids.ID) {
 	})
 }
 
-func (s *supernet) OnBootstrapCompleted() chan struct{} {
+func (s *subnet) OnBootstrapCompleted() chan struct{} {
 	return s.bootstrappedSema
 }
 
-func (s *supernet) AddChain(chainID ids.ID) bool {
+func (s *subnet) AddChain(chainID ids.ID) bool {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
@@ -89,15 +89,15 @@ func (s *supernet) AddChain(chainID ids.ID) bool {
 	return true
 }
 
-func (s *supernet) Config() Config {
+func (s *subnet) Config() Config {
 	return s.config
 }
 
-func (s *supernet) IsAllowed(nodeID ids.NodeID, isValidator bool) bool {
+func (s *subnet) IsAllowed(nodeID ids.NodeID, isValidator bool) bool {
 	// Case 1: NodeID is this node
-	// Case 2: This supernet is not validator-only supernet
+	// Case 2: This subnet is not validator-only subnet
 	// Case 3: NodeID is a validator for this chain
-	// Case 4: NodeID is explicitly allowed whether it's supernet validator or not
+	// Case 4: NodeID is explicitly allowed whether it's subnet validator or not
 	return nodeID == s.myNodeID ||
 		!s.config.ValidatorOnly ||
 		isValidator ||

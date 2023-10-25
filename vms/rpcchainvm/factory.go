@@ -7,14 +7,14 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Juneo-io/juneogo/utils/logging"
-	"github.com/Juneo-io/juneogo/utils/resource"
-	"github.com/Juneo-io/juneogo/vms"
-	"github.com/Juneo-io/juneogo/vms/rpcchainvm/grpcutils"
-	"github.com/Juneo-io/juneogo/vms/rpcchainvm/runtime"
-	"github.com/Juneo-io/juneogo/vms/rpcchainvm/runtime/subprocess"
+	"github.com/ava-labs/avalanchego/utils/logging"
+	"github.com/ava-labs/avalanchego/utils/resource"
+	"github.com/ava-labs/avalanchego/vms"
+	"github.com/ava-labs/avalanchego/vms/rpcchainvm/grpcutils"
+	"github.com/ava-labs/avalanchego/vms/rpcchainvm/runtime"
+	"github.com/ava-labs/avalanchego/vms/rpcchainvm/runtime/subprocess"
 
-	vmpb "github.com/Juneo-io/juneogo/proto/pb/vm"
+	vmpb "github.com/ava-labs/avalanchego/proto/pb/vm"
 )
 
 var _ vms.Factory = (*factory)(nil)

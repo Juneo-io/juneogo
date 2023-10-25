@@ -10,9 +10,9 @@ package state
 import (
 	reflect "reflect"
 
-	ids "github.com/Juneo-io/juneogo/ids"
-	choices "github.com/Juneo-io/juneogo/snow/choices"
-	block "github.com/Juneo-io/juneogo/vms/proposervm/block"
+	ids "github.com/ava-labs/avalanchego/ids"
+	choices "github.com/ava-labs/avalanchego/snow/choices"
+	block "github.com/ava-labs/avalanchego/vms/proposervm/block"
 	gomock "github.com/golang/mock/gomock"
 )
 

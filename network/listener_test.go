@@ -6,7 +6,7 @@ package network
 import (
 	"net"
 
-	"github.com/Juneo-io/juneogo/utils/ips"
+	"github.com/ava-labs/avalanchego/utils/ips"
 )
 
 var _ net.Listener = (*testListener)(nil)

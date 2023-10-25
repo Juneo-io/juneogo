@@ -11,10 +11,10 @@ import (
 	reflect "reflect"
 	time "time"
 
-	ids "github.com/Juneo-io/juneogo/ids"
-	avax "github.com/Juneo-io/juneogo/vms/components/avax"
-	status "github.com/Juneo-io/juneogo/vms/platformvm/status"
-	txs "github.com/Juneo-io/juneogo/vms/platformvm/txs"
+	ids "github.com/ava-labs/avalanchego/ids"
+	avax "github.com/ava-labs/avalanchego/vms/components/avax"
+	status "github.com/ava-labs/avalanchego/vms/platformvm/status"
+	txs "github.com/ava-labs/avalanchego/vms/platformvm/txs"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -65,28 +65,28 @@ func (mr *MockChainMockRecorder) AddRewardUTXO(arg0, arg1 interface{}) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddRewardUTXO", reflect.TypeOf((*MockChain)(nil).AddRewardUTXO), arg0, arg1)
 }
 
-// AddSupernet mocks base method.
-func (m *MockChain) AddSupernet(arg0 *txs.Tx) {
+// AddSubnet mocks base method.
+func (m *MockChain) AddSubnet(arg0 *txs.Tx) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "AddSupernet", arg0)
+	m.ctrl.Call(m, "AddSubnet", arg0)
 }
 
-// AddSupernet indicates an expected call of AddSupernet.
-func (mr *MockChainMockRecorder) AddSupernet(arg0 interface{}) *gomock.Call {
+// AddSubnet indicates an expected call of AddSubnet.
+func (mr *MockChainMockRecorder) AddSubnet(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddSupernet", reflect.TypeOf((*MockChain)(nil).AddSupernet), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddSubnet", reflect.TypeOf((*MockChain)(nil).AddSubnet), arg0)
 }
 
-// AddSupernetTransformation mocks base method.
-func (m *MockChain) AddSupernetTransformation(arg0 *txs.Tx) {
+// AddSubnetTransformation mocks base method.
+func (m *MockChain) AddSubnetTransformation(arg0 *txs.Tx) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "AddSupernetTransformation", arg0)
+	m.ctrl.Call(m, "AddSubnetTransformation", arg0)
 }
 
-// AddSupernetTransformation indicates an expected call of AddSupernetTransformation.
-func (mr *MockChainMockRecorder) AddSupernetTransformation(arg0 interface{}) *gomock.Call {
+// AddSubnetTransformation indicates an expected call of AddSubnetTransformation.
+func (mr *MockChainMockRecorder) AddSubnetTransformation(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddSupernetTransformation", reflect.TypeOf((*MockChain)(nil).AddSupernetTransformation), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddSubnetTransformation", reflect.TypeOf((*MockChain)(nil).AddSubnetTransformation), arg0)
 }
 
 // AddTx mocks base method.
@@ -323,34 +323,34 @@ func (mr *MockChainMockRecorder) GetRewardUTXOs(arg0 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRewardUTXOs", reflect.TypeOf((*MockChain)(nil).GetRewardUTXOs), arg0)
 }
 
-// GetSupernetTransformation mocks base method.
-func (m *MockChain) GetSupernetTransformation(arg0 ids.ID) (*txs.Tx, error) {
+// GetSubnetTransformation mocks base method.
+func (m *MockChain) GetSubnetTransformation(arg0 ids.ID) (*txs.Tx, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetSupernetTransformation", arg0)
+	ret := m.ctrl.Call(m, "GetSubnetTransformation", arg0)
 	ret0, _ := ret[0].(*txs.Tx)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetSupernetTransformation indicates an expected call of GetSupernetTransformation.
-func (mr *MockChainMockRecorder) GetSupernetTransformation(arg0 interface{}) *gomock.Call {
+// GetSubnetTransformation indicates an expected call of GetSubnetTransformation.
+func (mr *MockChainMockRecorder) GetSubnetTransformation(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSupernetTransformation", reflect.TypeOf((*MockChain)(nil).GetSupernetTransformation), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSubnetTransformation", reflect.TypeOf((*MockChain)(nil).GetSubnetTransformation), arg0)
 }
 
-// GetSupernets mocks base method.
-func (m *MockChain) GetSupernets() ([]*txs.Tx, error) {
+// GetSubnets mocks base method.
+func (m *MockChain) GetSubnets() ([]*txs.Tx, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetSupernets")
+	ret := m.ctrl.Call(m, "GetSubnets")
 	ret0, _ := ret[0].([]*txs.Tx)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetSupernets indicates an expected call of GetSupernets.
-func (mr *MockChainMockRecorder) GetSupernets() *gomock.Call {
+// GetSubnets indicates an expected call of GetSubnets.
+func (mr *MockChainMockRecorder) GetSubnets() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSupernets", reflect.TypeOf((*MockChain)(nil).GetSupernets))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSubnets", reflect.TypeOf((*MockChain)(nil).GetSubnets))
 }
 
 // GetTimestamp mocks base method.

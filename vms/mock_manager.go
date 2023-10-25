@@ -11,8 +11,8 @@ import (
 	context "context"
 	reflect "reflect"
 
-	ids "github.com/Juneo-io/juneogo/ids"
-	logging "github.com/Juneo-io/juneogo/utils/logging"
+	ids "github.com/ava-labs/avalanchego/ids"
+	logging "github.com/ava-labs/avalanchego/utils/logging"
 	gomock "github.com/golang/mock/gomock"
 )
 

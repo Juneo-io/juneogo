@@ -6,9 +6,9 @@ package avm
 import (
 	"reflect"
 
-	"github.com/Juneo-io/juneogo/snow"
-	"github.com/Juneo-io/juneogo/vms/avm/fxs"
-	"github.com/Juneo-io/juneogo/vms/avm/txs"
+	"github.com/ava-labs/avalanchego/snow"
+	"github.com/ava-labs/avalanchego/vms/avm/fxs"
+	"github.com/ava-labs/avalanchego/vms/avm/txs"
 )
 
 var _ txs.Visitor = (*txInit)(nil)

@@ -9,13 +9,13 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Juneo-io/juneogo/chains/atomic"
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/utils/set"
-	"github.com/Juneo-io/juneogo/vms/components/avax"
-	"github.com/Juneo-io/juneogo/vms/components/verify"
-	"github.com/Juneo-io/juneogo/vms/platformvm/state"
-	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
+	"github.com/ava-labs/avalanchego/chains/atomic"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/utils/set"
+	"github.com/ava-labs/avalanchego/vms/components/avax"
+	"github.com/ava-labs/avalanchego/vms/components/verify"
+	"github.com/ava-labs/avalanchego/vms/platformvm/state"
+	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
 )
 
 var (
@@ -50,7 +50,7 @@ func (e *StandardTxExecutor) CreateChainTx(tx *txs.CreateChainTx) error {
 		return err
 	}
 
-	baseTxCreds, err := verifyPoASupernetAuthorization(e.Backend, e.State, e.Tx, tx.SupernetID, tx.SupernetAuth)
+	baseTxCreds, err := verifyPoASubnetAuthorization(e.Backend, e.State, e.Tx, tx.SubnetID, tx.SubnetAuth)
 	if err != nil {
 		return err
 	}
@@ -80,7 +80,7 @@ func (e *StandardTxExecutor) CreateChainTx(tx *txs.CreateChainTx) error {
 	// Add the new chain to the database
 	e.State.AddChain(e.Tx)
 
-	// If this proposal is committed and this node is a member of the supernet
+	// If this proposal is committed and this node is a member of the subnet
 	// that validates the blockchain, create the blockchain
 	e.OnAccept = func() {
 		e.Config.CreateChain(txID, tx)
@@ -88,7 +88,7 @@ func (e *StandardTxExecutor) CreateChainTx(tx *txs.CreateChainTx) error {
 	return nil
 }
 
-func (e *StandardTxExecutor) CreateSupernetTx(tx *txs.CreateSupernetTx) error {
+func (e *StandardTxExecutor) CreateSubnetTx(tx *txs.CreateSubnetTx) error {
 	// Make sure this transaction is well formed.
 	if err := e.Tx.SyntacticVerify(e.Ctx); err != nil {
 		return err
@@ -96,7 +96,7 @@ func (e *StandardTxExecutor) CreateSupernetTx(tx *txs.CreateSupernetTx) error {
 
 	// Verify the flowcheck
 	timestamp := e.State.GetTimestamp()
-	createSupernetTxFee := e.Config.GetCreateSupernetTxFee(timestamp)
+	createSubnetTxFee := e.Config.GetCreateSubnetTxFee(timestamp)
 	if err := e.FlowChecker.VerifySpend(
 		tx,
 		e.State,
@@ -104,7 +104,7 @@ func (e *StandardTxExecutor) CreateSupernetTx(tx *txs.CreateSupernetTx) error {
 		tx.Outs,
 		e.Tx.Creds,
 		map[ids.ID]uint64{
-			e.Ctx.AVAXAssetID: createSupernetTxFee,
+			e.Ctx.AVAXAssetID: createSubnetTxFee,
 		},
 	); err != nil {
 		return err
@@ -116,8 +116,8 @@ func (e *StandardTxExecutor) CreateSupernetTx(tx *txs.CreateSupernetTx) error {
 	avax.Consume(e.State, tx.Ins)
 	// Produce the UTXOS
 	avax.Produce(e.State, txID, tx.Outs)
-	// Add the new supernet to the database
-	e.State.AddSupernet(e.Tx)
+	// Add the new subnet to the database
+	e.State.AddSubnet(e.Tx)
 	return nil
 }
 
@@ -136,7 +136,7 @@ func (e *StandardTxExecutor) ImportTx(tx *txs.ImportTx) error {
 	}
 
 	if e.Bootstrapped.Get() {
-		if err := verify.SameSupernet(context.TODO(), e.Ctx, tx.SourceChain); err != nil {
+		if err := verify.SameSubnet(context.TODO(), e.Ctx, tx.SourceChain); err != nil {
 			return err
 		}
 
@@ -204,7 +204,7 @@ func (e *StandardTxExecutor) ExportTx(tx *txs.ExportTx) error {
 	copy(outs[len(tx.Outs):], tx.ExportedOutputs)
 
 	if e.Bootstrapped.Get() {
-		if err := verify.SameSupernet(context.TODO(), e.Ctx, tx.DestinationChain); err != nil {
+		if err := verify.SameSubnet(context.TODO(), e.Ctx, tx.DestinationChain); err != nil {
 			return err
 		}
 	}
@@ -291,8 +291,8 @@ func (e *StandardTxExecutor) AddValidatorTx(tx *txs.AddValidatorTx) error {
 	return nil
 }
 
-func (e *StandardTxExecutor) AddSupernetValidatorTx(tx *txs.AddSupernetValidatorTx) error {
-	if err := verifyAddSupernetValidatorTx(
+func (e *StandardTxExecutor) AddSubnetValidatorTx(tx *txs.AddSubnetValidatorTx) error {
+	if err := verifyAddSubnetValidatorTx(
 		e.Backend,
 		e.State,
 		e.Tx,
@@ -337,13 +337,13 @@ func (e *StandardTxExecutor) AddDelegatorTx(tx *txs.AddDelegatorTx) error {
 	return nil
 }
 
-// Verifies a [*txs.RemoveSupernetValidatorTx] and, if it passes, executes it on
-// [e.State]. For verification rules, see [removeSupernetValidatorValidation].
+// Verifies a [*txs.RemoveSubnetValidatorTx] and, if it passes, executes it on
+// [e.State]. For verification rules, see [removeSubnetValidatorValidation].
 // This transaction will result in [tx.NodeID] being removed as a validator of
-// [tx.SupernetID].
+// [tx.SubnetID].
 // Note: [tx.NodeID] may be either a current or pending validator.
-func (e *StandardTxExecutor) RemoveSupernetValidatorTx(tx *txs.RemoveSupernetValidatorTx) error {
-	staker, isCurrentValidator, err := removeSupernetValidatorValidation(
+func (e *StandardTxExecutor) RemoveSubnetValidatorTx(tx *txs.RemoveSubnetValidatorTx) error {
+	staker, isCurrentValidator, err := removeSubnetValidatorValidation(
 		e.Backend,
 		e.State,
 		e.Tx,
@@ -359,7 +359,7 @@ func (e *StandardTxExecutor) RemoveSupernetValidatorTx(tx *txs.RemoveSupernetVal
 		e.State.DeletePendingValidator(staker)
 	}
 
-	// Invariant: There are no permissioned supernet delegators to remove.
+	// Invariant: There are no permissioned subnet delegators to remove.
 
 	txID := e.Tx.ID()
 	avax.Consume(e.State, tx.Ins)
@@ -368,7 +368,7 @@ func (e *StandardTxExecutor) RemoveSupernetValidatorTx(tx *txs.RemoveSupernetVal
 	return nil
 }
 
-func (e *StandardTxExecutor) TransformSupernetTx(tx *txs.TransformSupernetTx) error {
+func (e *StandardTxExecutor) TransformSubnetTx(tx *txs.TransformSubnetTx) error {
 	if err := e.Tx.SyntacticVerify(e.Ctx); err != nil {
 		return err
 	}
@@ -379,7 +379,7 @@ func (e *StandardTxExecutor) TransformSupernetTx(tx *txs.TransformSupernetTx) er
 		return errMaxStakeDurationTooLarge
 	}
 
-	baseTxCreds, err := verifyPoASupernetAuthorization(e.Backend, e.State, e.Tx, tx.Supernet, tx.SupernetAuth)
+	baseTxCreds, err := verifyPoASubnetAuthorization(e.Backend, e.State, e.Tx, tx.Subnet, tx.SubnetAuth)
 	if err != nil {
 		return err
 	}
@@ -395,7 +395,7 @@ func (e *StandardTxExecutor) TransformSupernetTx(tx *txs.TransformSupernetTx) er
 		//            entry in this map literal from being overwritten by the
 		//            second entry.
 		map[ids.ID]uint64{
-			e.Ctx.AVAXAssetID: e.Config.TransformSupernetTxFee,
+			e.Ctx.AVAXAssetID: e.Config.TransformSubnetTxFee,
 			tx.AssetID:        totalRewardAmount,
 		},
 	); err != nil {
@@ -408,10 +408,10 @@ func (e *StandardTxExecutor) TransformSupernetTx(tx *txs.TransformSupernetTx) er
 	avax.Consume(e.State, tx.Ins)
 	// Produce the UTXOS
 	avax.Produce(e.State, txID, tx.Outs)
-	// Transform the new supernet in the database
-	e.State.AddSupernetTransformation(e.Tx)
-	e.State.SetCurrentSupply(tx.Supernet, uint64(0))
-	e.State.SetRewardsPoolSupply(tx.Supernet, totalRewardAmount)
+	// Transform the new subnet in the database
+	e.State.AddSubnetTransformation(e.Tx)
+	e.State.SetCurrentSupply(tx.Subnet, uint64(0))
+	e.State.SetRewardsPoolSupply(tx.Subnet, totalRewardAmount)
 	return nil
 }
 

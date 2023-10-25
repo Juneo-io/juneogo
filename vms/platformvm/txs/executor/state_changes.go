@@ -8,12 +8,12 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/utils/constants"
-	"github.com/Juneo-io/juneogo/utils/math"
-	"github.com/Juneo-io/juneogo/vms/platformvm/reward"
-	"github.com/Juneo-io/juneogo/vms/platformvm/state"
-	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/utils/constants"
+	"github.com/ava-labs/avalanchego/utils/math"
+	"github.com/ava-labs/avalanchego/vms/platformvm/reward"
+	"github.com/ava-labs/avalanchego/vms/platformvm/state"
+	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
 )
 
 var (
@@ -74,11 +74,11 @@ type stateChanges struct {
 }
 
 func (s *stateChanges) Apply(stateDiff state.Diff) {
-	for supernetID, supply := range s.updatedSupplies {
-		stateDiff.SetCurrentSupply(supernetID, supply)
+	for subnetID, supply := range s.updatedSupplies {
+		stateDiff.SetCurrentSupply(subnetID, supply)
 	}
-	for supernetID, rewardsPoolSupply := range s.updatedRewardsPoolSupplies {
-		stateDiff.SetRewardsPoolSupply(supernetID, rewardsPoolSupply)
+	for subnetID, rewardsPoolSupply := range s.updatedRewardsPoolSupplies {
+		stateDiff.SetRewardsPoolSupply(subnetID, rewardsPoolSupply)
 	}
 
 	for _, currentValidatorToAdd := range s.currentValidatorsToAdd {
@@ -145,35 +145,35 @@ func AdvanceTimeTo(
 		stakerToAdd.NextTime = stakerToRemove.EndTime
 		stakerToAdd.Priority = txs.PendingToCurrentPriorities[stakerToRemove.Priority]
 
-		if stakerToRemove.Priority == txs.SupernetPermissionedValidatorPendingPriority {
+		if stakerToRemove.Priority == txs.SubnetPermissionedValidatorPendingPriority {
 			changes.currentValidatorsToAdd = append(changes.currentValidatorsToAdd, &stakerToAdd)
 			changes.pendingValidatorsToRemove = append(changes.pendingValidatorsToRemove, stakerToRemove)
 			continue
 		}
 
-		supply, ok := changes.updatedSupplies[stakerToRemove.SupernetID]
+		supply, ok := changes.updatedSupplies[stakerToRemove.SubnetID]
 		if !ok {
-			supply, err = parentState.GetCurrentSupply(stakerToRemove.SupernetID)
+			supply, err = parentState.GetCurrentSupply(stakerToRemove.SubnetID)
 			if err != nil {
 				return nil, err
 			}
 		}
 
-		rewardsPoolSupply := changes.updatedRewardsPoolSupplies[stakerToRemove.SupernetID]
+		rewardsPoolSupply := changes.updatedRewardsPoolSupplies[stakerToRemove.SubnetID]
 		if !ok {
-			rewardsPoolSupply, err = parentState.GetRewardsPoolSupply(stakerToRemove.SupernetID)
+			rewardsPoolSupply, err = parentState.GetRewardsPoolSupply(stakerToRemove.SubnetID)
 			if err != nil {
 				return nil, err
 			}
 		}
 
-		rewards, err := GetRewardsCalculator(backend, parentState, stakerToRemove.SupernetID)
+		rewards, err := GetRewardsCalculator(backend, parentState, stakerToRemove.SubnetID)
 		if err != nil {
 			return nil, err
 		}
 
 		potentialReward := uint64(0)
-		if stakerToRemove.SupernetID == constants.PrimaryNetworkID {
+		if stakerToRemove.SubnetID == constants.PrimaryNetworkID {
 			potentialReward = rewards.CalculatePrimary(
 				stakerToRemove.EndTime.Sub(stakerToRemove.StartTime),
 				stakerToRemove.StartTime,
@@ -194,7 +194,7 @@ func AdvanceTimeTo(
 			extraValue = potentialReward - rewardsPoolSupply
 		}
 		if extraValue > 0 {
-			if stakerToRemove.SupernetID == constants.PrimaryNetworkID {
+			if stakerToRemove.SubnetID == constants.PrimaryNetworkID {
 				// Extra value will be minted update supply accordingly.
 				supply, err = math.Add64(supply, extraValue)
 				if err != nil {
@@ -210,16 +210,16 @@ func AdvanceTimeTo(
 		if err != nil {
 			return nil, err
 		}
-		changes.updatedRewardsPoolSupplies[stakerToRemove.SupernetID] = rewardsPoolSupply
+		changes.updatedRewardsPoolSupplies[stakerToRemove.SubnetID] = rewardsPoolSupply
 
-		changes.updatedSupplies[stakerToRemove.SupernetID] = supply
+		changes.updatedSupplies[stakerToRemove.SubnetID] = supply
 
 		switch stakerToRemove.Priority {
-		case txs.PrimaryNetworkValidatorPendingPriority, txs.SupernetPermissionlessValidatorPendingPriority:
+		case txs.PrimaryNetworkValidatorPendingPriority, txs.SubnetPermissionlessValidatorPendingPriority:
 			changes.currentValidatorsToAdd = append(changes.currentValidatorsToAdd, &stakerToAdd)
 			changes.pendingValidatorsToRemove = append(changes.pendingValidatorsToRemove, stakerToRemove)
 
-		case txs.PrimaryNetworkDelegatorApricotPendingPriority, txs.PrimaryNetworkDelegatorBanffPendingPriority, txs.SupernetPermissionlessDelegatorPendingPriority:
+		case txs.PrimaryNetworkDelegatorApricotPendingPriority, txs.PrimaryNetworkDelegatorBanffPendingPriority, txs.SubnetPermissionlessDelegatorPendingPriority:
 			changes.currentDelegatorsToAdd = append(changes.currentDelegatorsToAdd, &stakerToAdd)
 			changes.pendingDelegatorsToRemove = append(changes.pendingDelegatorsToRemove, stakerToRemove)
 
@@ -242,7 +242,7 @@ func AdvanceTimeTo(
 
 		// Invariant: Permissioned stakers are encountered first for a given
 		//            timestamp because their priority is the smallest.
-		if stakerToRemove.Priority != txs.SupernetPermissionedValidatorCurrentPriority {
+		if stakerToRemove.Priority != txs.SubnetPermissionedValidatorCurrentPriority {
 			// Permissionless stakers are removed by the RewardValidatorTx, not
 			// an AdvanceTimeTx.
 			break
@@ -256,23 +256,23 @@ func AdvanceTimeTo(
 func GetRewardsCalculator(
 	backend *Backend,
 	parentState state.Chain,
-	supernetID ids.ID,
+	subnetID ids.ID,
 ) (reward.Calculator, error) {
-	if supernetID == constants.PrimaryNetworkID {
+	if subnetID == constants.PrimaryNetworkID {
 		return backend.Rewards, nil
 	}
 
-	transformSupernetIntf, err := parentState.GetSupernetTransformation(supernetID)
+	transformSubnetIntf, err := parentState.GetSubnetTransformation(subnetID)
 	if err != nil {
 		return nil, err
 	}
-	transformSupernet, ok := transformSupernetIntf.Unsigned.(*txs.TransformSupernetTx)
+	transformSubnet, ok := transformSubnetIntf.Unsigned.(*txs.TransformSubnetTx)
 	if !ok {
-		return nil, errIsNotTransformSupernetTx
+		return nil, errIsNotTransformSubnetTx
 	}
 
 	return reward.NewCalculator(reward.Config{
 		MintingPeriod: backend.Config.RewardConfig.MintingPeriod,
-		RewardShare:   transformSupernet.RewardShare,
+		RewardShare:   transformSubnet.RewardShare,
 	}), nil
 }

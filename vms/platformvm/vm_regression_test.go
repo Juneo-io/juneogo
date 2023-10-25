@@ -12,31 +12,31 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/Juneo-io/juneogo/chains"
-	"github.com/Juneo-io/juneogo/chains/atomic"
-	"github.com/Juneo-io/juneogo/database"
-	"github.com/Juneo-io/juneogo/database/manager"
-	"github.com/Juneo-io/juneogo/database/prefixdb"
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/snow/choices"
-	"github.com/Juneo-io/juneogo/snow/consensus/snowman"
-	"github.com/Juneo-io/juneogo/snow/engine/common"
-	"github.com/Juneo-io/juneogo/snow/uptime"
-	"github.com/Juneo-io/juneogo/snow/validators"
-	"github.com/Juneo-io/juneogo/utils"
-	"github.com/Juneo-io/juneogo/utils/constants"
-	"github.com/Juneo-io/juneogo/utils/crypto/secp256k1"
-	"github.com/Juneo-io/juneogo/version"
-	"github.com/Juneo-io/juneogo/vms/components/avax"
-	"github.com/Juneo-io/juneogo/vms/platformvm/blocks"
-	"github.com/Juneo-io/juneogo/vms/platformvm/config"
-	"github.com/Juneo-io/juneogo/vms/platformvm/metrics"
-	"github.com/Juneo-io/juneogo/vms/platformvm/reward"
-	"github.com/Juneo-io/juneogo/vms/platformvm/state"
-	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
-	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
+	"github.com/ava-labs/avalanchego/chains"
+	"github.com/ava-labs/avalanchego/chains/atomic"
+	"github.com/ava-labs/avalanchego/database"
+	"github.com/ava-labs/avalanchego/database/manager"
+	"github.com/ava-labs/avalanchego/database/prefixdb"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/snow/choices"
+	"github.com/ava-labs/avalanchego/snow/consensus/snowman"
+	"github.com/ava-labs/avalanchego/snow/engine/common"
+	"github.com/ava-labs/avalanchego/snow/uptime"
+	"github.com/ava-labs/avalanchego/snow/validators"
+	"github.com/ava-labs/avalanchego/utils"
+	"github.com/ava-labs/avalanchego/utils/constants"
+	"github.com/ava-labs/avalanchego/utils/crypto/secp256k1"
+	"github.com/ava-labs/avalanchego/version"
+	"github.com/ava-labs/avalanchego/vms/components/avax"
+	"github.com/ava-labs/avalanchego/vms/platformvm/blocks"
+	"github.com/ava-labs/avalanchego/vms/platformvm/config"
+	"github.com/ava-labs/avalanchego/vms/platformvm/metrics"
+	"github.com/ava-labs/avalanchego/vms/platformvm/reward"
+	"github.com/ava-labs/avalanchego/vms/platformvm/state"
+	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
+	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
 
-	txexecutor "github.com/Juneo-io/juneogo/vms/platformvm/txs/executor"
+	txexecutor "github.com/ava-labs/avalanchego/vms/platformvm/txs/executor"
 )
 
 func TestAddDelegatorTxOverDelegatedRegression(t *testing.T) {
@@ -401,7 +401,7 @@ func TestUnverifiedParentPanicRegression(t *testing.T) {
 	addr0 := key0.PublicKey().Address()
 	addr1 := key1.PublicKey().Address()
 
-	addSupernetTx0, err := vm.txBuilder.NewCreateSupernetTx(
+	addSubnetTx0, err := vm.txBuilder.NewCreateSubnetTx(
 		1,
 		[]ids.ShortID{addr0},
 		[]*secp256k1.PrivateKey{key0},
@@ -409,7 +409,7 @@ func TestUnverifiedParentPanicRegression(t *testing.T) {
 	)
 	require.NoError(err)
 
-	addSupernetTx1, err := vm.txBuilder.NewCreateSupernetTx(
+	addSubnetTx1, err := vm.txBuilder.NewCreateSubnetTx(
 		1,
 		[]ids.ShortID{addr1},
 		[]*secp256k1.PrivateKey{key1},
@@ -417,7 +417,7 @@ func TestUnverifiedParentPanicRegression(t *testing.T) {
 	)
 	require.NoError(err)
 
-	addSupernetTx2, err := vm.txBuilder.NewCreateSupernetTx(
+	addSubnetTx2, err := vm.txBuilder.NewCreateSubnetTx(
 		1,
 		[]ids.ShortID{addr1},
 		[]*secp256k1.PrivateKey{key1},
@@ -436,43 +436,43 @@ func TestUnverifiedParentPanicRegression(t *testing.T) {
 		preferredChainTime,
 		preferredID,
 		preferredHeight+1,
-		[]*txs.Tx{addSupernetTx0},
+		[]*txs.Tx{addSubnetTx0},
 	)
 	require.NoError(err)
-	addSupernetBlk0 := vm.manager.NewBlock(statelessStandardBlk)
+	addSubnetBlk0 := vm.manager.NewBlock(statelessStandardBlk)
 
 	statelessStandardBlk, err = blocks.NewBanffStandardBlock(
 		preferredChainTime,
 		preferredID,
 		preferredHeight+1,
-		[]*txs.Tx{addSupernetTx1},
+		[]*txs.Tx{addSubnetTx1},
 	)
 	require.NoError(err)
-	addSupernetBlk1 := vm.manager.NewBlock(statelessStandardBlk)
+	addSubnetBlk1 := vm.manager.NewBlock(statelessStandardBlk)
 
 	statelessStandardBlk, err = blocks.NewBanffStandardBlock(
 		preferredChainTime,
-		addSupernetBlk1.ID(),
+		addSubnetBlk1.ID(),
 		preferredHeight+2,
-		[]*txs.Tx{addSupernetTx2},
+		[]*txs.Tx{addSubnetTx2},
 	)
 	require.NoError(err)
-	addSupernetBlk2 := vm.manager.NewBlock(statelessStandardBlk)
+	addSubnetBlk2 := vm.manager.NewBlock(statelessStandardBlk)
 
-	_, err = vm.ParseBlock(context.Background(), addSupernetBlk0.Bytes())
+	_, err = vm.ParseBlock(context.Background(), addSubnetBlk0.Bytes())
 	require.NoError(err)
 
-	_, err = vm.ParseBlock(context.Background(), addSupernetBlk1.Bytes())
+	_, err = vm.ParseBlock(context.Background(), addSubnetBlk1.Bytes())
 	require.NoError(err)
 
-	_, err = vm.ParseBlock(context.Background(), addSupernetBlk2.Bytes())
+	_, err = vm.ParseBlock(context.Background(), addSubnetBlk2.Bytes())
 	require.NoError(err)
 
-	require.NoError(addSupernetBlk0.Verify(context.Background()))
-	require.NoError(addSupernetBlk0.Accept(context.Background()))
+	require.NoError(addSubnetBlk0.Verify(context.Background()))
+	require.NoError(addSubnetBlk0.Accept(context.Background()))
 
 	// Doesn't matter what verify returns as long as it's not panicking.
-	_ = addSupernetBlk2.Verify(context.Background())
+	_ = addSubnetBlk2.Verify(context.Background())
 }
 
 func TestRejectedStateRegressionInvalidValidatorTimestamp(t *testing.T) {
@@ -1298,7 +1298,7 @@ func TestRemovePermissionedValidatorDuringPendingToCurrentTransitionNotTracked(t
 	require.NoError(addValidatorBlock.Accept(context.Background()))
 	require.NoError(vm.SetPreference(context.Background(), vm.manager.LastAccepted()))
 
-	createSupernetTx, err := vm.txBuilder.NewCreateSupernetTx(
+	createSubnetTx, err := vm.txBuilder.NewCreateSubnetTx(
 		1,
 		[]ids.ShortID{changeAddr},
 		[]*secp256k1.PrivateKey{keys[0], keys[1]},
@@ -1306,48 +1306,48 @@ func TestRemovePermissionedValidatorDuringPendingToCurrentTransitionNotTracked(t
 	)
 	require.NoError(err)
 
-	err = vm.Builder.AddUnverifiedTx(createSupernetTx)
+	err = vm.Builder.AddUnverifiedTx(createSubnetTx)
 	require.NoError(err)
 
-	// trigger block creation for the supernet tx
-	createSupernetBlock, err := vm.Builder.BuildBlock(context.Background())
+	// trigger block creation for the subnet tx
+	createSubnetBlock, err := vm.Builder.BuildBlock(context.Background())
 	require.NoError(err)
-	require.NoError(createSupernetBlock.Verify(context.Background()))
-	require.NoError(createSupernetBlock.Accept(context.Background()))
+	require.NoError(createSubnetBlock.Verify(context.Background()))
+	require.NoError(createSubnetBlock.Accept(context.Background()))
 	require.NoError(vm.SetPreference(context.Background(), vm.manager.LastAccepted()))
 
-	addSupernetValidatorTx, err := vm.txBuilder.NewAddSupernetValidatorTx(
+	addSubnetValidatorTx, err := vm.txBuilder.NewAddSubnetValidatorTx(
 		defaultMaxValidatorStake,
 		uint64(validatorStartTime.Unix()),
 		uint64(validatorEndTime.Unix()),
 		ids.NodeID(id),
-		createSupernetTx.ID(),
+		createSubnetTx.ID(),
 		[]*secp256k1.PrivateKey{keys[0], keys[1]},
 		changeAddr,
 	)
 	require.NoError(err)
 
-	err = vm.Builder.AddUnverifiedTx(addSupernetValidatorTx)
+	err = vm.Builder.AddUnverifiedTx(addSubnetValidatorTx)
 	require.NoError(err)
 
 	// trigger block creation for the validator tx
-	addSupernetValidatorBlock, err := vm.Builder.BuildBlock(context.Background())
+	addSubnetValidatorBlock, err := vm.Builder.BuildBlock(context.Background())
 	require.NoError(err)
-	require.NoError(addSupernetValidatorBlock.Verify(context.Background()))
-	require.NoError(addSupernetValidatorBlock.Accept(context.Background()))
+	require.NoError(addSubnetValidatorBlock.Verify(context.Background()))
+	require.NoError(addSubnetValidatorBlock.Accept(context.Background()))
 	require.NoError(vm.SetPreference(context.Background(), vm.manager.LastAccepted()))
 
 	emptyValidatorSet, err := vm.GetValidatorSet(
 		context.Background(),
-		addSupernetValidatorBlock.Height(),
-		createSupernetTx.ID(),
+		addSubnetValidatorBlock.Height(),
+		createSubnetTx.ID(),
 	)
 	require.NoError(err)
 	require.Empty(emptyValidatorSet)
 
-	removeSupernetValidatorTx, err := vm.txBuilder.NewRemoveSupernetValidatorTx(
+	removeSubnetValidatorTx, err := vm.txBuilder.NewRemoveSubnetValidatorTx(
 		ids.NodeID(id),
-		createSupernetTx.ID(),
+		createSubnetTx.ID(),
 		[]*secp256k1.PrivateKey{keys[0], keys[1]},
 		changeAddr,
 	)
@@ -1357,20 +1357,20 @@ func TestRemovePermissionedValidatorDuringPendingToCurrentTransitionNotTracked(t
 	// validator set into the current validator set.
 	vm.clock.Set(validatorStartTime)
 
-	err = vm.Builder.AddUnverifiedTx(removeSupernetValidatorTx)
+	err = vm.Builder.AddUnverifiedTx(removeSubnetValidatorTx)
 	require.NoError(err)
 
 	// trigger block creation for the validator tx
-	removeSupernetValidatorBlock, err := vm.Builder.BuildBlock(context.Background())
+	removeSubnetValidatorBlock, err := vm.Builder.BuildBlock(context.Background())
 	require.NoError(err)
-	require.NoError(removeSupernetValidatorBlock.Verify(context.Background()))
-	require.NoError(removeSupernetValidatorBlock.Accept(context.Background()))
+	require.NoError(removeSubnetValidatorBlock.Verify(context.Background()))
+	require.NoError(removeSubnetValidatorBlock.Accept(context.Background()))
 	require.NoError(vm.SetPreference(context.Background(), vm.manager.LastAccepted()))
 
 	emptyValidatorSet, err = vm.GetValidatorSet(
 		context.Background(),
-		addSupernetValidatorBlock.Height(),
-		createSupernetTx.ID(),
+		addSubnetValidatorBlock.Height(),
+		createSubnetTx.ID(),
 	)
 	require.NoError(err)
 	require.Empty(emptyValidatorSet)
@@ -1420,7 +1420,7 @@ func TestRemovePermissionedValidatorDuringPendingToCurrentTransitionTracked(t *t
 	require.NoError(addValidatorBlock.Accept(context.Background()))
 	require.NoError(vm.SetPreference(context.Background(), vm.manager.LastAccepted()))
 
-	createSupernetTx, err := vm.txBuilder.NewCreateSupernetTx(
+	createSubnetTx, err := vm.txBuilder.NewCreateSubnetTx(
 		1,
 		[]ids.ShortID{changeAddr},
 		[]*secp256k1.PrivateKey{keys[0], keys[1]},
@@ -1428,48 +1428,48 @@ func TestRemovePermissionedValidatorDuringPendingToCurrentTransitionTracked(t *t
 	)
 	require.NoError(err)
 
-	err = vm.Builder.AddUnverifiedTx(createSupernetTx)
+	err = vm.Builder.AddUnverifiedTx(createSubnetTx)
 	require.NoError(err)
 
-	// trigger block creation for the supernet tx
-	createSupernetBlock, err := vm.Builder.BuildBlock(context.Background())
+	// trigger block creation for the subnet tx
+	createSubnetBlock, err := vm.Builder.BuildBlock(context.Background())
 	require.NoError(err)
-	require.NoError(createSupernetBlock.Verify(context.Background()))
-	require.NoError(createSupernetBlock.Accept(context.Background()))
+	require.NoError(createSubnetBlock.Verify(context.Background()))
+	require.NoError(createSubnetBlock.Accept(context.Background()))
 	require.NoError(vm.SetPreference(context.Background(), vm.manager.LastAccepted()))
 
-	vm.TrackedSupernets.Add(createSupernetTx.ID())
-	supernetValidators := validators.NewSet()
-	err = vm.state.ValidatorSet(createSupernetTx.ID(), supernetValidators)
+	vm.TrackedSubnets.Add(createSubnetTx.ID())
+	subnetValidators := validators.NewSet()
+	err = vm.state.ValidatorSet(createSubnetTx.ID(), subnetValidators)
 	require.NoError(err)
 
-	added := vm.Validators.Add(createSupernetTx.ID(), supernetValidators)
+	added := vm.Validators.Add(createSubnetTx.ID(), subnetValidators)
 	require.True(added)
 
-	addSupernetValidatorTx, err := vm.txBuilder.NewAddSupernetValidatorTx(
+	addSubnetValidatorTx, err := vm.txBuilder.NewAddSubnetValidatorTx(
 		defaultMaxValidatorStake,
 		uint64(validatorStartTime.Unix()),
 		uint64(validatorEndTime.Unix()),
 		ids.NodeID(id),
-		createSupernetTx.ID(),
+		createSubnetTx.ID(),
 		[]*secp256k1.PrivateKey{keys[0], keys[1]},
 		changeAddr,
 	)
 	require.NoError(err)
 
-	err = vm.Builder.AddUnverifiedTx(addSupernetValidatorTx)
+	err = vm.Builder.AddUnverifiedTx(addSubnetValidatorTx)
 	require.NoError(err)
 
 	// trigger block creation for the validator tx
-	addSupernetValidatorBlock, err := vm.Builder.BuildBlock(context.Background())
+	addSubnetValidatorBlock, err := vm.Builder.BuildBlock(context.Background())
 	require.NoError(err)
-	require.NoError(addSupernetValidatorBlock.Verify(context.Background()))
-	require.NoError(addSupernetValidatorBlock.Accept(context.Background()))
+	require.NoError(addSubnetValidatorBlock.Verify(context.Background()))
+	require.NoError(addSubnetValidatorBlock.Accept(context.Background()))
 	require.NoError(vm.SetPreference(context.Background(), vm.manager.LastAccepted()))
 
-	removeSupernetValidatorTx, err := vm.txBuilder.NewRemoveSupernetValidatorTx(
+	removeSubnetValidatorTx, err := vm.txBuilder.NewRemoveSubnetValidatorTx(
 		ids.NodeID(id),
-		createSupernetTx.ID(),
+		createSubnetTx.ID(),
 		[]*secp256k1.PrivateKey{keys[0], keys[1]},
 		changeAddr,
 	)
@@ -1479,13 +1479,13 @@ func TestRemovePermissionedValidatorDuringPendingToCurrentTransitionTracked(t *t
 	// validator set into the current validator set.
 	vm.clock.Set(validatorStartTime)
 
-	err = vm.Builder.AddUnverifiedTx(removeSupernetValidatorTx)
+	err = vm.Builder.AddUnverifiedTx(removeSubnetValidatorTx)
 	require.NoError(err)
 
 	// trigger block creation for the validator tx
-	removeSupernetValidatorBlock, err := vm.Builder.BuildBlock(context.Background())
+	removeSubnetValidatorBlock, err := vm.Builder.BuildBlock(context.Background())
 	require.NoError(err)
-	require.NoError(removeSupernetValidatorBlock.Verify(context.Background()))
-	require.NoError(removeSupernetValidatorBlock.Accept(context.Background()))
+	require.NoError(removeSubnetValidatorBlock.Verify(context.Background()))
+	require.NoError(removeSubnetValidatorBlock.Accept(context.Background()))
 	require.NoError(vm.SetPreference(context.Background(), vm.manager.LastAccepted()))
 }

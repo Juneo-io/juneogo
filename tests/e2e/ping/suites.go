@@ -8,7 +8,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/Juneo-io/juneogo/tests/e2e"
+	"github.com/ava-labs/avalanchego/tests/e2e"
 
 	ginkgo "github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"

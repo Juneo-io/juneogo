@@ -17,18 +17,18 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/Juneo-io/juneogo/api/health"
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/message"
-	"github.com/Juneo-io/juneogo/proto/pb/p2p"
-	"github.com/Juneo-io/juneogo/snow"
-	"github.com/Juneo-io/juneogo/snow/engine/common"
-	"github.com/Juneo-io/juneogo/snow/networking/tracker"
-	"github.com/Juneo-io/juneogo/snow/networking/worker"
-	"github.com/Juneo-io/juneogo/snow/validators"
-	"github.com/Juneo-io/juneogo/supernets"
-	"github.com/Juneo-io/juneogo/utils"
-	"github.com/Juneo-io/juneogo/utils/timer/mockable"
+	"github.com/ava-labs/avalanchego/api/health"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/message"
+	"github.com/ava-labs/avalanchego/proto/pb/p2p"
+	"github.com/ava-labs/avalanchego/snow"
+	"github.com/ava-labs/avalanchego/snow/engine/common"
+	"github.com/ava-labs/avalanchego/snow/networking/tracker"
+	"github.com/ava-labs/avalanchego/snow/networking/worker"
+	"github.com/ava-labs/avalanchego/snow/validators"
+	"github.com/ava-labs/avalanchego/subnets"
+	"github.com/ava-labs/avalanchego/utils"
+	"github.com/ava-labs/avalanchego/utils/timer/mockable"
 )
 
 const (
@@ -108,9 +108,9 @@ type handler struct {
 	// Closed when this handler and [engine] are done shutting down
 	closed chan struct{}
 
-	supernetConnector validators.SupernetConnector
+	subnetConnector validators.SubnetConnector
 
-	supernetAllower supernets.Allower
+	subnetAllower subnets.Allower
 }
 
 // Initialize this consensus handler
@@ -122,22 +122,22 @@ func New(
 	gossipFrequency time.Duration,
 	threadPoolSize int,
 	resourceTracker tracker.ResourceTracker,
-	supernetConnector validators.SupernetConnector,
-	supernet supernets.Supernet,
+	subnetConnector validators.SubnetConnector,
+	subnet subnets.Subnet,
 ) (Handler, error) {
 	h := &handler{
 		ctx:               ctx,
 		validators:        validators,
 		msgFromVMChan:     msgFromVMChan,
-		preemptTimeouts:   supernet.OnBootstrapCompleted(),
+		preemptTimeouts:   subnet.OnBootstrapCompleted(),
 		gossipFrequency:   gossipFrequency,
 		asyncMessagePool:  worker.NewPool(threadPoolSize),
 		timeouts:          make(chan struct{}, 1),
 		closingChan:       make(chan struct{}),
 		closed:            make(chan struct{}),
 		resourceTracker:   resourceTracker,
-		supernetConnector: supernetConnector,
-		supernetAllower:   supernet,
+		subnetConnector: subnetConnector,
+		subnetAllower:   subnet,
 	}
 
 	var err error
@@ -163,7 +163,7 @@ func (h *handler) Context() *snow.ConsensusContext {
 }
 
 func (h *handler) ShouldHandle(nodeID ids.NodeID) bool {
-	return h.supernetAllower.IsAllowed(nodeID, h.validators.Contains(nodeID))
+	return h.subnetAllower.IsAllowed(nodeID, h.validators.Contains(nodeID))
 }
 
 func (h *handler) SetEngineManager(engineManager *EngineManager) {
@@ -722,8 +722,8 @@ func (h *handler) handleSyncMsg(ctx context.Context, msg Message) error {
 	case *message.Connected:
 		return engine.Connected(ctx, nodeID, msg.NodeVersion)
 
-	case *message.ConnectedSupernet:
-		return h.supernetConnector.ConnectedSupernet(ctx, nodeID, msg.SupernetID)
+	case *message.ConnectedSubnet:
+		return h.subnetConnector.ConnectedSubnet(ctx, nodeID, msg.SubnetID)
 
 	case *message.Disconnected:
 		return engine.Disconnected(ctx, nodeID)

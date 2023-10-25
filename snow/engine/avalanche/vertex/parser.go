@@ -6,8 +6,8 @@ package vertex
 import (
 	"context"
 
-	"github.com/Juneo-io/juneogo/snow/consensus/avalanche"
-	"github.com/Juneo-io/juneogo/utils/hashing"
+	"github.com/ava-labs/avalanchego/snow/consensus/avalanche"
+	"github.com/ava-labs/avalanchego/utils/hashing"
 )
 
 // Parser parses bytes into a vertex.

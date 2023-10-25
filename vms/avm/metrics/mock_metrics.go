@@ -11,8 +11,8 @@ import (
 	http "net/http"
 	reflect "reflect"
 
-	blocks "github.com/Juneo-io/juneogo/vms/avm/blocks"
-	txs "github.com/Juneo-io/juneogo/vms/avm/txs"
+	blocks "github.com/ava-labs/avalanchego/vms/avm/blocks"
+	txs "github.com/ava-labs/avalanchego/vms/avm/txs"
 	gomock "github.com/golang/mock/gomock"
 	rpc "github.com/gorilla/rpc/v2"
 )

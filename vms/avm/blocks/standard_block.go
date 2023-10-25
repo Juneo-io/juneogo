@@ -7,11 +7,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Juneo-io/juneogo/codec"
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/snow"
-	"github.com/Juneo-io/juneogo/utils/hashing"
-	"github.com/Juneo-io/juneogo/vms/avm/txs"
+	"github.com/ava-labs/avalanchego/codec"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/snow"
+	"github.com/ava-labs/avalanchego/utils/hashing"
+	"github.com/ava-labs/avalanchego/vms/avm/txs"
 )
 
 var _ Block = (*StandardBlock)(nil)

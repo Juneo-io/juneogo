@@ -8,7 +8,7 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/Juneo-io/juneogo/api"
+	"github.com/ava-labs/avalanchego/api"
 )
 
 // Service that serves the Auth API functionality.

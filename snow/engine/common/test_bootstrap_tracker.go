@@ -6,10 +6,10 @@ package common
 import (
 	"testing"
 
-	"github.com/Juneo-io/juneogo/ids"
+	"github.com/ava-labs/avalanchego/ids"
 )
 
-// BootstrapTrackerTest is a test supernet
+// BootstrapTrackerTest is a test subnet
 type BootstrapTrackerTest struct {
 	T *testing.T
 

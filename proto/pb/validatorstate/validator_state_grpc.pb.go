@@ -28,10 +28,10 @@ type ValidatorStateClient interface {
 	GetMinimumHeight(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetMinimumHeightResponse, error)
 	// GetCurrentHeight returns the current height of the P-chain.
 	GetCurrentHeight(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetCurrentHeightResponse, error)
-	// GetSupernetID returns the supernetID of the provided chain.
-	GetSupernetID(ctx context.Context, in *GetSupernetIDRequest, opts ...grpc.CallOption) (*GetSupernetIDResponse, error)
+	// GetSubnetID returns the subnetID of the provided chain.
+	GetSubnetID(ctx context.Context, in *GetSubnetIDRequest, opts ...grpc.CallOption) (*GetSubnetIDResponse, error)
 	// GetValidatorSet returns the weights of the nodeIDs for the provided
-	// supernet at the requested P-chain height.
+	// subnet at the requested P-chain height.
 	GetValidatorSet(ctx context.Context, in *GetValidatorSetRequest, opts ...grpc.CallOption) (*GetValidatorSetResponse, error)
 }
 
@@ -61,9 +61,9 @@ func (c *validatorStateClient) GetCurrentHeight(ctx context.Context, in *emptypb
 	return out, nil
 }
 
-func (c *validatorStateClient) GetSupernetID(ctx context.Context, in *GetSupernetIDRequest, opts ...grpc.CallOption) (*GetSupernetIDResponse, error) {
-	out := new(GetSupernetIDResponse)
-	err := c.cc.Invoke(ctx, "/validatorstate.ValidatorState/GetSupernetID", in, out, opts...)
+func (c *validatorStateClient) GetSubnetID(ctx context.Context, in *GetSubnetIDRequest, opts ...grpc.CallOption) (*GetSubnetIDResponse, error) {
+	out := new(GetSubnetIDResponse)
+	err := c.cc.Invoke(ctx, "/validatorstate.ValidatorState/GetSubnetID", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -88,10 +88,10 @@ type ValidatorStateServer interface {
 	GetMinimumHeight(context.Context, *emptypb.Empty) (*GetMinimumHeightResponse, error)
 	// GetCurrentHeight returns the current height of the P-chain.
 	GetCurrentHeight(context.Context, *emptypb.Empty) (*GetCurrentHeightResponse, error)
-	// GetSupernetID returns the supernetID of the provided chain.
-	GetSupernetID(context.Context, *GetSupernetIDRequest) (*GetSupernetIDResponse, error)
+	// GetSubnetID returns the subnetID of the provided chain.
+	GetSubnetID(context.Context, *GetSubnetIDRequest) (*GetSubnetIDResponse, error)
 	// GetValidatorSet returns the weights of the nodeIDs for the provided
-	// supernet at the requested P-chain height.
+	// subnet at the requested P-chain height.
 	GetValidatorSet(context.Context, *GetValidatorSetRequest) (*GetValidatorSetResponse, error)
 	mustEmbedUnimplementedValidatorStateServer()
 }
@@ -106,8 +106,8 @@ func (UnimplementedValidatorStateServer) GetMinimumHeight(context.Context, *empt
 func (UnimplementedValidatorStateServer) GetCurrentHeight(context.Context, *emptypb.Empty) (*GetCurrentHeightResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetCurrentHeight not implemented")
 }
-func (UnimplementedValidatorStateServer) GetSupernetID(context.Context, *GetSupernetIDRequest) (*GetSupernetIDResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetSupernetID not implemented")
+func (UnimplementedValidatorStateServer) GetSubnetID(context.Context, *GetSubnetIDRequest) (*GetSubnetIDResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetSubnetID not implemented")
 }
 func (UnimplementedValidatorStateServer) GetValidatorSet(context.Context, *GetValidatorSetRequest) (*GetValidatorSetResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetValidatorSet not implemented")
@@ -161,20 +161,20 @@ func _ValidatorState_GetCurrentHeight_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ValidatorState_GetSupernetID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetSupernetIDRequest)
+func _ValidatorState_GetSubnetID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetSubnetIDRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ValidatorStateServer).GetSupernetID(ctx, in)
+		return srv.(ValidatorStateServer).GetSubnetID(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/validatorstate.ValidatorState/GetSupernetID",
+		FullMethod: "/validatorstate.ValidatorState/GetSubnetID",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ValidatorStateServer).GetSupernetID(ctx, req.(*GetSupernetIDRequest))
+		return srv.(ValidatorStateServer).GetSubnetID(ctx, req.(*GetSubnetIDRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -213,8 +213,8 @@ var ValidatorState_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _ValidatorState_GetCurrentHeight_Handler,
 		},
 		{
-			MethodName: "GetSupernetID",
-			Handler:    _ValidatorState_GetSupernetID_Handler,
+			MethodName: "GetSubnetID",
+			Handler:    _ValidatorState_GetSubnetID_Handler,
 		},
 		{
 			MethodName: "GetValidatorSet",

@@ -6,8 +6,8 @@ package tracker
 import (
 	"math"
 
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/snow/validators"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/snow/validators"
 )
 
 var _ Targeter = (*targeter)(nil)

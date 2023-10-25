@@ -6,7 +6,7 @@ package snowball
 import (
 	"testing"
 
-	"github.com/Juneo-io/juneogo/utils/sampler"
+	"github.com/ava-labs/avalanchego/utils/sampler"
 )
 
 func TestSnowballOptimized(t *testing.T) {

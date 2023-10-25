@@ -8,15 +8,15 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Juneo-io/juneogo/database"
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/utils/constants"
-	"github.com/Juneo-io/juneogo/utils/math"
-	"github.com/Juneo-io/juneogo/vms/components/avax"
-	"github.com/Juneo-io/juneogo/vms/components/verify"
-	"github.com/Juneo-io/juneogo/vms/platformvm/reward"
-	"github.com/Juneo-io/juneogo/vms/platformvm/state"
-	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
+	"github.com/ava-labs/avalanchego/database"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/utils/constants"
+	"github.com/ava-labs/avalanchego/utils/math"
+	"github.com/ava-labs/avalanchego/vms/components/avax"
+	"github.com/ava-labs/avalanchego/vms/components/verify"
+	"github.com/ava-labs/avalanchego/vms/platformvm/reward"
+	"github.com/ava-labs/avalanchego/vms/platformvm/state"
+	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
 )
 
 const (
@@ -67,7 +67,7 @@ func (*ProposalTxExecutor) CreateChainTx(*txs.CreateChainTx) error {
 	return errWrongTxType
 }
 
-func (*ProposalTxExecutor) CreateSupernetTx(*txs.CreateSupernetTx) error {
+func (*ProposalTxExecutor) CreateSubnetTx(*txs.CreateSubnetTx) error {
 	return errWrongTxType
 }
 
@@ -79,11 +79,11 @@ func (*ProposalTxExecutor) ExportTx(*txs.ExportTx) error {
 	return errWrongTxType
 }
 
-func (*ProposalTxExecutor) RemoveSupernetValidatorTx(*txs.RemoveSupernetValidatorTx) error {
+func (*ProposalTxExecutor) RemoveSubnetValidatorTx(*txs.RemoveSubnetValidatorTx) error {
 	return errWrongTxType
 }
 
-func (*ProposalTxExecutor) TransformSupernetTx(*txs.TransformSupernetTx) error {
+func (*ProposalTxExecutor) TransformSubnetTx(*txs.TransformSubnetTx) error {
 	return errWrongTxType
 }
 
@@ -144,9 +144,9 @@ func (e *ProposalTxExecutor) AddValidatorTx(tx *txs.AddValidatorTx) error {
 	return nil
 }
 
-func (e *ProposalTxExecutor) AddSupernetValidatorTx(tx *txs.AddSupernetValidatorTx) error {
-	// AddSupernetValidatorTx is a proposal transaction until the Banff fork
-	// activation. Following the activation, AddSupernetValidatorTxs must be
+func (e *ProposalTxExecutor) AddSubnetValidatorTx(tx *txs.AddSubnetValidatorTx) error {
+	// AddSubnetValidatorTx is a proposal transaction until the Banff fork
+	// activation. Following the activation, AddSubnetValidatorTxs must be
 	// issued into StandardBlocks.
 	currentTimestamp := e.OnCommitState.GetTimestamp()
 	if e.Config.IsBanffActivated(currentTimestamp) {
@@ -158,7 +158,7 @@ func (e *ProposalTxExecutor) AddSupernetValidatorTx(tx *txs.AddSupernetValidator
 		)
 	}
 
-	if err := verifyAddSupernetValidatorTx(
+	if err := verifyAddSubnetValidatorTx(
 		e.Backend,
 		e.OnCommitState,
 		e.Tx,
@@ -409,7 +409,7 @@ func (e *ProposalTxExecutor) RewardValidatorTx(tx *txs.RewardValidatorTx) error 
 
 		// Provide the accrued delegatee rewards from successful delegations here.
 		delegateeReward, err := e.OnCommitState.GetDelegateeReward(
-			stakerToRemove.SupernetID,
+			stakerToRemove.SubnetID,
 			stakerToRemove.NodeID,
 		)
 		if err != nil {
@@ -478,7 +478,7 @@ func (e *ProposalTxExecutor) RewardValidatorTx(tx *txs.RewardValidatorTx) error 
 		// We're removing a delegator, so we need to fetch the validator they
 		// are delegated to.
 		vdrStaker, err := e.OnCommitState.GetCurrentValidator(
-			stakerToRemove.SupernetID,
+			stakerToRemove.SubnetID,
 			stakerToRemove.NodeID,
 		)
 		if err != nil {
@@ -501,7 +501,7 @@ func (e *ProposalTxExecutor) RewardValidatorTx(tx *txs.RewardValidatorTx) error 
 		// Invariant: Delegators must only be able to reference validator
 		//            transactions that implement [txs.ValidatorTx]. All
 		//            validator transactions implement this interface except the
-		//            AddSupernetValidatorTx.
+		//            AddSubnetValidatorTx.
 		vdrTx, ok := vdrTxIntf.Unsigned.(txs.ValidatorTx)
 		if !ok {
 			return errWrongTxType
@@ -550,7 +550,7 @@ func (e *ProposalTxExecutor) RewardValidatorTx(tx *txs.RewardValidatorTx) error 
 		if delegateeReward > 0 {
 			if vdrStaker.StartTime.After(e.Config.CortinaTime) {
 				previousDelegateeReward, err := e.OnCommitState.GetDelegateeReward(
-					vdrStaker.SupernetID,
+					vdrStaker.SubnetID,
 					vdrStaker.NodeID,
 				)
 				if err != nil {
@@ -565,7 +565,7 @@ func (e *ProposalTxExecutor) RewardValidatorTx(tx *txs.RewardValidatorTx) error 
 				// For any validators starting after [CortinaTime], we defer rewarding the
 				// [delegateeReward] until their staking period is over.
 				err = e.OnCommitState.SetDelegateeReward(
-					vdrStaker.SupernetID,
+					vdrStaker.SubnetID,
 					vdrStaker.NodeID,
 					newDelegateeReward,
 				)
@@ -606,7 +606,7 @@ func (e *ProposalTxExecutor) RewardValidatorTx(tx *txs.RewardValidatorTx) error 
 	}
 
 	// If the reward is aborted, then the rewards pool supply should be increased.
-	rewardsPoolSupply, err := e.OnAbortState.GetRewardsPoolSupply(stakerToRemove.SupernetID)
+	rewardsPoolSupply, err := e.OnAbortState.GetRewardsPoolSupply(stakerToRemove.SubnetID)
 	if err != nil {
 		return err
 	}
@@ -614,25 +614,25 @@ func (e *ProposalTxExecutor) RewardValidatorTx(tx *txs.RewardValidatorTx) error 
 	if err != nil {
 		return err
 	}
-	e.OnAbortState.SetRewardsPoolSupply(stakerToRemove.SupernetID, newRewardsSupply)
+	e.OnAbortState.SetRewardsPoolSupply(stakerToRemove.SubnetID, newRewardsSupply)
 
 	var expectedUptimePercentage float64
-	if stakerToRemove.SupernetID != constants.PrimaryNetworkID {
-		transformSupernetIntf, err := e.OnCommitState.GetSupernetTransformation(stakerToRemove.SupernetID)
+	if stakerToRemove.SubnetID != constants.PrimaryNetworkID {
+		transformSubnetIntf, err := e.OnCommitState.GetSubnetTransformation(stakerToRemove.SubnetID)
 		if err != nil {
 			return err
 		}
-		transformSupernet, ok := transformSupernetIntf.Unsigned.(*txs.TransformSupernetTx)
+		transformSubnet, ok := transformSubnetIntf.Unsigned.(*txs.TransformSubnetTx)
 		if !ok {
-			return errIsNotTransformSupernetTx
+			return errIsNotTransformSubnetTx
 		}
 
-		expectedUptimePercentage = float64(transformSupernet.UptimeRequirement) / reward.PercentDenominator
+		expectedUptimePercentage = float64(transformSubnet.UptimeRequirement) / reward.PercentDenominator
 	} else {
 		expectedUptimePercentage = e.Config.UptimePercentage
 	}
 
-	// TODO: calculate supernet uptimes
+	// TODO: calculate subnet uptimes
 	uptime, err := e.Uptimes.CalculateUptimePercentFrom(
 		primaryNetworkValidator.NodeID,
 		constants.PrimaryNetworkID,
@@ -682,17 +682,17 @@ func GetNextStakerChangeTime(state state.Chain) (time.Time, error) {
 
 // GetValidator returns information about the given validator, which may be a
 // current validator or pending validator.
-func GetValidator(state state.Chain, supernetID ids.ID, nodeID ids.NodeID) (*state.Staker, error) {
-	validator, err := state.GetCurrentValidator(supernetID, nodeID)
+func GetValidator(state state.Chain, subnetID ids.ID, nodeID ids.NodeID) (*state.Staker, error) {
+	validator, err := state.GetCurrentValidator(subnetID, nodeID)
 	if err == nil {
-		// This node is currently validating the supernet.
+		// This node is currently validating the subnet.
 		return validator, nil
 	}
 	if err != database.ErrNotFound {
 		// Unexpected error occurred.
 		return nil, err
 	}
-	return state.GetPendingValidator(supernetID, nodeID)
+	return state.GetPendingValidator(subnetID, nodeID)
 }
 
 // canDelegate returns true if [delegator] can be added as a delegator of
@@ -738,7 +738,7 @@ func GetMaxWeight(
 	startTime time.Time,
 	endTime time.Time,
 ) (uint64, error) {
-	currentDelegatorIterator, err := chainState.GetCurrentDelegatorIterator(validator.SupernetID, validator.NodeID)
+	currentDelegatorIterator, err := chainState.GetCurrentDelegatorIterator(validator.SubnetID, validator.NodeID)
 	if err != nil {
 		return 0, err
 	}
@@ -761,11 +761,11 @@ func GetMaxWeight(
 	}
 	currentDelegatorIterator.Release()
 
-	currentDelegatorIterator, err = chainState.GetCurrentDelegatorIterator(validator.SupernetID, validator.NodeID)
+	currentDelegatorIterator, err = chainState.GetCurrentDelegatorIterator(validator.SubnetID, validator.NodeID)
 	if err != nil {
 		return 0, err
 	}
-	pendingDelegatorIterator, err := chainState.GetPendingDelegatorIterator(validator.SupernetID, validator.NodeID)
+	pendingDelegatorIterator, err := chainState.GetPendingDelegatorIterator(validator.SubnetID, validator.NodeID)
 	if err != nil {
 		currentDelegatorIterator.Release()
 		return 0, err

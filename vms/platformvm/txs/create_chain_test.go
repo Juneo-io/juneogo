@@ -8,18 +8,18 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/snow"
-	"github.com/Juneo-io/juneogo/utils/constants"
-	"github.com/Juneo-io/juneogo/utils/crypto/secp256k1"
-	"github.com/Juneo-io/juneogo/vms/components/avax"
-	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/snow"
+	"github.com/ava-labs/avalanchego/utils/constants"
+	"github.com/ava-labs/avalanchego/utils/crypto/secp256k1"
+	"github.com/ava-labs/avalanchego/vms/components/avax"
+	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
 )
 
 func TestUnsignedCreateChainTxVerify(t *testing.T) {
 	ctx := snow.DefaultContextTest()
-	testSupernet1ID := ids.GenerateTestID()
-	testSupernet1ControlKeys := []*secp256k1.PrivateKey{
+	testSubnet1ID := ids.GenerateTestID()
+	testSubnet1ControlKeys := []*secp256k1.PrivateKey{
 		preFundedKeys[0],
 		preFundedKeys[1],
 	}
@@ -27,7 +27,7 @@ func TestUnsignedCreateChainTxVerify(t *testing.T) {
 	type test struct {
 		description string
 		shouldErr   bool
-		supernetID  ids.ID
+		subnetID  ids.ID
 		genesisData []byte
 		vmID        ids.ID
 		fxIDs       []ids.ID
@@ -40,12 +40,12 @@ func TestUnsignedCreateChainTxVerify(t *testing.T) {
 		{
 			description: "tx is nil",
 			shouldErr:   true,
-			supernetID:  testSupernet1ID,
+			subnetID:  testSubnet1ID,
 			genesisData: nil,
 			vmID:        constants.AVMID,
 			fxIDs:       nil,
 			chainName:   "yeet",
-			keys:        []*secp256k1.PrivateKey{testSupernet1ControlKeys[0], testSupernet1ControlKeys[1]},
+			keys:        []*secp256k1.PrivateKey{testSubnet1ControlKeys[0], testSubnet1ControlKeys[1]},
 			setup: func(*CreateChainTx) *CreateChainTx {
 				return nil
 			},
@@ -53,54 +53,54 @@ func TestUnsignedCreateChainTxVerify(t *testing.T) {
 		{
 			description: "vm ID is empty",
 			shouldErr:   true,
-			supernetID:  testSupernet1ID,
+			subnetID:  testSubnet1ID,
 			genesisData: nil,
 			vmID:        constants.AVMID,
 			fxIDs:       nil,
 			chainName:   "yeet",
-			keys:        []*secp256k1.PrivateKey{testSupernet1ControlKeys[0], testSupernet1ControlKeys[1]},
+			keys:        []*secp256k1.PrivateKey{testSubnet1ControlKeys[0], testSubnet1ControlKeys[1]},
 			setup: func(tx *CreateChainTx) *CreateChainTx {
 				tx.VMID = ids.ID{}
 				return tx
 			},
 		},
 		{
-			description: "supernet ID is empty",
+			description: "subnet ID is empty",
 			shouldErr:   true,
-			supernetID:  testSupernet1ID,
+			subnetID:  testSubnet1ID,
 			genesisData: nil,
 			vmID:        constants.AVMID,
 			fxIDs:       nil,
 			chainName:   "yeet",
-			keys:        []*secp256k1.PrivateKey{testSupernet1ControlKeys[0], testSupernet1ControlKeys[1]},
+			keys:        []*secp256k1.PrivateKey{testSubnet1ControlKeys[0], testSubnet1ControlKeys[1]},
 			setup: func(tx *CreateChainTx) *CreateChainTx {
-				tx.SupernetID = ids.ID{}
+				tx.SubnetID = ids.ID{}
 				return tx
 			},
 		},
 		{
-			description: "supernet ID is platform chain's ID",
+			description: "subnet ID is platform chain's ID",
 			shouldErr:   true,
-			supernetID:  testSupernet1ID,
+			subnetID:  testSubnet1ID,
 			genesisData: nil,
 			vmID:        constants.AVMID,
 			fxIDs:       nil,
 			chainName:   "yeet",
-			keys:        []*secp256k1.PrivateKey{testSupernet1ControlKeys[0], testSupernet1ControlKeys[1]},
+			keys:        []*secp256k1.PrivateKey{testSubnet1ControlKeys[0], testSubnet1ControlKeys[1]},
 			setup: func(tx *CreateChainTx) *CreateChainTx {
-				tx.SupernetID = ctx.ChainID
+				tx.SubnetID = ctx.ChainID
 				return tx
 			},
 		},
 		{
 			description: "chain name is too long",
 			shouldErr:   true,
-			supernetID:  testSupernet1ID,
+			subnetID:  testSubnet1ID,
 			genesisData: nil,
 			vmID:        constants.AVMID,
 			fxIDs:       nil,
 			chainName:   "yeet",
-			keys:        []*secp256k1.PrivateKey{testSupernet1ControlKeys[0], testSupernet1ControlKeys[1]},
+			keys:        []*secp256k1.PrivateKey{testSubnet1ControlKeys[0], testSubnet1ControlKeys[1]},
 			setup: func(tx *CreateChainTx) *CreateChainTx {
 				tx.ChainName = string(make([]byte, MaxNameLen+1))
 				return tx
@@ -109,12 +109,12 @@ func TestUnsignedCreateChainTxVerify(t *testing.T) {
 		{
 			description: "chain name has invalid character",
 			shouldErr:   true,
-			supernetID:  testSupernet1ID,
+			subnetID:  testSubnet1ID,
 			genesisData: nil,
 			vmID:        constants.AVMID,
 			fxIDs:       nil,
 			chainName:   "yeet",
-			keys:        []*secp256k1.PrivateKey{testSupernet1ControlKeys[0], testSupernet1ControlKeys[1]},
+			keys:        []*secp256k1.PrivateKey{testSubnet1ControlKeys[0], testSubnet1ControlKeys[1]},
 			setup: func(tx *CreateChainTx) *CreateChainTx {
 				tx.ChainName = "⌘"
 				return tx
@@ -123,12 +123,12 @@ func TestUnsignedCreateChainTxVerify(t *testing.T) {
 		{
 			description: "genesis data is too long",
 			shouldErr:   true,
-			supernetID:  testSupernet1ID,
+			subnetID:  testSubnet1ID,
 			genesisData: nil,
 			vmID:        constants.AVMID,
 			fxIDs:       nil,
 			chainName:   "yeet",
-			keys:        []*secp256k1.PrivateKey{testSupernet1ControlKeys[0], testSupernet1ControlKeys[1]},
+			keys:        []*secp256k1.PrivateKey{testSubnet1ControlKeys[0], testSubnet1ControlKeys[1]},
 			setup: func(tx *CreateChainTx) *CreateChainTx {
 				tx.GenesisData = make([]byte, MaxGenesisLen+1)
 				return tx
@@ -158,7 +158,7 @@ func TestUnsignedCreateChainTxVerify(t *testing.T) {
 				},
 			},
 		}}
-		supernetAuth := &secp256k1fx.Input{
+		subnetAuth := &secp256k1fx.Input{
 			SigIndices: []uint32{0, 1},
 		}
 
@@ -169,12 +169,12 @@ func TestUnsignedCreateChainTxVerify(t *testing.T) {
 				Ins:          inputs,
 				Outs:         outputs,
 			}},
-			SupernetID:   test.supernetID,
+			SubnetID:   test.subnetID,
 			ChainName:    test.chainName,
 			VMID:         test.vmID,
 			FxIDs:        test.fxIDs,
 			GenesisData:  test.genesisData,
-			SupernetAuth: supernetAuth,
+			SubnetAuth: subnetAuth,
 		}
 
 		signers := [][]*secp256k1.PrivateKey{preFundedKeys}

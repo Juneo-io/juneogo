@@ -4,7 +4,7 @@
 package signer
 
 import (
-	"github.com/Juneo-io/juneogo/utils/crypto/bls"
+	"github.com/ava-labs/avalanchego/utils/crypto/bls"
 )
 
 var _ Signer = (*Empty)(nil)

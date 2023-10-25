@@ -3,7 +3,7 @@
 
 package verify
 
-import "github.com/Juneo-io/juneogo/snow"
+import "github.com/ava-labs/avalanchego/snow"
 
 // Verifiable can be verified
 type Verifiable interface {

@@ -6,8 +6,8 @@ package txheap
 import (
 	"container/heap"
 
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
 )
 
 var _ Heap = (*txHeap)(nil)

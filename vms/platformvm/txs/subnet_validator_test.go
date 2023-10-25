@@ -8,26 +8,26 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/utils/constants"
 )
 
-func TestSupernetValidatorVerifySupernetID(t *testing.T) {
+func TestSubnetValidatorVerifySubnetID(t *testing.T) {
 	require := require.New(t)
 
 	// Error path
 	{
-		vdr := &SupernetValidator{
-			Supernet: constants.PrimaryNetworkID,
+		vdr := &SubnetValidator{
+			Subnet: constants.PrimaryNetworkID,
 		}
 
-		require.ErrorIs(vdr.Verify(), errBadSupernetID)
+		require.ErrorIs(vdr.Verify(), errBadSubnetID)
 	}
 
 	// Happy path
 	{
-		vdr := &SupernetValidator{
-			Supernet: ids.GenerateTestID(),
+		vdr := &SubnetValidator{
+			Subnet: ids.GenerateTestID(),
 			Validator: Validator{
 				Wght: 1,
 			},

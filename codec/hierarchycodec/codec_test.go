@@ -6,7 +6,7 @@ package hierarchycodec
 import (
 	"testing"
 
-	"github.com/Juneo-io/juneogo/codec"
+	"github.com/ava-labs/avalanchego/codec"
 )
 
 func TestVectors(t *testing.T) {

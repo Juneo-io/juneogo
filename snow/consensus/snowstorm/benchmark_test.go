@@ -6,9 +6,9 @@ package snowstorm
 import (
 	"testing"
 
-	"github.com/Juneo-io/juneogo/utils/sampler"
+	"github.com/ava-labs/avalanchego/utils/sampler"
 
-	sbcon "github.com/Juneo-io/juneogo/snow/consensus/snowball"
+	sbcon "github.com/ava-labs/avalanchego/snow/consensus/snowball"
 )
 
 func Simulate(

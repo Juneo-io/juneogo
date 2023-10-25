@@ -9,9 +9,9 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/Juneo-io/juneogo/snow/validators"
-	"github.com/Juneo-io/juneogo/utils/crypto/bls"
-	"github.com/Juneo-io/juneogo/utils/set"
+	"github.com/ava-labs/avalanchego/snow/validators"
+	"github.com/ava-labs/avalanchego/utils/crypto/bls"
+	"github.com/ava-labs/avalanchego/utils/set"
 )
 
 var (
@@ -72,12 +72,12 @@ func (s *BitSetSignature) Verify(
 	quorumNum uint64,
 	quorumDen uint64,
 ) error {
-	supernetID, err := pChainState.GetSupernetID(ctx, msg.SourceChainID)
+	subnetID, err := pChainState.GetSubnetID(ctx, msg.SourceChainID)
 	if err != nil {
 		return err
 	}
 
-	vdrs, totalWeight, err := GetCanonicalValidatorSet(ctx, pChainState, pChainHeight, supernetID)
+	vdrs, totalWeight, err := GetCanonicalValidatorSet(ctx, pChainState, pChainHeight, subnetID)
 	if err != nil {
 		return err
 	}

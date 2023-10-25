@@ -6,11 +6,11 @@ package executor
 import (
 	"reflect"
 
-	"github.com/Juneo-io/juneogo/codec"
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/snow"
-	"github.com/Juneo-io/juneogo/vms/avm/config"
-	"github.com/Juneo-io/juneogo/vms/avm/fxs"
+	"github.com/ava-labs/avalanchego/codec"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/snow"
+	"github.com/ava-labs/avalanchego/vms/avm/config"
+	"github.com/ava-labs/avalanchego/vms/avm/fxs"
 )
 
 type Backend struct {
@@ -20,7 +20,7 @@ type Backend struct {
 	TypeToFxIndex map[reflect.Type]int
 	Codec         codec.Manager
 	// Note: FeeAssetID may be different than ctx.AVAXAssetID if this AVM is
-	// running in a supernet.
+	// running in a subnet.
 	FeeAssetID   ids.ID
 	Bootstrapped bool
 }

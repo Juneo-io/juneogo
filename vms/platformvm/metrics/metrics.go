@@ -8,11 +8,11 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/utils/metric"
-	"github.com/Juneo-io/juneogo/utils/set"
-	"github.com/Juneo-io/juneogo/utils/wrappers"
-	"github.com/Juneo-io/juneogo/vms/platformvm/blocks"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/utils/metric"
+	"github.com/ava-labs/avalanchego/utils/set"
+	"github.com/ava-labs/avalanchego/utils/wrappers"
+	"github.com/ava-labs/avalanchego/vms/platformvm/blocks"
 )
 
 var _ Metrics = (*metrics)(nil)
@@ -41,10 +41,10 @@ type Metrics interface {
 	SetTotalStake(uint64)
 	// Mark when this node will unstake from the Primary Network.
 	SetTimeUntilUnstake(time.Duration)
-	// Mark when this node will unstake from a supernet.
-	SetTimeUntilSupernetUnstake(supernetID ids.ID, timeUntilUnstake time.Duration)
-	// Mark that this node is connected to this percent of a supernet's stake.
-	SetSupernetPercentConnected(supernetID ids.ID, percent float64)
+	// Mark when this node will unstake from a subnet.
+	SetTimeUntilSubnetUnstake(subnetID ids.ID, timeUntilUnstake time.Duration)
+	// Mark that this node is connected to this percent of a subnet's stake.
+	SetSubnetPercentConnected(subnetID ids.ID, percent float64)
 	// Mark that this node is connected to this percent of the Primary Network's
 	// stake.
 	SetPercentConnected(percent float64)
@@ -53,7 +53,7 @@ type Metrics interface {
 func New(
 	namespace string,
 	registerer prometheus.Registerer,
-	trackedSupernets set.Set[ids.ID],
+	trackedSubnets set.Set[ids.ID],
 ) (Metrics, error) {
 	blockMetrics, err := newBlockMetrics(namespace, registerer)
 	m := &metrics{
@@ -64,26 +64,26 @@ func New(
 			Name:      "percent_connected",
 			Help:      "Percent of connected stake",
 		}),
-		supernetPercentConnected: prometheus.NewGaugeVec(
+		subnetPercentConnected: prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Namespace: namespace,
-				Name:      "percent_connected_supernet",
-				Help:      "Percent of connected supernet weight",
+				Name:      "percent_connected_subnet",
+				Help:      "Percent of connected subnet weight",
 			},
-			[]string{"supernetID"},
+			[]string{"subnetID"},
 		),
 		timeUntilUnstake: prometheus.NewGauge(prometheus.GaugeOpts{
 			Namespace: namespace,
 			Name:      "time_until_unstake",
 			Help:      "Time (in ns) until this node leaves the Primary Network's validator set",
 		}),
-		timeUntilSupernetUnstake: prometheus.NewGaugeVec(
+		timeUntilSubnetUnstake: prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Namespace: namespace,
-				Name:      "time_until_unstake_supernet",
-				Help:      "Time (in ns) until this node leaves the supernet's validator set",
+				Name:      "time_until_unstake_subnet",
+				Help:      "Time (in ns) until this node leaves the subnet's validator set",
 			},
-			[]string{"supernetID"},
+			[]string{"subnetID"},
 		),
 		localStake: prometheus.NewGauge(prometheus.GaugeOpts{
 			Namespace: namespace,
@@ -136,9 +136,9 @@ func New(
 		err,
 
 		registerer.Register(m.percentConnected),
-		registerer.Register(m.supernetPercentConnected),
+		registerer.Register(m.subnetPercentConnected),
 		registerer.Register(m.timeUntilUnstake),
-		registerer.Register(m.timeUntilSupernetUnstake),
+		registerer.Register(m.timeUntilSubnetUnstake),
 		registerer.Register(m.localStake),
 		registerer.Register(m.totalStake),
 
@@ -151,10 +151,10 @@ func New(
 		registerer.Register(m.validatorSetsDuration),
 	)
 
-	// init supernet tracker metrics with tracked supernets
-	for supernetID := range trackedSupernets {
+	// init subnet tracker metrics with tracked subnets
+	for subnetID := range trackedSubnets {
 		// initialize to 0
-		m.supernetPercentConnected.WithLabelValues(supernetID.String()).Set(0)
+		m.subnetPercentConnected.WithLabelValues(subnetID.String()).Set(0)
 	}
 	return m, errs.Err
 }
@@ -165,9 +165,9 @@ type metrics struct {
 	blockMetrics *blockMetrics
 
 	percentConnected         prometheus.Gauge
-	supernetPercentConnected *prometheus.GaugeVec
+	subnetPercentConnected *prometheus.GaugeVec
 	timeUntilUnstake         prometheus.Gauge
-	timeUntilSupernetUnstake *prometheus.GaugeVec
+	timeUntilSubnetUnstake *prometheus.GaugeVec
 	localStake               prometheus.Gauge
 	totalStake               prometheus.Gauge
 
@@ -219,12 +219,12 @@ func (m *metrics) SetTimeUntilUnstake(timeUntilUnstake time.Duration) {
 	m.timeUntilUnstake.Set(float64(timeUntilUnstake))
 }
 
-func (m *metrics) SetTimeUntilSupernetUnstake(supernetID ids.ID, timeUntilUnstake time.Duration) {
-	m.timeUntilSupernetUnstake.WithLabelValues(supernetID.String()).Set(float64(timeUntilUnstake))
+func (m *metrics) SetTimeUntilSubnetUnstake(subnetID ids.ID, timeUntilUnstake time.Duration) {
+	m.timeUntilSubnetUnstake.WithLabelValues(subnetID.String()).Set(float64(timeUntilUnstake))
 }
 
-func (m *metrics) SetSupernetPercentConnected(supernetID ids.ID, percent float64) {
-	m.supernetPercentConnected.WithLabelValues(supernetID.String()).Set(percent)
+func (m *metrics) SetSubnetPercentConnected(subnetID ids.ID, percent float64) {
+	m.subnetPercentConnected.WithLabelValues(subnetID.String()).Set(percent)
 }
 
 func (m *metrics) SetPercentConnected(percent float64) {

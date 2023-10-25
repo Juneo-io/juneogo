@@ -11,9 +11,9 @@ import (
 	reflect "reflect"
 	time "time"
 
-	ids "github.com/Juneo-io/juneogo/ids"
-	secp256k1 "github.com/Juneo-io/juneogo/utils/crypto/secp256k1"
-	txs "github.com/Juneo-io/juneogo/vms/platformvm/txs"
+	ids "github.com/ava-labs/avalanchego/ids"
+	secp256k1 "github.com/ava-labs/avalanchego/utils/crypto/secp256k1"
+	txs "github.com/ava-labs/avalanchego/vms/platformvm/txs"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -55,19 +55,19 @@ func (mr *MockBuilderMockRecorder) NewAddDelegatorTx(arg0, arg1, arg2, arg3, arg
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewAddDelegatorTx", reflect.TypeOf((*MockBuilder)(nil).NewAddDelegatorTx), arg0, arg1, arg2, arg3, arg4, arg5, arg6)
 }
 
-// NewAddSupernetValidatorTx mocks base method.
-func (m *MockBuilder) NewAddSupernetValidatorTx(arg0, arg1, arg2 uint64, arg3 ids.NodeID, arg4 ids.ID, arg5 []*secp256k1.PrivateKey, arg6 ids.ShortID) (*txs.Tx, error) {
+// NewAddSubnetValidatorTx mocks base method.
+func (m *MockBuilder) NewAddSubnetValidatorTx(arg0, arg1, arg2 uint64, arg3 ids.NodeID, arg4 ids.ID, arg5 []*secp256k1.PrivateKey, arg6 ids.ShortID) (*txs.Tx, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NewAddSupernetValidatorTx", arg0, arg1, arg2, arg3, arg4, arg5, arg6)
+	ret := m.ctrl.Call(m, "NewAddSubnetValidatorTx", arg0, arg1, arg2, arg3, arg4, arg5, arg6)
 	ret0, _ := ret[0].(*txs.Tx)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// NewAddSupernetValidatorTx indicates an expected call of NewAddSupernetValidatorTx.
-func (mr *MockBuilderMockRecorder) NewAddSupernetValidatorTx(arg0, arg1, arg2, arg3, arg4, arg5, arg6 interface{}) *gomock.Call {
+// NewAddSubnetValidatorTx indicates an expected call of NewAddSubnetValidatorTx.
+func (mr *MockBuilderMockRecorder) NewAddSubnetValidatorTx(arg0, arg1, arg2, arg3, arg4, arg5, arg6 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewAddSupernetValidatorTx", reflect.TypeOf((*MockBuilder)(nil).NewAddSupernetValidatorTx), arg0, arg1, arg2, arg3, arg4, arg5, arg6)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewAddSubnetValidatorTx", reflect.TypeOf((*MockBuilder)(nil).NewAddSubnetValidatorTx), arg0, arg1, arg2, arg3, arg4, arg5, arg6)
 }
 
 // NewAddValidatorTx mocks base method.
@@ -115,19 +115,19 @@ func (mr *MockBuilderMockRecorder) NewCreateChainTx(arg0, arg1, arg2, arg3, arg4
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewCreateChainTx", reflect.TypeOf((*MockBuilder)(nil).NewCreateChainTx), arg0, arg1, arg2, arg3, arg4, arg5, arg6)
 }
 
-// NewCreateSupernetTx mocks base method.
-func (m *MockBuilder) NewCreateSupernetTx(arg0 uint32, arg1 []ids.ShortID, arg2 []*secp256k1.PrivateKey, arg3 ids.ShortID) (*txs.Tx, error) {
+// NewCreateSubnetTx mocks base method.
+func (m *MockBuilder) NewCreateSubnetTx(arg0 uint32, arg1 []ids.ShortID, arg2 []*secp256k1.PrivateKey, arg3 ids.ShortID) (*txs.Tx, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NewCreateSupernetTx", arg0, arg1, arg2, arg3)
+	ret := m.ctrl.Call(m, "NewCreateSubnetTx", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(*txs.Tx)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// NewCreateSupernetTx indicates an expected call of NewCreateSupernetTx.
-func (mr *MockBuilderMockRecorder) NewCreateSupernetTx(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+// NewCreateSubnetTx indicates an expected call of NewCreateSubnetTx.
+func (mr *MockBuilderMockRecorder) NewCreateSubnetTx(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewCreateSupernetTx", reflect.TypeOf((*MockBuilder)(nil).NewCreateSupernetTx), arg0, arg1, arg2, arg3)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewCreateSubnetTx", reflect.TypeOf((*MockBuilder)(nil).NewCreateSubnetTx), arg0, arg1, arg2, arg3)
 }
 
 // NewExportTx mocks base method.
@@ -160,19 +160,19 @@ func (mr *MockBuilderMockRecorder) NewImportTx(arg0, arg1, arg2, arg3 interface{
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewImportTx", reflect.TypeOf((*MockBuilder)(nil).NewImportTx), arg0, arg1, arg2, arg3)
 }
 
-// NewRemoveSupernetValidatorTx mocks base method.
-func (m *MockBuilder) NewRemoveSupernetValidatorTx(arg0 ids.NodeID, arg1 ids.ID, arg2 []*secp256k1.PrivateKey, arg3 ids.ShortID) (*txs.Tx, error) {
+// NewRemoveSubnetValidatorTx mocks base method.
+func (m *MockBuilder) NewRemoveSubnetValidatorTx(arg0 ids.NodeID, arg1 ids.ID, arg2 []*secp256k1.PrivateKey, arg3 ids.ShortID) (*txs.Tx, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NewRemoveSupernetValidatorTx", arg0, arg1, arg2, arg3)
+	ret := m.ctrl.Call(m, "NewRemoveSubnetValidatorTx", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(*txs.Tx)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// NewRemoveSupernetValidatorTx indicates an expected call of NewRemoveSupernetValidatorTx.
-func (mr *MockBuilderMockRecorder) NewRemoveSupernetValidatorTx(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+// NewRemoveSubnetValidatorTx indicates an expected call of NewRemoveSubnetValidatorTx.
+func (mr *MockBuilderMockRecorder) NewRemoveSubnetValidatorTx(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewRemoveSupernetValidatorTx", reflect.TypeOf((*MockBuilder)(nil).NewRemoveSupernetValidatorTx), arg0, arg1, arg2, arg3)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewRemoveSubnetValidatorTx", reflect.TypeOf((*MockBuilder)(nil).NewRemoveSubnetValidatorTx), arg0, arg1, arg2, arg3)
 }
 
 // NewRewardValidatorTx mocks base method.

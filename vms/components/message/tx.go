@@ -4,7 +4,7 @@
 package message
 
 import (
-	"github.com/Juneo-io/juneogo/ids"
+	"github.com/ava-labs/avalanchego/ids"
 )
 
 var _ Message = (*Tx)(nil)

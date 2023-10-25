@@ -4,7 +4,7 @@
 package summary
 
 import (
-	"github.com/Juneo-io/juneogo/ids"
+	"github.com/ava-labs/avalanchego/ids"
 )
 
 var _ StateSummary = (*stateSummary)(nil)

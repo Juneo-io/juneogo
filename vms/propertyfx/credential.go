@@ -4,7 +4,7 @@
 package propertyfx
 
 import (
-	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
+	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
 )
 
 type Credential struct {

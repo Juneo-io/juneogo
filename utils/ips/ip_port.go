@@ -9,7 +9,7 @@ import (
 	"net"
 	"strconv"
 
-	"github.com/Juneo-io/juneogo/utils/wrappers"
+	"github.com/ava-labs/avalanchego/utils/wrappers"
 )
 
 var errBadIP = errors.New("bad ip format")
