@@ -73,7 +73,7 @@ func TestTransformSubnetTxSyntacticVerify(t *testing.T) {
 			name: "invalid subnetID",
 			txFunc: func(*gomock.Controller) *TransformSubnetTx {
 				return &TransformSubnetTx{
-					BaseTx:   validBaseTx,
+					BaseTx: validBaseTx,
 					Subnet: constants.PrimaryNetworkID,
 				}
 			},
@@ -83,9 +83,9 @@ func TestTransformSubnetTxSyntacticVerify(t *testing.T) {
 			name: "empty assetID",
 			txFunc: func(*gomock.Controller) *TransformSubnetTx {
 				return &TransformSubnetTx{
-					BaseTx:   validBaseTx,
-					Subnet: ids.GenerateTestID(),
-					AssetID:  ids.Empty,
+					BaseTx:  validBaseTx,
+					Subnet:  ids.GenerateTestID(),
+					AssetID: ids.Empty,
 				}
 			},
 			err: errEmptyAssetID,
@@ -94,9 +94,9 @@ func TestTransformSubnetTxSyntacticVerify(t *testing.T) {
 			name: "AVAX assetID",
 			txFunc: func(*gomock.Controller) *TransformSubnetTx {
 				return &TransformSubnetTx{
-					BaseTx:   validBaseTx,
-					Subnet: ids.GenerateTestID(),
-					AssetID:  ctx.AVAXAssetID,
+					BaseTx:  validBaseTx,
+					Subnet:  ids.GenerateTestID(),
+					AssetID: ctx.AVAXAssetID,
 				}
 			},
 			err: errAssetIDCantBeAVAX,
@@ -106,7 +106,7 @@ func TestTransformSubnetTxSyntacticVerify(t *testing.T) {
 			txFunc: func(*gomock.Controller) *TransformSubnetTx {
 				return &TransformSubnetTx{
 					BaseTx:        validBaseTx,
-					Subnet:      ids.GenerateTestID(),
+					Subnet:        ids.GenerateTestID(),
 					AssetID:       ids.GenerateTestID(),
 					InitialSupply: 0,
 				}
@@ -118,7 +118,7 @@ func TestTransformSubnetTxSyntacticVerify(t *testing.T) {
 			txFunc: func(*gomock.Controller) *TransformSubnetTx {
 				return &TransformSubnetTx{
 					BaseTx:        validBaseTx,
-					Subnet:      ids.GenerateTestID(),
+					Subnet:        ids.GenerateTestID(),
 					AssetID:       ids.GenerateTestID(),
 					InitialSupply: 2,
 					MaximumSupply: 1,
@@ -131,7 +131,7 @@ func TestTransformSubnetTxSyntacticVerify(t *testing.T) {
 			txFunc: func(*gomock.Controller) *TransformSubnetTx {
 				return &TransformSubnetTx{
 					BaseTx:             validBaseTx,
-					Subnet:           ids.GenerateTestID(),
+					Subnet:             ids.GenerateTestID(),
 					AssetID:            ids.GenerateTestID(),
 					InitialSupply:      1,
 					MaximumSupply:      1,
@@ -146,7 +146,7 @@ func TestTransformSubnetTxSyntacticVerify(t *testing.T) {
 			txFunc: func(*gomock.Controller) *TransformSubnetTx {
 				return &TransformSubnetTx{
 					BaseTx:             validBaseTx,
-					Subnet:           ids.GenerateTestID(),
+					Subnet:             ids.GenerateTestID(),
 					AssetID:            ids.GenerateTestID(),
 					InitialSupply:      1,
 					MaximumSupply:      1,
@@ -161,7 +161,7 @@ func TestTransformSubnetTxSyntacticVerify(t *testing.T) {
 			txFunc: func(*gomock.Controller) *TransformSubnetTx {
 				return &TransformSubnetTx{
 					BaseTx:             validBaseTx,
-					Subnet:           ids.GenerateTestID(),
+					Subnet:             ids.GenerateTestID(),
 					AssetID:            ids.GenerateTestID(),
 					InitialSupply:      1,
 					MaximumSupply:      1,
@@ -177,7 +177,7 @@ func TestTransformSubnetTxSyntacticVerify(t *testing.T) {
 			txFunc: func(*gomock.Controller) *TransformSubnetTx {
 				return &TransformSubnetTx{
 					BaseTx:             validBaseTx,
-					Subnet:           ids.GenerateTestID(),
+					Subnet:             ids.GenerateTestID(),
 					AssetID:            ids.GenerateTestID(),
 					InitialSupply:      1,
 					MaximumSupply:      1,
@@ -193,7 +193,7 @@ func TestTransformSubnetTxSyntacticVerify(t *testing.T) {
 			txFunc: func(*gomock.Controller) *TransformSubnetTx {
 				return &TransformSubnetTx{
 					BaseTx:             validBaseTx,
-					Subnet:           ids.GenerateTestID(),
+					Subnet:             ids.GenerateTestID(),
 					AssetID:            ids.GenerateTestID(),
 					InitialSupply:      10,
 					MaximumSupply:      10,
@@ -210,7 +210,7 @@ func TestTransformSubnetTxSyntacticVerify(t *testing.T) {
 			txFunc: func(*gomock.Controller) *TransformSubnetTx {
 				return &TransformSubnetTx{
 					BaseTx:             validBaseTx,
-					Subnet:           ids.GenerateTestID(),
+					Subnet:             ids.GenerateTestID(),
 					AssetID:            ids.GenerateTestID(),
 					InitialSupply:      10,
 					MaximumSupply:      10,
@@ -227,7 +227,7 @@ func TestTransformSubnetTxSyntacticVerify(t *testing.T) {
 			txFunc: func(*gomock.Controller) *TransformSubnetTx {
 				return &TransformSubnetTx{
 					BaseTx:             validBaseTx,
-					Subnet:           ids.GenerateTestID(),
+					Subnet:             ids.GenerateTestID(),
 					AssetID:            ids.GenerateTestID(),
 					InitialSupply:      10,
 					MaximumSupply:      10,
@@ -245,7 +245,7 @@ func TestTransformSubnetTxSyntacticVerify(t *testing.T) {
 			txFunc: func(*gomock.Controller) *TransformSubnetTx {
 				return &TransformSubnetTx{
 					BaseTx:             validBaseTx,
-					Subnet:           ids.GenerateTestID(),
+					Subnet:             ids.GenerateTestID(),
 					AssetID:            ids.GenerateTestID(),
 					InitialSupply:      10,
 					MaximumSupply:      10,
@@ -264,7 +264,7 @@ func TestTransformSubnetTxSyntacticVerify(t *testing.T) {
 			txFunc: func(*gomock.Controller) *TransformSubnetTx {
 				return &TransformSubnetTx{
 					BaseTx:             validBaseTx,
-					Subnet:           ids.GenerateTestID(),
+					Subnet:             ids.GenerateTestID(),
 					AssetID:            ids.GenerateTestID(),
 					InitialSupply:      10,
 					MaximumSupply:      10,
@@ -284,7 +284,7 @@ func TestTransformSubnetTxSyntacticVerify(t *testing.T) {
 			txFunc: func(*gomock.Controller) *TransformSubnetTx {
 				return &TransformSubnetTx{
 					BaseTx:             validBaseTx,
-					Subnet:           ids.GenerateTestID(),
+					Subnet:             ids.GenerateTestID(),
 					AssetID:            ids.GenerateTestID(),
 					InitialSupply:      10,
 					MaximumSupply:      10,
@@ -305,7 +305,7 @@ func TestTransformSubnetTxSyntacticVerify(t *testing.T) {
 			txFunc: func(*gomock.Controller) *TransformSubnetTx {
 				return &TransformSubnetTx{
 					BaseTx:                   validBaseTx,
-					Subnet:                 ids.GenerateTestID(),
+					Subnet:                   ids.GenerateTestID(),
 					AssetID:                  ids.GenerateTestID(),
 					InitialSupply:            10,
 					MaximumSupply:            10,
@@ -327,7 +327,7 @@ func TestTransformSubnetTxSyntacticVerify(t *testing.T) {
 			txFunc: func(*gomock.Controller) *TransformSubnetTx {
 				return &TransformSubnetTx{
 					BaseTx:                   validBaseTx,
-					Subnet:                 ids.GenerateTestID(),
+					Subnet:                   ids.GenerateTestID(),
 					AssetID:                  ids.GenerateTestID(),
 					InitialSupply:            10,
 					MaximumSupply:            10,
@@ -353,7 +353,7 @@ func TestTransformSubnetTxSyntacticVerify(t *testing.T) {
 				invalidSubnetAuth.EXPECT().Verify().Return(errInvalidSubnetAuth)
 				return &TransformSubnetTx{
 					BaseTx:                   validBaseTx,
-					Subnet:                 ids.GenerateTestID(),
+					Subnet:                   ids.GenerateTestID(),
 					AssetID:                  ids.GenerateTestID(),
 					InitialSupply:            10,
 					MaximumSupply:            10,
@@ -367,10 +367,56 @@ func TestTransformSubnetTxSyntacticVerify(t *testing.T) {
 					MinDelegatorStake:        1,
 					MaxValidatorWeightFactor: 1,
 					UptimeRequirement:        reward.PercentDenominator,
-					SubnetAuth:             invalidSubnetAuth,
+					SubnetAuth:               invalidSubnetAuth,
 				}
 			},
 			err: errInvalidSubnetAuth,
+		},
+		{
+			name: "invalid BaseTx",
+			txFunc: func(*gomock.Controller) *TransformSubnetTx {
+				return &TransformSubnetTx{
+					BaseTx:                   invalidBaseTx,
+					Subnet:                   ids.GenerateTestID(),
+					AssetID:                  ids.GenerateTestID(),
+					InitialSupply:            10,
+					MaximumSupply:            10,
+					MinConsumptionRate:       0,
+					MaxConsumptionRate:       reward.PercentDenominator,
+					MinValidatorStake:        2,
+					MaxValidatorStake:        10,
+					MinStakeDuration:         1,
+					MaxStakeDuration:         2,
+					MinDelegationFee:         reward.PercentDenominator,
+					MinDelegatorStake:        1,
+					MaxValidatorWeightFactor: 1,
+					UptimeRequirement:        reward.PercentDenominator,
+				}
+			},
+			err: avax.ErrWrongNetworkID,
+		},
+		{
+			name: "invalid BaseTx",
+			txFunc: func(*gomock.Controller) *TransformSubnetTx {
+				return &TransformSubnetTx{
+					BaseTx:                   invalidBaseTx,
+					Subnet:                   ids.GenerateTestID(),
+					AssetID:                  ids.GenerateTestID(),
+					InitialSupply:            10,
+					MaximumSupply:            10,
+					MinConsumptionRate:       0,
+					MaxConsumptionRate:       reward.PercentDenominator,
+					MinValidatorStake:        2,
+					MaxValidatorStake:        10,
+					MinStakeDuration:         1,
+					MaxStakeDuration:         2,
+					MinDelegationFee:         reward.PercentDenominator,
+					MinDelegatorStake:        1,
+					MaxValidatorWeightFactor: 1,
+					UptimeRequirement:        reward.PercentDenominator,
+				}
+			},
+			err: avax.ErrWrongNetworkID,
 		},
 		{
 			name: "passes verification",
@@ -380,7 +426,7 @@ func TestTransformSubnetTxSyntacticVerify(t *testing.T) {
 				validSubnetAuth.EXPECT().Verify().Return(nil)
 				return &TransformSubnetTx{
 					BaseTx:                   validBaseTx,
-					Subnet:                 ids.GenerateTestID(),
+					Subnet:                   ids.GenerateTestID(),
 					AssetID:                  ids.GenerateTestID(),
 					InitialSupply:            10,
 					MaximumSupply:            10,
@@ -394,7 +440,7 @@ func TestTransformSubnetTxSyntacticVerify(t *testing.T) {
 					MinDelegatorStake:        1,
 					MaxValidatorWeightFactor: 1,
 					UptimeRequirement:        reward.PercentDenominator,
-					SubnetAuth:             validSubnetAuth,
+					SubnetAuth:               validSubnetAuth,
 				}
 			},
 			err: nil,
@@ -411,26 +457,4 @@ func TestTransformSubnetTxSyntacticVerify(t *testing.T) {
 			require.ErrorIs(t, err, tt.err)
 		})
 	}
-
-	t.Run("invalid BaseTx", func(t *testing.T) {
-		tx := &TransformSubnetTx{
-			BaseTx:                   invalidBaseTx,
-			Subnet:                 ids.GenerateTestID(),
-			AssetID:                  ids.GenerateTestID(),
-			InitialSupply:            10,
-			MaximumSupply:            10,
-			MinConsumptionRate:       0,
-			MaxConsumptionRate:       reward.PercentDenominator,
-			MinValidatorStake:        2,
-			MaxValidatorStake:        10,
-			MinStakeDuration:         1,
-			MaxStakeDuration:         2,
-			MinDelegationFee:         reward.PercentDenominator,
-			MinDelegatorStake:        1,
-			MaxValidatorWeightFactor: 1,
-			UptimeRequirement:        reward.PercentDenominator,
-		}
-		err := tx.SyntacticVerify(ctx)
-		require.Error(t, err)
-	})
 }

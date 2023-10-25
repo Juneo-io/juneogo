@@ -15,9 +15,8 @@ import (
 	"github.com/ava-labs/avalanchego/utils/crypto/secp256k1"
 	"github.com/ava-labs/avalanchego/utils/formatting"
 	"github.com/ava-labs/avalanchego/utils/formatting/address"
+	"github.com/ava-labs/avalanchego/utils/json"
 	"github.com/ava-labs/avalanchego/utils/rpc"
-
-	cjson "github.com/ava-labs/avalanchego/utils/json"
 )
 
 var _ Client = (*client)(nil)
@@ -44,8 +43,6 @@ type Client interface {
 	ConfirmTx(ctx context.Context, txID ids.ID, freq time.Duration, options ...rpc.Option) (choices.Status, error)
 	// GetTx returns the byte representation of [txID]
 	GetTx(ctx context.Context, txID ids.ID, options ...rpc.Option) ([]byte, error)
-	// IssueStopVertex issues a stop vertex.
-	IssueStopVertex(ctx context.Context, options ...rpc.Option) error
 	// GetUTXOs returns the byte representation of the UTXOs controlled by [addrs]
 	GetUTXOs(
 		ctx context.Context,
@@ -253,8 +250,8 @@ func (c *client) GetBlock(ctx context.Context, blkID ids.ID, options ...rpc.Opti
 
 func (c *client) GetBlockByHeight(ctx context.Context, height uint64, options ...rpc.Option) ([]byte, error) {
 	res := &api.FormattedBlock{}
-	err := c.requester.SendRequest(ctx, "jvm.getBlockByHeight", &api.GetBlockByHeightArgs{
-		Height:   height,
+	err := c.requester.SendRequest(ctx, "avm.getBlockByHeight", &api.GetBlockByHeightArgs{
+		Height:   json.Uint64(height),
 		Encoding: formatting.HexNC,
 	}, res, options...)
 	if err != nil {
@@ -281,10 +278,6 @@ func (c *client) IssueTx(ctx context.Context, txBytes []byte, options ...rpc.Opt
 		Encoding: formatting.Hex,
 	}, res, options...)
 	return res.TxID, err
-}
-
-func (c *client) IssueStopVertex(ctx context.Context, options ...rpc.Option) error {
-	return c.requester.SendRequest(ctx, "jvm.issueStopVertex", &struct{}{}, &struct{}{}, options...)
 }
 
 func (c *client) GetTxStatus(ctx context.Context, txID ids.ID, options ...rpc.Option) (choices.Status, error) {
@@ -356,7 +349,7 @@ func (c *client) GetAtomicUTXOs(
 	err := c.requester.SendRequest(ctx, "jvm.getUTXOs", &api.GetUTXOsArgs{
 		Addresses:   ids.ShortIDsToStrings(addrs),
 		SourceChain: sourceChain,
-		Limit:       cjson.Uint32(limit),
+		Limit:       json.Uint32(limit),
 		StartIndex: api.Index{
 			Address: startAddress.String(),
 			UTXO:    startUTXOID.String(),
@@ -455,14 +448,14 @@ func (c *client) CreateAsset(
 	holders := make([]*Holder, len(clientHolders))
 	for i, clientHolder := range clientHolders {
 		holders[i] = &Holder{
-			Amount:  cjson.Uint64(clientHolder.Amount),
+			Amount:  json.Uint64(clientHolder.Amount),
 			Address: clientHolder.Address.String(),
 		}
 	}
 	minters := make([]Owners, len(clientMinters))
 	for i, clientMinter := range clientMinters {
 		minters[i] = Owners{
-			Threshold: cjson.Uint32(clientMinter.Threshold),
+			Threshold: json.Uint32(clientMinter.Threshold),
 			Minters:   ids.ShortIDsToStrings(clientMinter.Minters),
 		}
 	}
@@ -496,7 +489,7 @@ func (c *client) CreateFixedCapAsset(
 	holders := make([]*Holder, len(clientHolders))
 	for i, clientHolder := range clientHolders {
 		holders[i] = &Holder{
-			Amount:  cjson.Uint64(clientHolder.Amount),
+			Amount:  json.Uint64(clientHolder.Amount),
 			Address: clientHolder.Address.String(),
 		}
 	}
@@ -529,7 +522,7 @@ func (c *client) CreateVariableCapAsset(
 	minters := make([]Owners, len(clientMinters))
 	for i, clientMinter := range clientMinters {
 		minters[i] = Owners{
-			Threshold: cjson.Uint32(clientMinter.Threshold),
+			Threshold: json.Uint32(clientMinter.Threshold),
 			Minters:   ids.ShortIDsToStrings(clientMinter.Minters),
 		}
 	}
@@ -561,7 +554,7 @@ func (c *client) CreateNFTAsset(
 	minters := make([]Owners, len(clientMinters))
 	for i, clientMinter := range clientMinters {
 		minters[i] = Owners{
-			Threshold: cjson.Uint32(clientMinter.Threshold),
+			Threshold: json.Uint32(clientMinter.Threshold),
 			Minters:   ids.ShortIDsToStrings(clientMinter.Minters),
 		}
 	}
@@ -636,7 +629,7 @@ func (c *client) Send(
 			JSONChangeAddr: api.JSONChangeAddr{ChangeAddr: changeAddr.String()},
 		},
 		SendOutput: SendOutput{
-			Amount:  cjson.Uint64(amount),
+			Amount:  json.Uint64(amount),
 			AssetID: assetID,
 			To:      to.String(),
 		},
@@ -658,7 +651,7 @@ func (c *client) SendMultiple(
 	outputs := make([]SendOutput, len(clientOutputs))
 	for i, clientOutput := range clientOutputs {
 		outputs[i] = SendOutput{
-			Amount:  cjson.Uint64(clientOutput.Amount),
+			Amount:  json.Uint64(clientOutput.Amount),
 			AssetID: clientOutput.AssetID,
 			To:      clientOutput.To.String(),
 		}
@@ -692,7 +685,7 @@ func (c *client) Mint(
 			JSONFromAddrs:  api.JSONFromAddrs{From: ids.ShortIDsToStrings(from)},
 			JSONChangeAddr: api.JSONChangeAddr{ChangeAddr: changeAddr.String()},
 		},
-		Amount:  cjson.Uint64(amount),
+		Amount:  json.Uint64(amount),
 		AssetID: assetID,
 		To:      to.String(),
 	}, res, options...)
@@ -717,7 +710,7 @@ func (c *client) SendNFT(
 			JSONChangeAddr: api.JSONChangeAddr{ChangeAddr: changeAddr.String()},
 		},
 		AssetID: assetID,
-		GroupID: cjson.Uint32(groupID),
+		GroupID: json.Uint32(groupID),
 		To:      to.String(),
 	}, res, options...)
 	return res.TxID, err
@@ -780,7 +773,7 @@ func (c *client) Export(
 			JSONFromAddrs:  api.JSONFromAddrs{From: ids.ShortIDsToStrings(from)},
 			JSONChangeAddr: api.JSONChangeAddr{ChangeAddr: changeAddr.String()},
 		},
-		Amount:      cjson.Uint64(amount),
+		Amount:      json.Uint64(amount),
 		TargetChain: targetChain,
 		To:          to.String(),
 		AssetID:     assetID,

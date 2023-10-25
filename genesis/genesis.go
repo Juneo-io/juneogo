@@ -33,13 +33,19 @@ const (
 )
 
 var (
-	errStakeDurationTooHigh   = errors.New("initial stake duration larger than maximum configured")
-	errNoInitiallyStakedFunds = errors.New("initial staked funds cannot be empty")
-	errNoSupply               = errors.New("initial supply must be > 0")
-	errNoStakeDuration        = errors.New("initial stake duration must be > 0")
-	errNoStakers              = errors.New("initial stakers must be > 0")
-	errNoEVMChainGenesis      = errors.New("evm genesis cannot be empty")
-	errNoTxs                  = errors.New("genesis creates no transactions")
+	errStakeDurationTooHigh            = errors.New("initial stake duration larger than maximum configured")
+	errNoInitiallyStakedFunds          = errors.New("initial staked funds cannot be empty")
+	errNoSupply                        = errors.New("initial supply must be > 0")
+	errNoStakeDuration                 = errors.New("initial stake duration must be > 0")
+	errNoStakers                       = errors.New("initial stakers must be > 0")
+	errNoEVMChainGenesis               = errors.New("evm genesis cannot be empty")
+	errNoTxs                           = errors.New("genesis creates no transactions")
+	errNoAllocationToStake             = errors.New("no allocation to stake")
+	errDuplicateInitiallyStakedAddress = errors.New("duplicate initially staked address")
+	errConflictingNetworkIDs           = errors.New("conflicting networkIDs")
+	errFutureStartTime                 = errors.New("startTime cannot be in the future")
+	errInitialStakeDurationTooLow      = errors.New("initial stake duration is too low")
+	errOverridesStandardNetworkConfig  = errors.New("overrides standard network genesis config")
 )
 
 // validateInitialStakedFunds ensures all staked
@@ -76,7 +82,8 @@ func validateInitialStakedFunds(config *Config) error {
 			}
 
 			return fmt.Errorf(
-				"address %s is duplicated in initial staked funds",
+				"%w: %s",
+				errDuplicateInitiallyStakedAddress,
 				avaxAddr,
 			)
 		}
@@ -96,7 +103,8 @@ func validateInitialStakedFunds(config *Config) error {
 			}
 
 			return fmt.Errorf(
-				"address %s does not have an allocation to stake",
+				"%w in address %s",
+				errNoAllocationToStake,
 				avaxAddr,
 			)
 		}
@@ -110,7 +118,8 @@ func validateInitialStakedFunds(config *Config) error {
 func validateConfig(networkID uint32, config *Config, stakingCfg *StakingConfig) error {
 	if networkID != config.NetworkID {
 		return fmt.Errorf(
-			"networkID %d specified but genesis config contains networkID %d",
+			"%w: expected %d but config contains %d",
+			errConflictingNetworkIDs,
 			networkID,
 			config.NetworkID,
 		)
@@ -127,7 +136,8 @@ func validateConfig(networkID uint32, config *Config, stakingCfg *StakingConfig)
 	startTime := time.Unix(int64(config.StartTime), 0)
 	if time.Since(startTime) < 0 {
 		return fmt.Errorf(
-			"start time cannot be in the future: %s",
+			"%w: %s",
+			errFutureStartTime,
 			startTime,
 		)
 	}
@@ -153,10 +163,9 @@ func validateConfig(networkID uint32, config *Config, stakingCfg *StakingConfig)
 	offsetTimeRequired := config.InitialStakeDurationOffset * uint64(len(config.InitialStakers)-1)
 	if offsetTimeRequired > config.InitialStakeDuration {
 		return fmt.Errorf(
-			"initial stake duration is %d but need at least %d with offset of %d",
-			config.InitialStakeDuration,
+			"%w must be at least %d",
+			errInitialStakeDurationTooLow,
 			offsetTimeRequired,
-			config.InitialStakeDurationOffset,
 		)
 	}
 
@@ -240,9 +249,9 @@ func FromFile(networkID uint32, filepath string, stakingCfg *StakingConfig) ([]b
 	switch networkID {
 	case constants.MainnetID, constants.TestnetID, constants.LocalID:
 		return nil, ids.ID{}, fmt.Errorf(
-			"cannot override genesis config for standard network %s (%d)",
+			"%w: %s",
+			errOverridesStandardNetworkConfig,
 			constants.NetworkName(networkID),
-			networkID,
 		)
 	}
 
@@ -282,9 +291,9 @@ func FromFlag(networkID uint32, genesisContent string, stakingCfg *StakingConfig
 	switch networkID {
 	case constants.MainnetID, constants.TestnetID, constants.LocalID:
 		return nil, ids.ID{}, fmt.Errorf(
-			"cannot override genesis config for standard network %s (%d)",
+			"%w: %s",
+			errOverridesStandardNetworkConfig,
 			constants.NetworkName(networkID),
-			networkID,
 		)
 	}
 
@@ -596,7 +605,7 @@ func FromConfig(config *Config) ([]byte, ids.ID, error) {
 	platformvmArgs.Chains = []api.Chain{
 		{
 			GenesisData: avmReply.Bytes,
-			SubnetID:  constants.PrimaryNetworkID,
+			SubnetID:    constants.PrimaryNetworkID,
 			VMID:        constants.AVMID,
 			FxIDs: []ids.ID{
 				secp256k1fx.ID,
@@ -608,126 +617,126 @@ func FromConfig(config *Config) ([]byte, ids.ID, error) {
 		},
 		{
 			GenesisData:  juneGenesisStr,
-			SubnetID:   constants.PrimaryNetworkID,
+			SubnetID:     constants.PrimaryNetworkID,
 			VMID:         constants.EVMID,
 			Name:         "JUNE-Chain",
 			ChainAssetID: assetsIDs[june.Symbol],
 		},
 		{
 			GenesisData:  eth1GenesisStr,
-			SubnetID:   constants.PrimaryNetworkID,
+			SubnetID:     constants.PrimaryNetworkID,
 			VMID:         constants.EVMID,
 			Name:         "ETH1-Chain",
 			ChainAssetID: assetsIDs[eth1.Symbol],
 		},
 		{
 			GenesisData:  mbtc1GenesisStr,
-			SubnetID:   constants.PrimaryNetworkID,
+			SubnetID:     constants.PrimaryNetworkID,
 			VMID:         constants.EVMID,
 			Name:         "mBTC1-Chain",
 			ChainAssetID: assetsIDs[mbtc1.Symbol],
 		},
 		{
 			GenesisData:  doge1GenesisStr,
-			SubnetID:   constants.PrimaryNetworkID,
+			SubnetID:     constants.PrimaryNetworkID,
 			VMID:         constants.EVMID,
 			Name:         "DOGE1-Chain",
 			ChainAssetID: assetsIDs[doge1.Symbol],
 		},
 		{
 			GenesisData:  tusd1GenesisStr,
-			SubnetID:   constants.PrimaryNetworkID,
+			SubnetID:     constants.PrimaryNetworkID,
 			VMID:         constants.EVMID,
 			Name:         "TUSD1-Chain",
 			ChainAssetID: assetsIDs[tusd1.Symbol],
 		},
 		{
 			GenesisData:  usdt1GenesisStr,
-			SubnetID:   constants.PrimaryNetworkID,
+			SubnetID:     constants.PrimaryNetworkID,
 			VMID:         constants.EVMID,
 			Name:         "USDT1-Chain",
 			ChainAssetID: assetsIDs[usdt1.Symbol],
 		},
 		{
 			GenesisData:  dai1GenesisStr,
-			SubnetID:   constants.PrimaryNetworkID,
+			SubnetID:     constants.PrimaryNetworkID,
 			VMID:         constants.EVMID,
 			Name:         "DAI1-Chain",
 			ChainAssetID: assetsIDs[dai1.Symbol],
 		},
 		{
 			GenesisData:  euroc1GenesisStr,
-			SubnetID:   constants.PrimaryNetworkID,
+			SubnetID:     constants.PrimaryNetworkID,
 			VMID:         constants.EVMID,
 			Name:         "EUROC1-Chain",
 			ChainAssetID: assetsIDs[euroc1.Symbol],
 		},
 		{
 			GenesisData:  ltc1GenesisStr,
-			SubnetID:   constants.PrimaryNetworkID,
+			SubnetID:     constants.PrimaryNetworkID,
 			VMID:         constants.EVMID,
 			Name:         "LTC1-Chain",
 			ChainAssetID: assetsIDs[ltc1.Symbol],
 		},
 		{
 			GenesisData:  xlm1GenesisStr,
-			SubnetID:   constants.PrimaryNetworkID,
+			SubnetID:     constants.PrimaryNetworkID,
 			VMID:         constants.EVMID,
 			Name:         "XLM1-Chain",
 			ChainAssetID: assetsIDs[xlm1.Symbol],
 		},
 		{
 			GenesisData:  bch1GenesisStr,
-			SubnetID:   constants.PrimaryNetworkID,
+			SubnetID:     constants.PrimaryNetworkID,
 			VMID:         constants.EVMID,
 			Name:         "BCH1-Chain",
 			ChainAssetID: assetsIDs[bch1.Symbol],
 		},
 		{
 			GenesisData:  paxg1GenesisStr,
-			SubnetID:   constants.PrimaryNetworkID,
+			SubnetID:     constants.PrimaryNetworkID,
 			VMID:         constants.EVMID,
 			Name:         "PAXG1-Chain",
 			ChainAssetID: assetsIDs[paxg1.Symbol],
 		},
 		{
 			GenesisData:  icp1GenesisStr,
-			SubnetID:   constants.PrimaryNetworkID,
+			SubnetID:     constants.PrimaryNetworkID,
 			VMID:         constants.EVMID,
 			Name:         "ICP1-Chain",
 			ChainAssetID: assetsIDs[icp1.Symbol],
 		},
 		{
 			GenesisData:  xidr1GenesisStr,
-			SubnetID:   constants.PrimaryNetworkID,
+			SubnetID:     constants.PrimaryNetworkID,
 			VMID:         constants.EVMID,
 			Name:         "XIDR1-Chain",
 			ChainAssetID: assetsIDs[xidr1.Symbol],
 		},
 		{
 			GenesisData:  xsgd1GenesisStr,
-			SubnetID:   constants.PrimaryNetworkID,
+			SubnetID:     constants.PrimaryNetworkID,
 			VMID:         constants.EVMID,
 			Name:         "XSGD1-Chain",
 			ChainAssetID: assetsIDs[xsgd1.Symbol],
 		},
 		{
 			GenesisData:  etc1GenesisStr,
-			SubnetID:   constants.PrimaryNetworkID,
+			SubnetID:     constants.PrimaryNetworkID,
 			VMID:         constants.EVMID,
 			Name:         "ETC1-Chain",
 			ChainAssetID: assetsIDs[etc1.Symbol],
 		},
 		{
 			GenesisData:  r1000GenesisStr,
-			SubnetID:   constants.PrimaryNetworkID,
+			SubnetID:     constants.PrimaryNetworkID,
 			VMID:         constants.EVMID,
 			Name:         "R1000-Chain",
 			ChainAssetID: assetsIDs[r1000.Symbol],
 		},
 		{
 			GenesisData:  r10GenesisStr,
-			SubnetID:   constants.PrimaryNetworkID,
+			SubnetID:     constants.PrimaryNetworkID,
 			VMID:         constants.EVMID,
 			Name:         "R10-Chain",
 			ChainAssetID: assetsIDs[r10.Symbol],

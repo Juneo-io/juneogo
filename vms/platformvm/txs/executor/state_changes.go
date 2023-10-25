@@ -17,8 +17,8 @@ import (
 )
 
 var (
-	errChildBlockAfterStakerChangeTime = errors.New("proposed timestamp later than next staker change time")
-	errChildBlockBeyondSyncBound       = errors.New("proposed timestamp is too far in the future relative to local time")
+	ErrChildBlockAfterStakerChangeTime = errors.New("proposed timestamp later than next staker change time")
+	ErrChildBlockBeyondSyncBound       = errors.New("proposed timestamp is too far in the future relative to local time")
 )
 
 // VerifyNewChainTime returns nil if the [newChainTime] is a valid chain time
@@ -39,7 +39,7 @@ func VerifyNewChainTime(
 	if newChainTime.After(nextStakerChangeTime) {
 		return fmt.Errorf(
 			"%w, proposed timestamp (%s), next staker change time (%s)",
-			errChildBlockAfterStakerChangeTime,
+			ErrChildBlockAfterStakerChangeTime,
 			newChainTime,
 			nextStakerChangeTime,
 		)
@@ -50,7 +50,7 @@ func VerifyNewChainTime(
 	if newChainTime.After(maxNewChainTime) {
 		return fmt.Errorf(
 			"%w, proposed time (%s), local time (%s)",
-			errChildBlockBeyondSyncBound,
+			ErrChildBlockBeyondSyncBound,
 			newChainTime,
 			now,
 		)
@@ -268,7 +268,7 @@ func GetRewardsCalculator(
 	}
 	transformSubnet, ok := transformSubnetIntf.Unsigned.(*txs.TransformSubnetTx)
 	if !ok {
-		return nil, errIsNotTransformSubnetTx
+		return nil, ErrIsNotTransformSubnetTx
 	}
 
 	return reward.NewCalculator(reward.Config{
