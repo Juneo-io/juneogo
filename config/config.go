@@ -836,7 +836,7 @@ func getStakingConfig(v *viper.Viper, networkID uint32) (node.StakingConfig, err
 			return node.StakingConfig{}, errMinStakeDurationAboveMax
 		case config.RewardConfig.MintingPeriod < config.MaxStakeDuration:
 			return node.StakingConfig{}, errStakeMintingPeriodBelowMin
-		case config.RewardConfig.RewardShare < reward.PercentDenominator:
+		case config.RewardConfig.RewardShare > reward.PercentDenominator:
 			return node.StakingConfig{}, errStakeRewardShareTooLarge
 		}
 	} else {
