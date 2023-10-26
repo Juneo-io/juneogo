@@ -10,6 +10,8 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/ava-labs/avalanchego/ids"
 	"github.com/ava-labs/avalanchego/snow/networking/benchlist"
 	"github.com/ava-labs/avalanchego/utils/timer"
@@ -29,10 +31,9 @@ func TestManagerFire(t *testing.T) {
 		"",
 		prometheus.NewRegistry(),
 	)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 	go manager.Dispatch()
+	defer manager.Stop()
 
 	wg := sync.WaitGroup{}
 	wg.Add(1)

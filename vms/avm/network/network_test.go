@@ -8,15 +8,15 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/golang/mock/gomock"
-
 	"github.com/stretchr/testify/require"
+
+	"go.uber.org/mock/gomock"
 
 	"github.com/ava-labs/avalanchego/ids"
 	"github.com/ava-labs/avalanchego/snow"
 	"github.com/ava-labs/avalanchego/snow/engine/common"
 	"github.com/ava-labs/avalanchego/utils/logging"
-	"github.com/ava-labs/avalanchego/vms/avm/blocks/executor"
+	"github.com/ava-labs/avalanchego/vms/avm/block/executor"
 	"github.com/ava-labs/avalanchego/vms/avm/fxs"
 	"github.com/ava-labs/avalanchego/vms/avm/txs"
 	"github.com/ava-labs/avalanchego/vms/avm/txs/mempool"
@@ -140,7 +140,6 @@ func TestNetworkAppGossip(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			require := require.New(t)
 			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
 
 			parser, err := txs.NewParser([]fxs.Fx{
 				&secp256k1fx.Fx{},
@@ -158,8 +157,7 @@ func TestNetworkAppGossip(t *testing.T) {
 				tt.mempoolFunc(ctrl),
 				tt.appSenderFunc(ctrl),
 			)
-			err = n.AppGossip(context.Background(), ids.GenerateTestNodeID(), tt.msgBytesFunc())
-			require.NoError(err)
+			require.NoError(n.AppGossip(context.Background(), ids.GenerateTestNodeID(), tt.msgBytesFunc()))
 		})
 	}
 }
@@ -281,7 +279,6 @@ func TestNetworkIssueTx(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			require := require.New(t)
 			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
 
 			parser, err := txs.NewParser([]fxs.Fx{
 				&secp256k1fx.Fx{},
@@ -308,7 +305,6 @@ func TestNetworkIssueTx(t *testing.T) {
 func TestNetworkGossipTx(t *testing.T) {
 	require := require.New(t)
 	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
 
 	parser, err := txs.NewParser([]fxs.Fx{
 		&secp256k1fx.Fx{},
@@ -326,8 +322,8 @@ func TestNetworkGossipTx(t *testing.T) {
 		mempool.NewMockMempool(ctrl),
 		appSender,
 	)
-	n, ok := nIntf.(*network)
-	require.True(ok)
+	require.IsType(&network{}, nIntf)
+	n := nIntf.(*network)
 
 	// Case: Tx was recently gossiped
 	txID := ids.GenerateTestID()

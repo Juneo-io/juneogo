@@ -9,8 +9,11 @@ import (
 	"fmt"
 	"time"
 
+	"go.uber.org/zap"
+
 	"github.com/ava-labs/avalanchego/chains/atomic"
 	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/utils/constants"
 	"github.com/ava-labs/avalanchego/utils/set"
 	"github.com/ava-labs/avalanchego/vms/components/avax"
 	"github.com/ava-labs/avalanchego/vms/components/verify"
@@ -118,6 +121,7 @@ func (e *StandardTxExecutor) CreateSubnetTx(tx *txs.CreateSubnetTx) error {
 	avax.Produce(e.State, txID, tx.Outs)
 	// Add the new subnet to the database
 	e.State.AddSubnet(e.Tx)
+	e.State.SetSubnetOwner(txID, tx.Owner)
 	return nil
 }
 
@@ -135,7 +139,9 @@ func (e *StandardTxExecutor) ImportTx(tx *txs.ImportTx) error {
 		utxoIDs[i] = utxoID[:]
 	}
 
-	if e.Bootstrapped.Get() {
+	// Skip verification of the shared memory inputs if the other primary
+	// network chains are not guaranteed to be up-to-date.
+	if e.Bootstrapped.Get() && !e.Config.PartialSyncPrimaryNetwork {
 		if err := verify.SameSubnet(context.TODO(), e.Ctx, tx.SourceChain); err != nil {
 			return err
 		}
@@ -149,7 +155,7 @@ func (e *StandardTxExecutor) ImportTx(tx *txs.ImportTx) error {
 		for index, input := range tx.Ins {
 			utxo, err := e.State.GetUTXO(input.InputID())
 			if err != nil {
-				return fmt.Errorf("failed to get UTXO %s: %w", &input.UTXOID, err)
+				return fmt.Errorf("failed to get UTXO %s: %w", &input.UTXOID, err) //nolint:gosec
 			}
 			utxos[index] = utxo
 		}
@@ -186,6 +192,9 @@ func (e *StandardTxExecutor) ImportTx(tx *txs.ImportTx) error {
 	// Produce the UTXOS
 	avax.Produce(e.State, txID, tx.Outs)
 
+	// Note: We apply atomic requests even if we are not verifying atomic
+	// requests to ensure the shared state will be correct if we later start
+	// verifying the requests.
 	e.AtomicRequests = map[ids.ID]*atomic.Requests{
 		tx.SourceChain: {
 			RemoveRequests: utxoIDs,
@@ -230,6 +239,9 @@ func (e *StandardTxExecutor) ExportTx(tx *txs.ExportTx) error {
 	// Produce the UTXOS
 	avax.Produce(e.State, txID, tx.Outs)
 
+	// Note: We apply atomic requests even if we are not verifying atomic
+	// requests to ensure the shared state will be correct if we later start
+	// verifying the requests.
 	elems := make([]*atomic.Element, len(tx.ExportedOutputs))
 	for i, out := range tx.ExportedOutputs {
 		utxo := &avax.UTXO{
@@ -288,6 +300,14 @@ func (e *StandardTxExecutor) AddValidatorTx(tx *txs.AddValidatorTx) error {
 	avax.Consume(e.State, tx.Ins)
 	avax.Produce(e.State, txID, tx.Outs)
 
+	if e.Config.PartialSyncPrimaryNetwork && tx.Validator.NodeID == e.Ctx.NodeID {
+		e.Ctx.Log.Warn("verified transaction that would cause this node to become unhealthy",
+			zap.String("reason", "primary network is not being fully synced"),
+			zap.Stringer("txID", txID),
+			zap.String("txType", "addValidator"),
+			zap.Stringer("nodeID", tx.Validator.NodeID),
+		)
+	}
 	return nil
 }
 
@@ -338,12 +358,12 @@ func (e *StandardTxExecutor) AddDelegatorTx(tx *txs.AddDelegatorTx) error {
 }
 
 // Verifies a [*txs.RemoveSubnetValidatorTx] and, if it passes, executes it on
-// [e.State]. For verification rules, see [removeSubnetValidatorValidation].
-// This transaction will result in [tx.NodeID] being removed as a validator of
+// [e.State]. For verification rules, see [verifyRemoveSubnetValidatorTx]. This
+// transaction will result in [tx.NodeID] being removed as a validator of
 // [tx.SubnetID].
 // Note: [tx.NodeID] may be either a current or pending validator.
 func (e *StandardTxExecutor) RemoveSubnetValidatorTx(tx *txs.RemoveSubnetValidatorTx) error {
-	staker, isCurrentValidator, err := removeSubnetValidatorValidation(
+	staker, isCurrentValidator, err := verifyRemoveSubnetValidatorTx(
 		e.Backend,
 		e.State,
 		e.Tx,
@@ -435,6 +455,17 @@ func (e *StandardTxExecutor) AddPermissionlessValidatorTx(tx *txs.AddPermissionl
 	avax.Consume(e.State, tx.Ins)
 	avax.Produce(e.State, txID, tx.Outs)
 
+	if e.Config.PartialSyncPrimaryNetwork &&
+		tx.Subnet == constants.PrimaryNetworkID &&
+		tx.Validator.NodeID == e.Ctx.NodeID {
+		e.Ctx.Log.Warn("verified transaction that would cause this node to become unhealthy",
+			zap.String("reason", "primary network is not being fully synced"),
+			zap.Stringer("txID", txID),
+			zap.String("txType", "addPermissionlessValidator"),
+			zap.Stringer("nodeID", tx.Validator.NodeID),
+		)
+	}
+
 	return nil
 }
 
@@ -455,6 +486,30 @@ func (e *StandardTxExecutor) AddPermissionlessDelegatorTx(tx *txs.AddPermissionl
 	}
 
 	e.State.PutPendingDelegator(newStaker)
+	avax.Consume(e.State, tx.Ins)
+	avax.Produce(e.State, txID, tx.Outs)
+
+	return nil
+}
+
+// Verifies a [*txs.TransferSubnetOwnershipTx] and, if it passes, executes it on
+// [e.State]. For verification rules, see [verifyTransferSubnetOwnershipTx].
+// This transaction will result in the ownership of [tx.Subnet] being transferred
+// to [tx.Owner].
+func (e *StandardTxExecutor) TransferSubnetOwnershipTx(tx *txs.TransferSubnetOwnershipTx) error {
+	err := verifyTransferSubnetOwnershipTx(
+		e.Backend,
+		e.State,
+		e.Tx,
+		tx,
+	)
+	if err != nil {
+		return err
+	}
+
+	e.State.SetSubnetOwner(tx.Subnet, tx.Owner)
+
+	txID := e.Tx.ID()
 	avax.Consume(e.State, tx.Ins)
 	avax.Produce(e.State, txID, tx.Outs)
 

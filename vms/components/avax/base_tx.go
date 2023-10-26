@@ -9,7 +9,6 @@ import (
 
 	"github.com/ava-labs/avalanchego/ids"
 	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/utils/set"
 	"github.com/ava-labs/avalanchego/vms/types"
 )
 
@@ -36,23 +35,9 @@ type BaseTx struct {
 func (t *BaseTx) InputUTXOs() []*UTXOID {
 	utxos := make([]*UTXOID, len(t.Ins))
 	for i, in := range t.Ins {
-		utxos[i] = &in.UTXOID
+		utxos[i] = &in.UTXOID //nolint:gosec
 	}
 	return utxos
-}
-
-// ConsumedAssetIDs returns the IDs of the assets this transaction consumes
-func (t *BaseTx) ConsumedAssetIDs() set.Set[ids.ID] {
-	assets := set.Set[ids.ID]{}
-	for _, in := range t.Ins {
-		assets.Add(in.AssetID())
-	}
-	return assets
-}
-
-// AssetIDs returns the IDs of the assets this transaction depends on
-func (t *BaseTx) AssetIDs() set.Set[ids.ID] {
-	return t.ConsumedAssetIDs()
 }
 
 // NumCredentials returns the number of expected credentials

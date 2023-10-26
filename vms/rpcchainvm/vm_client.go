@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 	"time"
 
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
@@ -41,6 +42,7 @@ import (
 	"github.com/ava-labs/avalanchego/snow/validators/gvalidators"
 	"github.com/ava-labs/avalanchego/utils/crypto/bls"
 	"github.com/ava-labs/avalanchego/utils/resource"
+	"github.com/ava-labs/avalanchego/utils/units"
 	"github.com/ava-labs/avalanchego/utils/wrappers"
 	"github.com/ava-labs/avalanchego/version"
 	"github.com/ava-labs/avalanchego/vms/components/chain"
@@ -62,11 +64,12 @@ import (
 	warppb "github.com/ava-labs/avalanchego/proto/pb/warp"
 )
 
+// TODO: Enable these to be configured by the user
 const (
-	decidedCacheSize    = 2048
+	decidedCacheSize    = 64 * units.MiB
 	missingCacheSize    = 2048
-	unverifiedCacheSize = 2048
-	bytesToIDCacheSize  = 2048
+	unverifiedCacheSize = 64 * units.MiB
+	bytesToIDCacheSize  = 64 * units.MiB
 )
 
 var (
@@ -76,7 +79,6 @@ var (
 	_ block.ChainVM                      = (*VMClient)(nil)
 	_ block.BuildBlockWithContextChainVM = (*VMClient)(nil)
 	_ block.BatchedChainVM               = (*VMClient)(nil)
-	_ block.HeightIndexedChainVM         = (*VMClient)(nil)
 	_ block.StateSyncableVM              = (*VMClient)(nil)
 	_ prometheus.Gatherer                = (*VMClient)(nil)
 
@@ -109,9 +111,10 @@ type VMClient struct {
 }
 
 // NewClient returns a VM connected to a remote VM
-func NewClient(client vmpb.VMClient) *VMClient {
+func NewClient(clientConn *grpc.ClientConn) *VMClient {
 	return &VMClient{
-		client: client,
+		client: vmpb.NewVMClient(clientConn),
+		conns:  []*grpc.ClientConn{clientConn},
 	}
 }
 
@@ -367,13 +370,13 @@ func (vm *VMClient) Shutdown(ctx context.Context) error {
 	return errs.Err
 }
 
-func (vm *VMClient) CreateHandlers(ctx context.Context) (map[string]*common.HTTPHandler, error) {
+func (vm *VMClient) CreateHandlers(ctx context.Context) (map[string]http.Handler, error) {
 	resp, err := vm.client.CreateHandlers(ctx, &emptypb.Empty{})
 	if err != nil {
 		return nil, err
 	}
 
-	handlers := make(map[string]*common.HTTPHandler, len(resp.Handlers))
+	handlers := make(map[string]http.Handler, len(resp.Handlers))
 	for _, handler := range resp.Handlers {
 		clientConn, err := grpcutils.Dial(handler.ServerAddr)
 		if err != nil {
@@ -381,21 +384,18 @@ func (vm *VMClient) CreateHandlers(ctx context.Context) (map[string]*common.HTTP
 		}
 
 		vm.conns = append(vm.conns, clientConn)
-		handlers[handler.Prefix] = &common.HTTPHandler{
-			LockOptions: common.LockOption(handler.LockOptions),
-			Handler:     ghttp.NewClient(httppb.NewHTTPClient(clientConn)),
-		}
+		handlers[handler.Prefix] = ghttp.NewClient(httppb.NewHTTPClient(clientConn))
 	}
 	return handlers, nil
 }
 
-func (vm *VMClient) CreateStaticHandlers(ctx context.Context) (map[string]*common.HTTPHandler, error) {
+func (vm *VMClient) CreateStaticHandlers(ctx context.Context) (map[string]http.Handler, error) {
 	resp, err := vm.client.CreateStaticHandlers(ctx, &emptypb.Empty{})
 	if err != nil {
 		return nil, err
 	}
 
-	handlers := make(map[string]*common.HTTPHandler, len(resp.Handlers))
+	handlers := make(map[string]http.Handler, len(resp.Handlers))
 	for _, handler := range resp.Handlers {
 		clientConn, err := grpcutils.Dial(handler.ServerAddr)
 		if err != nil {
@@ -403,10 +403,7 @@ func (vm *VMClient) CreateStaticHandlers(ctx context.Context) (map[string]*commo
 		}
 
 		vm.conns = append(vm.conns, clientConn)
-		handlers[handler.Prefix] = &common.HTTPHandler{
-			LockOptions: common.LockOption(handler.LockOptions),
-			Handler:     ghttp.NewClient(httppb.NewHTTPClient(clientConn)),
-		}
+		handlers[handler.Prefix] = ghttp.NewClient(httppb.NewHTTPClient(clientConn))
 	}
 	return handlers, nil
 }
@@ -527,7 +524,9 @@ func (vm *VMClient) SetPreference(ctx context.Context, blkID ids.ID) error {
 }
 
 func (vm *VMClient) HealthCheck(ctx context.Context) (interface{}, error) {
-	health, err := vm.client.Health(ctx, &emptypb.Empty{})
+	// HealthCheck is a special case, where we want to fail fast instead of block.
+	failFast := grpc.WaitForReady(false)
+	health, err := vm.client.Health(ctx, &emptypb.Empty{}, failFast)
 	if err != nil {
 		return nil, fmt.Errorf("health check failed: %w", err)
 	}

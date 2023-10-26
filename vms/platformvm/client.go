@@ -9,6 +9,7 @@ import (
 
 	"github.com/ava-labs/avalanchego/api"
 	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/snow/validators"
 	"github.com/ava-labs/avalanchego/utils/constants"
 	"github.com/ava-labs/avalanchego/utils/crypto/secp256k1"
 	"github.com/ava-labs/avalanchego/utils/formatting"
@@ -77,8 +78,8 @@ type Client interface {
 	GetCurrentValidators(ctx context.Context, subnetID ids.ID, nodeIDs []ids.NodeID, options ...rpc.Option) ([]ClientPermissionlessValidator, error)
 	// GetPendingValidators returns the list of pending validators for subnet with ID [subnetID]
 	GetPendingValidators(ctx context.Context, subnetID ids.ID, nodeIDs []ids.NodeID, options ...rpc.Option) ([]interface{}, []interface{}, error)
-	// GetCurrentSupply returns an upper bound on the supply of AVAX in the system
-	GetCurrentSupply(ctx context.Context, subnetID ids.ID, options ...rpc.Option) (uint64, error)
+	// GetCurrentSupply returns an upper bound on the supply of AVAX in the system along with the P-chain height
+	GetCurrentSupply(ctx context.Context, subnetID ids.ID, options ...rpc.Option) (uint64, uint64, error)
 	// GetRewardsPoolSupply returns the current supply in the rewards pool
 	GetRewardsPoolSupply(ctx context.Context, subnetID ids.ID, options ...rpc.Option) (uint64, error)
 	// GetFeesPoolValue returns the current value in the fees pool
@@ -255,11 +256,18 @@ type Client interface {
 	GetRewardUTXOs(context.Context, *api.GetTxArgs, ...rpc.Option) ([][]byte, error)
 	// GetTimestamp returns the current chain timestamp
 	GetTimestamp(ctx context.Context, options ...rpc.Option) (time.Time, error)
-	// GetValidatorsAt returns the weights of the validator set of a provided subnet
-	// at the specified height.
-	GetValidatorsAt(ctx context.Context, subnetID ids.ID, height uint64, options ...rpc.Option) (map[ids.NodeID]uint64, error)
+	// GetValidatorsAt returns the weights of the validator set of a provided
+	// subnet at the specified height.
+	GetValidatorsAt(
+		ctx context.Context,
+		subnetID ids.ID,
+		height uint64,
+		options ...rpc.Option,
+	) (map[ids.NodeID]*validators.GetValidatorOutput, error)
 	// GetBlock returns the block with the given id.
 	GetBlock(ctx context.Context, blockID ids.ID, options ...rpc.Option) ([]byte, error)
+	// GetBlockByHeight returns the block at the given [height].
+	GetBlockByHeight(ctx context.Context, height uint64, options ...rpc.Option) ([]byte, error)
 }
 
 // Client implementation for interacting with the P Chain endpoint
@@ -430,7 +438,7 @@ func (c *client) GetCurrentValidators(
 	res := &GetCurrentValidatorsReply{}
 	err := c.requester.SendRequest(ctx, "platform.getCurrentValidators", &GetCurrentValidatorsArgs{
 		SubnetID: subnetID,
-		NodeIDs:    nodeIDs,
+		NodeIDs:  nodeIDs,
 	}, res, options...)
 	if err != nil {
 		return nil, err
@@ -447,38 +455,24 @@ func (c *client) GetPendingValidators(
 	res := &GetPendingValidatorsReply{}
 	err := c.requester.SendRequest(ctx, "platform.getPendingValidators", &GetPendingValidatorsArgs{
 		SubnetID: subnetID,
-		NodeIDs:    nodeIDs,
+		NodeIDs:  nodeIDs,
 	}, res, options...)
 	return res.Validators, res.Delegators, err
 }
 
-func (c *client) GetCurrentSupply(ctx context.Context, subnetID ids.ID, options ...rpc.Option) (uint64, error) {
+func (c *client) GetCurrentSupply(ctx context.Context, subnetID ids.ID, options ...rpc.Option) (uint64, uint64, error) {
 	res := &GetCurrentSupplyReply{}
 	err := c.requester.SendRequest(ctx, "platform.getCurrentSupply", &GetCurrentSupplyArgs{
 		SubnetID: subnetID,
 	}, res, options...)
-	return uint64(res.Supply), err
-}
-
-func (c *client) GetRewardsPoolSupply(ctx context.Context, subnetID ids.ID, options ...rpc.Option) (uint64, error) {
-	res := &GetRewardsPoolSupplyReply{}
-	err := c.requester.SendRequest(ctx, "platform.getRewardsPoolSupply", &GetRewardsPoolSupplyArgs{
-		SubnetID: subnetID,
-	}, res, options...)
-	return uint64(res.RewardsPoolSupply), err
-}
-
-func (c *client) GetFeesPoolValue(ctx context.Context, options ...rpc.Option) (uint64, error) {
-	res := &GetFeesPoolValueReply{}
-	err := c.requester.SendRequest(ctx, "platform.getFeesPoolValue", struct{}{}, res, options...)
-	return uint64(res.FeesPoolValue), err
+	return uint64(res.Supply), uint64(res.Height), err
 }
 
 func (c *client) SampleValidators(ctx context.Context, subnetID ids.ID, sampleSize uint16, options ...rpc.Option) ([]ids.NodeID, error) {
 	res := &SampleValidatorsReply{}
 	err := c.requester.SendRequest(ctx, "platform.sampleValidators", &SampleValidatorsArgs{
 		SubnetID: subnetID,
-		Size:       json.Uint16(sampleSize),
+		Size:     json.Uint16(sampleSize),
 	}, res, options...)
 	return res.Validators, err
 }
@@ -676,7 +670,7 @@ func (c *client) CreateBlockchain(
 			JSONFromAddrs:  api.JSONFromAddrs{From: ids.ShortIDsToStrings(from)},
 			JSONChangeAddr: api.JSONChangeAddr{ChangeAddr: changeAddr.String()},
 		},
-		SubnetID:   subnetID,
+		SubnetID:     subnetID,
 		VMID:         vmID,
 		FxIDs:        fxIDs,
 		Name:         name,
@@ -744,7 +738,7 @@ func (c *client) GetTx(ctx context.Context, txID ids.ID, options ...rpc.Option) 
 }
 
 func (c *client) GetTxStatus(ctx context.Context, txID ids.ID, options ...rpc.Option) (*GetTxStatusResponse, error) {
-	res := new(GetTxStatusResponse)
+	res := &GetTxStatusResponse{}
 	err := c.requester.SendRequest(
 		ctx,
 		"platform.getTxStatus",
@@ -784,7 +778,7 @@ func (c *client) GetStake(
 	validatorsOnly bool,
 	options ...rpc.Option,
 ) (map[ids.ID]uint64, [][]byte, error) {
-	res := new(GetStakeReply)
+	res := &GetStakeReply{}
 	err := c.requester.SendRequest(ctx, "platform.getStake", &GetStakeArgs{
 		JSONAddresses: api.JSONAddresses{
 			Addresses: ids.ShortIDsToStrings(addrs),
@@ -813,7 +807,7 @@ func (c *client) GetStake(
 }
 
 func (c *client) GetMinStake(ctx context.Context, subnetID ids.ID, options ...rpc.Option) (uint64, uint64, error) {
-	res := new(GetMinStakeReply)
+	res := &GetMinStakeReply{}
 	err := c.requester.SendRequest(ctx, "platform.getMinStake", &GetMinStakeArgs{
 		SubnetID: subnetID,
 	}, res, options...)
@@ -821,7 +815,7 @@ func (c *client) GetMinStake(ctx context.Context, subnetID ids.ID, options ...rp
 }
 
 func (c *client) GetTotalStake(ctx context.Context, subnetID ids.ID, options ...rpc.Option) (uint64, error) {
-	res := new(GetTotalStakeReply)
+	res := &GetTotalStakeReply{}
 	err := c.requester.SendRequest(ctx, "platform.getTotalStake", &GetTotalStakeArgs{
 		SubnetID: subnetID,
 	}, res, options...)
@@ -835,12 +829,12 @@ func (c *client) GetTotalStake(ctx context.Context, subnetID ids.ID, options ...
 }
 
 func (c *client) GetMaxStakeAmount(ctx context.Context, subnetID ids.ID, nodeID ids.NodeID, startTime, endTime uint64, options ...rpc.Option) (uint64, error) {
-	res := new(GetMaxStakeAmountReply)
+	res := &GetMaxStakeAmountReply{}
 	err := c.requester.SendRequest(ctx, "platform.getMaxStakeAmount", &GetMaxStakeAmountArgs{
-		SubnetID: subnetID,
-		NodeID:     nodeID,
-		StartTime:  json.Uint64(startTime),
-		EndTime:    json.Uint64(endTime),
+		SubnetID:  subnetID,
+		NodeID:    nodeID,
+		StartTime: json.Uint64(startTime),
+		EndTime:   json.Uint64(endTime),
 	}, res, options...)
 	return uint64(res.Amount), err
 }
@@ -868,23 +862,39 @@ func (c *client) GetTimestamp(ctx context.Context, options ...rpc.Option) (time.
 	return res.Timestamp, err
 }
 
-func (c *client) GetValidatorsAt(ctx context.Context, subnetID ids.ID, height uint64, options ...rpc.Option) (map[ids.NodeID]uint64, error) {
+func (c *client) GetValidatorsAt(
+	ctx context.Context,
+	subnetID ids.ID,
+	height uint64,
+	options ...rpc.Option,
+) (map[ids.NodeID]*validators.GetValidatorOutput, error) {
 	res := &GetValidatorsAtReply{}
 	err := c.requester.SendRequest(ctx, "platform.getValidatorsAt", &GetValidatorsAtArgs{
 		SubnetID: subnetID,
-		Height:     json.Uint64(height),
+		Height:   json.Uint64(height),
 	}, res, options...)
 	return res.Validators, err
 }
 
 func (c *client) GetBlock(ctx context.Context, blockID ids.ID, options ...rpc.Option) ([]byte, error) {
-	response := &api.FormattedBlock{}
+	res := &api.FormattedBlock{}
 	if err := c.requester.SendRequest(ctx, "platform.getBlock", &api.GetBlockArgs{
 		BlockID:  blockID,
 		Encoding: formatting.Hex,
-	}, response, options...); err != nil {
+	}, res, options...); err != nil {
 		return nil, err
 	}
+	return formatting.Decode(res.Encoding, res.Block)
+}
 
-	return formatting.Decode(response.Encoding, response.Block)
+func (c *client) GetBlockByHeight(ctx context.Context, height uint64, options ...rpc.Option) ([]byte, error) {
+	res := &api.FormattedBlock{}
+	err := c.requester.SendRequest(ctx, "platform.getBlockByHeight", &api.GetBlockByHeightArgs{
+		Height:   json.Uint64(height),
+		Encoding: formatting.HexNC,
+	}, res, options...)
+	if err != nil {
+		return nil, err
+	}
+	return formatting.Decode(res.Encoding, res.Block)
 }

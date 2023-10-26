@@ -8,9 +8,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/golang/mock/gomock"
-
 	"github.com/stretchr/testify/require"
+
+	"go.uber.org/mock/gomock"
 
 	"github.com/ava-labs/avalanchego/database/manager"
 	"github.com/ava-labs/avalanchego/ids"
@@ -38,7 +38,7 @@ var (
 	time2 = time.Unix(2, 0)
 )
 
-func batchedParseBlockCachingTestPlugin(t *testing.T, loadExpectations bool) (block.ChainVM, *gomock.Controller) {
+func batchedParseBlockCachingTestPlugin(t *testing.T, loadExpectations bool) block.ChainVM {
 	// test key is "batchedParseBlockCachingTestKey"
 
 	// create mock
@@ -76,7 +76,7 @@ func batchedParseBlockCachingTestPlugin(t *testing.T, loadExpectations bool) (bl
 		)
 	}
 
-	return vm, ctrl
+	return vm
 }
 
 func TestBatchedParseBlockCaching(t *testing.T) {
@@ -90,16 +90,14 @@ func TestBatchedParseBlockCaching(t *testing.T) {
 	ctx := snow.DefaultContextTest()
 	dbManager := manager.NewMemDB(version.Semantic1_0_0)
 
-	err := vm.Initialize(context.Background(), ctx, dbManager, nil, nil, nil, nil, nil, nil)
-	require.NoError(err)
+	require.NoError(vm.Initialize(context.Background(), ctx, dbManager, nil, nil, nil, nil, nil, nil))
 
 	// Call should parse the first block
 	blk, err := vm.ParseBlock(context.Background(), blkBytes1)
 	require.NoError(err)
 	require.Equal(blkID1, blk.ID())
 
-	_, typeChecked := blk.(*chain.BlockWrapper)
-	require.True(typeChecked)
+	require.IsType(&chain.BlockWrapper{}, blk)
 
 	// Call should cache the first block and parse the second block
 	blks, err := vm.BatchedParseBlock(context.Background(), [][]byte{blkBytes1, blkBytes2})
@@ -108,11 +106,8 @@ func TestBatchedParseBlockCaching(t *testing.T) {
 	require.Equal(blkID1, blks[0].ID())
 	require.Equal(blkID2, blks[1].ID())
 
-	_, typeChecked = blks[0].(*chain.BlockWrapper)
-	require.True(typeChecked)
-
-	_, typeChecked = blks[1].(*chain.BlockWrapper)
-	require.True(typeChecked)
+	require.IsType(&chain.BlockWrapper{}, blks[0])
+	require.IsType(&chain.BlockWrapper{}, blks[1])
 
 	// Call should be fully cached and not result in a grpc call
 	blks, err = vm.BatchedParseBlock(context.Background(), [][]byte{blkBytes1, blkBytes2})
@@ -121,9 +116,6 @@ func TestBatchedParseBlockCaching(t *testing.T) {
 	require.Equal(blkID1, blks[0].ID())
 	require.Equal(blkID2, blks[1].ID())
 
-	_, typeChecked = blks[0].(*chain.BlockWrapper)
-	require.True(typeChecked)
-
-	_, typeChecked = blks[1].(*chain.BlockWrapper)
-	require.True(typeChecked)
+	require.IsType(&chain.BlockWrapper{}, blks[0])
+	require.IsType(&chain.BlockWrapper{}, blks[1])
 }

@@ -18,11 +18,11 @@ import (
 // Test that Initialize works
 func TestAdaptiveTimeoutManagerInit(t *testing.T) {
 	type test struct {
-		config        AdaptiveTimeoutConfig
-		shouldErrWith string
+		config      AdaptiveTimeoutConfig
+		expectedErr error
 	}
 
-	tests := []test{
+	tests := []*test{
 		{
 			config: AdaptiveTimeoutConfig{
 				InitialTimeout:     time.Second,
@@ -31,7 +31,7 @@ func TestAdaptiveTimeoutManagerInit(t *testing.T) {
 				TimeoutCoefficient: 2,
 				TimeoutHalflife:    5 * time.Minute,
 			},
-			shouldErrWith: "initial timeout < minimum timeout",
+			expectedErr: errInitialTimeoutBelowMinimum,
 		},
 		{
 			config: AdaptiveTimeoutConfig{
@@ -41,7 +41,7 @@ func TestAdaptiveTimeoutManagerInit(t *testing.T) {
 				TimeoutCoefficient: 2,
 				TimeoutHalflife:    5 * time.Minute,
 			},
-			shouldErrWith: "initial timeout > maximum timeout",
+			expectedErr: errInitialTimeoutAboveMaximum,
 		},
 		{
 			config: AdaptiveTimeoutConfig{
@@ -51,7 +51,7 @@ func TestAdaptiveTimeoutManagerInit(t *testing.T) {
 				TimeoutCoefficient: 0.9,
 				TimeoutHalflife:    5 * time.Minute,
 			},
-			shouldErrWith: "timeout coefficient < 1",
+			expectedErr: errTooSmallTimeoutCoefficient,
 		},
 		{
 			config: AdaptiveTimeoutConfig{
@@ -60,7 +60,7 @@ func TestAdaptiveTimeoutManagerInit(t *testing.T) {
 				MaximumTimeout:     3 * time.Second,
 				TimeoutCoefficient: 1,
 			},
-			shouldErrWith: "timeout halflife is 0",
+			expectedErr: errNonPositiveHalflife,
 		},
 		{
 			config: AdaptiveTimeoutConfig{
@@ -70,7 +70,7 @@ func TestAdaptiveTimeoutManagerInit(t *testing.T) {
 				TimeoutCoefficient: 1,
 				TimeoutHalflife:    -1 * time.Second,
 			},
-			shouldErrWith: "timeout halflife is negative",
+			expectedErr: errNonPositiveHalflife,
 		},
 		{
 			config: AdaptiveTimeoutConfig{
@@ -84,12 +84,8 @@ func TestAdaptiveTimeoutManagerInit(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		_, err := NewAdaptiveTimeoutManager(&test.config, "", prometheus.NewRegistry())
-		if err != nil && test.shouldErrWith == "" {
-			require.FailNow(t, "error from valid config", err)
-		} else if err == nil && test.shouldErrWith != "" {
-			require.FailNowf(t, "should have errored", test.shouldErrWith)
-		}
+		_, err := NewAdaptiveTimeoutManager(&test.config, "", prometheus.NewRegistry()) //nolint:gosec
+		require.ErrorIs(t, err, test.expectedErr)
 	}
 }
 
@@ -105,9 +101,7 @@ func TestAdaptiveTimeoutManager(t *testing.T) {
 		"",
 		prometheus.NewRegistry(),
 	)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 	go tm.Dispatch()
 
 	var lock sync.Mutex

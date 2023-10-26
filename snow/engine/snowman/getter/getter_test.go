@@ -8,9 +8,9 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/golang/mock/gomock"
-
 	"github.com/stretchr/testify/require"
+
+	"go.uber.org/mock/gomock"
 
 	"github.com/ava-labs/avalanchego/ids"
 	"github.com/ava-labs/avalanchego/snow"
@@ -20,7 +20,6 @@ import (
 	"github.com/ava-labs/avalanchego/snow/engine/snowman/block"
 	"github.com/ava-labs/avalanchego/snow/engine/snowman/block/mocks"
 	"github.com/ava-labs/avalanchego/snow/validators"
-	"github.com/ava-labs/avalanchego/utils/set"
 )
 
 var errUnknownBlock = errors.New("unknown block")
@@ -36,7 +35,7 @@ func testSetup(
 ) (StateSyncEnabledMock, *common.SenderTest, common.Config) {
 	ctx := snow.DefaultConsensusContextTest()
 
-	peers := validators.NewSet()
+	peers := validators.NewManager()
 	sender := &common.SenderTest{}
 	vm := StateSyncEnabledMock{
 		TestVM:              &block.TestVM{},
@@ -61,15 +60,15 @@ func testSetup(
 	sender.CantSendGetAcceptedFrontier = false
 
 	peer := ids.GenerateTestNodeID()
-	if err := peers.Add(peer, nil, ids.Empty, 1); err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, peers.AddStaker(ctx.SubnetID, peer, nil, ids.Empty, 1))
+	totalWeight, err := peers.TotalWeight(ctx.SubnetID)
+	require.NoError(t, err)
 
 	commonConfig := common.Config{
 		Ctx:                            ctx,
 		Beacons:                        peers,
-		SampleK:                        peers.Len(),
-		Alpha:                          peers.Weight()/2 + 1,
+		SampleK:                        peers.Count(ctx.SubnetID),
+		Alpha:                          totalWeight/2 + 1,
 		Sender:                         sender,
 		BootstrapTracker:               bootstrapTracker,
 		Timer:                          &common.TimerTest{},
@@ -82,8 +81,8 @@ func testSetup(
 }
 
 func TestAcceptedFrontier(t *testing.T) {
+	require := require.New(t)
 	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
 
 	vm, sender, config := testSetup(t, ctrl)
 
@@ -102,39 +101,27 @@ func TestAcceptedFrontier(t *testing.T) {
 		return blkID, nil
 	}
 	vm.GetBlockF = func(_ context.Context, bID ids.ID) (snowman.Block, error) {
-		require.Equal(t, blkID, bID)
+		require.Equal(blkID, bID)
 		return dummyBlk, nil
 	}
 
 	bsIntf, err := New(vm, config)
-	if err != nil {
-		t.Fatal(err)
-	}
-	bs, ok := bsIntf.(*getter)
-	if !ok {
-		t.Fatal("Unexpected get handler")
+	require.NoError(err)
+	require.IsType(&getter{}, bsIntf)
+	bs := bsIntf.(*getter)
+
+	var accepted ids.ID
+	sender.SendAcceptedFrontierF = func(_ context.Context, _ ids.NodeID, _ uint32, containerID ids.ID) {
+		accepted = containerID
 	}
 
-	var accepted []ids.ID
-	sender.SendAcceptedFrontierF = func(_ context.Context, _ ids.NodeID, _ uint32, frontier []ids.ID) {
-		accepted = frontier
-	}
-
-	if err := bs.GetAcceptedFrontier(context.Background(), ids.EmptyNodeID, 0); err != nil {
-		t.Fatal(err)
-	}
-
-	if len(accepted) != 1 {
-		t.Fatalf("Only one block should be accepted")
-	}
-	if accepted[0] != blkID {
-		t.Fatalf("Blk should be accepted")
-	}
+	require.NoError(bs.GetAcceptedFrontier(context.Background(), ids.EmptyNodeID, 0))
+	require.Equal(blkID, accepted)
 }
 
 func TestFilterAccepted(t *testing.T) {
+	require := require.New(t)
 	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
 
 	vm, sender, config := testSetup(t, ctrl)
 
@@ -156,18 +143,14 @@ func TestFilterAccepted(t *testing.T) {
 		return blk1.ID(), nil
 	}
 	vm.GetBlockF = func(_ context.Context, blkID ids.ID) (snowman.Block, error) {
-		require.Equal(t, blk1.ID(), blkID)
+		require.Equal(blk1.ID(), blkID)
 		return blk1, nil
 	}
 
 	bsIntf, err := New(vm, config)
-	if err != nil {
-		t.Fatal(err)
-	}
-	bs, ok := bsIntf.(*getter)
-	if !ok {
-		t.Fatal("Unexpected get handler")
-	}
+	require.NoError(err)
+	require.IsType(&getter{}, bsIntf)
+	bs := bsIntf.(*getter)
 
 	blkIDs := []ids.ID{blkID0, blkID1, blkID2}
 	vm.GetBlockF = func(_ context.Context, blkID ids.ID) (snowman.Block, error) {
@@ -179,7 +162,7 @@ func TestFilterAccepted(t *testing.T) {
 		case blkID2:
 			return nil, errUnknownBlock
 		}
-		t.Fatal(errUnknownBlock)
+		require.FailNow(errUnknownBlock.Error())
 		return nil, errUnknownBlock
 	}
 
@@ -188,23 +171,10 @@ func TestFilterAccepted(t *testing.T) {
 		accepted = frontier
 	}
 
-	if err := bs.GetAccepted(context.Background(), ids.EmptyNodeID, 0, blkIDs); err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(bs.GetAccepted(context.Background(), ids.EmptyNodeID, 0, blkIDs))
 
-	acceptedSet := set.Set[ids.ID]{}
-	acceptedSet.Add(accepted...)
-
-	if acceptedSet.Len() != 2 {
-		t.Fatalf("Two blocks should be accepted")
-	}
-	if !acceptedSet.Contains(blkID0) {
-		t.Fatalf("Blk should be accepted")
-	}
-	if !acceptedSet.Contains(blkID1) {
-		t.Fatalf("Blk should be accepted")
-	}
-	if acceptedSet.Contains(blkID2) {
-		t.Fatalf("Blk shouldn't be accepted")
-	}
+	require.Len(accepted, 2)
+	require.Contains(accepted, blkID0)
+	require.Contains(accepted, blkID1)
+	require.NotContains(accepted, blkID2)
 }

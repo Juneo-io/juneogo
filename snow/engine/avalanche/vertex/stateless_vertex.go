@@ -23,7 +23,7 @@ const (
 var (
 	errBadVersion       = errors.New("invalid version")
 	errBadEpoch         = errors.New("invalid epoch")
-	errTooManyparentIDs = fmt.Errorf("vertex contains more than %d parentIDs", maxNumParents)
+	errTooManyParentIDs = fmt.Errorf("vertex contains more than %d parentIDs", maxNumParents)
 	errNoOperations     = errors.New("vertex contains no operations")
 	errTooManyTxs       = fmt.Errorf("vertex contains more than %d transactions", maxTxsPerVtx)
 	errInvalidParents   = errors.New("vertex contains non-sorted or duplicated parentIDs")
@@ -94,11 +94,11 @@ func (v statelessVertex) Txs() [][]byte {
 
 type innerStatelessVertex struct {
 	Version   uint16   `json:"version"`
-	ChainID   ids.ID   `serializeV0:"true" serializeV1:"true" json:"chainID"`
-	Height    uint64   `serializeV0:"true" serializeV1:"true" json:"height"`
-	Epoch     uint32   `serializeV0:"true" json:"epoch"`
-	ParentIDs []ids.ID `serializeV0:"true" serializeV1:"true" len:"128" json:"parentIDs"`
-	Txs       [][]byte `serializeV0:"true" len:"128" json:"txs"`
+	ChainID   ids.ID   `json:"chainID"             serializeV0:"true" serializeV1:"true"`
+	Height    uint64   `json:"height"              serializeV0:"true" serializeV1:"true"`
+	Epoch     uint32   `json:"epoch"               serializeV0:"true"`
+	ParentIDs []ids.ID `json:"parentIDs" len:"128" serializeV0:"true" serializeV1:"true"`
+	Txs       [][]byte `json:"txs"       len:"128" serializeV0:"true"`
 }
 
 func (v innerStatelessVertex) Verify() error {
@@ -115,12 +115,12 @@ func (v innerStatelessVertex) verify() error {
 	case v.Epoch != 0:
 		return errBadEpoch
 	case len(v.ParentIDs) > maxNumParents:
-		return errTooManyparentIDs
+		return errTooManyParentIDs
 	case len(v.Txs) == 0:
 		return errNoOperations
 	case len(v.Txs) > maxTxsPerVtx:
 		return errTooManyTxs
-	case !utils.IsSortedAndUniqueSortable(v.ParentIDs):
+	case !utils.IsSortedAndUnique(v.ParentIDs):
 		return errInvalidParents
 	case !utils.IsSortedAndUniqueByHash(v.Txs):
 		return errInvalidTxs
@@ -136,10 +136,10 @@ func (v innerStatelessVertex) verifyStopVertex() error {
 	case v.Epoch != 0:
 		return errBadEpoch
 	case len(v.ParentIDs) > maxNumParents:
-		return errTooManyparentIDs
+		return errTooManyParentIDs
 	case len(v.Txs) != 0:
 		return errTooManyTxs
-	case !utils.IsSortedAndUniqueSortable(v.ParentIDs):
+	case !utils.IsSortedAndUnique(v.ParentIDs):
 		return errInvalidParents
 	default:
 		return nil

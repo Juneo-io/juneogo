@@ -185,19 +185,19 @@ var (
 		AppRequestFailedOp:              AppResponseOp,
 		CrossChainAppRequestFailedOp:    CrossChainAppResponseOp,
 	}
-	UnrequestedOps = set.Set[Op]{
-		GetAcceptedFrontierOp:     {},
-		GetAcceptedOp:             {},
-		GetAncestorsOp:            {},
-		GetOp:                     {},
-		PushQueryOp:               {},
-		PullQueryOp:               {},
-		AppRequestOp:              {},
-		AppGossipOp:               {},
-		CrossChainAppRequestOp:    {},
-		GetStateSummaryFrontierOp: {},
-		GetAcceptedStateSummaryOp: {},
-	}
+	UnrequestedOps = set.Of(
+		GetAcceptedFrontierOp,
+		GetAcceptedOp,
+		GetAncestorsOp,
+		GetOp,
+		PushQueryOp,
+		PullQueryOp,
+		AppRequestOp,
+		AppGossipOp,
+		CrossChainAppRequestOp,
+		GetStateSummaryFrontierOp,
+		GetAcceptedStateSummaryOp,
+	)
 
 	errUnknownMessageType = errors.New("unknown message type")
 )
@@ -296,7 +296,7 @@ func (op Op) String() string {
 	}
 }
 
-func Unwrap(m *p2p.Message) (interface{}, error) {
+func Unwrap(m *p2p.Message) (fmt.Stringer, error) {
 	switch msg := m.GetMessage().(type) {
 	// Handshake:
 	case *p2p.Message_Ping:

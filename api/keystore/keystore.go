@@ -28,8 +28,11 @@ const (
 )
 
 var (
-	errEmptyUsername = errors.New("empty username")
-	errUserMaxLength = fmt.Errorf("username exceeds maximum length of %d chars", maxUserLen)
+	errEmptyUsername     = errors.New("empty username")
+	errUserMaxLength     = fmt.Errorf("username exceeds maximum length of %d chars", maxUserLen)
+	errUserAlreadyExists = errors.New("user already exists")
+	errIncorrectPassword = errors.New("incorrect password")
+	errNonexistentUser   = errors.New("user doesn't exist")
 
 	usersPrefix = []byte("users")
 	bcsPrefix   = []byte("bcs")
@@ -100,13 +103,6 @@ type keystore struct {
 	// Used to persist users and their data
 	userDB database.Database
 	bcDB   database.Database
-	//           BaseDB
-	//          /      \
-	//    UserDB        BlockchainDB
-	//                 /      |     \
-	//               Usr     Usr    Usr
-	//             /  |  \
-	//          BID  BID  BID
 }
 
 func New(log logging.Logger, dbManager manager.Manager) Keystore {
@@ -158,7 +154,7 @@ func (ks *keystore) GetRawDatabase(bID ids.ID, username, pw string) (database.Da
 		return nil, err
 	}
 	if passwordHash == nil || !passwordHash.Check(pw) {
-		return nil, fmt.Errorf("incorrect password for user %q", username)
+		return nil, fmt.Errorf("%w: user %q", errIncorrectPassword, username)
 	}
 
 	userDB := prefixdb.New([]byte(username), ks.bcDB)
@@ -182,7 +178,7 @@ func (ks *keystore) CreateUser(username, pw string) error {
 		return err
 	}
 	if passwordHash != nil {
-		return fmt.Errorf("user already exists: %s", username)
+		return fmt.Errorf("%w: %s", errUserAlreadyExists, username)
 	}
 
 	if err := password.IsValid(pw, password.OK); err != nil {
@@ -224,9 +220,9 @@ func (ks *keystore) DeleteUser(username, pw string) error {
 	case err != nil:
 		return err
 	case passwordHash == nil:
-		return fmt.Errorf("user doesn't exist: %s", username)
+		return fmt.Errorf("%w: %s", errNonexistentUser, username)
 	case !passwordHash.Check(pw):
-		return fmt.Errorf("incorrect password for user %q", username)
+		return fmt.Errorf("%w: user %q", errIncorrectPassword, username)
 	}
 
 	userNameBytes := []byte(username)
@@ -290,7 +286,7 @@ func (ks *keystore) ImportUser(username, pw string, userBytes []byte) error {
 		return err
 	}
 	if passwordHash != nil {
-		return fmt.Errorf("user already exists: %s", username)
+		return fmt.Errorf("%w: %s", errUserAlreadyExists, username)
 	}
 
 	userData := user{}
@@ -298,7 +294,7 @@ func (ks *keystore) ImportUser(username, pw string, userBytes []byte) error {
 		return err
 	}
 	if !userData.Hash.Check(pw) {
-		return fmt.Errorf("incorrect password for user %q", username)
+		return fmt.Errorf("%w: user %q", errIncorrectPassword, username)
 	}
 
 	usrBytes, err := c.Marshal(codecVersion, &userData.Hash)
@@ -342,7 +338,7 @@ func (ks *keystore) ExportUser(username, pw string) ([]byte, error) {
 		return nil, err
 	}
 	if passwordHash == nil || !passwordHash.Check(pw) {
-		return nil, fmt.Errorf("incorrect password for user %q", username)
+		return nil, fmt.Errorf("%w: user %q", errIncorrectPassword, username)
 	}
 
 	userDB := prefixdb.New([]byte(username), ks.bcDB)

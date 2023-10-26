@@ -32,6 +32,7 @@ import (
 	"github.com/ava-labs/avalanchego/snow/engine/common/appsender"
 	"github.com/ava-labs/avalanchego/snow/engine/snowman/block"
 	"github.com/ava-labs/avalanchego/snow/validators/gvalidators"
+	"github.com/ava-labs/avalanchego/utils"
 	"github.com/ava-labs/avalanchego/utils/crypto/bls"
 	"github.com/ava-labs/avalanchego/utils/logging"
 	"github.com/ava-labs/avalanchego/utils/wrappers"
@@ -69,12 +70,13 @@ type VMServer struct {
 	// If nil, the underlying VM doesn't implement the interface.
 	bVM block.BuildBlockWithContextChainVM
 	// If nil, the underlying VM doesn't implement the interface.
-	hVM block.HeightIndexedChainVM
-	// If nil, the underlying VM doesn't implement the interface.
 	ssVM block.StateSyncableVM
+
+	allowShutdown *utils.Atomic[bool]
 
 	processMetrics prometheus.Gatherer
 	dbManager      manager.Manager
+	log            logging.Logger
 
 	serverCloser grpcutils.ServerCloser
 	connCloser   wrappers.Closer
@@ -84,15 +86,14 @@ type VMServer struct {
 }
 
 // NewServer returns a vm instance connected to a remote vm instance
-func NewServer(vm block.ChainVM) *VMServer {
+func NewServer(vm block.ChainVM, allowShutdown *utils.Atomic[bool]) *VMServer {
 	bVM, _ := vm.(block.BuildBlockWithContextChainVM)
-	hVM, _ := vm.(block.HeightIndexedChainVM)
 	ssVM, _ := vm.(block.StateSyncableVM)
 	return &VMServer{
-		vm:   vm,
-		bVM:  bVM,
-		hVM:  hVM,
-		ssVM: ssVM,
+		vm:            vm,
+		bVM:           bVM,
+		ssVM:          ssVM,
+		allowShutdown: allowShutdown,
 	}
 }
 
@@ -188,6 +189,16 @@ func (vm *VMServer) Initialize(ctx context.Context, req *vmpb.InitializeRequest)
 	}
 	vm.dbManager = dbManager
 
+	// TODO: Allow the logger to be configured by the client
+	vm.log = logging.NewLogger(
+		fmt.Sprintf("<%s Chain>", chainID),
+		logging.NewWrappedCore(
+			logging.Info,
+			originalStderr,
+			logging.Colors.ConsoleEncoder(),
+		),
+	)
+
 	clientConn, err := grpcutils.Dial(
 		req.ServerAddr,
 		grpcutils.WithChainUnaryInterceptor(grpcClientMetrics.UnaryClientInterceptor()),
@@ -238,15 +249,7 @@ func (vm *VMServer) Initialize(ctx context.Context, req *vmpb.InitializeRequest)
 		AVAXAssetID:  avaxAssetID,
 		ChainAssetID: chainAssetID,
 
-		// TODO: Allow the logger to be configured by the client
-		Log: logging.NewLogger(
-			fmt.Sprintf("<%s Chain>", chainID),
-			logging.NewWrappedCore(
-				logging.Info,
-				originalStderr,
-				logging.Colors.ConsoleEncoder(),
-			),
-		),
+		Log:          vm.log,
 		Keystore:     keystoreClient,
 		SharedMemory: sharedMemoryClient,
 		BCLookup:     bcLookupClient,
@@ -322,6 +325,7 @@ func (vm *VMServer) SetState(ctx context.Context, stateReq *vmpb.SetStateRequest
 }
 
 func (vm *VMServer) Shutdown(ctx context.Context, _ *emptypb.Empty) (*emptypb.Empty, error) {
+	vm.allowShutdown.Set(true)
 	if vm.closed == nil {
 		return &emptypb.Empty{}, nil
 	}
@@ -339,24 +343,21 @@ func (vm *VMServer) CreateHandlers(ctx context.Context, _ *emptypb.Empty) (*vmpb
 		return nil, err
 	}
 	resp := &vmpb.CreateHandlersResponse{}
-	for prefix, h := range handlers {
-		handler := h
-
+	for prefix, handler := range handlers {
 		serverListener, err := grpcutils.NewListener()
 		if err != nil {
 			return nil, err
 		}
 		server := grpcutils.NewServer()
 		vm.serverCloser.Add(server)
-		httppb.RegisterHTTPServer(server, ghttp.NewServer(handler.Handler))
+		httppb.RegisterHTTPServer(server, ghttp.NewServer(handler))
 
 		// Start HTTP service
 		go grpcutils.Serve(serverListener, server)
 
 		resp.Handlers = append(resp.Handlers, &vmpb.Handler{
-			Prefix:      prefix,
-			LockOptions: uint32(handler.LockOptions),
-			ServerAddr:  serverListener.Addr().String(),
+			Prefix:     prefix,
+			ServerAddr: serverListener.Addr().String(),
 		})
 	}
 	return resp, nil
@@ -368,24 +369,21 @@ func (vm *VMServer) CreateStaticHandlers(ctx context.Context, _ *emptypb.Empty) 
 		return nil, err
 	}
 	resp := &vmpb.CreateStaticHandlersResponse{}
-	for prefix, h := range handlers {
-		handler := h
-
+	for prefix, handler := range handlers {
 		serverListener, err := grpcutils.NewListener()
 		if err != nil {
 			return nil, err
 		}
 		server := grpcutils.NewServer()
 		vm.serverCloser.Add(server)
-		httppb.RegisterHTTPServer(server, ghttp.NewServer(handler.Handler))
+		httppb.RegisterHTTPServer(server, ghttp.NewServer(handler))
 
 		// Start HTTP service
 		go grpcutils.Serve(serverListener, server)
 
 		resp.Handlers = append(resp.Handlers, &vmpb.Handler{
-			Prefix:      prefix,
-			LockOptions: uint32(handler.LockOptions),
-			ServerAddr:  serverListener.Addr().String(),
+			Prefix:     prefix,
+			ServerAddr: serverListener.Addr().String(),
 		})
 	}
 	return resp, nil
@@ -657,6 +655,7 @@ func (vm *VMServer) GetAncestors(ctx context.Context, req *vmpb.GetAncestorsRequ
 
 	blocks, err := block.GetAncestors(
 		ctx,
+		vm.log,
 		vm.vm,
 		blkID,
 		maxBlksNum,
@@ -688,13 +687,7 @@ func (vm *VMServer) BatchedParseBlock(
 }
 
 func (vm *VMServer) VerifyHeightIndex(ctx context.Context, _ *emptypb.Empty) (*vmpb.VerifyHeightIndexResponse, error) {
-	var err error
-	if vm.hVM != nil {
-		err = vm.hVM.VerifyHeightIndex(ctx)
-	} else {
-		err = block.ErrHeightIndexedVMNotImplemented
-	}
-
+	err := vm.vm.VerifyHeightIndex(ctx)
 	return &vmpb.VerifyHeightIndexResponse{
 		Err: errorToErrEnum[err],
 	}, errorToRPCError(err)
@@ -704,16 +697,7 @@ func (vm *VMServer) GetBlockIDAtHeight(
 	ctx context.Context,
 	req *vmpb.GetBlockIDAtHeightRequest,
 ) (*vmpb.GetBlockIDAtHeightResponse, error) {
-	var (
-		blkID ids.ID
-		err   error
-	)
-	if vm.hVM != nil {
-		blkID, err = vm.hVM.GetBlockIDAtHeight(ctx, req.Height)
-	} else {
-		err = block.ErrHeightIndexedVMNotImplemented
-	}
-
+	blkID, err := vm.vm.GetBlockIDAtHeight(ctx, req.Height)
 	return &vmpb.GetBlockIDAtHeightResponse{
 		BlkId: blkID[:],
 		Err:   errorToErrEnum[err],

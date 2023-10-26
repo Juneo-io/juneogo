@@ -74,7 +74,11 @@ func (gh *getter) GetAcceptedStateSummary(_ context.Context, nodeID ids.NodeID, 
 
 func (gh *getter) GetAcceptedFrontier(ctx context.Context, validatorID ids.NodeID, requestID uint32) error {
 	acceptedFrontier := gh.storage.Edge(ctx)
-	gh.sender.SendAcceptedFrontier(ctx, validatorID, requestID, acceptedFrontier)
+	// Since all the DAGs are linearized, we only need to return the stop
+	// vertex.
+	if len(acceptedFrontier) > 0 {
+		gh.sender.SendAcceptedFrontier(ctx, validatorID, requestID, acceptedFrontier[0])
+	}
 	return nil
 }
 
@@ -106,8 +110,7 @@ func (gh *getter) GetAncestors(ctx context.Context, nodeID ids.NodeID, requestID
 	queue[0] = vertex
 	ancestorsBytesLen := 0                                                 // length, in bytes, of vertex and its ancestors
 	ancestorsBytes := make([][]byte, 0, gh.cfg.AncestorsMaxContainersSent) // vertex and its ancestors in BFS order
-	visited := set.Set[ids.ID]{}                                           // IDs of vertices that have been in queue before
-	visited.Add(vertex.ID())
+	visited := set.Of(vertex.ID())                                         // IDs of vertices that have been in queue before
 
 	for len(ancestorsBytes) < gh.cfg.AncestorsMaxContainersSent && len(queue) > 0 && time.Since(startTime) < gh.cfg.MaxTimeGetAncestors {
 		var vtx avalanche.Vertex

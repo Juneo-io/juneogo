@@ -8,6 +8,8 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/ava-labs/avalanchego/ids"
 	"github.com/ava-labs/avalanchego/snow"
 	"github.com/ava-labs/avalanchego/snow/choices"
@@ -15,17 +17,15 @@ import (
 	"github.com/ava-labs/avalanchego/snow/engine/avalanche/vertex"
 	"github.com/ava-labs/avalanchego/snow/engine/common"
 	"github.com/ava-labs/avalanchego/snow/validators"
-	"github.com/ava-labs/avalanchego/utils/set"
+	"github.com/ava-labs/avalanchego/utils/constants"
 )
 
 var errUnknownVertex = errors.New("unknown vertex")
 
 func testSetup(t *testing.T) (*vertex.TestManager, *common.SenderTest, common.Config) {
-	peers := validators.NewSet()
+	vdrs := validators.NewManager()
 	peer := ids.GenerateTestNodeID()
-	if err := peers.Add(peer, nil, ids.Empty, 1); err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, vdrs.AddStaker(constants.PrimaryNetworkID, peer, nil, ids.Empty, 1))
 
 	sender := &common.SenderTest{T: t}
 	sender.Default(true)
@@ -42,11 +42,14 @@ func testSetup(t *testing.T) (*vertex.TestManager, *common.SenderTest, common.Co
 		},
 	}
 
+	totalWeight, err := vdrs.TotalWeight(constants.PrimaryNetworkID)
+	require.NoError(t, err)
+
 	commonConfig := common.Config{
 		Ctx:                            snow.DefaultConsensusContextTest(),
-		Beacons:                        peers,
-		SampleK:                        peers.Len(),
-		Alpha:                          peers.Weight()/2 + 1,
+		Beacons:                        vdrs,
+		SampleK:                        vdrs.Count(constants.PrimaryNetworkID),
+		Alpha:                          totalWeight/2 + 1,
 		Sender:                         sender,
 		BootstrapTracker:               bootstrapTracker,
 		Timer:                          &common.TimerTest{},
@@ -62,54 +65,34 @@ func testSetup(t *testing.T) (*vertex.TestManager, *common.SenderTest, common.Co
 }
 
 func TestAcceptedFrontier(t *testing.T) {
+	require := require.New(t)
+
 	manager, sender, config := testSetup(t)
 
-	vtxID0 := ids.GenerateTestID()
-	vtxID1 := ids.GenerateTestID()
-	vtxID2 := ids.GenerateTestID()
+	vtxID := ids.GenerateTestID()
 
 	bsIntf, err := New(manager, config)
-	if err != nil {
-		t.Fatal(err)
-	}
-	bs, ok := bsIntf.(*getter)
-	if !ok {
-		t.Fatal("Unexpected get handler")
-	}
+	require.NoError(err)
+	require.IsType(&getter{}, bsIntf)
+	bs := bsIntf.(*getter)
 
 	manager.EdgeF = func(context.Context) []ids.ID {
 		return []ids.ID{
-			vtxID0,
-			vtxID1,
+			vtxID,
 		}
 	}
 
-	var accepted []ids.ID
-	sender.SendAcceptedFrontierF = func(_ context.Context, _ ids.NodeID, _ uint32, frontier []ids.ID) {
-		accepted = frontier
+	var accepted ids.ID
+	sender.SendAcceptedFrontierF = func(_ context.Context, _ ids.NodeID, _ uint32, containerID ids.ID) {
+		accepted = containerID
 	}
-
-	if err := bs.GetAcceptedFrontier(context.Background(), ids.EmptyNodeID, 0); err != nil {
-		t.Fatal(err)
-	}
-
-	acceptedSet := set.Set[ids.ID]{}
-	acceptedSet.Add(accepted...)
-
-	manager.EdgeF = nil
-
-	if !acceptedSet.Contains(vtxID0) {
-		t.Fatalf("Vtx should be accepted")
-	}
-	if !acceptedSet.Contains(vtxID1) {
-		t.Fatalf("Vtx should be accepted")
-	}
-	if acceptedSet.Contains(vtxID2) {
-		t.Fatalf("Vtx shouldn't be accepted")
-	}
+	require.NoError(bs.GetAcceptedFrontier(context.Background(), ids.EmptyNodeID, 0))
+	require.Equal(vtxID, accepted)
 }
 
 func TestFilterAccepted(t *testing.T) {
+	require := require.New(t)
+
 	manager, sender, config := testSetup(t)
 
 	vtxID0 := ids.GenerateTestID()
@@ -126,13 +109,9 @@ func TestFilterAccepted(t *testing.T) {
 	}}
 
 	bsIntf, err := New(manager, config)
-	if err != nil {
-		t.Fatal(err)
-	}
-	bs, ok := bsIntf.(*getter)
-	if !ok {
-		t.Fatal("Unexpected get handler")
-	}
+	require.NoError(err)
+	require.IsType(&getter{}, bsIntf)
+	bs := bsIntf.(*getter)
 
 	vtxIDs := []ids.ID{vtxID0, vtxID1, vtxID2}
 
@@ -145,7 +124,7 @@ func TestFilterAccepted(t *testing.T) {
 		case vtxID2:
 			return nil, errUnknownVertex
 		}
-		t.Fatal(errUnknownVertex)
+		require.FailNow(errUnknownVertex.Error())
 		return nil, errUnknownVertex
 	}
 
@@ -154,22 +133,9 @@ func TestFilterAccepted(t *testing.T) {
 		accepted = frontier
 	}
 
-	if err := bs.GetAccepted(context.Background(), ids.EmptyNodeID, 0, vtxIDs); err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(bs.GetAccepted(context.Background(), ids.EmptyNodeID, 0, vtxIDs))
 
-	acceptedSet := set.Set[ids.ID]{}
-	acceptedSet.Add(accepted...)
-
-	manager.GetVtxF = nil
-
-	if !acceptedSet.Contains(vtxID0) {
-		t.Fatalf("Vtx should be accepted")
-	}
-	if !acceptedSet.Contains(vtxID1) {
-		t.Fatalf("Vtx should be accepted")
-	}
-	if acceptedSet.Contains(vtxID2) {
-		t.Fatalf("Vtx shouldn't be accepted")
-	}
+	require.Contains(accepted, vtxID0)
+	require.Contains(accepted, vtxID1)
+	require.NotContains(accepted, vtxID2)
 }

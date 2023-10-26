@@ -399,7 +399,7 @@ func TestGetSubnetConfigsFromFile(t *testing.T) {
 		},
 		"invalid consensus parameters": {
 			fileName:  "2Ctt6eGAeo4MLqTmGa7AdRecuVMPGWEX9wSsCLBYrLhX4a394i.json",
-			givenJSON: `{"consensusParameters":{"k": 111, "alpha":1234} }`,
+			givenJSON: `{"consensusParameters":{"k": 111, "alphaPreference":1234} }`,
 			testF: func(require *require.Assertions, given map[ids.ID]subnets.Config) {
 				require.Nil(given)
 			},
@@ -407,14 +407,14 @@ func TestGetSubnetConfigsFromFile(t *testing.T) {
 		},
 		"correct config": {
 			fileName:  "2Ctt6eGAeo4MLqTmGa7AdRecuVMPGWEX9wSsCLBYrLhX4a394i.json",
-			givenJSON: `{"validatorOnly": true, "consensusParameters":{"alpha":16} }`,
+			givenJSON: `{"validatorOnly": true, "consensusParameters":{"alphaConfidence":16} }`,
 			testF: func(require *require.Assertions, given map[ids.ID]subnets.Config) {
 				id, _ := ids.FromString("2Ctt6eGAeo4MLqTmGa7AdRecuVMPGWEX9wSsCLBYrLhX4a394i")
 				config, ok := given[id]
 				require.True(ok)
 
 				require.Equal(true, config.ValidatorOnly)
-				require.Equal(16, config.ConsensusParameters.Alpha)
+				require.Equal(16, config.ConsensusParameters.AlphaConfidence)
 				// must still respect defaults
 				require.Equal(20, config.ConsensusParameters.K)
 			},
@@ -451,9 +451,10 @@ func TestGetSubnetConfigsFromFile(t *testing.T) {
 			v := setupViper(configFilePath)
 			subnetConfigs, err := getSubnetConfigs(v, []ids.ID{subnetID})
 			require.ErrorIs(err, test.expectedErr)
-			if test.expectedErr == nil {
-				test.testF(require, subnetConfigs)
+			if test.expectedErr != nil {
+				return
 			}
+			test.testF(require, subnetConfigs)
 		})
 	}
 }
@@ -477,7 +478,7 @@ func TestGetSubnetConfigsFromFlags(t *testing.T) {
 		"entry with no config": {
 			givenJSON: `{"2Ctt6eGAeo4MLqTmGa7AdRecuVMPGWEX9wSsCLBYrLhX4a394i":{}}`,
 			testF: func(require *require.Assertions, given map[ids.ID]subnets.Config) {
-				require.True(len(given) == 1)
+				require.Len(given, 1)
 				id, _ := ids.FromString("2Ctt6eGAeo4MLqTmGa7AdRecuVMPGWEX9wSsCLBYrLhX4a394i")
 				config, ok := given[id]
 				require.True(ok)
@@ -498,7 +499,7 @@ func TestGetSubnetConfigsFromFlags(t *testing.T) {
 				"2Ctt6eGAeo4MLqTmGa7AdRecuVMPGWEX9wSsCLBYrLhX4a394i": {
 					"consensusParameters": {
 						"k": 111,
-						"alpha": 1234
+						"alphaPreference": 1234
 					}
 				}
 			}`,
@@ -512,7 +513,8 @@ func TestGetSubnetConfigsFromFlags(t *testing.T) {
 				"2Ctt6eGAeo4MLqTmGa7AdRecuVMPGWEX9wSsCLBYrLhX4a394i": {
 					"consensusParameters": {
 						"k": 30,
-						"alpha": 20
+						"alphaPreference": 16,
+						"alphaConfidence": 20
 					},
 					"validatorOnly": true
 				}
@@ -522,7 +524,8 @@ func TestGetSubnetConfigsFromFlags(t *testing.T) {
 				config, ok := given[id]
 				require.True(ok)
 				require.Equal(true, config.ValidatorOnly)
-				require.Equal(20, config.ConsensusParameters.Alpha)
+				require.Equal(16, config.ConsensusParameters.AlphaPreference)
+				require.Equal(20, config.ConsensusParameters.AlphaConfidence)
 				require.Equal(30, config.ConsensusParameters.K)
 				// must still respect defaults
 				require.Equal(uint(10), config.GossipConfig.AppGossipValidatorSize)
@@ -544,19 +547,12 @@ func TestGetSubnetConfigsFromFlags(t *testing.T) {
 
 			subnetConfigs, err := getSubnetConfigs(v, []ids.ID{subnetID})
 			require.ErrorIs(err, test.expectedErr)
-			if test.expectedErr == nil {
-				test.testF(require, subnetConfigs)
+			if test.expectedErr != nil {
+				return
 			}
+			test.testF(require, subnetConfigs)
 		})
 	}
-}
-
-func TestCalcMinConnectedStake(t *testing.T) {
-	v := setupViperFlags()
-	defaultParams := getConsensusConfig(v)
-	defaultExpectedMinStake := 0.8
-	minStake := calcMinConnectedStake(defaultParams)
-	require.Equal(t, defaultExpectedMinStake, minStake)
 }
 
 // setups config json file and writes content
@@ -568,9 +564,11 @@ func setupConfigJSON(t *testing.T, rootPath string, value string) string {
 
 // setups file creates necessary path and writes value to it.
 func setupFile(t *testing.T, path string, fileName string, value string) {
-	require.NoError(t, os.MkdirAll(path, 0o700))
+	require := require.New(t)
+
+	require.NoError(os.MkdirAll(path, 0o700))
 	filePath := filepath.Join(path, fileName)
-	require.NoError(t, os.WriteFile(filePath, []byte(value), 0o600))
+	require.NoError(os.WriteFile(filePath, []byte(value), 0o600))
 }
 
 func setupViperFlags() *viper.Viper {

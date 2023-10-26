@@ -8,62 +8,59 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+
+	"github.com/ava-labs/avalanchego/utils/maybe"
 )
 
 func Test_Node_Marshal(t *testing.T) {
-	root := newNode(nil, EmptyPath)
+	root := newNode(nil, emptyKey(BranchFactor16))
 	require.NotNil(t, root)
 
-	fullpath := newPath([]byte("key"))
-	childNode := newNode(root, fullpath)
-	childNode.setValue(Some([]byte("value")))
+	fullKey := ToKey([]byte("key"), BranchFactor16)
+	childNode := newNode(root, fullKey)
+	childNode.setValue(maybe.Some([]byte("value")))
 	require.NotNil(t, childNode)
 
-	err := childNode.calculateID(&mockMetrics{})
-	require.NoError(t, err)
+	childNode.calculateID(&mockMetrics{})
 	root.addChild(childNode)
 
-	data, err := root.marshal()
+	data := root.bytes()
+	rootParsed, err := parseNode(ToKey([]byte(""), BranchFactor16), data)
 	require.NoError(t, err)
-	rootParsed, err := parseNode(newPath([]byte("")), data)
-	require.NoError(t, err)
-	require.Equal(t, 1, len(rootParsed.children))
+	require.Len(t, rootParsed.children, 1)
 
-	rootIndex := root.getSingleChildPath()[len(root.key)]
-	parsedIndex := rootParsed.getSingleChildPath()[len(rootParsed.key)]
+	rootIndex := getSingleChildKey(root).Token(root.key.tokenLength)
+	parsedIndex := getSingleChildKey(rootParsed).Token(rootParsed.key.tokenLength)
 	rootChildEntry := root.children[rootIndex]
 	parseChildEntry := rootParsed.children[parsedIndex]
 	require.Equal(t, rootChildEntry.id, parseChildEntry.id)
 }
 
 func Test_Node_Marshal_Errors(t *testing.T) {
-	root := newNode(nil, EmptyPath)
+	root := newNode(nil, emptyKey(BranchFactor16))
 	require.NotNil(t, root)
 
-	fullpath := newPath([]byte{255})
-	childNode1 := newNode(root, fullpath)
-	childNode1.setValue(Some([]byte("value1")))
+	fullKey := ToKey([]byte{255}, BranchFactor16)
+	childNode1 := newNode(root, fullKey)
+	childNode1.setValue(maybe.Some([]byte("value1")))
 	require.NotNil(t, childNode1)
 
-	err := childNode1.calculateID(&mockMetrics{})
-	require.NoError(t, err)
+	childNode1.calculateID(&mockMetrics{})
 	root.addChild(childNode1)
 
-	fullpath = newPath([]byte{237})
-	childNode2 := newNode(root, fullpath)
-	childNode2.setValue(Some([]byte("value2")))
+	fullKey = ToKey([]byte{237}, BranchFactor16)
+	childNode2 := newNode(root, fullKey)
+	childNode2.setValue(maybe.Some([]byte("value2")))
 	require.NotNil(t, childNode2)
 
-	err = childNode2.calculateID(&mockMetrics{})
-	require.NoError(t, err)
+	childNode2.calculateID(&mockMetrics{})
 	root.addChild(childNode2)
 
-	data, err := root.marshal()
-	require.NoError(t, err)
+	data := root.bytes()
 
 	for i := 1; i < len(data); i++ {
 		broken := data[:i]
-		_, err = parseNode(newPath([]byte("")), broken)
+		_, err := parseNode(ToKey([]byte(""), BranchFactor16), broken)
 		require.ErrorIs(t, err, io.ErrUnexpectedEOF)
 	}
 }

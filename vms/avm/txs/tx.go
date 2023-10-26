@@ -29,9 +29,6 @@ type UnsignedTx interface {
 
 	ConsumedValue(assetID ids.ID) uint64
 
-	ConsumedAssetIDs() set.Set[ids.ID]
-	AssetIDs() set.Set[ids.ID]
-
 	NumCredentials() int
 	// TODO: deprecate after x-chain linearization
 	InputUTXOs() []*avax.UTXOID
@@ -112,7 +109,7 @@ func (t *Tx) SignSECP256K1Fx(c codec.Manager, signers [][]*secp256k1.PrivateKey)
 			}
 			copy(cred.Sigs[i][:], sig)
 		}
-		t.Creds = append(t.Creds, &fxs.FxCredential{Verifiable: cred})
+		t.Creds = append(t.Creds, &fxs.FxCredential{Credential: cred})
 	}
 
 	signedBytes, err := c.Marshal(CodecVersion, t)
@@ -141,7 +138,7 @@ func (t *Tx) SignPropertyFx(c codec.Manager, signers [][]*secp256k1.PrivateKey) 
 			}
 			copy(cred.Sigs[i][:], sig)
 		}
-		t.Creds = append(t.Creds, &fxs.FxCredential{Verifiable: cred})
+		t.Creds = append(t.Creds, &fxs.FxCredential{Credential: cred})
 	}
 
 	signedBytes, err := c.Marshal(CodecVersion, t)
@@ -170,7 +167,7 @@ func (t *Tx) SignNFTFx(c codec.Manager, signers [][]*secp256k1.PrivateKey) error
 			}
 			copy(cred.Sigs[i][:], sig)
 		}
-		t.Creds = append(t.Creds, &fxs.FxCredential{Verifiable: cred})
+		t.Creds = append(t.Creds, &fxs.FxCredential{Credential: cred})
 	}
 
 	signedBytes, err := c.Marshal(CodecVersion, t)
