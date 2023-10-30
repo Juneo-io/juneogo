@@ -639,15 +639,6 @@ func newState(
 		return nil, err
 	}
 
-	rewardsSupplyCache, err := metercacher.New[ids.ID, *uint64](
-		"rewards_supply_cache",
-		metricsReg,
-		&cache.LRU[ids.ID, *uint64]{Size: chainCacheSize},
-	)
-	if err != nil {
-		return nil, err
-	}
-
 	chainCache, err := metercacher.New[ids.ID, []*txs.Tx](
 		"chain_cache",
 		metricsReg,
@@ -1469,7 +1460,7 @@ func (s *state) syncGenesis(genesisBlk block.Block, genesis *genesis.Genesis) er
 	if genesis.RewardsPoolSupply > totalRewards {
 		rewardsPoolSupply = genesis.RewardsPoolSupply - totalRewards
 	} else {
-		newCurrentSupply, err := math.Add64(currentSupply, totalRewards-genesis.RewardsPoolSupply)
+		newCurrentSupply, err := safemath.Add64(currentSupply, totalRewards-genesis.RewardsPoolSupply)
 		if err != nil {
 			return err
 		}
