@@ -263,13 +263,13 @@ func (p *peer) Info() Info {
 	}
 
 	return Info{
-		IP:                      p.conn.RemoteAddr().String(),
-		PublicIP:                publicIPStr,
-		ID:                      p.id,
-		Version:                 p.version.String(),
-		LastSent:                p.LastSent(),
-		LastReceived:            p.LastReceived(),
-		ObservedUptime:          json.Uint32(primaryUptime),
+		IP:                    p.conn.RemoteAddr().String(),
+		PublicIP:              publicIPStr,
+		ID:                    p.id,
+		Version:               p.version.String(),
+		LastSent:              p.LastSent(),
+		LastReceived:          p.LastReceived(),
+		ObservedUptime:        json.Uint32(primaryUptime),
 		ObservedSubnetUptimes: uptimes,
 		TrackedSubnets:        trackedSubnets,
 	}
@@ -751,7 +751,7 @@ func (p *peer) getUptimes() (uint32, []*p2p.SubnetUptime) {
 		subnetID := subnetID
 		subnetUptimes = append(subnetUptimes, &p2p.SubnetUptime{
 			SubnetId: subnetID[:],
-			Uptime:     uint32(subnetUptime * 100),
+			Uptime:   uint32(subnetUptime * 100),
 		})
 	}
 

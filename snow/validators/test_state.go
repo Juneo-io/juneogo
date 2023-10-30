@@ -16,7 +16,7 @@ import (
 var (
 	errMinimumHeight   = errors.New("unexpectedly called GetMinimumHeight")
 	errCurrentHeight   = errors.New("unexpectedly called GetCurrentHeight")
-	errSubnetID      = errors.New("unexpectedly called GetSubnetID")
+	errSubnetID        = errors.New("unexpectedly called GetSubnetID")
 	errGetValidatorSet = errors.New("unexpectedly called GetValidatorSet")
 )
 
@@ -32,7 +32,7 @@ type TestState struct {
 
 	GetMinimumHeightF func(ctx context.Context) (uint64, error)
 	GetCurrentHeightF func(ctx context.Context) (uint64, error)
-	GetSubnetIDF    func(ctx context.Context, chainID ids.ID) (ids.ID, error)
+	GetSubnetIDF      func(ctx context.Context, chainID ids.ID) (ids.ID, error)
 	GetValidatorSetF  func(ctx context.Context, height uint64, subnetID ids.ID) (map[ids.NodeID]*GetValidatorOutput, error)
 }
 

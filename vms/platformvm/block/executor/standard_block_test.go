@@ -402,10 +402,10 @@ func TestBanffStandardBlockUpdateStakers(t *testing.T) {
 
 	tests := []test{
 		{
-			description:     "advance time to staker 1 start with subnet",
-			stakers:         []staker{staker1, staker2, staker3, staker4, staker5},
+			description:   "advance time to staker 1 start with subnet",
+			stakers:       []staker{staker1, staker2, staker3, staker4, staker5},
 			subnetStakers: []staker{staker1},
-			advanceTimeTo:   []time.Time{staker1.startTime},
+			advanceTimeTo: []time.Time{staker1.startTime},
 			expectedStakers: map[ids.NodeID]stakerStatus{
 				staker1.nodeID: current,
 				staker2.nodeID: pending,
@@ -434,10 +434,10 @@ func TestBanffStandardBlockUpdateStakers(t *testing.T) {
 			},
 		},
 		{
-			description:     "staker3 should validate only primary network",
-			stakers:         []staker{staker1, staker2, staker3, staker4, staker5},
+			description:   "staker3 should validate only primary network",
+			stakers:       []staker{staker1, staker2, staker3, staker4, staker5},
 			subnetStakers: []staker{staker1, staker2, staker3Sub, staker4, staker5},
-			advanceTimeTo:   []time.Time{staker1.startTime, staker2.startTime, staker3.startTime},
+			advanceTimeTo: []time.Time{staker1.startTime, staker2.startTime, staker3.startTime},
 			expectedStakers: map[ids.NodeID]stakerStatus{
 				staker1.nodeID: current,
 				staker2.nodeID: current,
@@ -454,10 +454,10 @@ func TestBanffStandardBlockUpdateStakers(t *testing.T) {
 			},
 		},
 		{
-			description:     "advance time to staker3 start with subnet",
-			stakers:         []staker{staker1, staker2, staker3, staker4, staker5},
+			description:   "advance time to staker3 start with subnet",
+			stakers:       []staker{staker1, staker2, staker3, staker4, staker5},
 			subnetStakers: []staker{staker1, staker2, staker3Sub, staker4, staker5},
-			advanceTimeTo:   []time.Time{staker1.startTime, staker2.startTime, staker3.startTime, staker3Sub.startTime},
+			advanceTimeTo: []time.Time{staker1.startTime, staker2.startTime, staker3.startTime, staker3Sub.startTime},
 			expectedStakers: map[ids.NodeID]stakerStatus{
 				staker1.nodeID: current,
 				staker2.nodeID: current,
@@ -517,7 +517,7 @@ func TestBanffStandardBlockUpdateStakers(t *testing.T) {
 					uint64(staker.startTime.Unix()),
 					uint64(staker.endTime.Unix()),
 					staker.nodeID, // validator ID
-					subnetID,    // Subnet ID
+					subnetID,      // Subnet ID
 					[]*secp256k1.PrivateKey{preFundedKeys[0], preFundedKeys[1]},
 					ids.ShortEmpty,
 				)
@@ -607,7 +607,7 @@ func TestBanffStandardBlockRemoveSubnetValidator(t *testing.T) {
 	subnetVdr1StartTime := defaultValidateStartTime
 	subnetVdr1EndTime := defaultValidateStartTime.Add(defaultMinStakingDuration)
 	tx, err := env.txBuilder.NewAddSubnetValidatorTx(
-		1,                                    // Weight
+		1,                                  // Weight
 		uint64(subnetVdr1StartTime.Unix()), // Start time
 		uint64(subnetVdr1EndTime.Unix()),   // end time
 		subnetValidatorNodeID,              // Node ID
@@ -707,7 +707,7 @@ func TestBanffStandardBlockTrackedSubnet(t *testing.T) {
 			subnetVdr1StartTime := defaultGenesisTime.Add(1 * time.Minute)
 			subnetVdr1EndTime := defaultGenesisTime.Add(10 * defaultMinStakingDuration).Add(1 * time.Minute)
 			tx, err := env.txBuilder.NewAddSubnetValidatorTx(
-				1,                                    // Weight
+				1,                                  // Weight
 				uint64(subnetVdr1StartTime.Unix()), // Start time
 				uint64(subnetVdr1EndTime.Unix()),   // end time
 				subnetValidatorNodeID,              // Node ID

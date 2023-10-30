@@ -49,13 +49,13 @@ func BenchmarkMarshalVersion(b *testing.B) {
 	msg := p2p.Message{
 		Message: &p2p.Message_Version{
 			Version: &p2p.Version{
-				NetworkId:        uint32(1337),
-				MyTime:           uint64(time.Now().Unix()),
-				IpAddr:           []byte(net.IPv4(1, 2, 3, 4).To16()),
-				IpPort:           0,
-				MyVersion:        "v1.2.3",
-				MyVersionTime:    uint64(time.Now().Unix()),
-				Sig:              []byte{'y', 'e', 'e', 't'},
+				NetworkId:      uint32(1337),
+				MyTime:         uint64(time.Now().Unix()),
+				IpAddr:         []byte(net.IPv4(1, 2, 3, 4).To16()),
+				IpPort:         0,
+				MyVersion:      "v1.2.3",
+				MyVersionTime:  uint64(time.Now().Unix()),
+				Sig:            []byte{'y', 'e', 'e', 't'},
 				TrackedSubnets: [][]byte{id[:]},
 			},
 		},
@@ -105,13 +105,13 @@ func BenchmarkUnmarshalVersion(b *testing.B) {
 	msg := p2p.Message{
 		Message: &p2p.Message_Version{
 			Version: &p2p.Version{
-				NetworkId:        uint32(1337),
-				MyTime:           uint64(time.Now().Unix()),
-				IpAddr:           []byte(net.IPv4(1, 2, 3, 4).To16()),
-				IpPort:           0,
-				MyVersion:        "v1.2.3",
-				MyVersionTime:    uint64(time.Now().Unix()),
-				Sig:              []byte{'y', 'e', 'e', 't'},
+				NetworkId:      uint32(1337),
+				MyTime:         uint64(time.Now().Unix()),
+				IpAddr:         []byte(net.IPv4(1, 2, 3, 4).To16()),
+				IpPort:         0,
+				MyVersion:      "v1.2.3",
+				MyVersionTime:  uint64(time.Now().Unix()),
+				Sig:            []byte{'y', 'e', 'e', 't'},
 				TrackedSubnets: [][]byte{id[:]},
 			},
 		},

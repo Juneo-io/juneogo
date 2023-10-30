@@ -61,6 +61,7 @@ var (
 	errValidatorSetAlreadyPopulated = errors.New("validator set already populated")
 	errIsNotSubnet                  = errors.New("is not a subnet")
 
+	blockIDPrefix                       = []byte("blockID")
 	blockPrefix                         = []byte("block")
 	validatorsPrefix                    = []byte("validators")
 	currentPrefix                       = []byte("current")
@@ -1215,7 +1216,7 @@ func (s *state) SetFeesPoolValue(fpv uint64) {
 	s.feesPoolValue = fpv
 }
 
-func (s *state) ValidatorSet(subnetID ids.ID, vdrs validators.Set) error {
+func (s *state) ApplyCurrentValidators(subnetID ids.ID, vdrs validators.Manager) error {
 	for nodeID, validator := range s.currentStakers.validators[subnetID] {
 		staker := validator.validator
 		if err := vdrs.AddStaker(subnetID, nodeID, staker.PublicKey, staker.TxID, staker.Weight); err != nil {

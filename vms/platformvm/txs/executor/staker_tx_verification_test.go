@@ -37,7 +37,7 @@ func TestVerifyAddPermissionlessValidatorTx(t *testing.T) {
 	}
 
 	var (
-		subnetID          = ids.GenerateTestID()
+		subnetID            = ids.GenerateTestID()
 		customAssetID       = ids.GenerateTestID()
 		unsignedTransformTx = &txs.TransformSubnetTx{
 			AssetID:           customAssetID,
@@ -547,7 +547,7 @@ func TestVerifyAddPermissionlessValidatorTx(t *testing.T) {
 func TestGetValidatorRules(t *testing.T) {
 	type test struct {
 		name          string
-		subnetID    ids.ID
+		subnetID      ids.ID
 		backend       *Backend
 		chainStateF   func(*gomock.Controller) state.Chain
 		expectedRules *addValidatorRules
@@ -564,12 +564,12 @@ func TestGetValidatorRules(t *testing.T) {
 		}
 		avaxAssetID   = ids.GenerateTestID()
 		customAssetID = ids.GenerateTestID()
-		subnetID    = ids.GenerateTestID()
+		subnetID      = ids.GenerateTestID()
 	)
 
 	tests := []test{
 		{
-			name:       "primary network",
+			name:     "primary network",
 			subnetID: constants.PrimaryNetworkID,
 			backend: &Backend{
 				Config: config,
@@ -590,9 +590,9 @@ func TestGetValidatorRules(t *testing.T) {
 			},
 		},
 		{
-			name:       "can't get subnet transformation",
+			name:     "can't get subnet transformation",
 			subnetID: subnetID,
-			backend:    nil,
+			backend:  nil,
 			chainStateF: func(ctrl *gomock.Controller) state.Chain {
 				state := state.NewMockChain(ctrl)
 				state.EXPECT().GetSubnetTransformation(subnetID).Return(nil, errTest)
@@ -602,9 +602,9 @@ func TestGetValidatorRules(t *testing.T) {
 			expectedErr:   errTest,
 		},
 		{
-			name:       "invalid transformation tx",
+			name:     "invalid transformation tx",
 			subnetID: subnetID,
-			backend:    nil,
+			backend:  nil,
 			chainStateF: func(ctrl *gomock.Controller) state.Chain {
 				state := state.NewMockChain(ctrl)
 				tx := &txs.Tx{
@@ -617,9 +617,9 @@ func TestGetValidatorRules(t *testing.T) {
 			expectedErr:   ErrIsNotTransformSubnetTx,
 		},
 		{
-			name:       "subnet",
+			name:     "subnet",
 			subnetID: subnetID,
-			backend:    nil,
+			backend:  nil,
 			chainStateF: func(ctrl *gomock.Controller) state.Chain {
 				state := state.NewMockChain(ctrl)
 				tx := &txs.Tx{
@@ -667,7 +667,7 @@ func TestGetValidatorRules(t *testing.T) {
 func TestGetDelegatorRules(t *testing.T) {
 	type test struct {
 		name          string
-		subnetID    ids.ID
+		subnetID      ids.ID
 		backend       *Backend
 		chainStateF   func(*gomock.Controller) state.Chain
 		expectedRules *addDelegatorRules
@@ -682,11 +682,11 @@ func TestGetDelegatorRules(t *testing.T) {
 		}
 		avaxAssetID   = ids.GenerateTestID()
 		customAssetID = ids.GenerateTestID()
-		subnetID    = ids.GenerateTestID()
+		subnetID      = ids.GenerateTestID()
 	)
 	tests := []test{
 		{
-			name:       "primary network",
+			name:     "primary network",
 			subnetID: constants.PrimaryNetworkID,
 			backend: &Backend{
 				Config: config,
@@ -707,9 +707,9 @@ func TestGetDelegatorRules(t *testing.T) {
 			},
 		},
 		{
-			name:       "can't get subnet transformation",
+			name:     "can't get subnet transformation",
 			subnetID: subnetID,
-			backend:    nil,
+			backend:  nil,
 			chainStateF: func(ctrl *gomock.Controller) state.Chain {
 				state := state.NewMockChain(ctrl)
 				state.EXPECT().GetSubnetTransformation(subnetID).Return(nil, errTest)
@@ -719,9 +719,9 @@ func TestGetDelegatorRules(t *testing.T) {
 			expectedErr:   errTest,
 		},
 		{
-			name:       "invalid transformation tx",
+			name:     "invalid transformation tx",
 			subnetID: subnetID,
-			backend:    nil,
+			backend:  nil,
 			chainStateF: func(ctrl *gomock.Controller) state.Chain {
 				state := state.NewMockChain(ctrl)
 				tx := &txs.Tx{
@@ -734,9 +734,9 @@ func TestGetDelegatorRules(t *testing.T) {
 			expectedErr:   ErrIsNotTransformSubnetTx,
 		},
 		{
-			name:       "subnet",
+			name:     "subnet",
 			subnetID: subnetID,
-			backend:    nil,
+			backend:  nil,
 			chainStateF: func(ctrl *gomock.Controller) state.Chain {
 				state := state.NewMockChain(ctrl)
 				tx := &txs.Tx{

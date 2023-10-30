@@ -37,7 +37,7 @@ import (
 var (
 	errClosed = errors.New("closed")
 
-	_ net.Listener      = (*noopListener)(nil)
+	_ net.Listener    = (*noopListener)(nil)
 	_ subnets.Allower = (*nodeIDConnector)(nil)
 )
 

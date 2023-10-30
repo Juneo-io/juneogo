@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	ErrSameChainID           = errors.New("same chainID")
+	ErrSameChainID         = errors.New("same chainID")
 	ErrMismatchedSubnetIDs = errors.New("mismatched subnetIDs")
 )
 

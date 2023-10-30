@@ -287,7 +287,7 @@ func defaultConfig() *config.Config {
 		UptimeLockedCalculator: uptime.NewLockedCalculator(),
 		Validators:             validators.NewManager(),
 		TxFee:                  defaultTxFee,
-		CreateSubnetTxFee:    100 * defaultTxFee,
+		CreateSubnetTxFee:      100 * defaultTxFee,
 		CreateBlockchainTxFee:  100 * defaultTxFee,
 		MinValidatorStake:      5 * units.MilliAvax,
 		MaxValidatorStake:      500 * units.MilliAvax,

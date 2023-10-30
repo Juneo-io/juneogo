@@ -44,7 +44,7 @@ type sender struct {
 	// have failed because the node was benched
 	failedDueToBench map[message.Op]prometheus.Counter
 	engineType       p2p.EngineType
-	subnet         subnets.Subnet
+	subnet           subnets.Subnet
 }
 
 func New(
@@ -64,7 +64,7 @@ func New(
 		timeouts:         timeouts,
 		failedDueToBench: make(map[message.Op]prometheus.Counter, len(message.ConsensusRequestOps)),
 		engineType:       engineType,
-		subnet:         subnet,
+		subnet:           subnet,
 	}
 
 	for _, op := range message.ConsensusRequestOps {

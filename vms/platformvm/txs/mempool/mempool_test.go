@@ -200,12 +200,12 @@ func createTestDecisionTxs(count int) ([]*txs.Tx, error) {
 					},
 				}},
 			}},
-			SubnetID:   ids.GenerateTestID(),
-			ChainName:    "chainName",
-			VMID:         ids.GenerateTestID(),
-			FxIDs:        []ids.ID{ids.GenerateTestID()},
-			GenesisData:  []byte{'g', 'e', 'n', 'D', 'a', 't', 'a'},
-			SubnetAuth: &secp256k1fx.Input{SigIndices: []uint32{1}},
+			SubnetID:    ids.GenerateTestID(),
+			ChainName:   "chainName",
+			VMID:        ids.GenerateTestID(),
+			FxIDs:       []ids.ID{ids.GenerateTestID()},
+			GenesisData: []byte{'g', 'e', 'n', 'D', 'a', 't', 'a'},
+			SubnetAuth:  &secp256k1fx.Input{SigIndices: []uint32{1}},
 		}
 
 		tx, err := txs.NewSigned(utx, txs.Codec, nil)

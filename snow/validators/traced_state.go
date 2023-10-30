@@ -21,7 +21,7 @@ type tracedState struct {
 	s                   State
 	getMinimumHeightTag string
 	getCurrentHeightTag string
-	getSubnetIDTag    string
+	getSubnetIDTag      string
 	getValidatorSetTag  string
 	tracer              trace.Tracer
 }
@@ -31,7 +31,7 @@ func Trace(s State, name string, tracer trace.Tracer) State {
 		s:                   s,
 		getMinimumHeightTag: fmt.Sprintf("%s.GetMinimumHeight", name),
 		getCurrentHeightTag: fmt.Sprintf("%s.GetCurrentHeight", name),
-		getSubnetIDTag:    fmt.Sprintf("%s.GetSubnetID", name),
+		getSubnetIDTag:      fmt.Sprintf("%s.GetSubnetID", name),
 		getValidatorSetTag:  fmt.Sprintf("%s.GetValidatorSet", name),
 		tracer:              tracer,
 	}

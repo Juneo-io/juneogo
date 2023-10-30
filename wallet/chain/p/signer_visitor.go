@@ -25,12 +25,12 @@ import (
 var (
 	_ txs.Visitor = (*signerVisitor)(nil)
 
-	errUnsupportedTxType       = errors.New("unsupported tx type")
-	errUnknownInputType        = errors.New("unknown input type")
-	errUnknownCredentialType   = errors.New("unknown credential type")
-	errUnknownOutputType       = errors.New("unknown output type")
+	errUnsupportedTxType     = errors.New("unsupported tx type")
+	errUnknownInputType      = errors.New("unknown input type")
+	errUnknownCredentialType = errors.New("unknown credential type")
+	errUnknownOutputType     = errors.New("unknown output type")
 	errUnknownSubnetAuthType = errors.New("unknown subnet auth type")
-	errInvalidUTXOSigIndex     = errors.New("invalid UTXO signature index")
+	errInvalidUTXOSigIndex   = errors.New("invalid UTXO signature index")
 
 	emptySig [secp256k1.SignatureLen]byte
 )

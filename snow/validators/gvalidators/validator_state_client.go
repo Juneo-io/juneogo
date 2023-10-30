@@ -61,7 +61,7 @@ func (c *Client) GetValidatorSet(
 	subnetID ids.ID,
 ) (map[ids.NodeID]*validators.GetValidatorOutput, error) {
 	resp, err := c.client.GetValidatorSet(ctx, &pb.GetValidatorSetRequest{
-		Height:     height,
+		Height:   height,
 		SubnetId: subnetID[:],
 	})
 	if err != nil {

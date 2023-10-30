@@ -49,7 +49,7 @@ type Windower interface {
 // delay for the block submission window of a given validator
 type windower struct {
 	state       validators.State
-	subnetID  ids.ID
+	subnetID    ids.ID
 	chainSource uint64
 	sampler     sampler.WeightedWithoutReplacement
 }
@@ -58,7 +58,7 @@ func New(state validators.State, subnetID, chainID ids.ID) Windower {
 	w := wrappers.Packer{Bytes: chainID[:]}
 	return &windower{
 		state:       state,
-		subnetID:  subnetID,
+		subnetID:    subnetID,
 		chainSource: w.UnpackLong(),
 		sampler:     sampler.NewDeterministicWeightedWithoutReplacement(),
 	}

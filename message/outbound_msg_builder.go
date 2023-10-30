@@ -214,7 +214,7 @@ func (b *outMsgBuilder) Pong(
 		&p2p.Message{
 			Message: &p2p.Message_Pong{
 				Pong: &p2p.Pong{
-					Uptime:          primaryUptime,
+					Uptime:        primaryUptime,
 					SubnetUptimes: subnetUptimes,
 				},
 			},
@@ -239,13 +239,13 @@ func (b *outMsgBuilder) Version(
 		&p2p.Message{
 			Message: &p2p.Message_Version{
 				Version: &p2p.Version{
-					NetworkId:        networkID,
-					MyTime:           myTime,
-					IpAddr:           ip.IP.To16(),
-					IpPort:           uint32(ip.Port),
-					MyVersion:        myVersion,
-					MyVersionTime:    myVersionTime,
-					Sig:              sig,
+					NetworkId:      networkID,
+					MyTime:         myTime,
+					IpAddr:         ip.IP.To16(),
+					IpPort:         uint32(ip.Port),
+					MyVersion:      myVersion,
+					MyVersionTime:  myVersionTime,
+					Sig:            sig,
 					TrackedSubnets: subnetIDBytes,
 				},
 			},

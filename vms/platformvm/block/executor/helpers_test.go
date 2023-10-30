@@ -80,8 +80,8 @@ var (
 	xChainID                  = ids.Empty.Prefix(0)
 	cChainID                  = ids.Empty.Prefix(1)
 
-	genesisBlkID  ids.ID
-	testSubnet1 *txs.Tx
+	genesisBlkID ids.ID
+	testSubnet1  *txs.Tx
 
 	errMissing = errors.New("missing")
 )
@@ -95,11 +95,11 @@ type staker struct {
 }
 
 type test struct {
-	description             string
-	stakers                 []staker
+	description           string
+	stakers               []staker
 	subnetStakers         []staker
-	advanceTimeTo           []time.Time
-	expectedStakers         map[ids.NodeID]stakerStatus
+	advanceTimeTo         []time.Time
+	expectedStakers       map[ids.NodeID]stakerStatus
 	expectedSubnetStakers map[ids.NodeID]stakerStatus
 }
 
@@ -328,7 +328,7 @@ func defaultConfig() *config.Config {
 		UptimeLockedCalculator: uptime.NewLockedCalculator(),
 		Validators:             validators.NewManager(),
 		TxFee:                  defaultTxFee,
-		CreateSubnetTxFee:    100 * defaultTxFee,
+		CreateSubnetTxFee:      100 * defaultTxFee,
 		CreateBlockchainTxFee:  100 * defaultTxFee,
 		MinValidatorStake:      5 * units.MilliAvax,
 		MaxValidatorStake:      500 * units.MilliAvax,

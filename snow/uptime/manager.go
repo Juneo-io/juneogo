@@ -39,8 +39,8 @@ type manager struct {
 	// Used to get time. Useful for faking time during tests.
 	clock *mockable.Clock
 
-	state            State
-	connections      map[ids.NodeID]map[ids.ID]time.Time // nodeID -> subnetID -> time
+	state          State
+	connections    map[ids.NodeID]map[ids.ID]time.Time // nodeID -> subnetID -> time
 	trackedSubnets set.Set[ids.ID]
 }
 

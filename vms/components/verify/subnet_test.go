@@ -36,7 +36,7 @@ func TestSameSubnet(t *testing.T) {
 			ctxF: func(ctrl *gomock.Controller) *snow.Context {
 				state := validators.NewMockState(ctrl)
 				return &snow.Context{
-					SubnetID:     subnetID0,
+					SubnetID:       subnetID0,
 					ChainID:        chainID0,
 					ValidatorState: state,
 				}
@@ -50,7 +50,7 @@ func TestSameSubnet(t *testing.T) {
 				state := validators.NewMockState(ctrl)
 				state.EXPECT().GetSubnetID(gomock.Any(), chainID1).Return(subnetID1, errMissing)
 				return &snow.Context{
-					SubnetID:     subnetID0,
+					SubnetID:       subnetID0,
 					ChainID:        chainID0,
 					ValidatorState: state,
 				}
@@ -64,7 +64,7 @@ func TestSameSubnet(t *testing.T) {
 				state := validators.NewMockState(ctrl)
 				state.EXPECT().GetSubnetID(gomock.Any(), chainID1).Return(subnetID1, nil)
 				return &snow.Context{
-					SubnetID:     subnetID0,
+					SubnetID:       subnetID0,
 					ChainID:        chainID0,
 					ValidatorState: state,
 				}
@@ -78,7 +78,7 @@ func TestSameSubnet(t *testing.T) {
 				state := validators.NewMockState(ctrl)
 				state.EXPECT().GetSubnetID(gomock.Any(), chainID1).Return(subnetID0, nil)
 				return &snow.Context{
-					SubnetID:     subnetID0,
+					SubnetID:       subnetID0,
 					ChainID:        chainID0,
 					ValidatorState: state,
 				}

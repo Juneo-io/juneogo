@@ -30,13 +30,13 @@ type context struct {
 	networkID                     uint32
 	avaxAssetID                   ids.ID
 	baseTxFee                     uint64
-	createSubnetTxFee           uint64
-	transformSubnetTxFee        uint64
+	createSubnetTxFee             uint64
+	transformSubnetTxFee          uint64
 	createBlockchainTxFee         uint64
 	addPrimaryNetworkValidatorFee uint64
 	addPrimaryNetworkDelegatorFee uint64
-	addSubnetValidatorFee       uint64
-	addSubnetDelegatorFee       uint64
+	addSubnetValidatorFee         uint64
+	addSubnetDelegatorFee         uint64
 }
 
 func NewContextFromURI(ctx stdcontext.Context, uri string) (Context, error) {
@@ -95,13 +95,13 @@ func NewContext(
 		networkID:                     networkID,
 		avaxAssetID:                   avaxAssetID,
 		baseTxFee:                     baseTxFee,
-		createSubnetTxFee:           createSubnetTxFee,
-		transformSubnetTxFee:        transformSubnetTxFee,
+		createSubnetTxFee:             createSubnetTxFee,
+		transformSubnetTxFee:          transformSubnetTxFee,
 		createBlockchainTxFee:         createBlockchainTxFee,
 		addPrimaryNetworkValidatorFee: addPrimaryNetworkValidatorFee,
 		addPrimaryNetworkDelegatorFee: addPrimaryNetworkDelegatorFee,
-		addSubnetValidatorFee:       addSubnetValidatorFee,
-		addSubnetDelegatorFee:       addSubnetDelegatorFee,
+		addSubnetValidatorFee:         addSubnetValidatorFee,
+		addSubnetDelegatorFee:         addSubnetDelegatorFee,
 	}
 }
 

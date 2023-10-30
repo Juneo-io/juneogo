@@ -111,7 +111,7 @@ func TestMessage(t *testing.T) {
 						SubnetUptimes: []*p2p.SubnetUptime{
 							{
 								SubnetId: testID[:],
-								Uptime:     100,
+								Uptime:   100,
 							},
 						},
 					},
@@ -127,13 +127,13 @@ func TestMessage(t *testing.T) {
 			msg: &p2p.Message{
 				Message: &p2p.Message_Version{
 					Version: &p2p.Version{
-						NetworkId:        uint32(1337),
-						MyTime:           uint64(nowUnix),
-						IpAddr:           []byte(net.IPv6zero),
-						IpPort:           9651,
-						MyVersion:        "v1.2.3",
-						MyVersionTime:    uint64(nowUnix),
-						Sig:              []byte{'y', 'e', 'e', 't'},
+						NetworkId:      uint32(1337),
+						MyTime:         uint64(nowUnix),
+						IpAddr:         []byte(net.IPv6zero),
+						IpPort:         9651,
+						MyVersion:      "v1.2.3",
+						MyVersionTime:  uint64(nowUnix),
+						Sig:            []byte{'y', 'e', 'e', 't'},
 						TrackedSubnets: [][]byte{testID[:]},
 					},
 				},

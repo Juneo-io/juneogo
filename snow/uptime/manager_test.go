@@ -256,15 +256,15 @@ func TestStopTrackingNonConnectedDBError(t *testing.T) {
 
 func TestConnectAndDisconnect(t *testing.T) {
 	tests := []struct {
-		name        string
+		name      string
 		subnetIDs []ids.ID
 	}{
 		{
-			name:        "Single Subnet",
+			name:      "Single Subnet",
 			subnetIDs: []ids.ID{ids.GenerateTestID()},
 		},
 		{
-			name:        "Multiple Subnets",
+			name:      "Multiple Subnets",
 			subnetIDs: []ids.ID{ids.GenerateTestID(), ids.GenerateTestID()},
 		},
 	}

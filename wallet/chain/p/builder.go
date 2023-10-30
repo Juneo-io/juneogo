@@ -419,7 +419,7 @@ func (b *builder) NewRemoveSubnetValidatorTx(
 			Memo:         ops.Memo(),
 		}},
 		Subnet:     subnetID,
-		NodeID:       nodeID,
+		NodeID:     nodeID,
 		SubnetAuth: subnetAuth,
 	}, nil
 }
@@ -489,12 +489,12 @@ func (b *builder) NewCreateChainTx(
 			Outs:         outputs,
 			Memo:         ops.Memo(),
 		}},
-		SubnetID:   subnetID,
-		ChainName:    chainName,
-		VMID:         vmID,
-		FxIDs:        fxIDs,
-		GenesisData:  genesis,
-		SubnetAuth: subnetAuth,
+		SubnetID:    subnetID,
+		ChainName:   chainName,
+		VMID:        vmID,
+		FxIDs:       fxIDs,
+		GenesisData: genesis,
+		SubnetAuth:  subnetAuth,
 	}, nil
 }
 
@@ -710,7 +710,7 @@ func (b *builder) NewTransformSubnetTx(
 			Outs:         outputs,
 			Memo:         ops.Memo(),
 		}},
-		Subnet:                 subnetID,
+		Subnet:                   subnetID,
 		AssetID:                  assetID,
 		InitialSupply:            initialSupply,
 		MaximumSupply:            maxSupply,
@@ -724,7 +724,7 @@ func (b *builder) NewTransformSubnetTx(
 		MinDelegatorStake:        minDelegatorStake,
 		MaxValidatorWeightFactor: maxValidatorWeightFactor,
 		UptimeRequirement:        uptimeRequirement,
-		SubnetAuth:             subnetAuth,
+		SubnetAuth:               subnetAuth,
 	}, nil
 }
 
@@ -764,7 +764,7 @@ func (b *builder) NewAddPermissionlessValidatorTx(
 			Memo:         ops.Memo(),
 		}},
 		Validator:             vdr.Validator,
-		Subnet:              vdr.Subnet,
+		Subnet:                vdr.Subnet,
 		Signer:                signer,
 		StakeOuts:             stakeOutputs,
 		ValidatorRewardsOwner: validationRewardsOwner,
@@ -805,7 +805,7 @@ func (b *builder) NewAddPermissionlessDelegatorTx(
 			Memo:         ops.Memo(),
 		}},
 		Validator:              vdr.Validator,
-		Subnet:               vdr.Subnet,
+		Subnet:                 vdr.Subnet,
 		StakeOuts:              stakeOutputs,
 		DelegationRewardsOwner: rewardsOwner,
 	}, nil

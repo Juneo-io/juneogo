@@ -26,9 +26,9 @@ func TestAddSubnetValidatorTxSyntacticVerify(t *testing.T) {
 	signers := [][]*secp256k1.PrivateKey{preFundedKeys}
 
 	var (
-		stx                    *Tx
+		stx                  *Tx
 		addSubnetValidatorTx *AddSubnetValidatorTx
-		err                    error
+		err                  error
 	)
 
 	// Case : signed tx is nil
@@ -144,9 +144,9 @@ func TestAddSubnetValidatorMarshal(t *testing.T) {
 	signers := [][]*secp256k1.PrivateKey{preFundedKeys}
 
 	var (
-		stx                    *Tx
+		stx                  *Tx
 		addSubnetValidatorTx *AddSubnetValidatorTx
-		err                    error
+		err                  error
 	)
 
 	// create a valid tx

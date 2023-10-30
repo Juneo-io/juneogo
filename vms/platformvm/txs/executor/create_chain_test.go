@@ -220,7 +220,7 @@ func TestCreateChainTxAP3FeeChange(t *testing.T) {
 					Outs:         outs,
 				}},
 				SubnetID:   testSubnet1.ID(),
-				VMID:         constants.AVMID,
+				VMID:       constants.AVMID,
 				SubnetAuth: subnetAuth,
 			}
 			tx := &txs.Tx{Unsigned: utx}

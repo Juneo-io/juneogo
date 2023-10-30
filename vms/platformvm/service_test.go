@@ -676,7 +676,7 @@ func TestGetCurrentValidators(t *testing.T) {
 
 		innerArgs := GetCurrentValidatorsArgs{
 			SubnetID: constants.PrimaryNetworkID,
-			NodeIDs:    []ids.NodeID{vdr.NodeID},
+			NodeIDs:  []ids.NodeID{vdr.NodeID},
 		}
 		innerResponse := GetCurrentValidatorsReply{}
 		require.NoError(service.GetCurrentValidators(nil, &innerArgs, &innerResponse))

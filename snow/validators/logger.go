@@ -17,10 +17,10 @@ import (
 var _ SetCallbackListener = (*logger)(nil)
 
 type logger struct {
-	log        logging.Logger
-	enabled    *utils.Atomic[bool]
+	log      logging.Logger
+	enabled  *utils.Atomic[bool]
 	subnetID ids.ID
-	nodeIDs    set.Set[ids.NodeID]
+	nodeIDs  set.Set[ids.NodeID]
 }
 
 // NewLogger returns a callback listener that will log validator set changes for
@@ -33,10 +33,10 @@ func NewLogger(
 ) SetCallbackListener {
 	nodeIDSet := set.Of(nodeIDs...)
 	return &logger{
-		log:        log,
-		enabled:    enabled,
+		log:      log,
+		enabled:  enabled,
 		subnetID: subnetID,
-		nodeIDs:    nodeIDSet,
+		nodeIDs:  nodeIDSet,
 	}
 }
 

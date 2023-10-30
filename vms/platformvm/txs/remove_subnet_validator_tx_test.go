@@ -494,7 +494,7 @@ func TestRemoveSubnetValidatorTxSyntacticVerify(t *testing.T) {
 				return &RemoveSubnetValidatorTx{
 					BaseTx: validBaseTx,
 					// Set NodeID so we don't error on that check.
-					NodeID:   ids.GenerateTestNodeID(),
+					NodeID: ids.GenerateTestNodeID(),
 					Subnet: constants.PrimaryNetworkID,
 				}
 			},
@@ -510,8 +510,8 @@ func TestRemoveSubnetValidatorTxSyntacticVerify(t *testing.T) {
 					// Set subnetID so we don't error on that check.
 					Subnet: ids.GenerateTestID(),
 					// Set NodeID so we don't error on that check.
-					NodeID:       ids.GenerateTestNodeID(),
-					BaseTx:       validBaseTx,
+					NodeID:     ids.GenerateTestNodeID(),
+					BaseTx:     validBaseTx,
 					SubnetAuth: invalidSubnetAuth,
 				}
 			},
@@ -527,8 +527,8 @@ func TestRemoveSubnetValidatorTxSyntacticVerify(t *testing.T) {
 					// Set subnetID so we don't error on that check.
 					Subnet: ids.GenerateTestID(),
 					// Set NodeID so we don't error on that check.
-					NodeID:       ids.GenerateTestNodeID(),
-					BaseTx:       validBaseTx,
+					NodeID:     ids.GenerateTestNodeID(),
+					BaseTx:     validBaseTx,
 					SubnetAuth: validSubnetAuth,
 				}
 			},

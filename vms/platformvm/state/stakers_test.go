@@ -223,7 +223,7 @@ func newTestStaker() *Staker {
 	return &Staker{
 		TxID:            ids.GenerateTestID(),
 		NodeID:          ids.GenerateTestNodeID(),
-		SubnetID:      ids.GenerateTestID(),
+		SubnetID:        ids.GenerateTestID(),
 		Weight:          1,
 		StartTime:       startTime,
 		EndTime:         endTime,

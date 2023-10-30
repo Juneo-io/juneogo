@@ -28,7 +28,7 @@ var (
 
 	errTest       = errors.New("non-nil error")
 	sourceChainID = ids.GenerateTestID()
-	subnetID    = ids.GenerateTestID()
+	subnetID      = ids.GenerateTestID()
 
 	testVdrs []*testValidator
 )

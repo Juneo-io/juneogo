@@ -606,7 +606,7 @@ func TestReliableMessagesToMyself(t *testing.T) {
 func TestSender_Bootstrap_Requests(t *testing.T) {
 	var (
 		chainID       = ids.GenerateTestID()
-		subnetID    = ids.GenerateTestID()
+		subnetID      = ids.GenerateTestID()
 		myNodeID      = ids.GenerateTestNodeID()
 		successNodeID = ids.GenerateTestNodeID()
 		failedNodeID  = ids.GenerateTestNodeID()
@@ -878,7 +878,7 @@ func TestSender_Bootstrap_Requests(t *testing.T) {
 func TestSender_Bootstrap_Responses(t *testing.T) {
 	var (
 		chainID           = ids.GenerateTestID()
-		subnetID        = ids.GenerateTestID()
+		subnetID          = ids.GenerateTestID()
 		myNodeID          = ids.GenerateTestNodeID()
 		destinationNodeID = ids.GenerateTestNodeID()
 		deadline          = time.Second
@@ -1086,7 +1086,7 @@ func TestSender_Bootstrap_Responses(t *testing.T) {
 func TestSender_Single_Request(t *testing.T) {
 	var (
 		chainID           = ids.GenerateTestID()
-		subnetID        = ids.GenerateTestID()
+		subnetID          = ids.GenerateTestID()
 		myNodeID          = ids.GenerateTestNodeID()
 		destinationNodeID = ids.GenerateTestNodeID()
 		deadline          = time.Second

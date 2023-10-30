@@ -35,12 +35,12 @@ const (
 )
 
 var PendingToCurrentPriorities = []Priority{
-	PrimaryNetworkDelegatorApricotPendingPriority:  PrimaryNetworkDelegatorCurrentPriority,
-	PrimaryNetworkValidatorPendingPriority:         PrimaryNetworkValidatorCurrentPriority,
-	PrimaryNetworkDelegatorBanffPendingPriority:    PrimaryNetworkDelegatorCurrentPriority,
-	SubnetPermissionlessValidatorPendingPriority: SubnetPermissionlessValidatorCurrentPriority,
-	SubnetPermissionlessDelegatorPendingPriority: SubnetPermissionlessDelegatorCurrentPriority,
-	SubnetPermissionedValidatorPendingPriority:   SubnetPermissionedValidatorCurrentPriority,
+	PrimaryNetworkDelegatorApricotPendingPriority: PrimaryNetworkDelegatorCurrentPriority,
+	PrimaryNetworkValidatorPendingPriority:        PrimaryNetworkValidatorCurrentPriority,
+	PrimaryNetworkDelegatorBanffPendingPriority:   PrimaryNetworkDelegatorCurrentPriority,
+	SubnetPermissionlessValidatorPendingPriority:  SubnetPermissionlessValidatorCurrentPriority,
+	SubnetPermissionlessDelegatorPendingPriority:  SubnetPermissionlessDelegatorCurrentPriority,
+	SubnetPermissionedValidatorPendingPriority:    SubnetPermissionedValidatorCurrentPriority,
 }
 
 type Priority byte
