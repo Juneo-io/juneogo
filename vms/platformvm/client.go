@@ -468,6 +468,20 @@ func (c *client) GetCurrentSupply(ctx context.Context, subnetID ids.ID, options 
 	return uint64(res.Supply), uint64(res.Height), err
 }
 
+func (c *client) GetRewardsPoolSupply(ctx context.Context, subnetID ids.ID, options ...rpc.Option) (uint64, error) {
+	res := &GetRewardsPoolSupplyReply{}
+	err := c.requester.SendRequest(ctx, "platform.getRewardsPoolSupply", &GetRewardsPoolSupplyArgs{
+		SubnetID: subnetID,
+	}, res, options...)
+	return uint64(res.RewardsPoolSupply), err
+}
+
+func (c *client) GetFeesPoolValue(ctx context.Context, options ...rpc.Option) (uint64, error) {
+	res := &GetFeesPoolValueReply{}
+	err := c.requester.SendRequest(ctx, "platform.getFeesPoolValue", struct{}{}, res, options...)
+	return uint64(res.FeesPoolValue), err
+}
+
 func (c *client) SampleValidators(ctx context.Context, subnetID ids.ID, sampleSize uint16, options ...rpc.Option) ([]ids.NodeID, error) {
 	res := &SampleValidatorsReply{}
 	err := c.requester.SendRequest(ctx, "platform.sampleValidators", &SampleValidatorsArgs{
