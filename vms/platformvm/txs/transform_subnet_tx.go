@@ -54,7 +54,7 @@ type TransformSubnetTx struct {
 	// RewardShare is the share of rewards given for validators.
 	// Restrictions:
 	// - Must be > 0
-	// - Must be < [reward.PercentDenominator]
+	// - Must be <= [reward.PercentDenominator]
 	RewardShare uint64 `serialize:"true" json:"rewardShare"`
 	// MinValidatorStake is the minimum amount of funds required to become a
 	// validator.

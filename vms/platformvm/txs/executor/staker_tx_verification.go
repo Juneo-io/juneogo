@@ -108,6 +108,7 @@ func verifyAddValidatorTx(
 		return nil, ErrInsufficientDelegationFee
 
 	// Using config param MinFee which should be renamed to Fee as it is fixed
+	// Actually needs an update to add MaxDelegationFee config
 	case tx.DelegationShares > backend.Config.MinDelegationFee:
 		// Ensure the validator fee is at most the maximum amount
 		return nil, ErrTooLargeDelegationFee

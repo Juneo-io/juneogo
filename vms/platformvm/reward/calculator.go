@@ -18,10 +18,8 @@ type Calculator interface {
 }
 
 type calculator struct {
-	maxSubMinConsumptionRate *big.Int
-	minConsumptionRate       *big.Int
-	mintingPeriod            *big.Int
-	rewardShare              uint64
+	mintingPeriod *big.Int
+	rewardShare   uint64
 }
 
 func NewCalculator(c Config) Calculator {
@@ -50,7 +48,11 @@ func (c *calculator) Calculate(stakedDuration time.Duration, currentTime time.Ti
 	bonusRewards.Div(bonusRewards, c.mintingPeriod)
 	bonusRewards.Mul(bonusRewards, maxBonusRewardShare)
 	bonusRewards.Div(bonusRewards, rewardShareDenominator)
-	return GetTimeRewardsValue(c.rewardShare, c.rewardShare, bonusRewards, timePercentage, rewardShareDenominator, stakedAmount).Uint64()
+	reward := GetTimeRewardsValue(c.rewardShare, c.rewardShare, bonusRewards, timePercentage, rewardShareDenominator, stakedAmount)
+	if !reward.IsUint64() {
+		return 0
+	}
+	return reward.Uint64()
 }
 
 // Reward returns the amount of tokens to reward the staker with in the primary subnet.
@@ -63,7 +65,11 @@ func (c *calculator) CalculatePrimary(stakedDuration time.Duration, currentTime 
 	bonusRewards.Div(bonusRewards, c.mintingPeriod)
 	bonusRewards.Mul(bonusRewards, maxBonusRewardShare)
 	bonusRewards.Div(bonusRewards, rewardShareDenominator)
-	return GetTimeRewards(currentTime, stakedAmount, bonusRewards, timePercentage).Uint64()
+	reward := GetTimeRewards(currentTime, stakedAmount, bonusRewards, timePercentage)
+	if !reward.IsUint64() {
+		return 0
+	}
+	return reward.Uint64()
 }
 
 func GetTimeRewards(currentTime time.Time, stakedAmount uint64, bonusRewards *big.Int, timePercentage *big.Int) *big.Int {

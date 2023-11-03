@@ -146,8 +146,8 @@ type State interface {
  * '-. singletons
  *   |-- initializedKey -> nil
  *   |-- timestampKey -> timestamp
- *   |-- feesPoolValueKey -> feesPoolValue
- *   '-- lastAcceptedKey -> lastAccepted
+ *   |-- lastAcceptedKey -> lastAccepted
+ *   '-- feesPoolValueKey -> feesPoolValue
  */
 type state struct {
 	parser block.Parser
