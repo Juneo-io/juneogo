@@ -80,6 +80,9 @@ type Config struct {
 	// Minimum fee that can be charged for delegation
 	MinDelegationFee uint32
 
+	// Maximum fee that can be charged for delegation
+	MaxDelegationFee uint32
+
 	// UptimePercentage is the minimum uptime required to be rewarded for staking
 	UptimePercentage float64
 
@@ -163,7 +166,7 @@ func (c *Config) CreateChain(chainID ids.ID, tx *txs.CreateChainTx) {
 
 	chainParams := chains.ChainParameters{
 		ID:           chainID,
-		SubnetID:   tx.SubnetID,
+		SubnetID:     tx.SubnetID,
 		GenesisData:  tx.GenesisData,
 		VMID:         tx.VMID,
 		FxIDs:        tx.FxIDs,

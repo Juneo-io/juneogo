@@ -27,6 +27,7 @@ const (
 	MaxValidatorStakeKey                               = "max-validator-stake"
 	MinDelegatorStakeKey                               = "min-delegator-stake"
 	MinDelegatorFeeKey                                 = "min-delegation-fee"
+	MaxDelegatorFeeKey                                 = "max-delegation-fee"
 	MinStakeDurationKey                                = "min-stake-duration"
 	MaxStakeDurationKey                                = "max-stake-duration"
 	StakeMintingPeriodKey                              = "stake-minting-period"

@@ -21,6 +21,7 @@ type addValidatorRules struct {
 	minStakeDuration  time.Duration
 	maxStakeDuration  time.Duration
 	minDelegationFee  uint32
+	maxDelegationFee  uint32
 }
 
 func getValidatorRules(
@@ -36,6 +37,7 @@ func getValidatorRules(
 			minStakeDuration:  backend.Config.MinStakeDuration,
 			maxStakeDuration:  backend.Config.MaxStakeDuration,
 			minDelegationFee:  backend.Config.MinDelegationFee,
+			maxDelegationFee:  backend.Config.MaxDelegationFee,
 		}, nil
 	}
 
@@ -51,6 +53,7 @@ func getValidatorRules(
 		minStakeDuration:  time.Duration(transformSubnet.MinStakeDuration) * time.Second,
 		maxStakeDuration:  time.Duration(transformSubnet.MaxStakeDuration) * time.Second,
 		minDelegationFee:  transformSubnet.MinDelegationFee,
+		maxDelegationFee:  transformSubnet.MaxDelegationFee,
 	}, nil
 }
 

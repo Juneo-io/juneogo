@@ -107,9 +107,7 @@ func verifyAddValidatorTx(
 		// Ensure the validator fee is at least the minimum amount
 		return nil, ErrInsufficientDelegationFee
 
-	// Using config param MinFee which should be renamed to Fee as it is fixed
-	// Actually needs an update to add MaxDelegationFee config
-	case tx.DelegationShares > backend.Config.MinDelegationFee:
+	case tx.DelegationShares > backend.Config.MaxDelegationFee:
 		// Ensure the validator fee is at most the maximum amount
 		return nil, ErrTooLargeDelegationFee
 
@@ -503,6 +501,10 @@ func verifyAddPermissionlessValidatorTx(
 	case tx.DelegationShares < validatorRules.minDelegationFee:
 		// Ensure the validator fee is at least the minimum amount
 		return ErrInsufficientDelegationFee
+
+	case tx.DelegationShares > validatorRules.maxDelegationFee:
+		// Ensure the validator fee is at most the maximum amount
+		return ErrTooLargeDelegationFee
 
 	case duration < validatorRules.minStakeDuration:
 		// Ensure staking length is not too short

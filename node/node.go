@@ -934,6 +934,7 @@ func (n *Node) initVMs() error {
 				MaxValidatorStake:             n.Config.MaxValidatorStake,
 				MinDelegatorStake:             n.Config.MinDelegatorStake,
 				MinDelegationFee:              n.Config.MinDelegationFee,
+				MaxDelegationFee:              n.Config.MaxDelegationFee,
 				MinStakeDuration:              n.Config.MinStakeDuration,
 				MaxStakeDuration:              n.Config.MaxStakeDuration,
 				RewardConfig:                  n.Config.RewardConfig,

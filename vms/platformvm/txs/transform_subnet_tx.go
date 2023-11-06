@@ -27,7 +27,8 @@ var (
 	errMinValidatorStakeAboveMax    = errors.New("min validator stake must be less than or equal to max validator stake")
 	errMinStakeDurationZero         = errors.New("min stake duration must be non-0")
 	errMinStakeDurationTooLarge     = errors.New("min stake duration must be less than or equal to max stake duration")
-	errMinDelegationFeeTooLarge     = fmt.Errorf("min delegation fee must be less than or equal to %d", reward.PercentDenominator)
+	errMaxDelegationFeeTooLarge     = fmt.Errorf("max delegation fee must be less than or equal to %d", reward.PercentDenominator)
+	errMinDelegationFeeTooLarge     = errors.New("min delegation fee must be less than or equal to MaxDelegationFee")
 	errMinDelegatorStakeZero        = errors.New("min delegator stake must be non-0")
 	errMaxValidatorWeightFactorZero = errors.New("max validator weight factor must be non-0")
 	errUptimeRequirementTooLarge    = fmt.Errorf("uptime requirement must be less than or equal to %d", reward.PercentDenominator)
@@ -80,8 +81,13 @@ type TransformSubnetTx struct {
 	// MinDelegationFee is the minimum percentage a validator must charge a
 	// delegator for delegating.
 	// Restrictions:
-	// - Must be <= [reward.PercentDenominator]
+	// - Must be <= [MaxDelegationFee]
 	MinDelegationFee uint32 `serialize:"true" json:"minDelegationFee"`
+	// MaxDelegationFee is the minimum percentage a validator must charge a
+	// delegator for delegating.
+	// Restrictions:
+	// - Must be <= [reward.PercentDenominator]
+	MaxDelegationFee uint32 `serialize:"true" json:"maxDelegationFee"`
 	// MinDelegatorStake is the minimum amount of funds required to become a
 	// delegator.
 	// Restrictions:
@@ -128,8 +134,10 @@ func (tx *TransformSubnetTx) SyntacticVerify(ctx *snow.Context) error {
 		return errMinStakeDurationZero
 	case tx.MinStakeDuration > tx.MaxStakeDuration:
 		return errMinStakeDurationTooLarge
-	case tx.MinDelegationFee > reward.PercentDenominator:
+	case tx.MinDelegationFee > tx.MaxDelegationFee:
 		return errMinDelegationFeeTooLarge
+	case tx.MaxDelegationFee > reward.PercentDenominator:
+		return errMaxDelegationFeeTooLarge
 	case tx.MinDelegatorStake == 0:
 		return errMinDelegatorStakeZero
 	case tx.MaxValidatorWeightFactor == 0:

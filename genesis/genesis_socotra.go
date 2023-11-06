@@ -21,13 +21,13 @@ var (
 		TxFeeConfig: TxFeeConfig{
 			TxFee:                         10 * units.MilliAvax,
 			CreateAssetTxFee:              100 * units.MilliAvax,
-			CreateSubnetTxFee:           100 * units.MilliAvax,
-			TransformSubnetTxFee:        1 * units.Avax,
+			CreateSubnetTxFee:             100 * units.MilliAvax,
+			TransformSubnetTxFee:          1 * units.Avax,
 			CreateBlockchainTxFee:         100 * units.MilliAvax,
 			AddPrimaryNetworkValidatorFee: 0,
 			AddPrimaryNetworkDelegatorFee: 0,
-			AddSubnetValidatorFee:       100 * units.MilliAvax,
-			AddSubnetDelegatorFee:       100 * units.MilliAvax,
+			AddSubnetValidatorFee:         100 * units.MilliAvax,
+			AddSubnetDelegatorFee:         100 * units.MilliAvax,
 		},
 		StakingConfig: StakingConfig{
 			UptimeRequirement: .8, // 80%
@@ -35,6 +35,7 @@ var (
 			MaxValidatorStake: 1 * units.MegaAvax,
 			MinDelegatorStake: 10 * units.MilliAvax,
 			MinDelegationFee:  120000, // 12%
+			MaxDelegationFee:  120000,
 			MinStakeDuration:  24 * time.Hour,
 			MaxStakeDuration:  365 * 24 * time.Hour,
 			RewardConfig: reward.Config{

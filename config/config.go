@@ -79,7 +79,8 @@ var (
 	errAuthPasswordTooWeak                    = errors.New("API auth password is not strong enough")
 	errInvalidUptimeRequirement               = errors.New("uptime requirement must be in the range [0, 1]")
 	errMinValidatorStakeAboveMax              = errors.New("minimum validator stake can't be greater than maximum validator stake")
-	errInvalidDelegationFee                   = errors.New("delegation fee must be in the range [0, 1,000,000]")
+	errInvalidMinDelegationFee                = errors.New("min delegation fee must be in the range [0, MaxDelegationFee]")
+	errInvalidMaxDelegationFee                = errors.New("max delegation fee must be in the range [MinDelegationFee, 1,000,000]")
 	errInvalidMinStakeDuration                = errors.New("min stake duration must be > 0")
 	errMinStakeDurationAboveMax               = errors.New("max stake duration can't be less than min stake duration")
 	errStakeRewardShareTooLarge               = fmt.Errorf("reward share must be less than or equal to %d", reward.PercentDenominator)
@@ -826,13 +827,16 @@ func getStakingConfig(v *viper.Viper, networkID uint32) (node.StakingConfig, err
 		config.RewardConfig.MintingPeriod = v.GetDuration(StakeMintingPeriodKey)
 		config.RewardConfig.RewardShare = v.GetUint64(StakeRewardShareKey)
 		config.MinDelegationFee = v.GetUint32(MinDelegatorFeeKey)
+		config.MaxDelegationFee = v.GetUint32(MaxDelegatorFeeKey)
 		switch {
 		case config.UptimeRequirement < 0 || config.UptimeRequirement > 1:
 			return node.StakingConfig{}, errInvalidUptimeRequirement
 		case config.MinValidatorStake > config.MaxValidatorStake:
 			return node.StakingConfig{}, errMinValidatorStakeAboveMax
-		case config.MinDelegationFee > 1_000_000:
-			return node.StakingConfig{}, errInvalidDelegationFee
+		case config.MaxDelegationFee > 1_000_000:
+			return node.StakingConfig{}, errInvalidMaxDelegationFee
+		case config.MinDelegationFee > config.MaxDelegationFee:
+			return node.StakingConfig{}, errInvalidMinDelegationFee
 		case config.MinStakeDuration <= 0:
 			return node.StakingConfig{}, errInvalidMinStakeDuration
 		case config.MaxStakeDuration < config.MinStakeDuration:
