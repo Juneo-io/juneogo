@@ -75,6 +75,7 @@ func NewDiff(
 		parentID:      parentID,
 		stateVersions: stateVersions,
 		timestamp:     parentState.GetTimestamp(),
+		feesPoolValue: parentState.GetFeesPoolValue(),
 		subnetOwners:  make(map[ids.ID]fx.Owner),
 	}, nil
 }
