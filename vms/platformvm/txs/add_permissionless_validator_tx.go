@@ -70,6 +70,20 @@ func (tx *AddPermissionlessValidatorTx) InitCtx(ctx *snow.Context) {
 	tx.DelegatorRewardsOwner.InitCtx(ctx)
 }
 
+func (tx *AddPermissionlessValidatorTx) ConsumedValue(assetID ids.ID) uint64 {
+	value := tx.BaseTx.ConsumedValue(assetID)
+	for _, out := range tx.StakeOuts {
+		if out.Asset.AssetID() == assetID {
+			val, err := math.Sub(value, out.Out.Amount())
+			if err != nil {
+				return uint64(0)
+			}
+			value = val
+		}
+	}
+	return value
+}
+
 func (tx *AddPermissionlessValidatorTx) SubnetID() ids.ID {
 	return tx.Subnet
 }

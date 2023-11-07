@@ -45,6 +45,20 @@ func (tx *AddPermissionlessDelegatorTx) InitCtx(ctx *snow.Context) {
 	tx.DelegationRewardsOwner.InitCtx(ctx)
 }
 
+func (tx *AddPermissionlessDelegatorTx) ConsumedValue(assetID ids.ID) uint64 {
+	value := tx.BaseTx.ConsumedValue(assetID)
+	for _, out := range tx.StakeOuts {
+		if out.Asset.AssetID() == assetID {
+			val, err := math.Sub(value, out.Out.Amount())
+			if err != nil {
+				return uint64(0)
+			}
+			value = val
+		}
+	}
+	return value
+}
+
 func (tx *AddPermissionlessDelegatorTx) SubnetID() ids.ID {
 	return tx.Subnet
 }
