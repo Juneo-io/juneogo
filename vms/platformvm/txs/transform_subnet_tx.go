@@ -21,8 +21,11 @@ var (
 	errEmptyAssetID                 = errors.New("empty asset ID is not valid")
 	errAssetIDCantBeAVAX            = errors.New("asset ID can't be AVAX")
 	errInitialRewardsPoolSupplyZero = errors.New("initial rewards pool supply must be non-0")
-	errRewardShareZero              = errors.New("reward share must be non-0")
-	errRewardShareTooLarge          = fmt.Errorf("reward share must be less than or equal to %d", reward.PercentDenominator)
+	errStartRewardShareTooLarge     = fmt.Errorf("start reward share must be less than or equal to %d", reward.PercentDenominator)
+	errStartRewardTimeZero          = errors.New("start reward time must be non-0")
+	errStartRewardTimeTooLarge      = fmt.Errorf("start reward time must be less than or equal to target reward time")
+	errTargetRewardShareZero        = errors.New("target reward share must be non-0")
+	errTargetRewardShareTooLarge    = fmt.Errorf("target reward share must be less than or equal to start reward share")
 	errMinValidatorStakeZero        = errors.New("min validator stake must be non-0")
 	errMinValidatorStakeAboveMax    = errors.New("min validator stake must be less than or equal to max validator stake")
 	errMinStakeDurationZero         = errors.New("min stake duration must be non-0")
@@ -52,11 +55,27 @@ type TransformSubnetTx struct {
 	// Restrictions:
 	// - Must be > 0
 	InitialRewardsPoolSupply uint64 `serialize:"true" json:"initialRewardsPoolSupply"`
-	// RewardShare is the share of rewards given for validators.
+	// StartRewardShare is the starting share of rewards given to validators.
 	// Restrictions:
 	// - Must be > 0
 	// - Must be <= [reward.PercentDenominator]
-	RewardShare uint64 `serialize:"true" json:"rewardShare"`
+	StartRewardShare uint64 `serialize:"true" json:"startRewardShare"`
+	// StartRewardTime is the starting timestamp that will be used to calculate
+	// the remaining percentage of rewards given to validators.
+	// Restrictions:
+	// - Must be > 0
+	// - Must be <= [TargetRewardTime]
+	StartRewardTime uint64 `serialize:"true" json:"startRewardTime"`
+	// TargetRewardShare is the target final share of rewards given to validators.
+	// Restrictions:
+	// - Must be > 0
+	// - Must be <= [StartRewardShare]
+	TargetRewardShare uint64 `serialize:"true" json:"targetRewardShare"`
+	// TargetRewardTime is the target timestamp that will be used to calculate
+	// the remaining percentage of rewards given to validators.
+	// Restrictions:
+	// - Must be >= [StartRewardTime]
+	TargetRewardTime uint64 `serialize:"true" json:"targetRewardTime"`
 	// MinValidatorStake is the minimum amount of funds required to become a
 	// validator.
 	// Restrictions:
@@ -122,10 +141,16 @@ func (tx *TransformSubnetTx) SyntacticVerify(ctx *snow.Context) error {
 		return errAssetIDCantBeAVAX
 	case tx.InitialRewardsPoolSupply == 0:
 		return errInitialRewardsPoolSupplyZero
-	case tx.RewardShare == 0:
-		return errRewardShareZero
-	case tx.RewardShare > reward.PercentDenominator:
-		return errRewardShareTooLarge
+	case tx.StartRewardShare > reward.PercentDenominator:
+		return errStartRewardShareTooLarge
+	case tx.StartRewardTime == 0:
+		return errStartRewardTimeZero
+	case tx.StartRewardTime > tx.TargetRewardTime:
+		return errStartRewardTimeTooLarge
+	case tx.TargetRewardShare == 0:
+		return errTargetRewardShareZero
+	case tx.TargetRewardShare > tx.StartRewardShare:
+		return errTargetRewardShareTooLarge
 	case tx.MinValidatorStake == 0:
 		return errMinValidatorStakeZero
 	case tx.MinValidatorStake > tx.MaxValidatorStake:
