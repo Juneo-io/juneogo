@@ -277,7 +277,10 @@ func addNodeFlags(fs *pflag.FlagSet) {
 	fs.Duration(MaxStakeDurationKey, genesis.LocalParams.MaxStakeDuration, "Maximum staking duration")
 	// Stake Reward Configs
 	fs.Duration(StakeMintingPeriodKey, genesis.LocalParams.RewardConfig.MintingPeriod, "Consumption period of the staking function")
-	fs.Uint64(StakeRewardShareKey, genesis.LocalParams.RewardConfig.RewardShare, "Reward share of the staking function")
+	fs.Uint64(StakeStartRewardShareKey, genesis.LocalParams.RewardConfig.StartRewardShare, "Start reward share of the staking function")
+	fs.Uint64(StakeStartRewardTimeKey, genesis.LocalParams.RewardConfig.StartRewardTime, "Start reward time of the staking function")
+	fs.Uint64(StakeTargetRewardShareKey, genesis.LocalParams.RewardConfig.TargetRewardShare, "Target reward share of the staking function")
+	fs.Uint64(StakeTargetRewardTimeKey, genesis.LocalParams.RewardConfig.TargetRewardTime, "Target reward time of the staking function")
 	// Subnets
 	fs.String(TrackSubnetsKey, "", "List of subnets for the node to track. A node tracking a subnet will track the uptimes of the subnet validators and attempt to sync all the chains in the subnet. Before validating a subnet, a node should be tracking the subnet to avoid impacting their subnet validation uptime")
 

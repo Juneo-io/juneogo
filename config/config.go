@@ -83,7 +83,11 @@ var (
 	errInvalidMaxDelegationFee                = errors.New("max delegation fee must be in the range [MinDelegationFee, 1,000,000]")
 	errInvalidMinStakeDuration                = errors.New("min stake duration must be > 0")
 	errMinStakeDurationAboveMax               = errors.New("max stake duration can't be less than min stake duration")
-	errStakeRewardShareTooLarge               = fmt.Errorf("reward share must be less than or equal to %d", reward.PercentDenominator)
+	errStartRewardShareTooLarge               = fmt.Errorf("start reward share must be less than or equal to %d", reward.PercentDenominator)
+	errStartRewardTimeZero                    = errors.New("start reward time must be non-0")
+	errStartRewardTimeTooLarge                = fmt.Errorf("start reward time must be less than or equal to target reward time")
+	errTargetRewardShareZero                  = errors.New("target reward share must be non-0")
+	errTargetRewardShareTooLarge              = fmt.Errorf("target reward share must be less than or equal to start reward share")
 	errStakeMintingPeriodBelowMin             = errors.New("stake minting period can't be less than max stake duration")
 	errCannotTrackPrimaryNetwork              = errors.New("cannot track primary network")
 	errStakingKeyContentUnset                 = fmt.Errorf("%s key not set but %s set", StakingTLSKeyContentKey, StakingCertContentKey)
@@ -825,7 +829,10 @@ func getStakingConfig(v *viper.Viper, networkID uint32) (node.StakingConfig, err
 		config.MinStakeDuration = v.GetDuration(MinStakeDurationKey)
 		config.MaxStakeDuration = v.GetDuration(MaxStakeDurationKey)
 		config.RewardConfig.MintingPeriod = v.GetDuration(StakeMintingPeriodKey)
-		config.RewardConfig.RewardShare = v.GetUint64(StakeRewardShareKey)
+		config.RewardConfig.StartRewardShare = v.GetUint64(StakeStartRewardShareKey)
+		config.RewardConfig.StartRewardTime = v.GetUint64(StakeStartRewardTimeKey)
+		config.RewardConfig.TargetRewardShare = v.GetUint64(StakeTargetRewardShareKey)
+		config.RewardConfig.TargetRewardTime = v.GetUint64(StakeTargetRewardTimeKey)
 		config.MinDelegationFee = v.GetUint32(MinDelegatorFeeKey)
 		config.MaxDelegationFee = v.GetUint32(MaxDelegatorFeeKey)
 		switch {
@@ -843,8 +850,16 @@ func getStakingConfig(v *viper.Viper, networkID uint32) (node.StakingConfig, err
 			return node.StakingConfig{}, errMinStakeDurationAboveMax
 		case config.RewardConfig.MintingPeriod < config.MaxStakeDuration:
 			return node.StakingConfig{}, errStakeMintingPeriodBelowMin
-		case config.RewardConfig.RewardShare > reward.PercentDenominator:
-			return node.StakingConfig{}, errStakeRewardShareTooLarge
+		case config.RewardConfig.StartRewardShare > reward.PercentDenominator:
+			return node.StakingConfig{}, errStartRewardShareTooLarge
+		case config.RewardConfig.StartRewardTime == 0:
+			return node.StakingConfig{}, errStartRewardTimeZero
+		case config.RewardConfig.StartRewardTime > config.RewardConfig.TargetRewardTime:
+			return node.StakingConfig{}, errStartRewardTimeTooLarge
+		case config.RewardConfig.TargetRewardShare == 0:
+			return node.StakingConfig{}, errTargetRewardShareZero
+		case config.RewardConfig.TargetRewardShare > config.RewardConfig.StartRewardShare:
+			return node.StakingConfig{}, errTargetRewardShareTooLarge
 		}
 	} else {
 		config.StakingConfig = genesis.GetStakingConfig(networkID)

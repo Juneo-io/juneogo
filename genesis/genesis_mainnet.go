@@ -39,8 +39,11 @@ var (
 			MinStakeDuration:  2 * 7 * 24 * time.Hour,
 			MaxStakeDuration:  365 * 24 * time.Hour,
 			RewardConfig: reward.Config{
-				MintingPeriod: 365 * 24 * time.Hour,
-				RewardShare:   50000, // 5%,
+				MintingPeriod:     365 * 24 * time.Hour,
+				StartRewardShare:  21_5000,                                                            // 21.5%
+				StartRewardTime:   uint64(time.Date(2023, time.June, 1, 0, 0, 0, 0, time.UTC).Unix()), // 1st June 2023
+				TargetRewardShare: 6_7000,                                                             // 6.7%
+				TargetRewardTime:  uint64(time.Date(2028, time.June, 21, 0, 0, 0, 0, time.UTC).Unix()),
 			},
 		},
 	}
