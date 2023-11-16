@@ -184,28 +184,27 @@ func AdvanceTimeTo(
 				stakerToRemove.EndTime.Sub(stakerToRemove.StartTime),
 				stakerToRemove.StartTime,
 				stakerToRemove.Weight,
+				rewardsPoolSupply,
 			)
 		}
 		stakerToAdd.PotentialReward = potentialReward
 
 		// Reward value above rewards pool supply.
 		extraValue := uint64(0)
-		if potentialReward > rewardsPoolSupply {
-			extraValue = potentialReward - rewardsPoolSupply
-		}
-		if extraValue > 0 {
-			if stakerToRemove.SubnetID == constants.PrimaryNetworkID {
+
+		if stakerToRemove.SubnetID == constants.PrimaryNetworkID {
+			if potentialReward > rewardsPoolSupply {
+				extraValue = potentialReward - rewardsPoolSupply
+			}
+			if extraValue > 0 {
 				// Extra value will be minted update supply accordingly.
 				supply, err = math.Add64(supply, extraValue)
 				if err != nil {
 					return nil, err
 				}
-			} else {
-				// Cannot mint if not Primary Network.
-				// The reward will be at most the current rewards pool value.
-				stakerToAdd.PotentialReward = rewardsPoolSupply
 			}
 		}
+
 		rewardsPoolSupply, err = math.Sub(rewardsPoolSupply, potentialReward-extraValue)
 		if err != nil {
 			return nil, err
@@ -268,7 +267,12 @@ func GetRewardsCalculator(
 	}
 
 	return reward.NewCalculator(reward.Config{
-		MintingPeriod: backend.Config.RewardConfig.MintingPeriod,
-		RewardShare:   transformSubnet.RewardShare,
+		MinStakePeriod:         time.Duration(transformSubnet.MinStakeDuration),
+		MaxStakePeriod:         time.Duration(transformSubnet.MaxStakeDuration),
+		StakePeriodRewardShare: transformSubnet.StakePeriodRewardShare,
+		StartRewardShare:       transformSubnet.StartRewardShare,
+		StartRewardTime:        transformSubnet.StartRewardTime,
+		TargetRewardShare:      transformSubnet.TargetRewardShare,
+		TargetRewardTime:       transformSubnet.TargetRewardTime,
 	}), nil
 }

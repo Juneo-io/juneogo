@@ -33,7 +33,7 @@ type Config struct {
 	// Restrictions:
 	// - Must be > 0
 	// - Must be <= [TargetRewardTime]
-	StartRewardTime time.Time `serialize:"true" json:"startRewardTime"`
+	StartRewardTime uint64 `serialize:"true" json:"startRewardTime"`
 	// TargetRewardShare is the target final share of rewards given to validators.
 	// Restrictions:
 	// - Must be > 0
@@ -43,5 +43,5 @@ type Config struct {
 	// the remaining percentage of rewards given to validators.
 	// Restrictions:
 	// - Must be >= [StartRewardTime]
-	TargetRewardTime time.Time `serialize:"true" json:"targetRewardTime"`
+	TargetRewardTime uint64 `serialize:"true" json:"targetRewardTime"`
 }

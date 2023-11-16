@@ -13,7 +13,7 @@ import (
 var _ Calculator = (*calculator)(nil)
 
 type Calculator interface {
-	Calculate(stakedDuration time.Duration, currentTime time.Time, stakedAmount uint64, rewardPoolValue uint64) uint64
+	Calculate(stakedDuration time.Duration, currentTime time.Time, stakedAmount uint64, rewardPoolSupply uint64) uint64
 	CalculatePrimary(stakedDuration time.Duration, currentTime time.Time, stakedAmount uint64) uint64
 }
 
@@ -33,9 +33,9 @@ func NewCalculator(c Config) Calculator {
 		maxStakePeriod:         uint64(c.MaxStakePeriod),
 		stakePeriodRewardShare: c.StakePeriodRewardShare,
 		startRewardShare:       c.StartRewardShare,
-		startRewardTime:        uint64(c.StartRewardTime.Unix()),
+		startRewardTime:        c.StartRewardTime,
 		targetRewardShare:      c.TargetRewardShare,
-		targetRewardTime:       uint64(c.TargetRewardTime.Unix()),
+		targetRewardTime:       c.TargetRewardTime,
 	}
 }
 
@@ -44,12 +44,12 @@ var (
 	DiminishingRewardShare = uint64(19_5000)
 )
 
-func (c *calculator) Calculate(stakedDuration time.Duration, currentTime time.Time, stakeAmount uint64, rewardPoolValue uint64) uint64 {
+func (c *calculator) Calculate(stakedDuration time.Duration, currentTime time.Time, stakeAmount uint64, rewardPoolSupply uint64) uint64 {
 	boundsPercentage := getRemainingTimeBoundsPercentage(c.startRewardTime, c.targetRewardTime, uint64(currentTime.Unix()))
 	reward := getReward(c.targetRewardShare, c.startRewardShare, boundsPercentage)
 	effectiveReward := c.getEffectiveReward(uint64(stakedDuration), stakeAmount, reward)
-	if effectiveReward > rewardPoolValue {
-		return rewardPoolValue
+	if effectiveReward > rewardPoolSupply {
+		return rewardPoolSupply
 	}
 	return effectiveReward
 }
