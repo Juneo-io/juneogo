@@ -16,7 +16,7 @@ var (
 	//go:embed genesis_socotra.json
 	socotraGenesisConfigJSON []byte
 
-	socotraMinStakeDuration time.Duration = 24 * time.Hour
+	socotraMinStakeDuration time.Duration = 2 * 7 * 24 * time.Hour
 	socotraMaxStakeDuration time.Duration = 365 * 24 * time.Hour
 
 	// SocotraParams are the params used for the socotra testnet
@@ -25,7 +25,7 @@ var (
 			TxFee:                         10 * units.MilliAvax,
 			CreateAssetTxFee:              100 * units.MilliAvax,
 			CreateSubnetTxFee:             100 * units.MilliAvax,
-			TransformSubnetTxFee:          1 * units.Avax,
+			TransformSubnetTxFee:          10 * units.Avax,
 			CreateBlockchainTxFee:         100 * units.MilliAvax,
 			AddPrimaryNetworkValidatorFee: 0,
 			AddPrimaryNetworkDelegatorFee: 0,
@@ -36,7 +36,7 @@ var (
 			UptimeRequirement: .8, // 80%
 			MinValidatorStake: 1 * units.Avax,
 			MaxValidatorStake: 1 * units.MegaAvax,
-			MinDelegatorStake: 10 * units.MilliAvax,
+			MinDelegatorStake: 100 * units.MilliAvax,
 			MinDelegationFee:  120000, // 12%
 			MaxDelegationFee:  120000,
 			MinStakeDuration:  socotraMinStakeDuration,

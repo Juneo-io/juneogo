@@ -1,6 +1,6 @@
 {
-	"networkID": 2,
-	"rewardsPoolSupply": 1500000000000000,
+	"networkID": 46,
+	"rewardsPoolSupply": 200000000000000,
 	"allocations": [
 			{
 				"ethAddr": "0x44542FD7C3F096aE54Cc07833b1C0Dcf68B7790C",

@@ -176,7 +176,22 @@ func validateConfig(networkID uint32, config *Config, stakingCfg *StakingConfig)
 	if len(config.JUNEChainGenesis) == 0 {
 		return errNoEVMChainGenesis
 	}
-	if len(config.ETH1ChainGenesis) == 0 {
+	if len(config.USDT1ChainGenesis) == 0 {
+		return errNoEVMChainGenesis
+	}
+	if len(config.USD1ChainGenesis) == 0 {
+		return errNoEVMChainGenesis
+	}
+	if len(config.DAI1ChainGenesis) == 0 {
+		return errNoEVMChainGenesis
+	}
+	if len(config.EUR1ChainGenesis) == 0 {
+		return errNoEVMChainGenesis
+	}
+	if len(config.SGD1ChainGenesis) == 0 {
+		return errNoEVMChainGenesis
+	}
+	if len(config.GLD1ChainGenesis) == 0 {
 		return errNoEVMChainGenesis
 	}
 	if len(config.MBTC1ChainGenesis) == 0 {
@@ -185,40 +200,7 @@ func validateConfig(networkID uint32, config *Config, stakingCfg *StakingConfig)
 	if len(config.DOGE1ChainGenesis) == 0 {
 		return errNoEVMChainGenesis
 	}
-	if len(config.TUSD1ChainGenesis) == 0 {
-		return errNoEVMChainGenesis
-	}
-	if len(config.DAI1ChainGenesis) == 0 {
-		return errNoEVMChainGenesis
-	}
 	if len(config.LTC1ChainGenesis) == 0 {
-		return errNoEVMChainGenesis
-	}
-	if len(config.XLM1ChainGenesis) == 0 {
-		return errNoEVMChainGenesis
-	}
-	if len(config.BCH1ChainGenesis) == 0 {
-		return errNoEVMChainGenesis
-	}
-	if len(config.PAXG1ChainGenesis) == 0 {
-		return errNoEVMChainGenesis
-	}
-	if len(config.ICP1ChainGenesis) == 0 {
-		return errNoEVMChainGenesis
-	}
-	if len(config.XIDR1ChainGenesis) == 0 {
-		return errNoEVMChainGenesis
-	}
-	if len(config.XSGD1ChainGenesis) == 0 {
-		return errNoEVMChainGenesis
-	}
-	if len(config.ETC1ChainGenesis) == 0 {
-		return errNoEVMChainGenesis
-	}
-	if len(config.R1000ChainGenesis) == 0 {
-		return errNoEVMChainGenesis
-	}
-	if len(config.R10ChainGenesis) == 0 {
 		return errNoEVMChainGenesis
 	}
 
@@ -320,8 +302,7 @@ func FromConfig(config *Config) ([]byte, ids.ID, error) {
 	amount := uint64(0)
 	assetsCount := int(0)
 
-	var june, eth1, mbtc1, doge1, tusd1, usdt1, dai1, euroc1 avm.AssetDefinition
-	var ltc1, xlm1, bch1, paxg1, icp1, xidr1, xsgd1, etc1, r1000, r10 avm.AssetDefinition
+	var june, usdt1, usd1, dai1, eur1, sgd1, gld1, mbtc1, doge1, ltc1 avm.AssetDefinition
 
 	// Specify the genesis state of the JVM
 	avmArgs := avm.BuildGenesisArgs{
@@ -371,43 +352,27 @@ func FromConfig(config *Config) ([]byte, ids.ID, error) {
 		if err != nil {
 			return nil, ids.Empty, fmt.Errorf("couldn't parse zero address: %w", err)
 		}
-		eth1 = createFixedAsset("Ethereum", "ETH1", 9, zeroAddress)
-		mbtc1 = createFixedAsset("mBitcoin", "MBTC1", 9, zeroAddress)
-		doge1 = createFixedAsset("Doge", "DOGE1", 9, zeroAddress)
-		tusd1 = createFixedAsset("TrueUSD", "TUSD1", 9, zeroAddress)
-		usdt1 = createFixedAsset("Tether USD", "USDT1", 9, zeroAddress)
+		usdt1 = createFixedAsset("Tether USDt", "USDT1", 9, zeroAddress)
+		usd1 = createFixedAsset("USD1", "USD1", 9, zeroAddress)
 		dai1 = createFixedAsset("Dai", "DAI1", 9, zeroAddress)
-		euroc1 = createFixedAsset("Euro Coin", "EUROC1", 9, zeroAddress)
+		eur1 = createFixedAsset("EUR1", "EUR1", 9, zeroAddress)
+		sgd1 = createFixedAsset("SGD1", "SGD1", 9, zeroAddress)
+		gld1 = createFixedAsset("Gold1", "GLD1", 9, zeroAddress)
+		mbtc1 = createFixedAsset("Mili Bitcoin", "mBTC1", 9, zeroAddress)
+		doge1 = createFixedAsset("Dogecoin", "DOGE1", 9, zeroAddress)
 		ltc1 = createFixedAsset("Litecoin", "LTC1", 9, zeroAddress)
-		xlm1 = createFixedAsset("Stellar", "XLM1", 9, zeroAddress)
-		bch1 = createFixedAsset("Bitcoin Cash", "BCH1", 9, zeroAddress)
-		paxg1 = createFixedAsset("Pax Gold", "PAXG1", 9, zeroAddress)
-		icp1 = createFixedAsset("Internet Computer", "ICP1", 9, zeroAddress)
-		xidr1 = createFixedAsset("XIDR1", "XIDR1", 9, zeroAddress)
-		xsgd1 = createFixedAsset("XSGD1", "XSGD1", 9, zeroAddress)
-		etc1 = createFixedAsset("Ethereum Classic", "ETC1", 9, zeroAddress)
-		r1000 = createFixedAsset("Ratio 1000", "R1000", 9, zeroAddress)
-		r10 = createFixedAsset("Ratio 10", "R10", 9, zeroAddress)
 
 		avmArgs.GenesisData = map[string]avm.AssetDefinition{
-			june.Symbol:   june,
-			eth1.Symbol:   eth1,
-			mbtc1.Symbol:  mbtc1,
-			doge1.Symbol:  doge1,
-			tusd1.Symbol:  tusd1,
-			usdt1.Symbol:  usdt1,
-			dai1.Symbol:   dai1,
-			euroc1.Symbol: euroc1,
-			ltc1.Symbol:   ltc1,
-			xlm1.Symbol:   xlm1,
-			bch1.Symbol:   bch1,
-			paxg1.Symbol:  paxg1,
-			icp1.Symbol:   icp1,
-			xidr1.Symbol:  xidr1,
-			xsgd1.Symbol:  xsgd1,
-			etc1.Symbol:   etc1,
-			r1000.Symbol:  r1000,
-			r10.Symbol:    r10,
+			june.Symbol:  june,
+			usdt1.Symbol: usdt1,
+			usd1.Symbol:  usd1,
+			dai1.Symbol:  dai1,
+			eur1.Symbol:  eur1,
+			sgd1.Symbol:  sgd1,
+			gld1.Symbol:  gld1,
+			mbtc1.Symbol: mbtc1,
+			doge1.Symbol: doge1,
+			ltc1.Symbol:  ltc1,
 		}
 		assetsCount = len(avmArgs.GenesisData)
 	}
@@ -533,7 +498,27 @@ func FromConfig(config *Config) ([]byte, ids.ID, error) {
 	if err != nil {
 		return nil, ids.Empty, fmt.Errorf("couldn't encode message: %w", err)
 	}
-	eth1GenesisStr, err := formatting.Encode(defaultEncoding, []byte(config.ETH1ChainGenesis))
+	usdt1GenesisStr, err := formatting.Encode(defaultEncoding, []byte(config.USDT1ChainGenesis))
+	if err != nil {
+		return nil, ids.Empty, fmt.Errorf("couldn't encode message: %w", err)
+	}
+	usd1GenesisStr, err := formatting.Encode(defaultEncoding, []byte(config.USD1ChainGenesis))
+	if err != nil {
+		return nil, ids.Empty, fmt.Errorf("couldn't encode message: %w", err)
+	}
+	dai1GenesisStr, err := formatting.Encode(defaultEncoding, []byte(config.DAI1ChainGenesis))
+	if err != nil {
+		return nil, ids.Empty, fmt.Errorf("couldn't encode message: %w", err)
+	}
+	eur1GenesisStr, err := formatting.Encode(defaultEncoding, []byte(config.EUR1ChainGenesis))
+	if err != nil {
+		return nil, ids.Empty, fmt.Errorf("couldn't encode message: %w", err)
+	}
+	sgd1GenesisStr, err := formatting.Encode(defaultEncoding, []byte(config.SGD1ChainGenesis))
+	if err != nil {
+		return nil, ids.Empty, fmt.Errorf("couldn't encode message: %w", err)
+	}
+	gld1GenesisStr, err := formatting.Encode(defaultEncoding, []byte(config.GLD1ChainGenesis))
 	if err != nil {
 		return nil, ids.Empty, fmt.Errorf("couldn't encode message: %w", err)
 	}
@@ -545,59 +530,7 @@ func FromConfig(config *Config) ([]byte, ids.ID, error) {
 	if err != nil {
 		return nil, ids.Empty, fmt.Errorf("couldn't encode message: %w", err)
 	}
-	tusd1GenesisStr, err := formatting.Encode(defaultEncoding, []byte(config.TUSD1ChainGenesis))
-	if err != nil {
-		return nil, ids.Empty, fmt.Errorf("couldn't encode message: %w", err)
-	}
-	usdt1GenesisStr, err := formatting.Encode(defaultEncoding, []byte(config.USDT1ChainGenesis))
-	if err != nil {
-		return nil, ids.Empty, fmt.Errorf("couldn't encode message: %w", err)
-	}
-	dai1GenesisStr, err := formatting.Encode(defaultEncoding, []byte(config.DAI1ChainGenesis))
-	if err != nil {
-		return nil, ids.Empty, fmt.Errorf("couldn't encode message: %w", err)
-	}
-	euroc1GenesisStr, err := formatting.Encode(defaultEncoding, []byte(config.EUROC1ChainGenesis))
-	if err != nil {
-		return nil, ids.Empty, fmt.Errorf("couldn't encode message: %w", err)
-	}
 	ltc1GenesisStr, err := formatting.Encode(defaultEncoding, []byte(config.LTC1ChainGenesis))
-	if err != nil {
-		return nil, ids.Empty, fmt.Errorf("couldn't encode message: %w", err)
-	}
-	xlm1GenesisStr, err := formatting.Encode(defaultEncoding, []byte(config.XLM1ChainGenesis))
-	if err != nil {
-		return nil, ids.Empty, fmt.Errorf("couldn't encode message: %w", err)
-	}
-	bch1GenesisStr, err := formatting.Encode(defaultEncoding, []byte(config.BCH1ChainGenesis))
-	if err != nil {
-		return nil, ids.Empty, fmt.Errorf("couldn't encode message: %w", err)
-	}
-	paxg1GenesisStr, err := formatting.Encode(defaultEncoding, []byte(config.PAXG1ChainGenesis))
-	if err != nil {
-		return nil, ids.Empty, fmt.Errorf("couldn't encode message: %w", err)
-	}
-	icp1GenesisStr, err := formatting.Encode(defaultEncoding, []byte(config.ICP1ChainGenesis))
-	if err != nil {
-		return nil, ids.Empty, fmt.Errorf("couldn't encode message: %w", err)
-	}
-	xidr1GenesisStr, err := formatting.Encode(defaultEncoding, []byte(config.XIDR1ChainGenesis))
-	if err != nil {
-		return nil, ids.Empty, fmt.Errorf("couldn't encode message: %w", err)
-	}
-	xsgd1GenesisStr, err := formatting.Encode(defaultEncoding, []byte(config.XSGD1ChainGenesis))
-	if err != nil {
-		return nil, ids.Empty, fmt.Errorf("couldn't encode message: %w", err)
-	}
-	etc1GenesisStr, err := formatting.Encode(defaultEncoding, []byte(config.ETC1ChainGenesis))
-	if err != nil {
-		return nil, ids.Empty, fmt.Errorf("couldn't encode message: %w", err)
-	}
-	r1000GenesisStr, err := formatting.Encode(defaultEncoding, []byte(config.R1000ChainGenesis))
-	if err != nil {
-		return nil, ids.Empty, fmt.Errorf("couldn't encode message: %w", err)
-	}
-	r10GenesisStr, err := formatting.Encode(defaultEncoding, []byte(config.R10ChainGenesis))
 	if err != nil {
 		return nil, ids.Empty, fmt.Errorf("couldn't encode message: %w", err)
 	}
@@ -622,11 +555,46 @@ func FromConfig(config *Config) ([]byte, ids.ID, error) {
 			ChainAssetID: assetsIDs[june.Symbol],
 		},
 		{
-			GenesisData:  eth1GenesisStr,
+			GenesisData:  usdt1GenesisStr,
 			SubnetID:     constants.PrimaryNetworkID,
 			VMID:         constants.EVMID,
-			Name:         "ETH1-Chain",
-			ChainAssetID: assetsIDs[eth1.Symbol],
+			Name:         "USDT1-Chain",
+			ChainAssetID: assetsIDs[usdt1.Symbol],
+		},
+		{
+			GenesisData:  usd1GenesisStr,
+			SubnetID:     constants.PrimaryNetworkID,
+			VMID:         constants.EVMID,
+			Name:         "USD1-Chain",
+			ChainAssetID: assetsIDs[usd1.Symbol],
+		},
+		{
+			GenesisData:  dai1GenesisStr,
+			SubnetID:     constants.PrimaryNetworkID,
+			VMID:         constants.EVMID,
+			Name:         "DAI1-Chain",
+			ChainAssetID: assetsIDs[dai1.Symbol],
+		},
+		{
+			GenesisData:  eur1GenesisStr,
+			SubnetID:     constants.PrimaryNetworkID,
+			VMID:         constants.EVMID,
+			Name:         "EUR1-Chain",
+			ChainAssetID: assetsIDs[eur1.Symbol],
+		},
+		{
+			GenesisData:  sgd1GenesisStr,
+			SubnetID:     constants.PrimaryNetworkID,
+			VMID:         constants.EVMID,
+			Name:         "SGD1-Chain",
+			ChainAssetID: assetsIDs[sgd1.Symbol],
+		},
+		{
+			GenesisData:  gld1GenesisStr,
+			SubnetID:     constants.PrimaryNetworkID,
+			VMID:         constants.EVMID,
+			Name:         "GLD1-Chain",
+			ChainAssetID: assetsIDs[gld1.Symbol],
 		},
 		{
 			GenesisData:  mbtc1GenesisStr,
@@ -643,102 +611,11 @@ func FromConfig(config *Config) ([]byte, ids.ID, error) {
 			ChainAssetID: assetsIDs[doge1.Symbol],
 		},
 		{
-			GenesisData:  tusd1GenesisStr,
-			SubnetID:     constants.PrimaryNetworkID,
-			VMID:         constants.EVMID,
-			Name:         "TUSD1-Chain",
-			ChainAssetID: assetsIDs[tusd1.Symbol],
-		},
-		{
-			GenesisData:  usdt1GenesisStr,
-			SubnetID:     constants.PrimaryNetworkID,
-			VMID:         constants.EVMID,
-			Name:         "USDT1-Chain",
-			ChainAssetID: assetsIDs[usdt1.Symbol],
-		},
-		{
-			GenesisData:  dai1GenesisStr,
-			SubnetID:     constants.PrimaryNetworkID,
-			VMID:         constants.EVMID,
-			Name:         "DAI1-Chain",
-			ChainAssetID: assetsIDs[dai1.Symbol],
-		},
-		{
-			GenesisData:  euroc1GenesisStr,
-			SubnetID:     constants.PrimaryNetworkID,
-			VMID:         constants.EVMID,
-			Name:         "EUROC1-Chain",
-			ChainAssetID: assetsIDs[euroc1.Symbol],
-		},
-		{
 			GenesisData:  ltc1GenesisStr,
 			SubnetID:     constants.PrimaryNetworkID,
 			VMID:         constants.EVMID,
 			Name:         "LTC1-Chain",
 			ChainAssetID: assetsIDs[ltc1.Symbol],
-		},
-		{
-			GenesisData:  xlm1GenesisStr,
-			SubnetID:     constants.PrimaryNetworkID,
-			VMID:         constants.EVMID,
-			Name:         "XLM1-Chain",
-			ChainAssetID: assetsIDs[xlm1.Symbol],
-		},
-		{
-			GenesisData:  bch1GenesisStr,
-			SubnetID:     constants.PrimaryNetworkID,
-			VMID:         constants.EVMID,
-			Name:         "BCH1-Chain",
-			ChainAssetID: assetsIDs[bch1.Symbol],
-		},
-		{
-			GenesisData:  paxg1GenesisStr,
-			SubnetID:     constants.PrimaryNetworkID,
-			VMID:         constants.EVMID,
-			Name:         "PAXG1-Chain",
-			ChainAssetID: assetsIDs[paxg1.Symbol],
-		},
-		{
-			GenesisData:  icp1GenesisStr,
-			SubnetID:     constants.PrimaryNetworkID,
-			VMID:         constants.EVMID,
-			Name:         "ICP1-Chain",
-			ChainAssetID: assetsIDs[icp1.Symbol],
-		},
-		{
-			GenesisData:  xidr1GenesisStr,
-			SubnetID:     constants.PrimaryNetworkID,
-			VMID:         constants.EVMID,
-			Name:         "XIDR1-Chain",
-			ChainAssetID: assetsIDs[xidr1.Symbol],
-		},
-		{
-			GenesisData:  xsgd1GenesisStr,
-			SubnetID:     constants.PrimaryNetworkID,
-			VMID:         constants.EVMID,
-			Name:         "XSGD1-Chain",
-			ChainAssetID: assetsIDs[xsgd1.Symbol],
-		},
-		{
-			GenesisData:  etc1GenesisStr,
-			SubnetID:     constants.PrimaryNetworkID,
-			VMID:         constants.EVMID,
-			Name:         "ETC1-Chain",
-			ChainAssetID: assetsIDs[etc1.Symbol],
-		},
-		{
-			GenesisData:  r1000GenesisStr,
-			SubnetID:     constants.PrimaryNetworkID,
-			VMID:         constants.EVMID,
-			Name:         "R1000-Chain",
-			ChainAssetID: assetsIDs[r1000.Symbol],
-		},
-		{
-			GenesisData:  r10GenesisStr,
-			SubnetID:     constants.PrimaryNetworkID,
-			VMID:         constants.EVMID,
-			Name:         "R10-Chain",
-			ChainAssetID: assetsIDs[r10.Symbol],
 		},
 	}
 
