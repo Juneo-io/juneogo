@@ -276,7 +276,7 @@ func addNodeFlags(fs *pflag.FlagSet) {
 	// Maximum Stake Duration
 	fs.Duration(MaxStakeDurationKey, genesis.LocalParams.MaxStakeDuration, "Maximum staking duration")
 	// Stake Reward Configs
-	fs.Duration(StakeMintingPeriodKey, genesis.LocalParams.RewardConfig.MintingPeriod, "Consumption period of the staking function")
+	fs.Uint64(StakePeriodRewardShareKey, genesis.LocalParams.RewardConfig.StakePeriodRewardShare, "Reward share for stake period of MaxStakeDuration")
 	fs.Uint64(StakeStartRewardShareKey, genesis.LocalParams.RewardConfig.StartRewardShare, "Start reward share of the staking function")
 	fs.Uint64(StakeStartRewardTimeKey, genesis.LocalParams.RewardConfig.StartRewardTime, "Start reward time of the staking function")
 	fs.Uint64(StakeTargetRewardShareKey, genesis.LocalParams.RewardConfig.TargetRewardShare, "Target reward share of the staking function")

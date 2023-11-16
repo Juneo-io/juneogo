@@ -17,24 +17,26 @@ import (
 var (
 	_ UnsignedTx = (*TransformSubnetTx)(nil)
 
-	errCantTransformPrimaryNetwork  = errors.New("cannot transform primary network")
-	errEmptyAssetID                 = errors.New("empty asset ID is not valid")
-	errAssetIDCantBeAVAX            = errors.New("asset ID can't be AVAX")
-	errInitialRewardsPoolSupplyZero = errors.New("initial rewards pool supply must be non-0")
-	errStartRewardShareTooLarge     = fmt.Errorf("start reward share must be less than or equal to %d", reward.PercentDenominator)
-	errStartRewardTimeZero          = errors.New("start reward time must be non-0")
-	errStartRewardTimeTooLarge      = fmt.Errorf("start reward time must be less than or equal to target reward time")
-	errTargetRewardShareZero        = errors.New("target reward share must be non-0")
-	errTargetRewardShareTooLarge    = fmt.Errorf("target reward share must be less than or equal to start reward share")
-	errMinValidatorStakeZero        = errors.New("min validator stake must be non-0")
-	errMinValidatorStakeAboveMax    = errors.New("min validator stake must be less than or equal to max validator stake")
-	errMinStakeDurationZero         = errors.New("min stake duration must be non-0")
-	errMinStakeDurationTooLarge     = errors.New("min stake duration must be less than or equal to max stake duration")
-	errMaxDelegationFeeTooLarge     = fmt.Errorf("max delegation fee must be less than or equal to %d", reward.PercentDenominator)
-	errMinDelegationFeeTooLarge     = errors.New("min delegation fee must be less than or equal to MaxDelegationFee")
-	errMinDelegatorStakeZero        = errors.New("min delegator stake must be non-0")
-	errMaxValidatorWeightFactorZero = errors.New("max validator weight factor must be non-0")
-	errUptimeRequirementTooLarge    = fmt.Errorf("uptime requirement must be less than or equal to %d", reward.PercentDenominator)
+	errCantTransformPrimaryNetwork    = errors.New("cannot transform primary network")
+	errEmptyAssetID                   = errors.New("empty asset ID is not valid")
+	errAssetIDCantBeAVAX              = errors.New("asset ID can't be AVAX")
+	errInitialRewardsPoolSupplyZero   = errors.New("initial rewards pool supply must be non-0")
+	errStartRewardShareTooLarge       = fmt.Errorf("start reward share must be less than or equal to %d", reward.PercentDenominator)
+	errStartRewardTimeZero            = errors.New("start reward time must be non-0")
+	errStartRewardTimeTooLarge        = fmt.Errorf("start reward time must be less than or equal to target reward time")
+	errTargetRewardShareZero          = errors.New("target reward share must be non-0")
+	errTargetRewardShareTooLarge      = fmt.Errorf("target reward share must be less than or equal to start reward share")
+	errMinValidatorStakeZero          = errors.New("min validator stake must be non-0")
+	errMinValidatorStakeAboveMax      = errors.New("min validator stake must be less than or equal to max validator stake")
+	errMinStakeDurationZero           = errors.New("min stake duration must be non-0")
+	errMinStakeDurationTooLarge       = errors.New("min stake duration must be less than or equal to max stake duration")
+	errStakePeriodRewardShareZero     = errors.New("stake period reward share must be non-0")
+	errStakePeriodRewardShareTooLarge = fmt.Errorf("stake period reward share must be less than or equal to %d", reward.PercentDenominator)
+	errMaxDelegationFeeTooLarge       = fmt.Errorf("max delegation fee must be less than or equal to %d", reward.PercentDenominator)
+	errMinDelegationFeeTooLarge       = errors.New("min delegation fee must be less than or equal to MaxDelegationFee")
+	errMinDelegatorStakeZero          = errors.New("min delegator stake must be non-0")
+	errMaxValidatorWeightFactorZero   = errors.New("max validator weight factor must be non-0")
+	errUptimeRequirementTooLarge      = fmt.Errorf("uptime requirement must be less than or equal to %d", reward.PercentDenominator)
 )
 
 // TransformSubnetTx is an unsigned transformSubnetTx
@@ -97,6 +99,12 @@ type TransformSubnetTx struct {
 	// - Must be >= [MinStakeDuration]
 	// - Must be <= [GlobalMaxStakeDuration]
 	MaxStakeDuration uint32 `serialize:"true" json:"maxStakeDuration"`
+	// StakePeriodRewardShare is the maximum period reward given for a
+	// stake period equal to MaxStakePeriod.
+	// Restrictions:
+	// - Must be > 0
+	// - Must be <= [reward.PercentDenominator]
+	StakePeriodRewardShare uint64 `serialize:"true" json:"stakePeriodRewardShare"`
 	// MinDelegationFee is the minimum percentage a validator must charge a
 	// delegator for delegating.
 	// Restrictions:
@@ -159,6 +167,10 @@ func (tx *TransformSubnetTx) SyntacticVerify(ctx *snow.Context) error {
 		return errMinStakeDurationZero
 	case tx.MinStakeDuration > tx.MaxStakeDuration:
 		return errMinStakeDurationTooLarge
+	case tx.StakePeriodRewardShare == 0:
+		return errStakePeriodRewardShareZero
+	case tx.StakePeriodRewardShare > reward.PercentDenominator:
+		return errStakePeriodRewardShareTooLarge
 	case tx.MinDelegationFee > tx.MaxDelegationFee:
 		return errMinDelegationFeeTooLarge
 	case tx.MaxDelegationFee > reward.PercentDenominator:

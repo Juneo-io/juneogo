@@ -83,6 +83,8 @@ var (
 	errInvalidMaxDelegationFee                = errors.New("max delegation fee must be in the range [MinDelegationFee, 1,000,000]")
 	errInvalidMinStakeDuration                = errors.New("min stake duration must be > 0")
 	errMinStakeDurationAboveMax               = errors.New("max stake duration can't be less than min stake duration")
+	errStakePeriodRewardShareZero             = errors.New("stake period reward share must be non-0")
+	errStakePeriodRewardShareTooLarge         = fmt.Errorf("stake period reward share must be less than or equal to %d", reward.PercentDenominator)
 	errStartRewardShareTooLarge               = fmt.Errorf("start reward share must be less than or equal to %d", reward.PercentDenominator)
 	errStartRewardTimeZero                    = errors.New("start reward time must be non-0")
 	errStartRewardTimeTooLarge                = fmt.Errorf("start reward time must be less than or equal to target reward time")
@@ -828,7 +830,9 @@ func getStakingConfig(v *viper.Viper, networkID uint32) (node.StakingConfig, err
 		config.MinDelegatorStake = v.GetUint64(MinDelegatorStakeKey)
 		config.MinStakeDuration = v.GetDuration(MinStakeDurationKey)
 		config.MaxStakeDuration = v.GetDuration(MaxStakeDurationKey)
-		config.RewardConfig.MintingPeriod = v.GetDuration(StakeMintingPeriodKey)
+		config.RewardConfig.MinStakePeriod = v.GetDuration(MinStakeDurationKey)
+		config.RewardConfig.MaxStakePeriod = v.GetDuration(MaxStakeDurationKey)
+		config.RewardConfig.StakePeriodRewardShare = v.GetUint64(StakePeriodRewardShareKey)
 		config.RewardConfig.StartRewardShare = v.GetUint64(StakeStartRewardShareKey)
 		config.RewardConfig.StartRewardTime = v.GetUint64(StakeStartRewardTimeKey)
 		config.RewardConfig.TargetRewardShare = v.GetUint64(StakeTargetRewardShareKey)
@@ -848,8 +852,10 @@ func getStakingConfig(v *viper.Viper, networkID uint32) (node.StakingConfig, err
 			return node.StakingConfig{}, errInvalidMinStakeDuration
 		case config.MaxStakeDuration < config.MinStakeDuration:
 			return node.StakingConfig{}, errMinStakeDurationAboveMax
-		case config.RewardConfig.MintingPeriod < config.MaxStakeDuration:
-			return node.StakingConfig{}, errStakeMintingPeriodBelowMin
+		case config.RewardConfig.StakePeriodRewardShare == 0:
+			return node.StakingConfig{}, errStakePeriodRewardShareZero
+		case config.RewardConfig.StakePeriodRewardShare > reward.PercentDenominator:
+			return node.StakingConfig{}, errStakePeriodRewardShareTooLarge
 		case config.RewardConfig.StartRewardShare > reward.PercentDenominator:
 			return node.StakingConfig{}, errStartRewardShareTooLarge
 		case config.RewardConfig.StartRewardTime == 0:

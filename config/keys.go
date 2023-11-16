@@ -30,7 +30,7 @@ const (
 	MaxDelegatorFeeKey                                 = "max-delegation-fee"
 	MinStakeDurationKey                                = "min-stake-duration"
 	MaxStakeDurationKey                                = "max-stake-duration"
-	StakeMintingPeriodKey                              = "stake-minting-period"
+	StakePeriodRewardShareKey                          = "stake-period-reward-share"
 	StakeStartRewardShareKey                           = "stake-start-reward-share"
 	StakeStartRewardTimeKey                            = "stake-start-reward-time"
 	StakeTargetRewardShareKey                          = "stake-target-reward-share"
