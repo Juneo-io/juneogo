@@ -517,22 +517,22 @@ func (s *Service) GetAssetDescription(_ *http.Request, args *GetAssetDescription
 	return nil
 }
 
-type GetFeesPoolValueArgs struct{}
+type GetFeePoolValueArgs struct{}
 
-// GetFeesPoolValueReply defines the GetFeesPoolValue replies returned from the API
-type GetFeesPoolValueReply struct {
-	FeesPoolValue json.Uint64 `json:"feesPoolValue"`
+// GetFeePoolValueReply defines the GetFeePoolValue replies returned from the API
+type GetFeePoolValueReply struct {
+	FeePoolValue json.Uint64 `json:"feePoolValue"`
 }
 
 // GetAssetDescription creates an empty account with the name passed in
-func (s *Service) GetFeesPoolValue(_ *http.Request, args *GetFeesPoolValueArgs, reply *GetFeesPoolValueReply) error {
+func (s *Service) GetFeePoolValue(_ *http.Request, args *GetFeePoolValueArgs, reply *GetFeePoolValueReply) error {
 	s.vm.ctx.Log.Debug("API called",
 		zap.String("service", "jvm"),
-		zap.String("method", "getFeesPoolValue"),
+		zap.String("method", "getFeePoolValue"),
 	)
 
-	feesPoolValue := s.vm.state.GetFeesPoolValue()
-	reply.FeesPoolValue = json.Uint64(feesPoolValue)
+	feePoolValue := s.vm.state.GetFeePoolValue()
+	reply.FeePoolValue = json.Uint64(feePoolValue)
 
 	return nil
 }

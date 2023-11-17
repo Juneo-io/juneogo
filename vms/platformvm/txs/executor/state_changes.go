@@ -64,21 +64,21 @@ type StateChanges interface {
 }
 
 type stateChanges struct {
-	updatedSupplies            map[ids.ID]uint64
-	updatedRewardsPoolSupplies map[ids.ID]uint64
-	currentValidatorsToAdd     []*state.Staker
-	currentDelegatorsToAdd     []*state.Staker
-	pendingValidatorsToRemove  []*state.Staker
-	pendingDelegatorsToRemove  []*state.Staker
-	currentValidatorsToRemove  []*state.Staker
+	updatedSupplies           map[ids.ID]uint64
+	updatedRewardPoolSupplies map[ids.ID]uint64
+	currentValidatorsToAdd    []*state.Staker
+	currentDelegatorsToAdd    []*state.Staker
+	pendingValidatorsToRemove []*state.Staker
+	pendingDelegatorsToRemove []*state.Staker
+	currentValidatorsToRemove []*state.Staker
 }
 
 func (s *stateChanges) Apply(stateDiff state.Diff) {
 	for subnetID, supply := range s.updatedSupplies {
 		stateDiff.SetCurrentSupply(subnetID, supply)
 	}
-	for subnetID, rewardsPoolSupply := range s.updatedRewardsPoolSupplies {
-		stateDiff.SetRewardsPoolSupply(subnetID, rewardsPoolSupply)
+	for subnetID, rewardPoolSupply := range s.updatedRewardPoolSupplies {
+		stateDiff.SetRewardPoolSupply(subnetID, rewardPoolSupply)
 	}
 
 	for _, currentValidatorToAdd := range s.currentValidatorsToAdd {
@@ -119,8 +119,8 @@ func AdvanceTimeTo(
 	defer pendingStakerIterator.Release()
 
 	changes := &stateChanges{
-		updatedSupplies:            make(map[ids.ID]uint64),
-		updatedRewardsPoolSupplies: make(map[ids.ID]uint64),
+		updatedSupplies:           make(map[ids.ID]uint64),
+		updatedRewardPoolSupplies: make(map[ids.ID]uint64),
 	}
 
 	// Add to the staker set any pending stakers whose start time is at or
@@ -159,9 +159,9 @@ func AdvanceTimeTo(
 			}
 		}
 
-		rewardsPoolSupply := changes.updatedRewardsPoolSupplies[stakerToRemove.SubnetID]
+		rewardPoolSupply := changes.updatedRewardPoolSupplies[stakerToRemove.SubnetID]
 		if !ok {
-			rewardsPoolSupply, err = parentState.GetRewardsPoolSupply(stakerToRemove.SubnetID)
+			rewardPoolSupply, err = parentState.GetRewardPoolSupply(stakerToRemove.SubnetID)
 			if err != nil {
 				return nil, err
 			}
@@ -184,17 +184,17 @@ func AdvanceTimeTo(
 				stakerToRemove.EndTime.Sub(stakerToRemove.StartTime),
 				stakerToRemove.StartTime,
 				stakerToRemove.Weight,
-				rewardsPoolSupply,
+				rewardPoolSupply,
 			)
 		}
 		stakerToAdd.PotentialReward = potentialReward
 
-		// Reward value above rewards pool supply.
+		// Reward value above reward pool supply.
 		extraValue := uint64(0)
 
 		if stakerToRemove.SubnetID == constants.PrimaryNetworkID {
-			if potentialReward > rewardsPoolSupply {
-				extraValue = potentialReward - rewardsPoolSupply
+			if potentialReward > rewardPoolSupply {
+				extraValue = potentialReward - rewardPoolSupply
 			}
 			if extraValue > 0 {
 				// Extra value will be minted update supply accordingly.
@@ -205,11 +205,11 @@ func AdvanceTimeTo(
 			}
 		}
 
-		rewardsPoolSupply, err = math.Sub(rewardsPoolSupply, potentialReward-extraValue)
+		rewardPoolSupply, err = math.Sub(rewardPoolSupply, potentialReward-extraValue)
 		if err != nil {
 			return nil, err
 		}
-		changes.updatedRewardsPoolSupplies[stakerToRemove.SubnetID] = rewardsPoolSupply
+		changes.updatedRewardPoolSupplies[stakerToRemove.SubnetID] = rewardPoolSupply
 
 		changes.updatedSupplies[stakerToRemove.SubnetID] = supply
 

@@ -16,13 +16,13 @@ type UTXO struct {
 
 // Genesis represents a genesis state of the platform chain
 type Genesis struct {
-	RewardsPoolSupply uint64    `serialize:"true"`
-	UTXOs             []*UTXO   `serialize:"true"`
-	Validators        []*txs.Tx `serialize:"true"`
-	Chains            []*txs.Tx `serialize:"true"`
-	Timestamp         uint64    `serialize:"true"`
-	InitialSupply     uint64    `serialize:"true"`
-	Message           string    `serialize:"true"`
+	RewardPoolSupply uint64    `serialize:"true"`
+	UTXOs            []*UTXO   `serialize:"true"`
+	Validators       []*txs.Tx `serialize:"true"`
+	Chains           []*txs.Tx `serialize:"true"`
+	Timestamp        uint64    `serialize:"true"`
+	InitialSupply    uint64    `serialize:"true"`
+	Message          string    `serialize:"true"`
 }
 
 func Parse(genesisBytes []byte) (*Genesis, error) {

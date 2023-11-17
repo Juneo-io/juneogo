@@ -20,7 +20,7 @@ var (
 	errCantTransformPrimaryNetwork    = errors.New("cannot transform primary network")
 	errEmptyAssetID                   = errors.New("empty asset ID is not valid")
 	errAssetIDCantBeAVAX              = errors.New("asset ID can't be AVAX")
-	errInitialRewardsPoolSupplyZero   = errors.New("initial rewards pool supply must be non-0")
+	errInitialRewardPoolSupplyZero    = errors.New("initial reward pool supply must be non-0")
 	errStartRewardShareTooLarge       = fmt.Errorf("start reward share must be less than or equal to %d", reward.PercentDenominator)
 	errStartRewardTimeZero            = errors.New("start reward time must be non-0")
 	errStartRewardTimeTooLarge        = fmt.Errorf("start reward time must be less than or equal to target reward time")
@@ -53,10 +53,10 @@ type TransformSubnetTx struct {
 	// - Must not be the AVAX ID
 	AssetID ids.ID `serialize:"true" json:"assetID"`
 	// Amount to specify as the amount of rewards that will be initially
-	// available in the rewards pool of the subnet.
+	// available in the reward pool of the subnet.
 	// Restrictions:
 	// - Must be > 0
-	InitialRewardsPoolSupply uint64 `serialize:"true" json:"initialRewardsPoolSupply"`
+	InitialRewardPoolSupply uint64 `serialize:"true" json:"initialRewardPoolSupply"`
 	// StartRewardShare is the starting share of rewards given to validators.
 	// Restrictions:
 	// - Must be > 0
@@ -147,8 +147,8 @@ func (tx *TransformSubnetTx) SyntacticVerify(ctx *snow.Context) error {
 		return errEmptyAssetID
 	case tx.AssetID == ctx.AVAXAssetID:
 		return errAssetIDCantBeAVAX
-	case tx.InitialRewardsPoolSupply == 0:
-		return errInitialRewardsPoolSupplyZero
+	case tx.InitialRewardPoolSupply == 0:
+		return errInitialRewardPoolSupplyZero
 	case tx.StartRewardShare > reward.PercentDenominator:
 		return errStartRewardShareTooLarge
 	case tx.StartRewardTime == 0:

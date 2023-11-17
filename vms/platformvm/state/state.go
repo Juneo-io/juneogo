@@ -85,14 +85,14 @@ var (
 	chainPrefix                         = []byte("chain")
 	singletonPrefix                     = []byte("singleton")
 
-	timestampKey         = []byte("timestamp")
-	currentSupplyKey     = []byte("current supply")
-	rewardsPoolSupplyKey = []byte("rewards pool supply")
-	feesPoolValueKey     = []byte("fees pool value")
-	lastAcceptedKey      = []byte("last accepted")
-	heightsIndexedKey    = []byte("heights indexed")
-	initializedKey       = []byte("initialized")
-	prunedKey            = []byte("pruned")
+	timestampKey        = []byte("timestamp")
+	currentSupplyKey    = []byte("current supply")
+	rewardPoolSupplyKey = []byte("reward pool supply")
+	feePoolValueKey     = []byte("fee pool value")
+	lastAcceptedKey     = []byte("last accepted")
+	heightsIndexedKey   = []byte("heights indexed")
+	initializedKey      = []byte("initialized")
+	prunedKey           = []byte("pruned")
 )
 
 // Chain collects all methods to manage the state of the chain for block
@@ -109,11 +109,11 @@ type Chain interface {
 	GetCurrentSupply(subnetID ids.ID) (uint64, error)
 	SetCurrentSupply(subnetID ids.ID, cs uint64)
 
-	GetRewardsPoolSupply(subnetID ids.ID) (uint64, error)
-	SetRewardsPoolSupply(subnetID ids.ID, rps uint64)
+	GetRewardPoolSupply(subnetID ids.ID) (uint64, error)
+	SetRewardPoolSupply(subnetID ids.ID, rps uint64)
 
-	GetFeesPoolValue() uint64
-	SetFeesPoolValue(fpv uint64)
+	GetFeePoolValue() uint64
+	SetFeePoolValue(fpv uint64)
 
 	GetRewardUTXOs(txID ids.ID) ([]*avax.UTXO, error)
 	AddRewardUTXO(txID ids.ID, utxo *avax.UTXO)
@@ -293,8 +293,8 @@ type stateBlk struct {
  *   |-- prunedKey -> nil
  *   |-- timestampKey -> timestamp
  *   |-- currentSupplyKey -> currentSupply
- *   |-- rewardsPoolSupplyKey -> rewardsPoolSupply
- *   |-- feesPoolValueKey -> feesPoolValue
+ *   |-- rewardPoolSupplyKey -> rewardPoolSupply
+ *   |-- feePoolValueKey -> feePoolValue
  *   |-- lastAcceptedKey -> lastAccepted
  *   '-- heightsIndexKey -> startIndexHeight + endIndexHeight
  */
@@ -377,8 +377,8 @@ type state struct {
 	supplyCache      cache.Cacher[ids.ID, *uint64] // cache of subnetID -> current supply if the entry is nil, it is not in the database
 	supplyDB         database.Database
 
-	modifiedRewardsSupplies map[ids.ID]uint64             // map of subnetID -> rewards pool supply
-	rewardsSupplyCache      cache.Cacher[ids.ID, *uint64] // cache of subnetID -> rewards pool supply if the entry is nil, it is not in the database
+	modifiedRewardsSupplies map[ids.ID]uint64             // map of subnetID -> reward pool supply
+	rewardsSupplyCache      cache.Cacher[ids.ID, *uint64] // cache of subnetID -> reward pool supply if the entry is nil, it is not in the database
 	rewardsSupplyDB         database.Database
 
 	addedChains  map[ids.ID][]*txs.Tx                    // maps subnetID -> the newly added chains to the subnet
@@ -387,10 +387,10 @@ type state struct {
 	chainDB      database.Database
 
 	// The persisted fields represent the current database value
-	timestamp, persistedTimestamp                 time.Time
-	currentSupply, persistedCurrentSupply         uint64
-	rewardsPoolSupply, persistedRewardsPoolSupply uint64
-	feesPoolValue, persistedFeesPoolValue         uint64
+	timestamp, persistedTimestamp               time.Time
+	currentSupply, persistedCurrentSupply       uint64
+	rewardPoolSupply, persistedRewardPoolSupply uint64
+	feePoolValue, persistedFeePoolValue         uint64
 	// [lastAccepted] is the most recently accepted block.
 	lastAccepted, persistedLastAccepted ids.ID
 	indexedHeights                      *heightRange
@@ -1169,9 +1169,9 @@ func (s *state) SetCurrentSupply(subnetID ids.ID, cs uint64) {
 	}
 }
 
-func (s *state) GetRewardsPoolSupply(subnetID ids.ID) (uint64, error) {
+func (s *state) GetRewardPoolSupply(subnetID ids.ID) (uint64, error) {
 	if subnetID == constants.PrimaryNetworkID {
-		return s.rewardsPoolSupply, nil
+		return s.rewardPoolSupply, nil
 	}
 
 	rewardsSupply, ok := s.modifiedRewardsSupplies[subnetID]
@@ -1200,20 +1200,20 @@ func (s *state) GetRewardsPoolSupply(subnetID ids.ID) (uint64, error) {
 	return rewardsSupply, nil
 }
 
-func (s *state) SetRewardsPoolSupply(subnetID ids.ID, rps uint64) {
+func (s *state) SetRewardPoolSupply(subnetID ids.ID, rps uint64) {
 	if subnetID == constants.PrimaryNetworkID {
-		s.rewardsPoolSupply = rps
+		s.rewardPoolSupply = rps
 	} else {
 		s.modifiedRewardsSupplies[subnetID] = rps
 	}
 }
 
-func (s *state) GetFeesPoolValue() uint64 {
-	return s.feesPoolValue
+func (s *state) GetFeePoolValue() uint64 {
+	return s.feePoolValue
 }
 
-func (s *state) SetFeesPoolValue(fpv uint64) {
-	s.feesPoolValue = fpv
+func (s *state) SetFeePoolValue(fpv uint64) {
+	s.feePoolValue = fpv
 }
 
 func (s *state) ApplyCurrentValidators(subnetID ids.ID, vdrs validators.Manager) error {
@@ -1415,7 +1415,7 @@ func (s *state) syncGenesis(genesisBlk block.Block, genesis *genesis.Genesis) er
 	s.SetLastAccepted(genesisBlkID)
 	genesisTimestamp := time.Unix(int64(genesis.Timestamp), 0)
 	s.SetTimestamp(genesisTimestamp)
-	s.SetFeesPoolValue(uint64(0))
+	s.SetFeePoolValue(uint64(0))
 	s.AddStatelessBlock(genesisBlk)
 
 	// Persist UTXOs that exist at genesis
@@ -1457,18 +1457,18 @@ func (s *state) syncGenesis(genesisBlk block.Block, genesis *genesis.Genesis) er
 	}
 
 	currentSupply := genesis.InitialSupply
-	rewardsPoolSupply := uint64(0)
-	if genesis.RewardsPoolSupply > totalRewards {
-		rewardsPoolSupply = genesis.RewardsPoolSupply - totalRewards
+	rewardPoolSupply := uint64(0)
+	if genesis.RewardPoolSupply > totalRewards {
+		rewardPoolSupply = genesis.RewardPoolSupply - totalRewards
 	} else {
-		newCurrentSupply, err := safemath.Add64(currentSupply, totalRewards-genesis.RewardsPoolSupply)
+		newCurrentSupply, err := safemath.Add64(currentSupply, totalRewards-genesis.RewardPoolSupply)
 		if err != nil {
 			return err
 		}
 		currentSupply = newCurrentSupply
 	}
 	s.SetCurrentSupply(constants.PrimaryNetworkID, currentSupply)
-	s.SetRewardsPoolSupply(constants.PrimaryNetworkID, rewardsPoolSupply)
+	s.SetRewardPoolSupply(constants.PrimaryNetworkID, rewardPoolSupply)
 
 	for _, chain := range genesis.Chains {
 		unsignedChain, ok := chain.Unsigned.(*txs.CreateChainTx)
@@ -1519,19 +1519,19 @@ func (s *state) loadMetadata() error {
 	s.persistedCurrentSupply = currentSupply
 	s.SetCurrentSupply(constants.PrimaryNetworkID, currentSupply)
 
-	rewardsPoolSupply, err := database.GetUInt64(s.singletonDB, rewardsPoolSupplyKey)
+	rewardPoolSupply, err := database.GetUInt64(s.singletonDB, rewardPoolSupplyKey)
 	if err != nil {
 		return err
 	}
-	s.persistedRewardsPoolSupply = rewardsPoolSupply
-	s.SetRewardsPoolSupply(constants.PrimaryNetworkID, rewardsPoolSupply)
+	s.persistedRewardPoolSupply = rewardPoolSupply
+	s.SetRewardPoolSupply(constants.PrimaryNetworkID, rewardPoolSupply)
 
-	feesPoolValue, err := database.GetUInt64(s.singletonDB, feesPoolValueKey)
+	feePoolValue, err := database.GetUInt64(s.singletonDB, feePoolValueKey)
 	if err != nil {
 		return err
 	}
-	s.persistedFeesPoolValue = feesPoolValue
-	s.SetFeesPoolValue(feesPoolValue)
+	s.persistedFeePoolValue = feePoolValue
+	s.SetFeePoolValue(feePoolValue)
 
 	lastAccepted, err := database.GetID(s.singletonDB, lastAcceptedKey)
 	if err != nil {
@@ -2541,17 +2541,17 @@ func (s *state) writeMetadata() error {
 		}
 		s.persistedCurrentSupply = s.currentSupply
 	}
-	if s.persistedRewardsPoolSupply != s.rewardsPoolSupply {
-		if err := database.PutUInt64(s.singletonDB, rewardsPoolSupplyKey, s.rewardsPoolSupply); err != nil {
-			return fmt.Errorf("failed to write rewards pool supply: %w", err)
+	if s.persistedRewardPoolSupply != s.rewardPoolSupply {
+		if err := database.PutUInt64(s.singletonDB, rewardPoolSupplyKey, s.rewardPoolSupply); err != nil {
+			return fmt.Errorf("failed to write reward pool supply: %w", err)
 		}
-		s.persistedRewardsPoolSupply = s.rewardsPoolSupply
+		s.persistedRewardPoolSupply = s.rewardPoolSupply
 	}
-	if s.persistedFeesPoolValue != s.feesPoolValue {
-		if err := database.PutUInt64(s.singletonDB, feesPoolValueKey, s.feesPoolValue); err != nil {
-			return fmt.Errorf("failed to write fees pool value: %w", err)
+	if s.persistedFeePoolValue != s.feePoolValue {
+		if err := database.PutUInt64(s.singletonDB, feePoolValueKey, s.feePoolValue); err != nil {
+			return fmt.Errorf("failed to write fee pool value: %w", err)
 		}
-		s.persistedFeesPoolValue = s.feesPoolValue
+		s.persistedFeePoolValue = s.feePoolValue
 	}
 	if s.persistedLastAccepted != s.lastAccepted {
 		if err := database.PutID(s.singletonDB, lastAcceptedKey, s.lastAccepted); err != nil {
@@ -2767,14 +2767,14 @@ func (s *state) forceWriteMetadata() error {
 		return fmt.Errorf("failed to force write current supply: %w", err)
 	}
 	s.persistedCurrentSupply = s.currentSupply
-	if err := database.PutUInt64(s.singletonDB, rewardsPoolSupplyKey, s.rewardsPoolSupply); err != nil {
-		return fmt.Errorf("failed to force write rewards pool supply: %w", err)
+	if err := database.PutUInt64(s.singletonDB, rewardPoolSupplyKey, s.rewardPoolSupply); err != nil {
+		return fmt.Errorf("failed to force write reward pool supply: %w", err)
 	}
-	s.persistedRewardsPoolSupply = s.rewardsPoolSupply
-	if err := database.PutUInt64(s.singletonDB, feesPoolValueKey, s.feesPoolValue); err != nil {
-		return fmt.Errorf("failed to write fees pool value: %w", err)
+	s.persistedRewardPoolSupply = s.rewardPoolSupply
+	if err := database.PutUInt64(s.singletonDB, feePoolValueKey, s.feePoolValue); err != nil {
+		return fmt.Errorf("failed to write fee pool value: %w", err)
 	}
-	s.persistedFeesPoolValue = s.feesPoolValue
+	s.persistedFeePoolValue = s.feePoolValue
 	if err := database.PutID(s.singletonDB, lastAcceptedKey, s.lastAccepted); err != nil {
 		return fmt.Errorf("failed to force write last accepted: %w", err)
 	}

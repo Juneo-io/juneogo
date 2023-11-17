@@ -404,7 +404,7 @@ func (e *StandardTxExecutor) TransformSubnetTx(tx *txs.TransformSubnetTx) error 
 		return err
 	}
 
-	totalRewardAmount := tx.InitialRewardsPoolSupply
+	totalRewardAmount := tx.InitialRewardPoolSupply
 	if err := e.Backend.FlowChecker.VerifySpend(
 		tx,
 		e.State,
@@ -431,7 +431,7 @@ func (e *StandardTxExecutor) TransformSubnetTx(tx *txs.TransformSubnetTx) error 
 	// Transform the new subnet in the database
 	e.State.AddSubnetTransformation(e.Tx)
 	e.State.SetCurrentSupply(tx.Subnet, uint64(0))
-	e.State.SetRewardsPoolSupply(tx.Subnet, totalRewardAmount)
+	e.State.SetRewardPoolSupply(tx.Subnet, totalRewardAmount)
 	return nil
 }
 

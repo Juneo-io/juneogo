@@ -55,7 +55,7 @@ var (
 	isInitializedKey = []byte{0x00}
 	timestampKey     = []byte{0x01}
 	lastAcceptedKey  = []byte{0x02}
-	feesPoolValueKey = []byte{0x03}
+	feePoolValueKey  = []byte{0x03}
 
 	errStatusWithoutTx = errors.New("unexpected status without transactions")
 
@@ -70,7 +70,7 @@ type ReadOnlyChain interface {
 	GetBlock(blkID ids.ID) (block.Block, error)
 	GetLastAccepted() ids.ID
 	GetTimestamp() time.Time
-	GetFeesPoolValue() uint64
+	GetFeePoolValue() uint64
 }
 
 type Chain interface {
@@ -82,7 +82,7 @@ type Chain interface {
 	AddBlock(block block.Block)
 	SetLastAccepted(blkID ids.ID)
 	SetTimestamp(t time.Time)
-	SetFeesPoolValue(fpv uint64)
+	SetFeePoolValue(fpv uint64)
 }
 
 // State persistently maintains a set of UTXOs, transaction, statuses, and
@@ -147,7 +147,7 @@ type State interface {
  *   |-- initializedKey -> nil
  *   |-- timestampKey -> timestamp
  *   |-- lastAcceptedKey -> lastAccepted
- *   '-- feesPoolValueKey -> feesPoolValue
+ *   '-- feePoolValueKey -> feePoolValue
  */
 type state struct {
 	parser block.Parser
@@ -174,10 +174,10 @@ type state struct {
 	blockDB     database.Database
 
 	// [lastAccepted] is the most recently accepted block.
-	lastAccepted, persistedLastAccepted   ids.ID
-	timestamp, persistedTimestamp         time.Time
-	feesPoolValue, persistedFeesPoolValue uint64
-	singletonDB                           database.Database
+	lastAccepted, persistedLastAccepted ids.ID
+	timestamp, persistedTimestamp       time.Time
+	feePoolValue, persistedFeePoolValue uint64
+	singletonDB                         database.Database
 
 	trackChecksum bool
 	txChecksum    ids.ID
@@ -461,8 +461,8 @@ func (s *state) InitializeChainState(stopVertexID ids.ID, genesisTimestamp time.
 	s.persistedLastAccepted = lastAccepted
 	s.timestamp, err = database.GetTimestamp(s.singletonDB, timestampKey)
 	s.persistedTimestamp = s.timestamp
-	s.feesPoolValue, err = database.GetUInt64(s.singletonDB, feesPoolValueKey)
-	s.persistedFeesPoolValue = s.feesPoolValue
+	s.feePoolValue, err = database.GetUInt64(s.singletonDB, feePoolValueKey)
+	s.persistedFeePoolValue = s.feePoolValue
 	return err
 }
 
@@ -480,7 +480,7 @@ func (s *state) initializeChainState(stopVertexID ids.ID, genesisTimestamp time.
 
 	s.SetLastAccepted(genesis.ID())
 	s.SetTimestamp(genesis.Timestamp())
-	s.SetFeesPoolValue(uint64(0))
+	s.SetFeePoolValue(uint64(0))
 	s.AddBlock(genesis)
 	return s.Commit()
 }
@@ -509,12 +509,12 @@ func (s *state) SetTimestamp(t time.Time) {
 	s.timestamp = t
 }
 
-func (s *state) GetFeesPoolValue() uint64 {
-	return s.feesPoolValue
+func (s *state) GetFeePoolValue() uint64 {
+	return s.feePoolValue
 }
 
-func (s *state) SetFeesPoolValue(fpv uint64) {
-	s.feesPoolValue = fpv
+func (s *state) SetFeePoolValue(fpv uint64) {
+	s.feePoolValue = fpv
 }
 
 func (s *state) Commit() error {
@@ -632,11 +632,11 @@ func (s *state) writeMetadata() error {
 		}
 		s.persistedTimestamp = s.timestamp
 	}
-	if s.persistedFeesPoolValue != s.feesPoolValue {
-		if err := database.PutUInt64(s.singletonDB, feesPoolValueKey, s.feesPoolValue); err != nil {
-			return fmt.Errorf("failed to write fees pool value: %w", err)
+	if s.persistedFeePoolValue != s.feePoolValue {
+		if err := database.PutUInt64(s.singletonDB, feePoolValueKey, s.feePoolValue); err != nil {
+			return fmt.Errorf("failed to write fee pool value: %w", err)
 		}
-		s.persistedFeesPoolValue = s.feesPoolValue
+		s.persistedFeePoolValue = s.feePoolValue
 	}
 	if s.persistedLastAccepted != s.lastAccepted {
 		if err := database.PutID(s.singletonDB, lastAcceptedKey, s.lastAccepted); err != nil {

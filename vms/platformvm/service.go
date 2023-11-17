@@ -65,22 +65,22 @@ const (
 )
 
 var (
-	errMissingDecisionBlock       = errors.New("should have a decision block within the past two blocks")
+	errMissingDecisionBlock     = errors.New("should have a decision block within the past two blocks")
 	errNoSubnetID               = errors.New("argument 'subnetID' not provided")
-	errNoRewardAddress            = errors.New("argument 'rewardAddress' not provided")
-	errInvalidDelegationRate      = errors.New("argument 'delegationFeeRate' must be between 0 and 100, inclusive")
-	errNoAddresses                = errors.New("no addresses provided")
-	errNoKeys                     = errors.New("user has no keys or funds")
-	errStartTimeTooSoon           = fmt.Errorf("start time must be at least %s in the future", minAddStakerDelay)
-	errStartTimeTooLate           = errors.New("start time is too far in the future")
+	errNoRewardAddress          = errors.New("argument 'rewardAddress' not provided")
+	errInvalidDelegationRate    = errors.New("argument 'delegationFeeRate' must be between 0 and 100, inclusive")
+	errNoAddresses              = errors.New("no addresses provided")
+	errNoKeys                   = errors.New("user has no keys or funds")
+	errStartTimeTooSoon         = fmt.Errorf("start time must be at least %s in the future", minAddStakerDelay)
+	errStartTimeTooLate         = errors.New("start time is too far in the future")
 	errNamedSubnetCantBePrimary = errors.New("subnet validator attempts to validate primary network")
-	errNoAmount                   = errors.New("argument 'amount' must be > 0")
-	errMissingName                = errors.New("argument 'name' not given")
-	errMissingVMID                = errors.New("argument 'vmID' not given")
-	errMissingBlockchainID        = errors.New("argument 'blockchainID' not given")
-	errMissingPrivateKey          = errors.New("argument 'privateKey' not given")
-	errStartAfterEndTime          = errors.New("start time must be before end time")
-	errStartTimeInThePast         = errors.New("start time in the past")
+	errNoAmount                 = errors.New("argument 'amount' must be > 0")
+	errMissingName              = errors.New("argument 'name' not given")
+	errMissingVMID              = errors.New("argument 'vmID' not given")
+	errMissingBlockchainID      = errors.New("argument 'blockchainID' not given")
+	errMissingPrivateKey        = errors.New("argument 'privateKey' not given")
+	errStartAfterEndTime        = errors.New("start time must be before end time")
+	errStartTimeInThePast       = errors.New("start time in the past")
 )
 
 // Service defines the API calls that can be made to the platform chain
@@ -1131,38 +1131,38 @@ func (s *Service) GetCurrentSupply(r *http.Request, args *GetCurrentSupplyArgs, 
 	return nil
 }
 
-// GetRewardsPoolSupplyArgs are the arguments for calling GetRewardsPoolSupply
-type GetRewardsPoolSupplyArgs struct {
+// GetRewardPoolSupplyArgs are the arguments for calling GetRewardPoolSupply
+type GetRewardPoolSupplyArgs struct {
 	SubnetID ids.ID `json:"subnetID"`
 }
 
-// GetRewardsPoolSupplyReply are the results from calling GetRewardsPoolSupply
-type GetRewardsPoolSupplyReply struct {
-	RewardsPoolSupply json.Uint64 `json:"rewardsPoolSupply"`
+// GetRewardPoolSupplyReply are the results from calling GetRewardPoolSupply
+type GetRewardPoolSupplyReply struct {
+	RewardPoolSupply json.Uint64 `json:"rewardPoolSupply"`
 }
 
-// GetRewardsPoolSupply returns an upper bound on the supply of AVAX in the system
-func (s *Service) GetRewardsPoolSupply(_ *http.Request, args *GetRewardsPoolSupplyArgs, reply *GetRewardsPoolSupplyReply) error {
+// GetRewardPoolSupply returns an upper bound on the supply of AVAX in the system
+func (s *Service) GetRewardPoolSupply(_ *http.Request, args *GetRewardPoolSupplyArgs, reply *GetRewardPoolSupplyReply) error {
 	s.vm.ctx.Log.Debug("API called",
 		zap.String("service", "platform"),
-		zap.String("method", "getRewardsPoolSupply"),
+		zap.String("method", "getRewardPoolSupply"),
 	)
 
-	rewardsPoolSupply, err := s.vm.state.GetRewardsPoolSupply(args.SubnetID)
-	reply.RewardsPoolSupply = json.Uint64(rewardsPoolSupply)
+	rewardPoolSupply, err := s.vm.state.GetRewardPoolSupply(args.SubnetID)
+	reply.RewardPoolSupply = json.Uint64(rewardPoolSupply)
 	return err
 }
 
-// GetFeesPoolValueReply are the results from calling GetFeesPoolValue
-type GetFeesPoolValueReply struct {
-	FeesPoolValue json.Uint64 `json:"feesPoolValue"`
+// GetFeePoolValueReply are the results from calling GetFeePoolValue
+type GetFeePoolValueReply struct {
+	FeePoolValue json.Uint64 `json:"feePoolValue"`
 }
 
-// GetFeesPoolValue returns the current value in the fees pool
-func (s *Service) GetFeesPoolValue(_ *http.Request, _ *struct{}, reply *GetFeesPoolValueReply) error {
-	s.vm.ctx.Log.Debug("Platform: GetFeesPoolValue called")
+// GetFeePoolValue returns the current value in the fee pool
+func (s *Service) GetFeePoolValue(_ *http.Request, _ *struct{}, reply *GetFeePoolValueReply) error {
+	s.vm.ctx.Log.Debug("Platform: GetFeePoolValue called")
 
-	reply.FeesPoolValue = json.Uint64(s.vm.state.GetFeesPoolValue())
+	reply.FeePoolValue = json.Uint64(s.vm.state.GetFeePoolValue())
 	return nil
 }
 
@@ -1527,7 +1527,7 @@ func (s *Service) AddSubnetValidator(_ *http.Request, args *AddSubnetValidatorAr
 		uint64(args.StartTime), // Start time
 		uint64(args.EndTime),   // End time
 		args.NodeID,            // Node ID
-		subnetID,             // Subnet ID
+		subnetID,               // Subnet ID
 		keys.Keys,
 		changeAddr,
 	)
@@ -2187,7 +2187,7 @@ func (s *Service) GetBlockchains(_ *http.Request, _ *struct{}, response *GetBloc
 			response.Blockchains = append(response.Blockchains, APIBlockchain{
 				ID:           chainID,
 				Name:         chain.ChainName,
-				SubnetID:   subnetID,
+				SubnetID:     subnetID,
 				VMID:         chain.VMID,
 				ChainAssetID: chain.ChainAssetID,
 			})
@@ -2207,7 +2207,7 @@ func (s *Service) GetBlockchains(_ *http.Request, _ *struct{}, response *GetBloc
 		response.Blockchains = append(response.Blockchains, APIBlockchain{
 			ID:           chainID,
 			Name:         chain.ChainName,
-			SubnetID:   constants.PrimaryNetworkID,
+			SubnetID:     constants.PrimaryNetworkID,
 			VMID:         chain.VMID,
 			ChainAssetID: chain.ChainAssetID,
 		})
@@ -2538,10 +2538,10 @@ func (s *Service) GetTotalStake(_ *http.Request, args *GetTotalStakeArgs, reply 
 
 // GetMaxStakeAmountArgs is the request for calling GetMaxStakeAmount.
 type GetMaxStakeAmountArgs struct {
-	SubnetID ids.ID      `json:"subnetID"`
-	NodeID     ids.NodeID  `json:"nodeID"`
-	StartTime  json.Uint64 `json:"startTime"`
-	EndTime    json.Uint64 `json:"endTime"`
+	SubnetID  ids.ID      `json:"subnetID"`
+	NodeID    ids.NodeID  `json:"nodeID"`
+	StartTime json.Uint64 `json:"startTime"`
+	EndTime   json.Uint64 `json:"endTime"`
 }
 
 // GetMaxStakeAmountReply is the response from calling GetMaxStakeAmount.
@@ -2658,7 +2658,7 @@ func (s *Service) GetTimestamp(_ *http.Request, _ *struct{}, reply *GetTimestamp
 
 // GetValidatorsAtArgs is the response from GetValidatorsAt
 type GetValidatorsAtArgs struct {
-	Height     json.Uint64 `json:"height"`
+	Height   json.Uint64 `json:"height"`
 	SubnetID ids.ID      `json:"subnetID"`
 }
 

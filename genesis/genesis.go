@@ -404,13 +404,13 @@ func FromConfig(config *Config) ([]byte, ids.ID, error) {
 
 	// Specify the initial state of the Platform Chain
 	platformvmArgs := api.BuildGenesisArgs{
-		AvaxAssetID:       assetsIDs[june.Symbol],
-		NetworkID:         json.Uint32(config.NetworkID),
-		RewardsPoolSupply: json.Uint64(config.RewardsPoolSupply),
-		Time:              json.Uint64(config.StartTime),
-		InitialSupply:     json.Uint64(initialSupply),
-		Message:           config.Message,
-		Encoding:          defaultEncoding,
+		AvaxAssetID:      assetsIDs[june.Symbol],
+		NetworkID:        json.Uint32(config.NetworkID),
+		RewardPoolSupply: json.Uint64(config.RewardPoolSupply),
+		Time:             json.Uint64(config.StartTime),
+		InitialSupply:    json.Uint64(initialSupply),
+		Message:          config.Message,
+		Encoding:         defaultEncoding,
 	}
 	for _, allocation := range config.Allocations {
 		if initiallyStaked.Contains(allocation.AVAXAddr) {

@@ -202,12 +202,12 @@ func (v *verifier) ApricotAtomicBlock(b *block.ApricotAtomicBlock) error {
 		return fmt.Errorf("tx %s failed semantic verification: %w", txID, err)
 	}
 
-	feesPoolValue := atomicExecutor.OnAccept.GetFeesPoolValue()
-	newFeesPoolValue, err := math.Add64(feesPoolValue, b.Tx.Unsigned.ConsumedValue(v.ctx.AVAXAssetID))
+	feePoolValue := atomicExecutor.OnAccept.GetFeePoolValue()
+	newFeePoolValue, err := math.Add64(feePoolValue, b.Tx.Unsigned.ConsumedValue(v.ctx.AVAXAssetID))
 	if err != nil {
 		return err
 	}
-	atomicExecutor.OnAccept.SetFeesPoolValue(newFeesPoolValue)
+	atomicExecutor.OnAccept.SetFeePoolValue(newFeePoolValue)
 
 	atomicExecutor.OnAccept.AddTx(b.Tx, status.Committed)
 
@@ -378,12 +378,12 @@ func (v *verifier) proposalBlock(
 		return err
 	}
 
-	feesPoolValue := onCommitState.GetFeesPoolValue()
-	newFeesPoolValue, err := math.Add64(feesPoolValue, b.Tx.Unsigned.ConsumedValue(v.ctx.AVAXAssetID))
+	feePoolValue := onCommitState.GetFeePoolValue()
+	newFeePoolValue, err := math.Add64(feePoolValue, b.Tx.Unsigned.ConsumedValue(v.ctx.AVAXAssetID))
 	if err != nil {
 		return err
 	}
-	onCommitState.SetFeesPoolValue(newFeesPoolValue)
+	onCommitState.SetFeePoolValue(newFeePoolValue)
 
 	onCommitState.AddTx(b.Tx, status.Committed)
 	onAbortState.AddTx(b.Tx, status.Aborted)
@@ -419,7 +419,7 @@ func (v *verifier) standardBlock(
 	}
 
 	// Finally we process the transactions
-	feesPoolValue := onAcceptState.GetFeesPoolValue()
+	feePoolValue := onAcceptState.GetFeePoolValue()
 	funcs := make([]func(), 0, len(b.Transactions))
 	for _, tx := range b.Transactions {
 		txExecutor := executor.StandardTxExecutor{
@@ -439,11 +439,11 @@ func (v *verifier) standardBlock(
 		// Add UTXOs to batch
 		blkState.inputs.Union(txExecutor.Inputs)
 
-		newFeesPoolValue, err := math.Add64(feesPoolValue, tx.Unsigned.ConsumedValue(v.ctx.AVAXAssetID))
+		newFeePoolValue, err := math.Add64(feePoolValue, tx.Unsigned.ConsumedValue(v.ctx.AVAXAssetID))
 		if err != nil {
 			return err
 		}
-		feesPoolValue = newFeesPoolValue
+		feePoolValue = newFeePoolValue
 
 		onAcceptState.AddTx(tx, status.Committed)
 		if txExecutor.OnAccept != nil {
@@ -463,7 +463,7 @@ func (v *verifier) standardBlock(
 		}
 	}
 
-	onAcceptState.SetFeesPoolValue(feesPoolValue)
+	onAcceptState.SetFeePoolValue(feePoolValue)
 
 	if err := v.verifyUniqueInputs(b, blkState.inputs); err != nil {
 		return err

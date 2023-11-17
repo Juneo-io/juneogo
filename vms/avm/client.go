@@ -65,7 +65,7 @@ type Client interface {
 	) ([][]byte, ids.ShortID, ids.ID, error)
 	// GetAssetDescription returns a description of [assetID]
 	GetAssetDescription(ctx context.Context, assetID string, options ...rpc.Option) (*GetAssetDescriptionReply, error)
-	GetFeesPoolValue(ctx context.Context, options ...rpc.Option) (*GetFeesPoolValueReply, error)
+	GetFeePoolValue(ctx context.Context, options ...rpc.Option) (*GetFeePoolValueReply, error)
 	// GetBalance returns the balance of [assetID] held by [addr].
 	// If [includePartial], balance includes partial owned (i.e. in a multisig) funds.
 	//
@@ -377,9 +377,9 @@ func (c *client) GetAssetDescription(ctx context.Context, assetID string, option
 	return res, err
 }
 
-func (c *client) GetFeesPoolValue(ctx context.Context, options ...rpc.Option) (*GetFeesPoolValueReply, error) {
-	res := &GetFeesPoolValueReply{}
-	err := c.requester.SendRequest(ctx, "jvm.getFeesPoolValue", &GetFeesPoolValueArgs{}, res, options...)
+func (c *client) GetFeePoolValue(ctx context.Context, options ...rpc.Option) (*GetFeePoolValueReply, error) {
+	res := &GetFeePoolValueReply{}
+	err := c.requester.SendRequest(ctx, "jvm.getFeePoolValue", &GetFeePoolValueArgs{}, res, options...)
 	return res, err
 }
 

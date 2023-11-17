@@ -36,9 +36,9 @@ type diff struct {
 
 	// Subnet ID --> supply of native asset of the subnet
 	currentSupply map[ids.ID]uint64
-	// Subnet ID --> rewards pool supply of native asset of the subnet
-	rewardsPoolSupply map[ids.ID]uint64
-	feesPoolValue     uint64
+	// Subnet ID --> reward pool supply of native asset of the subnet
+	rewardPoolSupply map[ids.ID]uint64
+	feePoolValue     uint64
 
 	currentStakerDiffs diffStakers
 	// map of subnetID -> nodeID -> total accrued delegatee rewards
@@ -75,7 +75,7 @@ func NewDiff(
 		parentID:      parentID,
 		stateVersions: stateVersions,
 		timestamp:     parentState.GetTimestamp(),
-		feesPoolValue: parentState.GetFeesPoolValue(),
+		feePoolValue:  parentState.GetFeePoolValue(),
 		subnetOwners:  make(map[ids.ID]fx.Owner),
 	}, nil
 }
@@ -112,36 +112,36 @@ func (d *diff) SetCurrentSupply(subnetID ids.ID, currentSupply uint64) {
 	}
 }
 
-func (d *diff) GetRewardsPoolSupply(subnetID ids.ID) (uint64, error) {
-	rewardsPoolSupply, ok := d.rewardsPoolSupply[subnetID]
+func (d *diff) GetRewardPoolSupply(subnetID ids.ID) (uint64, error) {
+	rewardPoolSupply, ok := d.rewardPoolSupply[subnetID]
 	if ok {
-		return rewardsPoolSupply, nil
+		return rewardPoolSupply, nil
 	}
 
-	// If the subnet rewards pool supply wasn't modified in this diff, ask the parent state.
+	// If the subnet reward pool supply wasn't modified in this diff, ask the parent state.
 	parentState, ok := d.stateVersions.GetState(d.parentID)
 	if !ok {
 		return 0, fmt.Errorf("%w: %s", ErrMissingParentState, d.parentID)
 	}
-	return parentState.GetRewardsPoolSupply(subnetID)
+	return parentState.GetRewardPoolSupply(subnetID)
 }
 
-func (d *diff) SetRewardsPoolSupply(subnetID ids.ID, rewardsPoolSupply uint64) {
-	if d.rewardsPoolSupply == nil {
-		d.rewardsPoolSupply = map[ids.ID]uint64{
-			subnetID: rewardsPoolSupply,
+func (d *diff) SetRewardPoolSupply(subnetID ids.ID, rewardPoolSupply uint64) {
+	if d.rewardPoolSupply == nil {
+		d.rewardPoolSupply = map[ids.ID]uint64{
+			subnetID: rewardPoolSupply,
 		}
 	} else {
-		d.rewardsPoolSupply[subnetID] = rewardsPoolSupply
+		d.rewardPoolSupply[subnetID] = rewardPoolSupply
 	}
 }
 
-func (d *diff) GetFeesPoolValue() uint64 {
-	return d.feesPoolValue
+func (d *diff) GetFeePoolValue() uint64 {
+	return d.feePoolValue
 }
 
-func (d *diff) SetFeesPoolValue(feesPoolValue uint64) {
-	d.feesPoolValue = feesPoolValue
+func (d *diff) SetFeePoolValue(feePoolValue uint64) {
+	d.feePoolValue = feePoolValue
 }
 
 func (d *diff) GetCurrentValidator(subnetID ids.ID, nodeID ids.NodeID) (*Staker, error) {
@@ -520,10 +520,10 @@ func (d *diff) Apply(baseState State) error {
 	for subnetID, supply := range d.currentSupply {
 		baseState.SetCurrentSupply(subnetID, supply)
 	}
-	for subnetID, rewardsPoolSupply := range d.rewardsPoolSupply {
-		baseState.SetRewardsPoolSupply(subnetID, rewardsPoolSupply)
+	for subnetID, rewardPoolSupply := range d.rewardPoolSupply {
+		baseState.SetRewardPoolSupply(subnetID, rewardPoolSupply)
 	}
-	baseState.SetFeesPoolValue(d.feesPoolValue)
+	baseState.SetFeePoolValue(d.feePoolValue)
 	for _, subnetValidatorDiffs := range d.currentStakerDiffs.validatorDiffs {
 		for _, validatorDiff := range subnetValidatorDiffs {
 			switch validatorDiff.validatorStatus {

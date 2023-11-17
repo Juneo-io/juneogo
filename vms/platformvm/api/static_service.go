@@ -159,7 +159,7 @@ type Chain struct {
 	VMID         ids.ID   `json:"vmID"`
 	FxIDs        []ids.ID `json:"fxIDs"`
 	Name         string   `json:"name"`
-	SubnetID   ids.ID   `json:"subnetID"`
+	SubnetID     ids.ID   `json:"subnetID"`
 	ChainAssetID ids.ID   `json:"chainAssetID"`
 }
 
@@ -171,16 +171,16 @@ type Chain struct {
 // [Chains] are the chains that exist at genesis.
 // [Time] is the Platform Chain's time at network genesis.
 type BuildGenesisArgs struct {
-	AvaxAssetID       ids.ID                    `json:"avaxAssetID"`
-	NetworkID         json.Uint32               `json:"networkID"`
-	RewardsPoolSupply json.Uint64               `json:"rewardsPoolSupply"`
-	UTXOs             []UTXO                    `json:"utxos"`
-	Validators        []PermissionlessValidator `json:"validators"`
-	Chains            []Chain                   `json:"chains"`
-	Time              json.Uint64               `json:"time"`
-	InitialSupply     json.Uint64               `json:"initialSupply"`
-	Message           string                    `json:"message"`
-	Encoding          formatting.Encoding       `json:"encoding"`
+	AvaxAssetID      ids.ID                    `json:"avaxAssetID"`
+	NetworkID        json.Uint32               `json:"networkID"`
+	RewardPoolSupply json.Uint64               `json:"rewardPoolSupply"`
+	UTXOs            []UTXO                    `json:"utxos"`
+	Validators       []PermissionlessValidator `json:"validators"`
+	Chains           []Chain                   `json:"chains"`
+	Time             json.Uint64               `json:"time"`
+	InitialSupply    json.Uint64               `json:"initialSupply"`
+	Message          string                    `json:"message"`
+	Encoding         formatting.Encoding       `json:"encoding"`
 }
 
 // BuildGenesisReply is the reply from BuildGenesis
@@ -339,12 +339,12 @@ func (*StaticService) BuildGenesis(_ *http.Request, args *BuildGenesisArgs, repl
 				NetworkID:    uint32(args.NetworkID),
 				BlockchainID: ids.Empty,
 			}},
-			SubnetID:   chain.SubnetID,
+			SubnetID:     chain.SubnetID,
 			ChainName:    chain.Name,
 			VMID:         chain.VMID,
 			FxIDs:        chain.FxIDs,
 			GenesisData:  genesisBytes,
-			SubnetAuth: &secp256k1fx.Input{},
+			SubnetAuth:   &secp256k1fx.Input{},
 			ChainAssetID: chain.ChainAssetID,
 		}}
 		if err := tx.Initialize(txs.GenesisCodec); err != nil {
@@ -358,13 +358,13 @@ func (*StaticService) BuildGenesis(_ *http.Request, args *BuildGenesisArgs, repl
 
 	// genesis holds the genesis state
 	g := genesis.Genesis{
-		RewardsPoolSupply: uint64(args.RewardsPoolSupply),
-		UTXOs:             utxos,
-		Validators:        validatorTxs,
-		Chains:            chains,
-		Timestamp:         uint64(args.Time),
-		InitialSupply:     uint64(args.InitialSupply),
-		Message:           args.Message,
+		RewardPoolSupply: uint64(args.RewardPoolSupply),
+		UTXOs:            utxos,
+		Validators:       validatorTxs,
+		Chains:           chains,
+		Timestamp:        uint64(args.Time),
+		InitialSupply:    uint64(args.InitialSupply),
+		Message:          args.Message,
 	}
 
 	// Marshal genesis to bytes

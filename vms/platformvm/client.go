@@ -80,10 +80,10 @@ type Client interface {
 	GetPendingValidators(ctx context.Context, subnetID ids.ID, nodeIDs []ids.NodeID, options ...rpc.Option) ([]interface{}, []interface{}, error)
 	// GetCurrentSupply returns an upper bound on the supply of AVAX in the system along with the P-chain height
 	GetCurrentSupply(ctx context.Context, subnetID ids.ID, options ...rpc.Option) (uint64, uint64, error)
-	// GetRewardsPoolSupply returns the current supply in the rewards pool
-	GetRewardsPoolSupply(ctx context.Context, subnetID ids.ID, options ...rpc.Option) (uint64, error)
-	// GetFeesPoolValue returns the current value in the fees pool
-	GetFeesPoolValue(ctx context.Context, options ...rpc.Option) (uint64, error)
+	// GetRewardPoolSupply returns the current supply in the reward pool
+	GetRewardPoolSupply(ctx context.Context, subnetID ids.ID, options ...rpc.Option) (uint64, error)
+	// GetFeePoolValue returns the current value in the fee pool
+	GetFeePoolValue(ctx context.Context, options ...rpc.Option) (uint64, error)
 	// SampleValidators returns the nodeIDs of a sample of [sampleSize] validators from the current validator set for subnet with ID [subnetID]
 	SampleValidators(ctx context.Context, subnetID ids.ID, sampleSize uint16, options ...rpc.Option) ([]ids.NodeID, error)
 	// AddValidator issues a transaction to add a validator to the primary network
@@ -468,18 +468,18 @@ func (c *client) GetCurrentSupply(ctx context.Context, subnetID ids.ID, options 
 	return uint64(res.Supply), uint64(res.Height), err
 }
 
-func (c *client) GetRewardsPoolSupply(ctx context.Context, subnetID ids.ID, options ...rpc.Option) (uint64, error) {
-	res := &GetRewardsPoolSupplyReply{}
-	err := c.requester.SendRequest(ctx, "platform.getRewardsPoolSupply", &GetRewardsPoolSupplyArgs{
+func (c *client) GetRewardPoolSupply(ctx context.Context, subnetID ids.ID, options ...rpc.Option) (uint64, error) {
+	res := &GetRewardPoolSupplyReply{}
+	err := c.requester.SendRequest(ctx, "platform.getRewardPoolSupply", &GetRewardPoolSupplyArgs{
 		SubnetID: subnetID,
 	}, res, options...)
-	return uint64(res.RewardsPoolSupply), err
+	return uint64(res.RewardPoolSupply), err
 }
 
-func (c *client) GetFeesPoolValue(ctx context.Context, options ...rpc.Option) (uint64, error) {
-	res := &GetFeesPoolValueReply{}
-	err := c.requester.SendRequest(ctx, "platform.getFeesPoolValue", struct{}{}, res, options...)
-	return uint64(res.FeesPoolValue), err
+func (c *client) GetFeePoolValue(ctx context.Context, options ...rpc.Option) (uint64, error) {
+	res := &GetFeePoolValueReply{}
+	err := c.requester.SendRequest(ctx, "platform.getFeePoolValue", struct{}{}, res, options...)
+	return uint64(res.FeePoolValue), err
 }
 
 func (c *client) SampleValidators(ctx context.Context, subnetID ids.ID, sampleSize uint16, options ...rpc.Option) ([]ids.NodeID, error) {

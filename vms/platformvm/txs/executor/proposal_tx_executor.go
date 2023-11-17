@@ -391,13 +391,13 @@ func (e *ProposalTxExecutor) RewardValidatorTx(tx *txs.RewardValidatorTx) error 
 		return ErrShouldBePermissionlessStaker
 	}
 
-	// If the reward is aborted, then the rewards pool supply should be increased.
-	rewardsPoolSupply, err := e.OnAbortState.GetRewardsPoolSupply(stakerToReward.SubnetID)
+	// If the reward is aborted, then the reward pool supply should be increased.
+	rewardPoolSupply, err := e.OnAbortState.GetRewardPoolSupply(stakerToReward.SubnetID)
 	if err != nil {
 		return err
 	}
-	newRewardsSupply, err := math.Add64(rewardsPoolSupply, stakerToReward.PotentialReward)
-	e.OnAbortState.SetRewardsPoolSupply(stakerToReward.SubnetID, newRewardsSupply)
+	newRewardsSupply, err := math.Add64(rewardPoolSupply, stakerToReward.PotentialReward)
+	e.OnAbortState.SetRewardPoolSupply(stakerToReward.SubnetID, newRewardsSupply)
 
 	// handle option preference
 	e.PrefersCommit, err = e.shouldBeRewarded(stakerToReward, primaryNetworkValidator)
