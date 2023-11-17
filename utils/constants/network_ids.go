@@ -15,8 +15,8 @@ import (
 
 // Const variables to be exported
 const (
-	MainnetID uint32 = 1
-	SocotraID uint32 = 2
+	MainnetID uint32 = 45
+	SocotraID uint32 = 46
 
 	TestnetID  uint32 = SocotraID
 	UnitTestID uint32 = 10
