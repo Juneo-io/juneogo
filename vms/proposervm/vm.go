@@ -261,7 +261,7 @@ func (vm *VM) Initialize(
 		return err
 	}
 
-	forkHeight, err := vm.getForkHeight()
+	forkHeight, err := vm.GetForkHeight()
 	switch err {
 	case nil:
 		chainCtx.Log.Info("initialized proposervm",
@@ -728,26 +728,6 @@ func (vm *VM) getBlock(ctx context.Context, id ids.ID) (Block, error) {
 		return blk, nil
 	}
 	return vm.getPreForkBlock(ctx, id)
-}
-
-// TODO: remove after the P-chain and X-chain support height indexing.
-func (vm *VM) getForkHeight() (uint64, error) {
-	// The fork block can be easily identified with the provided links because
-	// the `Parent Hash` is equal to the `Proposer Parent ID`.
-	switch vm.ctx.ChainID {
-	case constants.PlatformChainID:
-		switch vm.ctx.NetworkID {
-		case constants.MainnetID:
-			return 1, nil // https://subnets.avax.network/p-chain/block/805732
-		case constants.TestnetID:
-			return 1, nil // https://subnets-test.avax.network/p-chain/block/47529
-		}
-	case mainnetXChainID:
-		return 1, nil // https://subnets.avax.network/x-chain/block/1
-	case fujiXChainID:
-		return 1, nil // https://subnets-test.avax.network/x-chain/block/1
-	}
-	return vm.GetForkHeight()
 }
 
 func (vm *VM) getPostForkBlock(ctx context.Context, blkID ids.ID) (PostForkBlock, error) {
