@@ -60,9 +60,9 @@ func (c *calculator) CalculatePrimary(stakedDuration time.Duration, currentTime 
 }
 
 func (c *calculator) getEffectiveReward(stakePeriod uint64, stakeAmount uint64, reward *big.Int) uint64 {
-	stakePeriodBig := new(big.Int).SetUint64(stakePeriod)
 	reward.Add(reward, c.getStakePeriodReward(stakePeriod))
-	stakePeriodRatio := stakePeriodBig.Mul(stakePeriodBig, rewardShareDenominator)
+	stakePeriodRatio := new(big.Int).SetUint64(stakePeriod)
+	stakePeriodRatio.Mul(stakePeriodRatio, rewardShareDenominator)
 	stakePeriodRatio.Div(stakePeriodRatio, new(big.Int).SetUint64(c.maxStakePeriod))
 	effectiveReward := reward.Mul(reward, stakePeriodRatio)
 	effectiveReward.Div(effectiveReward, rewardShareDenominator)
@@ -75,12 +75,12 @@ func (c *calculator) getEffectiveReward(stakePeriod uint64, stakeAmount uint64, 
 }
 
 func (c *calculator) getStakePeriodReward(stakePeriod uint64) *big.Int {
-	stakePeriodBig := new(big.Int).SetUint64(stakePeriod)
 	minStakePeriodBig := new(big.Int).SetUint64(c.minStakePeriod)
-	maxStakePeriodBig := new(big.Int).SetUint64(c.maxStakePeriod)
-	adjustedStakePeriod := stakePeriodBig.Sub(stakePeriodBig, minStakePeriodBig)
+	adjustedStakePeriod := new(big.Int).SetUint64(stakePeriod)
+	adjustedStakePeriod.Sub(adjustedStakePeriod, minStakePeriodBig)
 	adjustedStakePeriod.Mul(adjustedStakePeriod, rewardShareDenominator)
-	adjustedMaxStakePeriod := maxStakePeriodBig.Sub(maxStakePeriodBig, minStakePeriodBig)
+	adjustedMaxStakePeriod := new(big.Int).SetUint64(c.maxStakePeriod)
+	adjustedMaxStakePeriod.Sub(adjustedMaxStakePeriod, minStakePeriodBig)
 	reward := adjustedStakePeriod.Div(adjustedStakePeriod, adjustedMaxStakePeriod)
 	reward.Mul(reward, new(big.Int).SetUint64(c.stakePeriodRewardShare))
 	reward.Div(reward, rewardShareDenominator)
@@ -92,28 +92,18 @@ func (c *calculator) getCurrentPrimaryReward(currentTime uint64) *big.Int {
 		return new(big.Int).SetUint64(c.targetRewardShare)
 	}
 	if currentTime >= DiminishingRewardTime {
-		reward := getReward(
+		return getReward(
 			c.targetRewardShare,
 			DiminishingRewardShare,
 			getRemainingTimeBoundsPercentage(DiminishingRewardTime, c.targetRewardTime, currentTime),
 		)
-		if reward.IsUint64() {
-			return reward
-		} else {
-			return new(big.Int).SetUint64(uint64(0))
-		}
 	}
 	if currentTime >= c.startRewardTime {
-		reward := getReward(
+		return getReward(
 			DiminishingRewardShare,
 			c.startRewardShare,
 			getRemainingTimeBoundsPercentage(c.startRewardTime, DiminishingRewardTime, currentTime),
 		)
-		if reward.IsUint64() {
-			return reward
-		} else {
-			return new(big.Int).SetUint64(uint64(0))
-		}
 	}
 	// Start period or before
 	return new(big.Int).SetUint64(c.startRewardShare)
@@ -124,12 +114,10 @@ func getReward(lowerReward uint64, upperReward uint64, remainingTimeBoundsPercen
 	if err != nil {
 		diminishingReward = uint64(0)
 	}
-	diminishingRewardBig := new(big.Int).SetUint64(diminishingReward)
-	remainingReward := diminishingRewardBig.Mul(diminishingRewardBig, remainingTimeBoundsPercentage)
+	remainingReward := new(big.Int).SetUint64(diminishingReward)
+	remainingReward.Mul(remainingReward, remainingTimeBoundsPercentage)
 	remainingReward.Div(remainingReward, rewardShareDenominator)
-	lowerRewardBig := new(big.Int).SetUint64(lowerReward)
-	remainingReward.Add(remainingReward, lowerRewardBig)
-	return remainingReward
+	return remainingReward.Add(remainingReward, new(big.Int).SetUint64(lowerReward))
 }
 
 // The remaining percentage between lower and upper bounds calculated against current time.
@@ -152,11 +140,12 @@ func getRemainingTimeBoundsPercentage(lowerTimeBound uint64, upperTimeBound uint
 	if elapsedTime >= maxElapsedTime {
 		return new(big.Int).SetUint64(uint64(0))
 	}
-	elapsedTimeBig := new(big.Int).SetUint64(elapsedTime)
 	maxElapsedTimeBig := new(big.Int).SetUint64(maxElapsedTime)
-	elapsedRatio := elapsedTimeBig.Mul(elapsedTimeBig, rewardShareDenominator)
+	elapsedRatio := new(big.Int).SetUint64(elapsedTime)
+	elapsedRatio.Mul(elapsedRatio, rewardShareDenominator)
 	elapsedRatio.Div(elapsedRatio, maxElapsedTimeBig)
-	return rewardShareDenominator.Sub(rewardShareDenominator, elapsedRatio)
+	remaining := new(big.Int).SetUint64(PercentDenominator)
+	return remaining.Sub(remaining, elapsedRatio)
 }
 
 // Split [totalAmount] into [totalAmount * shares percentage] and the remainder.
