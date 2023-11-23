@@ -8,12 +8,12 @@ import (
 	"errors"
 	"sort"
 
-	"github.com/ava-labs/avalanchego/codec"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/utils"
-	"github.com/ava-labs/avalanchego/utils/crypto/secp256k1"
-	"github.com/ava-labs/avalanchego/vms/components/verify"
+	"github.com/Juneo-io/juneogo/codec"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/utils"
+	"github.com/Juneo-io/juneogo/utils/crypto/secp256k1"
+	"github.com/Juneo-io/juneogo/vms/components/verify"
 )
 
 var (
@@ -65,7 +65,7 @@ type TransferableOutput struct {
 	Asset `serialize:"true"`
 	// FxID has serialize false because we don't want this to be encoded in bytes
 	FxID ids.ID          `serialize:"false" json:"fxID"`
-	Out  TransferableOut `serialize:"true" json:"output"`
+	Out  TransferableOut `serialize:"true"  json:"output"`
 }
 
 func (out *TransferableOutput) InitCtx(ctx *snow.Context) {
@@ -142,7 +142,7 @@ type TransferableInput struct {
 	Asset  `serialize:"true"`
 	// FxID has serialize false because we don't want this to be encoded in bytes
 	FxID ids.ID         `serialize:"false" json:"fxID"`
-	In   TransferableIn `serialize:"true" json:"input"`
+	In   TransferableIn `serialize:"true"  json:"input"`
 }
 
 // Input returns the feature extension input that this Input is using.
@@ -233,7 +233,7 @@ func VerifyTx(
 			}
 			fc.Consume(in.AssetID(), in.Input().Amount())
 		}
-		if !utils.IsSortedAndUniqueSortable(ins) {
+		if !utils.IsSortedAndUnique(ins) {
 			return ErrInputsNotSortedUnique
 		}
 	}

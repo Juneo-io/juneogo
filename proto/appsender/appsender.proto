@@ -4,7 +4,7 @@ package appsender;
 
 import "google/protobuf/empty.proto";
 
-option go_package = "github.com/ava-labs/avalanchego/proto/pb/appsender";
+option go_package = "github.com/Juneo-io/juneogo/proto/pb/appsender";
 
 service AppSender {
   rpc SendAppRequest(SendAppRequestMsg) returns (google.protobuf.Empty);

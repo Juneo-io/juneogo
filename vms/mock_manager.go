@@ -11,9 +11,9 @@ import (
 	context "context"
 	reflect "reflect"
 
-	ids "github.com/ava-labs/avalanchego/ids"
-	logging "github.com/ava-labs/avalanchego/utils/logging"
-	gomock "github.com/golang/mock/gomock"
+	ids "github.com/Juneo-io/juneogo/ids"
+	logging "github.com/Juneo-io/juneogo/utils/logging"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockFactory is a mock of Factory interface.

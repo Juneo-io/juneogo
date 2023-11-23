@@ -9,10 +9,11 @@ import (
 	"log"
 	"time"
 
-	"github.com/ava-labs/avalanchego/indexer"
-	"github.com/ava-labs/avalanchego/vms/platformvm/blocks"
-	"github.com/ava-labs/avalanchego/vms/proposervm/block"
-	"github.com/ava-labs/avalanchego/wallet/subnet/primary"
+	"github.com/Juneo-io/juneogo/indexer"
+	"github.com/Juneo-io/juneogo/wallet/supernet/primary"
+
+	platformvmblock "github.com/Juneo-io/juneogo/vms/platformvm/block"
+	proposervmblock "github.com/Juneo-io/juneogo/vms/proposervm/block"
 )
 
 // This example program continuously polls for the next P-Chain block
@@ -33,12 +34,12 @@ func main() {
 		}
 
 		platformvmBlockBytes := container.Bytes
-		proposerVMBlock, err := block.Parse(container.Bytes)
+		proposerVMBlock, err := proposervmblock.Parse(container.Bytes)
 		if err == nil {
 			platformvmBlockBytes = proposerVMBlock.Block()
 		}
 
-		platformvmBlock, err := blocks.Parse(blocks.Codec, platformvmBlockBytes)
+		platformvmBlock, err := platformvmblock.Parse(platformvmblock.Codec, platformvmBlockBytes)
 		if err != nil {
 			log.Fatalf("failed to parse platformvm block: %s\n", err)
 		}

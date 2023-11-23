@@ -7,12 +7,12 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/ava-labs/avalanchego/cache"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils/crypto/secp256k1"
-	"github.com/ava-labs/avalanchego/utils/hashing"
-	"github.com/ava-labs/avalanchego/utils/wrappers"
-	"github.com/ava-labs/avalanchego/vms/components/verify"
+	"github.com/Juneo-io/juneogo/cache"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils/crypto/secp256k1"
+	"github.com/Juneo-io/juneogo/utils/hashing"
+	"github.com/Juneo-io/juneogo/utils/wrappers"
+	"github.com/Juneo-io/juneogo/vms/components/verify"
 )
 
 const (
@@ -222,11 +222,7 @@ func (fx *Fx) VerifyCredentials(utx UnsignedTx, in *Input, cred *Credential, out
 func (*Fx) CreateOutput(amount uint64, ownerIntf interface{}) (interface{}, error) {
 	owner, ok := ownerIntf.(*OutputOwners)
 	if !ok {
-		output, ok := ownerIntf.(*TransferOutput)
-		if !ok {
-			return nil, ErrWrongOwnerType
-		}
-		owner = &output.OutputOwners
+		return nil, ErrWrongOwnerType
 	}
 	if err := owner.Verify(); err != nil {
 		return nil, err

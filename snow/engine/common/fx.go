@@ -3,9 +3,7 @@
 
 package common
 
-import (
-	"github.com/ava-labs/avalanchego/ids"
-)
+import "github.com/Juneo-io/juneogo/ids"
 
 // Fx wraps an instance of a feature extension
 type Fx struct {

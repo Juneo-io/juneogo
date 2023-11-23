@@ -4,6 +4,7 @@
 package avm
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -11,16 +12,18 @@ import (
 
 	"golang.org/x/exp/maps"
 
-	"github.com/ava-labs/avalanchego/api"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils/formatting"
-	"github.com/ava-labs/avalanchego/utils/linkedhashmap"
-	"github.com/ava-labs/avalanchego/utils/logging"
-	"github.com/ava-labs/avalanchego/utils/math"
-	"github.com/ava-labs/avalanchego/vms/avm/txs"
-	"github.com/ava-labs/avalanchego/vms/components/avax"
-	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
+	"github.com/Juneo-io/juneogo/api"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils/formatting"
+	"github.com/Juneo-io/juneogo/utils/linkedhashmap"
+	"github.com/Juneo-io/juneogo/utils/logging"
+	"github.com/Juneo-io/juneogo/utils/math"
+	"github.com/Juneo-io/juneogo/vms/avm/txs"
+	"github.com/Juneo-io/juneogo/vms/components/avax"
+	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
 )
+
+var errMissingUTXO = errors.New("missing utxo")
 
 type WalletService struct {
 	vm         *VM
@@ -138,6 +141,10 @@ func (w *WalletService) IssueTx(_ *http.Request, args *api.FormattedTx, reply *a
 	if err != nil {
 		return fmt.Errorf("problem decoding transaction: %w", err)
 	}
+
+	w.vm.ctx.Lock.Lock()
+	defer w.vm.ctx.Lock.Unlock()
+
 	txID, err := w.issue(txBytes)
 	reply.TxID = txID
 	return err
@@ -175,6 +182,9 @@ func (w *WalletService) SendMultiple(_ *http.Request, args *SendMultipleArgs, re
 	if err != nil {
 		return fmt.Errorf("couldn't parse 'From' addresses: %w", err)
 	}
+
+	w.vm.ctx.Lock.Lock()
+	defer w.vm.ctx.Lock.Unlock()
 
 	// Load user's UTXOs/keys
 	utxos, kc, err := w.vm.LoadUser(args.Username, args.Password, fromAddrs)

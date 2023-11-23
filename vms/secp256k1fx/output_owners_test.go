@@ -8,7 +8,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/ids"
+	"github.com/Juneo-io/juneogo/ids"
 )
 
 func TestOutputOwnersVerify(t *testing.T) {
@@ -67,8 +67,8 @@ func TestOutputOwnersVerify(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			require := require.New(t)
-			require.ErrorIs(tt.out.Verify(), tt.expectedErr)
-			require.ErrorIs(tt.out.VerifyState(), tt.expectedErr)
+			err := tt.out.Verify()
+			require.ErrorIs(err, tt.expectedErr)
 		})
 	}
 }

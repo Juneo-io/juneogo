@@ -6,12 +6,12 @@ package p
 import (
 	"time"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/vms/components/avax"
-	"github.com/ava-labs/avalanchego/vms/platformvm/signer"
-	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
-	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
-	"github.com/ava-labs/avalanchego/wallet/subnet/primary/common"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/vms/components/avax"
+	"github.com/Juneo-io/juneogo/vms/platformvm/signer"
+	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
+	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
+	"github.com/Juneo-io/juneogo/wallet/supernet/primary/common"
 )
 
 var _ Wallet = (*walletWithOptions)(nil)
@@ -41,7 +41,7 @@ func (w *walletWithOptions) Builder() Builder {
 func (w *walletWithOptions) IssueBaseTx(
 	outputs []*avax.TransferableOutput,
 	options ...common.Option,
-) (ids.ID, error) {
+) (*txs.Tx, error) {
 	return w.Wallet.IssueBaseTx(
 		outputs,
 		common.UnionOptions(w.options, options)...,
@@ -53,7 +53,7 @@ func (w *walletWithOptions) IssueAddValidatorTx(
 	rewardsOwner *secp256k1fx.OutputOwners,
 	shares uint32,
 	options ...common.Option,
-) (ids.ID, error) {
+) (*txs.Tx, error) {
 	return w.Wallet.IssueAddValidatorTx(
 		vdr,
 		rewardsOwner,
@@ -62,24 +62,24 @@ func (w *walletWithOptions) IssueAddValidatorTx(
 	)
 }
 
-func (w *walletWithOptions) IssueAddSubnetValidatorTx(
-	vdr *txs.SubnetValidator,
+func (w *walletWithOptions) IssueAddSupernetValidatorTx(
+	vdr *txs.SupernetValidator,
 	options ...common.Option,
-) (ids.ID, error) {
-	return w.Wallet.IssueAddSubnetValidatorTx(
+) (*txs.Tx, error) {
+	return w.Wallet.IssueAddSupernetValidatorTx(
 		vdr,
 		common.UnionOptions(w.options, options)...,
 	)
 }
 
-func (w *walletWithOptions) IssueRemoveSubnetValidatorTx(
+func (w *walletWithOptions) IssueRemoveSupernetValidatorTx(
 	nodeID ids.NodeID,
-	subnetID ids.ID,
+	supernetID ids.ID,
 	options ...common.Option,
-) (ids.ID, error) {
-	return w.Wallet.IssueRemoveSubnetValidatorTx(
+) (*txs.Tx, error) {
+	return w.Wallet.IssueRemoveSupernetValidatorTx(
 		nodeID,
-		subnetID,
+		supernetID,
 		common.UnionOptions(w.options, options)...,
 	)
 }
@@ -88,7 +88,7 @@ func (w *walletWithOptions) IssueAddDelegatorTx(
 	vdr *txs.Validator,
 	rewardsOwner *secp256k1fx.OutputOwners,
 	options ...common.Option,
-) (ids.ID, error) {
+) (*txs.Tx, error) {
 	return w.Wallet.IssueAddDelegatorTx(
 		vdr,
 		rewardsOwner,
@@ -97,15 +97,15 @@ func (w *walletWithOptions) IssueAddDelegatorTx(
 }
 
 func (w *walletWithOptions) IssueCreateChainTx(
-	subnetID ids.ID,
+	supernetID ids.ID,
 	genesis []byte,
 	vmID ids.ID,
 	fxIDs []ids.ID,
 	chainName string,
 	options ...common.Option,
-) (ids.ID, error) {
+) (*txs.Tx, error) {
 	return w.Wallet.IssueCreateChainTx(
-		subnetID,
+		supernetID,
 		genesis,
 		vmID,
 		fxIDs,
@@ -114,11 +114,11 @@ func (w *walletWithOptions) IssueCreateChainTx(
 	)
 }
 
-func (w *walletWithOptions) IssueCreateSubnetTx(
+func (w *walletWithOptions) IssueCreateSupernetTx(
 	owner *secp256k1fx.OutputOwners,
 	options ...common.Option,
-) (ids.ID, error) {
-	return w.Wallet.IssueCreateSubnetTx(
+) (*txs.Tx, error) {
+	return w.Wallet.IssueCreateSupernetTx(
 		owner,
 		common.UnionOptions(w.options, options)...,
 	)
@@ -128,7 +128,7 @@ func (w *walletWithOptions) IssueImportTx(
 	sourceChainID ids.ID,
 	to *secp256k1fx.OutputOwners,
 	options ...common.Option,
-) (ids.ID, error) {
+) (*txs.Tx, error) {
 	return w.Wallet.IssueImportTx(
 		sourceChainID,
 		to,
@@ -140,7 +140,7 @@ func (w *walletWithOptions) IssueExportTx(
 	chainID ids.ID,
 	outputs []*avax.TransferableOutput,
 	options ...common.Option,
-) (ids.ID, error) {
+) (*txs.Tx, error) {
 	return w.Wallet.IssueExportTx(
 		chainID,
 		outputs,
@@ -148,8 +148,8 @@ func (w *walletWithOptions) IssueExportTx(
 	)
 }
 
-func (w *walletWithOptions) IssueTransformSubnetTx(
-	subnetID ids.ID,
+func (w *walletWithOptions) IssueTransformSupernetTx(
+	supernetID ids.ID,
 	assetID ids.ID,
 	initialSupply uint64,
 	maxSupply uint64,
@@ -164,9 +164,9 @@ func (w *walletWithOptions) IssueTransformSubnetTx(
 	maxValidatorWeightFactor byte,
 	uptimeRequirement uint32,
 	options ...common.Option,
-) (ids.ID, error) {
-	return w.Wallet.IssueTransformSubnetTx(
-		subnetID,
+) (*txs.Tx, error) {
+	return w.Wallet.IssueTransformSupernetTx(
+		supernetID,
 		assetID,
 		initialSupply,
 		maxSupply,
@@ -185,14 +185,14 @@ func (w *walletWithOptions) IssueTransformSubnetTx(
 }
 
 func (w *walletWithOptions) IssueAddPermissionlessValidatorTx(
-	vdr *txs.SubnetValidator,
+	vdr *txs.SupernetValidator,
 	signer signer.Signer,
 	assetID ids.ID,
 	validationRewardsOwner *secp256k1fx.OutputOwners,
 	delegationRewardsOwner *secp256k1fx.OutputOwners,
 	shares uint32,
 	options ...common.Option,
-) (ids.ID, error) {
+) (*txs.Tx, error) {
 	return w.Wallet.IssueAddPermissionlessValidatorTx(
 		vdr,
 		signer,
@@ -205,11 +205,11 @@ func (w *walletWithOptions) IssueAddPermissionlessValidatorTx(
 }
 
 func (w *walletWithOptions) IssueAddPermissionlessDelegatorTx(
-	vdr *txs.SubnetValidator,
+	vdr *txs.SupernetValidator,
 	assetID ids.ID,
 	rewardsOwner *secp256k1fx.OutputOwners,
 	options ...common.Option,
-) (ids.ID, error) {
+) (*txs.Tx, error) {
 	return w.Wallet.IssueAddPermissionlessDelegatorTx(
 		vdr,
 		assetID,
@@ -221,7 +221,7 @@ func (w *walletWithOptions) IssueAddPermissionlessDelegatorTx(
 func (w *walletWithOptions) IssueUnsignedTx(
 	utx txs.UnsignedTx,
 	options ...common.Option,
-) (ids.ID, error) {
+) (*txs.Tx, error) {
 	return w.Wallet.IssueUnsignedTx(
 		utx,
 		common.UnionOptions(w.options, options)...,
@@ -231,7 +231,7 @@ func (w *walletWithOptions) IssueUnsignedTx(
 func (w *walletWithOptions) IssueTx(
 	tx *txs.Tx,
 	options ...common.Option,
-) (ids.ID, error) {
+) error {
 	return w.Wallet.IssueTx(
 		tx,
 		common.UnionOptions(w.options, options)...,

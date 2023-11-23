@@ -11,8 +11,8 @@ import (
 	context "context"
 	reflect "reflect"
 
-	ids "github.com/ava-labs/avalanchego/ids"
-	gomock "github.com/golang/mock/gomock"
+	ids "github.com/Juneo-io/juneogo/ids"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockVMRegistry is a mock of VMRegistry interface.

@@ -8,8 +8,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/utils"
-	"github.com/ava-labs/avalanchego/utils/units"
+	"github.com/Juneo-io/juneogo/utils"
+	"github.com/Juneo-io/juneogo/utils/units"
 )
 
 func TestTx(t *testing.T) {
@@ -27,8 +27,8 @@ func TestTx(t *testing.T) {
 	require.NoError(err)
 	require.Equal(builtMsgBytes, parsedMsgIntf.Bytes())
 
-	parsedMsg, ok := parsedMsgIntf.(*Tx)
-	require.True(ok)
+	require.IsType(&Tx{}, parsedMsgIntf)
+	parsedMsg := parsedMsgIntf.(*Tx)
 
 	require.Equal(tx, parsedMsg.Tx)
 }

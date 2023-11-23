@@ -8,11 +8,11 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/api"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils/bloom"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/formatting/address"
+	"github.com/Juneo-io/juneogo/api"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils/bloom"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/formatting/address"
 )
 
 func TestAddAddressesParseAddresses(t *testing.T) {
@@ -31,64 +31,47 @@ func TestAddAddressesParseAddresses(t *testing.T) {
 		},
 	}}
 
-	err = msg.parseAddresses()
-	require.NoError(err)
+	require.NoError(msg.parseAddresses())
 
 	require.Len(msg.addressIds, 1)
 	require.Equal(addrID[:], msg.addressIds[0])
 }
 
 func TestFilterParamUpdateMulti(t *testing.T) {
+	require := require.New(t)
+
 	fp := NewFilterParam()
 
 	addr1 := []byte("abc")
 	addr2 := []byte("def")
 	addr3 := []byte("xyz")
 
-	if err := fp.Add(addr1, addr2, addr3); err != nil {
-		t.Fatal(err)
-	}
-	if len(fp.set) != 3 {
-		t.Fatalf("update multi failed")
-	}
-	if _, exists := fp.set[string(addr1)]; !exists {
-		t.Fatalf("update multi failed")
-	}
-	if _, exists := fp.set[string(addr2)]; !exists {
-		t.Fatalf("update multi failed")
-	}
-	if _, exists := fp.set[string(addr3)]; !exists {
-		t.Fatalf("update multi failed")
-	}
+	require.NoError(fp.Add(addr1, addr2, addr3))
+	require.Len(fp.set, 3)
+	require.Contains(fp.set, string(addr1))
+	require.Contains(fp.set, string(addr2))
+	require.Contains(fp.set, string(addr3))
 }
 
 func TestFilterParam(t *testing.T) {
+	require := require.New(t)
+
 	mapFilter := bloom.NewMap()
 
 	fp := NewFilterParam()
 	fp.SetFilter(mapFilter)
 
 	addr := ids.GenerateTestShortID()
-	if err := fp.Add(addr[:]); err != nil {
-		t.Fatal(err)
-	}
-	if !fp.Check(addr[:]) {
-		t.Fatalf("check address failed")
-	}
+	require.NoError(fp.Add(addr[:]))
+	require.True(fp.Check(addr[:]))
 	delete(fp.set, string(addr[:]))
 
 	mapFilter.Add(addr[:])
-	if !fp.Check(addr[:]) {
-		t.Fatalf("check address failed")
-	}
-	if fp.Check([]byte("bye")) {
-		t.Fatalf("check address failed")
-	}
+	require.True(fp.Check(addr[:]))
+	require.False(fp.Check([]byte("bye")))
 }
 
 func TestNewBloom(t *testing.T) {
 	cm := &NewBloom{}
-	if cm.IsParamsValid() {
-		t.Fatalf("new filter check failed")
-	}
+	require.False(t, cm.IsParamsValid())
 }

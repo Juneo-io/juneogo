@@ -7,13 +7,13 @@ import (
 	"context"
 	"math/rand"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/snow/choices"
-	"github.com/ava-labs/avalanchego/snow/consensus/snowball"
-	"github.com/ava-labs/avalanchego/utils"
-	"github.com/ava-labs/avalanchego/utils/bag"
-	"github.com/ava-labs/avalanchego/utils/sampler"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/snow/choices"
+	"github.com/Juneo-io/juneogo/snow/consensus/snowball"
+	"github.com/Juneo-io/juneogo/utils"
+	"github.com/Juneo-io/juneogo/utils/bag"
+	"github.com/Juneo-io/juneogo/utils/sampler"
 )
 
 type Network struct {
@@ -118,7 +118,7 @@ func (n *Network) Round() error {
 	}
 
 	// If this node has been finalized, remove it from the poller
-	if running.Finalized() {
+	if running.NumProcessing() == 0 {
 		newSize := len(n.running) - 1
 		n.running[runningInd] = n.running[newSize]
 		n.running = n.running[:newSize]

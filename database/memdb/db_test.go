@@ -6,7 +6,7 @@ package memdb
 import (
 	"testing"
 
-	"github.com/ava-labs/avalanchego/database"
+	"github.com/Juneo-io/juneogo/database"
 )
 
 func TestInterface(t *testing.T) {
@@ -15,10 +15,12 @@ func TestInterface(t *testing.T) {
 	}
 }
 
-func FuzzInterface(f *testing.F) {
-	for _, test := range database.FuzzTests {
-		test(f, New())
-	}
+func FuzzKeyValue(f *testing.F) {
+	database.FuzzKeyValue(f, New())
+}
+
+func FuzzNewIteratorWithPrefix(f *testing.F) {
+	database.FuzzNewIteratorWithPrefix(f, New())
 }
 
 func BenchmarkInterface(b *testing.B) {

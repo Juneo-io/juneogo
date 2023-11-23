@@ -10,8 +10,8 @@ package avax
 import (
 	reflect "reflect"
 
-	snow "github.com/ava-labs/avalanchego/snow"
-	gomock "github.com/golang/mock/gomock"
+	snow "github.com/Juneo-io/juneogo/snow"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockTransferableIn is a mock of TransferableIn interface.

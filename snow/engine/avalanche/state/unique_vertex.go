@@ -5,22 +5,27 @@ package state
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
-	"github.com/ava-labs/avalanchego/cache"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow/choices"
-	"github.com/ava-labs/avalanchego/snow/consensus/avalanche"
-	"github.com/ava-labs/avalanchego/snow/consensus/snowstorm"
-	"github.com/ava-labs/avalanchego/snow/engine/avalanche/vertex"
-	"github.com/ava-labs/avalanchego/utils/formatting"
-	"github.com/ava-labs/avalanchego/utils/hashing"
+	"github.com/Juneo-io/juneogo/cache"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow/choices"
+	"github.com/Juneo-io/juneogo/snow/consensus/avalanche"
+	"github.com/Juneo-io/juneogo/snow/consensus/snowstorm"
+	"github.com/Juneo-io/juneogo/snow/engine/avalanche/vertex"
+	"github.com/Juneo-io/juneogo/utils/formatting"
+	"github.com/Juneo-io/juneogo/utils/hashing"
 )
 
 var (
 	_ cache.Evictable[ids.ID] = (*uniqueVertex)(nil)
 	_ avalanche.Vertex        = (*uniqueVertex)(nil)
+
+	errGetParents = errors.New("failed to get parents for vertex")
+	errGetHeight  = errors.New("failed to get height for vertex")
+	errGetTxs     = errors.New("failed to get txs for vertex")
 )
 
 // uniqueVertex acts as a cache for vertices in the database.
@@ -220,7 +225,7 @@ func (vtx *uniqueVertex) Parents() ([]avalanche.Vertex, error) {
 	vtx.refresh()
 
 	if vtx.v.vtx == nil {
-		return nil, fmt.Errorf("failed to get parents for vertex with status: %s", vtx.v.status)
+		return nil, fmt.Errorf("%w with status: %s", errGetParents, vtx.v.status)
 	}
 
 	parentIDs := vtx.v.vtx.ParentIDs()
@@ -241,7 +246,7 @@ func (vtx *uniqueVertex) Height() (uint64, error) {
 	vtx.refresh()
 
 	if vtx.v.vtx == nil {
-		return 0, fmt.Errorf("failed to get height for vertex with status: %s", vtx.v.status)
+		return 0, fmt.Errorf("%w with status: %s", errGetHeight, vtx.v.status)
 	}
 
 	return vtx.v.vtx.Height(), nil
@@ -251,7 +256,7 @@ func (vtx *uniqueVertex) Txs(ctx context.Context) ([]snowstorm.Tx, error) {
 	vtx.refresh()
 
 	if vtx.v.vtx == nil {
-		return nil, fmt.Errorf("failed to get txs for vertex with status: %s", vtx.v.status)
+		return nil, fmt.Errorf("%w with status: %s", errGetTxs, vtx.v.status)
 	}
 
 	txs := vtx.v.vtx.Txs()

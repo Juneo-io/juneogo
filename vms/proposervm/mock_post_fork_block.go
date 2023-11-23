@@ -12,11 +12,11 @@ import (
 	reflect "reflect"
 	time "time"
 
-	ids "github.com/ava-labs/avalanchego/ids"
-	choices "github.com/ava-labs/avalanchego/snow/choices"
-	snowman "github.com/ava-labs/avalanchego/snow/consensus/snowman"
-	block "github.com/ava-labs/avalanchego/vms/proposervm/block"
-	gomock "github.com/golang/mock/gomock"
+	ids "github.com/Juneo-io/juneogo/ids"
+	choices "github.com/Juneo-io/juneogo/snow/choices"
+	snowman "github.com/Juneo-io/juneogo/snow/consensus/snowman"
+	block "github.com/Juneo-io/juneogo/vms/proposervm/block"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockPostForkBlock is a mock of PostForkBlock interface.

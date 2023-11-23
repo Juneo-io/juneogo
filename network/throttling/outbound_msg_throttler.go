@@ -6,12 +6,15 @@ package throttling
 import (
 	"github.com/prometheus/client_golang/prometheus"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/message"
-	"github.com/ava-labs/avalanchego/snow/validators"
-	"github.com/ava-labs/avalanchego/utils/logging"
-	"github.com/ava-labs/avalanchego/utils/math"
-	"github.com/ava-labs/avalanchego/utils/wrappers"
+	"go.uber.org/zap"
+
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/message"
+	"github.com/Juneo-io/juneogo/snow/validators"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/logging"
+	"github.com/Juneo-io/juneogo/utils/math"
+	"github.com/Juneo-io/juneogo/utils/wrappers"
 )
 
 var (
@@ -43,7 +46,7 @@ func NewSybilOutboundMsgThrottler(
 	log logging.Logger,
 	namespace string,
 	registerer prometheus.Registerer,
-	vdrs validators.Set,
+	vdrs validators.Manager,
 	config MsgByteThrottlerConfig,
 ) (OutboundMsgThrottler, error) {
 	t := &outboundMsgThrottler{
@@ -85,9 +88,16 @@ func (t *outboundMsgThrottler) Acquire(msg message.OutboundMessage, nodeID ids.N
 	// Take as many bytes as we can from [nodeID]'s validator allocation.
 	// Calculate [nodeID]'s validator allocation size based on its weight
 	vdrAllocationSize := uint64(0)
-	weight := t.vdrs.GetWeight(nodeID)
+	weight := t.vdrs.GetWeight(constants.PrimaryNetworkID, nodeID)
 	if weight != 0 {
-		vdrAllocationSize = uint64(float64(t.maxVdrBytes) * float64(weight) / float64(t.vdrs.Weight()))
+		totalWeight, err := t.vdrs.TotalWeight(constants.PrimaryNetworkID)
+		if err != nil {
+			t.log.Error("Failed to get total weight of primary network validators",
+				zap.Error(err),
+			)
+		} else {
+			vdrAllocationSize = uint64(float64(t.maxVdrBytes) * float64(weight) / float64(totalWeight))
+		}
 	}
 	vdrBytesAlreadyUsed := t.nodeToVdrBytesUsed[nodeID]
 	// [vdrBytesAllowed] is the number of bytes this node

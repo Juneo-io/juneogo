@@ -8,14 +8,14 @@ import (
 	"reflect"
 	"sync"
 
-	"github.com/ava-labs/avalanchego/codec"
-	"github.com/ava-labs/avalanchego/codec/reflectcodec"
-	"github.com/ava-labs/avalanchego/utils/wrappers"
+	"github.com/Juneo-io/juneogo/codec"
+	"github.com/Juneo-io/juneogo/codec/reflectcodec"
+	"github.com/Juneo-io/juneogo/utils/wrappers"
 )
 
 const (
 	// default max length of a slice being marshalled by Marshal(). Should be <= math.MaxUint32.
-	defaultMaxSliceLength = 256 * 1024
+	DefaultMaxSliceLength = 256 * 1024
 )
 
 var (
@@ -56,7 +56,7 @@ func New(tagNames []string, maxSliceLen uint32) Codec {
 
 // NewDefault is a convenience constructor; it returns a new codec with reasonable default values
 func NewDefault() Codec {
-	return New([]string{reflectcodec.DefaultTagName}, defaultMaxSliceLength)
+	return New([]string{reflectcodec.DefaultTagName}, DefaultMaxSliceLength)
 }
 
 // NewCustomMaxLength is a convenience constructor; it returns a new codec with custom max length and default tags

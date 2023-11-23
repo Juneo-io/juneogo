@@ -9,12 +9,12 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 
-	"github.com/ava-labs/avalanchego/cache"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils/set"
-	"github.com/ava-labs/avalanchego/utils/units"
-	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
-	"github.com/ava-labs/avalanchego/vms/platformvm/txs/txheap"
+	"github.com/Juneo-io/juneogo/cache"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils/set"
+	"github.com/Juneo-io/juneogo/utils/units"
+	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
+	"github.com/Juneo-io/juneogo/vms/platformvm/txs/txheap"
 )
 
 const (
@@ -69,10 +69,9 @@ type Mempool interface {
 	// It's guaranteed that the returned tx, if not nil, is a StakerTx.
 	PeekStakerTx() *txs.Tx
 
-	// Note: dropped txs are added to droppedTxIDs but not
-	// not evicted from unissued decision/staker txs.
-	// This allows previously dropped txs to be possibly
-	// reissued.
+	// Note: dropped txs are added to droppedTxIDs but are not evicted from
+	// unissued decision/staker txs. This allows previously dropped txs to be
+	// possibly reissued.
 	MarkDropped(txID ids.ID, reason error)
 	GetDropReason(txID ids.ID) error
 }

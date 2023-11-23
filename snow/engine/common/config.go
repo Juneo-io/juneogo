@@ -6,16 +6,16 @@ package common
 import (
 	"time"
 
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/snow/engine/common/tracker"
-	"github.com/ava-labs/avalanchego/snow/validators"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/snow/engine/common/tracker"
+	"github.com/Juneo-io/juneogo/snow/validators"
 )
 
 // Config wraps the common configurations that are needed by a Snow consensus
 // engine
 type Config struct {
 	Ctx     *snow.ConsensusContext
-	Beacons validators.Set
+	Beacons validators.Manager
 
 	SampleK          int
 	Alpha            uint64

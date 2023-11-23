@@ -6,22 +6,528 @@ package txs
 import (
 	"testing"
 
-	"github.com/golang/mock/gomock"
-
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/vms/components/avax"
-	"github.com/ava-labs/avalanchego/vms/components/verify"
-	"github.com/ava-labs/avalanchego/vms/platformvm/reward"
+	"go.uber.org/mock/gomock"
+
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/utils"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/units"
+	"github.com/Juneo-io/juneogo/vms/components/avax"
+	"github.com/Juneo-io/juneogo/vms/components/verify"
+	"github.com/Juneo-io/juneogo/vms/platformvm/reward"
+	"github.com/Juneo-io/juneogo/vms/platformvm/stakeable"
+	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
+	"github.com/Juneo-io/juneogo/vms/types"
 )
 
-func TestTransformSubnetTxSyntacticVerify(t *testing.T) {
+func TestTransformSupernetTxSerialization(t *testing.T) {
+	require := require.New(t)
+
+	addr := ids.ShortID{
+		0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb,
+		0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb,
+		0x44, 0x55, 0x66, 0x77,
+	}
+
+	avaxAssetID, err := ids.FromString("FvwEAhmxKfeiG8SnEvq42hc6whRyY3EFYAvebMqDNDGCgxN5Z")
+	require.NoError(err)
+
+	customAssetID := ids.ID{
+		0x99, 0x77, 0x55, 0x77, 0x11, 0x33, 0x55, 0x31,
+		0x99, 0x77, 0x55, 0x77, 0x11, 0x33, 0x55, 0x31,
+		0x99, 0x77, 0x55, 0x77, 0x11, 0x33, 0x55, 0x31,
+		0x99, 0x77, 0x55, 0x77, 0x11, 0x33, 0x55, 0x31,
+	}
+
+	txID := ids.ID{
+		0xff, 0xee, 0xdd, 0xcc, 0xbb, 0xaa, 0x99, 0x88,
+		0xff, 0xee, 0xdd, 0xcc, 0xbb, 0xaa, 0x99, 0x88,
+		0xff, 0xee, 0xdd, 0xcc, 0xbb, 0xaa, 0x99, 0x88,
+		0xff, 0xee, 0xdd, 0xcc, 0xbb, 0xaa, 0x99, 0x88,
+	}
+	supernetID := ids.ID{
+		0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+		0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18,
+		0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28,
+		0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38,
+	}
+
+	simpleTransformTx := &TransformSupernetTx{
+		BaseTx: BaseTx{
+			BaseTx: avax.BaseTx{
+				NetworkID:    constants.MainnetID,
+				BlockchainID: constants.PlatformChainID,
+				Outs:         []*avax.TransferableOutput{},
+				Ins: []*avax.TransferableInput{
+					{
+						UTXOID: avax.UTXOID{
+							TxID:        txID,
+							OutputIndex: 1,
+						},
+						Asset: avax.Asset{
+							ID: avaxAssetID,
+						},
+						In: &secp256k1fx.TransferInput{
+							Amt: 10 * units.Avax,
+							Input: secp256k1fx.Input{
+								SigIndices: []uint32{5},
+							},
+						},
+					},
+					{
+						UTXOID: avax.UTXOID{
+							TxID:        txID,
+							OutputIndex: 2,
+						},
+						Asset: avax.Asset{
+							ID: customAssetID,
+						},
+						In: &secp256k1fx.TransferInput{
+							Amt: 0xefffffffffffffff,
+							Input: secp256k1fx.Input{
+								SigIndices: []uint32{0},
+							},
+						},
+					},
+				},
+				Memo: types.JSONByteSlice{},
+			},
+		},
+		Supernet:                   supernetID,
+		AssetID:                  customAssetID,
+		InitialSupply:            0x1000000000000000,
+		MaximumSupply:            0xffffffffffffffff,
+		MinConsumptionRate:       1_000,
+		MaxConsumptionRate:       1_000_000,
+		MinValidatorStake:        1,
+		MaxValidatorStake:        0xffffffffffffffff,
+		MinStakeDuration:         1,
+		MaxStakeDuration:         365 * 24 * 60 * 60,
+		MinDelegationFee:         reward.PercentDenominator,
+		MinDelegatorStake:        1,
+		MaxValidatorWeightFactor: 1,
+		UptimeRequirement:        .95 * reward.PercentDenominator,
+		SupernetAuth: &secp256k1fx.Input{
+			SigIndices: []uint32{3},
+		},
+	}
+	require.NoError(simpleTransformTx.SyntacticVerify(&snow.Context{
+		NetworkID:   1,
+		ChainID:     constants.PlatformChainID,
+		AVAXAssetID: avaxAssetID,
+	}))
+
+	expectedUnsignedSimpleTransformTxBytes := []byte{
+		// Codec version
+		0x00, 0x00,
+		// TransformSupernetTx type ID
+		0x00, 0x00, 0x00, 0x18,
+		// Mainnet network ID
+		0x00, 0x00, 0x00, 0x01,
+		// P-chain blockchain ID
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		// number of outputs
+		0x00, 0x00, 0x00, 0x00,
+		// number of inputs
+		0x00, 0x00, 0x00, 0x02,
+		// inputs[0]
+		// TxID
+		0xff, 0xee, 0xdd, 0xcc, 0xbb, 0xaa, 0x99, 0x88,
+		0xff, 0xee, 0xdd, 0xcc, 0xbb, 0xaa, 0x99, 0x88,
+		0xff, 0xee, 0xdd, 0xcc, 0xbb, 0xaa, 0x99, 0x88,
+		0xff, 0xee, 0xdd, 0xcc, 0xbb, 0xaa, 0x99, 0x88,
+		// Tx output index
+		0x00, 0x00, 0x00, 0x01,
+		// Mainnet AVAX assetID
+		0x21, 0xe6, 0x73, 0x17, 0xcb, 0xc4, 0xbe, 0x2a,
+		0xeb, 0x00, 0x67, 0x7a, 0xd6, 0x46, 0x27, 0x78,
+		0xa8, 0xf5, 0x22, 0x74, 0xb9, 0xd6, 0x05, 0xdf,
+		0x25, 0x91, 0xb2, 0x30, 0x27, 0xa8, 0x7d, 0xff,
+		// secp256k1fx transfer input type ID
+		0x00, 0x00, 0x00, 0x05,
+		// input amount = 10 AVAX
+		0x00, 0x00, 0x00, 0x02, 0x54, 0x0b, 0xe4, 0x00,
+		// number of signatures needed in input
+		0x00, 0x00, 0x00, 0x01,
+		// index of signer
+		0x00, 0x00, 0x00, 0x05,
+		// inputs[1]
+		// TxID
+		0xff, 0xee, 0xdd, 0xcc, 0xbb, 0xaa, 0x99, 0x88,
+		0xff, 0xee, 0xdd, 0xcc, 0xbb, 0xaa, 0x99, 0x88,
+		0xff, 0xee, 0xdd, 0xcc, 0xbb, 0xaa, 0x99, 0x88,
+		0xff, 0xee, 0xdd, 0xcc, 0xbb, 0xaa, 0x99, 0x88,
+		// Tx output index
+		0x00, 0x00, 0x00, 0x02,
+		// custom asset ID
+		0x99, 0x77, 0x55, 0x77, 0x11, 0x33, 0x55, 0x31,
+		0x99, 0x77, 0x55, 0x77, 0x11, 0x33, 0x55, 0x31,
+		0x99, 0x77, 0x55, 0x77, 0x11, 0x33, 0x55, 0x31,
+		0x99, 0x77, 0x55, 0x77, 0x11, 0x33, 0x55, 0x31,
+		// secp256k1fx transfer input type ID
+		0x00, 0x00, 0x00, 0x05,
+		// input amount
+		0xef, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+		// number of signatures needed in input
+		0x00, 0x00, 0x00, 0x01,
+		// index of signer
+		0x00, 0x00, 0x00, 0x00,
+		// length of memo
+		0x00, 0x00, 0x00, 0x00,
+		// supernetID being transformed
+		0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+		0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18,
+		0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28,
+		0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38,
+		// staking asset ID
+		0x99, 0x77, 0x55, 0x77, 0x11, 0x33, 0x55, 0x31,
+		0x99, 0x77, 0x55, 0x77, 0x11, 0x33, 0x55, 0x31,
+		0x99, 0x77, 0x55, 0x77, 0x11, 0x33, 0x55, 0x31,
+		0x99, 0x77, 0x55, 0x77, 0x11, 0x33, 0x55, 0x31,
+		// initial supply
+		0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		// maximum supply
+		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+		// minimum consumption rate
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0xe8,
+		// maximum consumption rate
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x0f, 0x42, 0x40,
+		// minimum staking amount
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01,
+		// maximum staking amount
+		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+		// minimum staking duration
+		0x00, 0x00, 0x00, 0x01,
+		// maximum staking duration
+		0x01, 0xe1, 0x33, 0x80,
+		// minimum delegation fee
+		0x00, 0x0f, 0x42, 0x40,
+		// minimum delegation amount
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01,
+		// maximum validator weight factor
+		0x01,
+		// uptime requirement
+		0x00, 0x0e, 0x7e, 0xf0,
+		// secp256k1fx authorization type ID
+		0x00, 0x00, 0x00, 0x0a,
+		// number of signatures needed in authorization
+		0x00, 0x00, 0x00, 0x01,
+		// authorization signfature index
+		0x00, 0x00, 0x00, 0x03,
+	}
+	var unsignedSimpleTransformTx UnsignedTx = simpleTransformTx
+	unsignedSimpleTransformTxBytes, err := Codec.Marshal(Version, &unsignedSimpleTransformTx)
+	require.NoError(err)
+	require.Equal(expectedUnsignedSimpleTransformTxBytes, unsignedSimpleTransformTxBytes)
+
+	complexTransformTx := &TransformSupernetTx{
+		BaseTx: BaseTx{
+			BaseTx: avax.BaseTx{
+				NetworkID:    constants.MainnetID,
+				BlockchainID: constants.PlatformChainID,
+				Outs: []*avax.TransferableOutput{
+					{
+						Asset: avax.Asset{
+							ID: avaxAssetID,
+						},
+						Out: &stakeable.LockOut{
+							Locktime: 87654321,
+							TransferableOut: &secp256k1fx.TransferOutput{
+								Amt: 1,
+								OutputOwners: secp256k1fx.OutputOwners{
+									Locktime:  12345678,
+									Threshold: 0,
+									Addrs:     []ids.ShortID{},
+								},
+							},
+						},
+					},
+					{
+						Asset: avax.Asset{
+							ID: customAssetID,
+						},
+						Out: &stakeable.LockOut{
+							Locktime: 876543210,
+							TransferableOut: &secp256k1fx.TransferOutput{
+								Amt: 0xffffffffffffffff,
+								OutputOwners: secp256k1fx.OutputOwners{
+									Locktime:  0,
+									Threshold: 1,
+									Addrs: []ids.ShortID{
+										addr,
+									},
+								},
+							},
+						},
+					},
+				},
+				Ins: []*avax.TransferableInput{
+					{
+						UTXOID: avax.UTXOID{
+							TxID:        txID,
+							OutputIndex: 1,
+						},
+						Asset: avax.Asset{
+							ID: avaxAssetID,
+						},
+						In: &secp256k1fx.TransferInput{
+							Amt: units.KiloAvax,
+							Input: secp256k1fx.Input{
+								SigIndices: []uint32{2, 5},
+							},
+						},
+					},
+					{
+						UTXOID: avax.UTXOID{
+							TxID:        txID,
+							OutputIndex: 2,
+						},
+						Asset: avax.Asset{
+							ID: customAssetID,
+						},
+						In: &stakeable.LockIn{
+							Locktime: 876543210,
+							TransferableIn: &secp256k1fx.TransferInput{
+								Amt: 0xefffffffffffffff,
+								Input: secp256k1fx.Input{
+									SigIndices: []uint32{0},
+								},
+							},
+						},
+					},
+					{
+						UTXOID: avax.UTXOID{
+							TxID:        txID,
+							OutputIndex: 3,
+						},
+						Asset: avax.Asset{
+							ID: customAssetID,
+						},
+						In: &secp256k1fx.TransferInput{
+							Amt: 0x1000000000000000,
+							Input: secp256k1fx.Input{
+								SigIndices: []uint32{},
+							},
+						},
+					},
+				},
+				Memo: types.JSONByteSlice("😅\nwell that's\x01\x23\x45!"),
+			},
+		},
+		Supernet:                   supernetID,
+		AssetID:                  customAssetID,
+		InitialSupply:            0x1000000000000000,
+		MaximumSupply:            0x1000000000000000,
+		MinConsumptionRate:       0,
+		MaxConsumptionRate:       0,
+		MinValidatorStake:        1,
+		MaxValidatorStake:        0x1000000000000000,
+		MinStakeDuration:         1,
+		MaxStakeDuration:         1,
+		MinDelegationFee:         0,
+		MinDelegatorStake:        0xffffffffffffffff,
+		MaxValidatorWeightFactor: 255,
+		UptimeRequirement:        0,
+		SupernetAuth: &secp256k1fx.Input{
+			SigIndices: []uint32{},
+		},
+	}
+	avax.SortTransferableOutputs(complexTransformTx.Outs, Codec)
+	utils.Sort(complexTransformTx.Ins)
+	require.NoError(complexTransformTx.SyntacticVerify(&snow.Context{
+		NetworkID:   1,
+		ChainID:     constants.PlatformChainID,
+		AVAXAssetID: avaxAssetID,
+	}))
+
+	expectedUnsignedComplexTransformTxBytes := []byte{
+		// Codec version
+		0x00, 0x00,
+		// TransformSupernetTx type ID
+		0x00, 0x00, 0x00, 0x18,
+		// Mainnet network ID
+		0x00, 0x00, 0x00, 0x01,
+		// P-chain blockchain ID
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		// number of outputs
+		0x00, 0x00, 0x00, 0x02,
+		// outputs[0]
+		// Mainnet AVAX asset ID
+		0x21, 0xe6, 0x73, 0x17, 0xcb, 0xc4, 0xbe, 0x2a,
+		0xeb, 0x00, 0x67, 0x7a, 0xd6, 0x46, 0x27, 0x78,
+		0xa8, 0xf5, 0x22, 0x74, 0xb9, 0xd6, 0x05, 0xdf,
+		0x25, 0x91, 0xb2, 0x30, 0x27, 0xa8, 0x7d, 0xff,
+		// Stakeable locked output type ID
+		0x00, 0x00, 0x00, 0x16,
+		// Locktime
+		0x00, 0x00, 0x00, 0x00, 0x05, 0x39, 0x7f, 0xb1,
+		// seck256k1fx tranfer output type ID
+		0x00, 0x00, 0x00, 0x07,
+		// amount
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01,
+		// secp256k1fx locktime
+		0x00, 0x00, 0x00, 0x00, 0x00, 0xbc, 0x61, 0x4e,
+		// threshold
+		0x00, 0x00, 0x00, 0x00,
+		// number of addresses
+		0x00, 0x00, 0x00, 0x00,
+		// outputs[1]
+		// custom assest ID
+		0x99, 0x77, 0x55, 0x77, 0x11, 0x33, 0x55, 0x31,
+		0x99, 0x77, 0x55, 0x77, 0x11, 0x33, 0x55, 0x31,
+		0x99, 0x77, 0x55, 0x77, 0x11, 0x33, 0x55, 0x31,
+		0x99, 0x77, 0x55, 0x77, 0x11, 0x33, 0x55, 0x31,
+		// Stakeable locked output type ID
+		0x00, 0x00, 0x00, 0x16,
+		// Locktime
+		0x00, 0x00, 0x00, 0x00, 0x34, 0x3e, 0xfc, 0xea,
+		// seck256k1fx tranfer output type ID
+		0x00, 0x00, 0x00, 0x07,
+		// amount
+		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+		// secp256k1fx locktime
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		// threshold
+		0x00, 0x00, 0x00, 0x01,
+		// number of addresses
+		0x00, 0x00, 0x00, 0x01,
+		// address[0]
+		0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb,
+		0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb,
+		0x44, 0x55, 0x66, 0x77,
+		// number of inputs
+		0x00, 0x00, 0x00, 0x03,
+		// inputs[0]
+		// TxID
+		0xff, 0xee, 0xdd, 0xcc, 0xbb, 0xaa, 0x99, 0x88,
+		0xff, 0xee, 0xdd, 0xcc, 0xbb, 0xaa, 0x99, 0x88,
+		0xff, 0xee, 0xdd, 0xcc, 0xbb, 0xaa, 0x99, 0x88,
+		0xff, 0xee, 0xdd, 0xcc, 0xbb, 0xaa, 0x99, 0x88,
+		// Tx output index
+		0x00, 0x00, 0x00, 0x01,
+		// Mainnet AVAX asset ID
+		0x21, 0xe6, 0x73, 0x17, 0xcb, 0xc4, 0xbe, 0x2a,
+		0xeb, 0x00, 0x67, 0x7a, 0xd6, 0x46, 0x27, 0x78,
+		0xa8, 0xf5, 0x22, 0x74, 0xb9, 0xd6, 0x05, 0xdf,
+		0x25, 0x91, 0xb2, 0x30, 0x27, 0xa8, 0x7d, 0xff,
+		// secp256k1fx transfer input type ID
+		0x00, 0x00, 0x00, 0x05,
+		// amount = 1,000 AVAX
+		0x00, 0x00, 0x00, 0xe8, 0xd4, 0xa5, 0x10, 0x00,
+		// number of signatures indices
+		0x00, 0x00, 0x00, 0x02,
+		// first signature index
+		0x00, 0x00, 0x00, 0x02,
+		// second signature index
+		0x00, 0x00, 0x00, 0x05,
+		// inputs[1]
+		// TxID
+		0xff, 0xee, 0xdd, 0xcc, 0xbb, 0xaa, 0x99, 0x88,
+		0xff, 0xee, 0xdd, 0xcc, 0xbb, 0xaa, 0x99, 0x88,
+		0xff, 0xee, 0xdd, 0xcc, 0xbb, 0xaa, 0x99, 0x88,
+		0xff, 0xee, 0xdd, 0xcc, 0xbb, 0xaa, 0x99, 0x88,
+		// Tx output index
+		0x00, 0x00, 0x00, 0x02,
+		// custom asset ID
+		0x99, 0x77, 0x55, 0x77, 0x11, 0x33, 0x55, 0x31,
+		0x99, 0x77, 0x55, 0x77, 0x11, 0x33, 0x55, 0x31,
+		0x99, 0x77, 0x55, 0x77, 0x11, 0x33, 0x55, 0x31,
+		0x99, 0x77, 0x55, 0x77, 0x11, 0x33, 0x55, 0x31,
+		// stakeable locked input type ID
+		0x00, 0x00, 0x00, 0x15,
+		// locktime
+		0x00, 0x00, 0x00, 0x00, 0x34, 0x3e, 0xfc, 0xea,
+		// secp256k1fx transfer input type ID
+		0x00, 0x00, 0x00, 0x05,
+		// input amount
+		0xef, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+		// number of signatures needed in input
+		0x00, 0x00, 0x00, 0x01,
+		// index of signer
+		0x00, 0x00, 0x00, 0x00,
+		// inputs[2]
+		// TxID
+		0xff, 0xee, 0xdd, 0xcc, 0xbb, 0xaa, 0x99, 0x88,
+		0xff, 0xee, 0xdd, 0xcc, 0xbb, 0xaa, 0x99, 0x88,
+		0xff, 0xee, 0xdd, 0xcc, 0xbb, 0xaa, 0x99, 0x88,
+		0xff, 0xee, 0xdd, 0xcc, 0xbb, 0xaa, 0x99, 0x88,
+		// Tx output index
+		0x00, 0x00, 0x00, 0x03,
+		// custom asset ID
+		0x99, 0x77, 0x55, 0x77, 0x11, 0x33, 0x55, 0x31,
+		0x99, 0x77, 0x55, 0x77, 0x11, 0x33, 0x55, 0x31,
+		0x99, 0x77, 0x55, 0x77, 0x11, 0x33, 0x55, 0x31,
+		0x99, 0x77, 0x55, 0x77, 0x11, 0x33, 0x55, 0x31,
+		// secp256k1fx transfer input type ID
+		0x00, 0x00, 0x00, 0x05,
+		// input amount
+		0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		// number of signatures needed in input
+		0x00, 0x00, 0x00, 0x00,
+		// memo length
+		0x00, 0x00, 0x00, 0x14,
+		// memo
+		0xf0, 0x9f, 0x98, 0x85, 0x0a, 0x77, 0x65, 0x6c,
+		0x6c, 0x20, 0x74, 0x68, 0x61, 0x74, 0x27, 0x73,
+		0x01, 0x23, 0x45, 0x21,
+		// supernetID being transformed
+		0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+		0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18,
+		0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28,
+		0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38,
+		// staking asset ID
+		0x99, 0x77, 0x55, 0x77, 0x11, 0x33, 0x55, 0x31,
+		0x99, 0x77, 0x55, 0x77, 0x11, 0x33, 0x55, 0x31,
+		0x99, 0x77, 0x55, 0x77, 0x11, 0x33, 0x55, 0x31,
+		0x99, 0x77, 0x55, 0x77, 0x11, 0x33, 0x55, 0x31,
+		// initial supply
+		0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		// maximum supply
+		0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		// minimum consumption rate
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		// maximum consumption rate
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		// minimum staking amount
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01,
+		// maximum staking amount
+		0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		// minimum staking duration
+		0x00, 0x00, 0x00, 0x01,
+		// maximum staking duration
+		0x00, 0x00, 0x00, 0x01,
+		// minimum delegation fee
+		0x00, 0x00, 0x00, 0x00,
+		// minimum delegation amount
+		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+		// maximum validator weight factor
+		0xff,
+		// uptime requirement
+		0x00, 0x00, 0x00, 0x00,
+		// secp256k1fx authorization type ID
+		0x00, 0x00, 0x00, 0x0a,
+		// number of signatures needed in authorization
+		0x00, 0x00, 0x00, 0x00,
+	}
+	var unsignedComplexTransformTx UnsignedTx = complexTransformTx
+	unsignedComplexTransformTxBytes, err := Codec.Marshal(Version, &unsignedComplexTransformTx)
+	require.NoError(err)
+	require.Equal(expectedUnsignedComplexTransformTxBytes, unsignedComplexTransformTxBytes)
+}
+
+func TestTransformSupernetTxSyntacticVerify(t *testing.T) {
 	type test struct {
 		name   string
-		txFunc func(*gomock.Controller) *TransformSubnetTx
+		txFunc func(*gomock.Controller) *TransformSupernetTx
 		err    error
 	}
 
@@ -55,36 +561,36 @@ func TestTransformSubnetTxSyntacticVerify(t *testing.T) {
 	tests := []test{
 		{
 			name: "nil tx",
-			txFunc: func(*gomock.Controller) *TransformSubnetTx {
+			txFunc: func(*gomock.Controller) *TransformSupernetTx {
 				return nil
 			},
 			err: ErrNilTx,
 		},
 		{
 			name: "already verified",
-			txFunc: func(*gomock.Controller) *TransformSubnetTx {
-				return &TransformSubnetTx{
+			txFunc: func(*gomock.Controller) *TransformSupernetTx {
+				return &TransformSupernetTx{
 					BaseTx: verifiedBaseTx,
 				}
 			},
 			err: nil,
 		},
 		{
-			name: "invalid subnetID",
-			txFunc: func(*gomock.Controller) *TransformSubnetTx {
-				return &TransformSubnetTx{
+			name: "invalid supernetID",
+			txFunc: func(*gomock.Controller) *TransformSupernetTx {
+				return &TransformSupernetTx{
 					BaseTx: validBaseTx,
-					Subnet: constants.PrimaryNetworkID,
+					Supernet: constants.PrimaryNetworkID,
 				}
 			},
 			err: errCantTransformPrimaryNetwork,
 		},
 		{
 			name: "empty assetID",
-			txFunc: func(*gomock.Controller) *TransformSubnetTx {
-				return &TransformSubnetTx{
+			txFunc: func(*gomock.Controller) *TransformSupernetTx {
+				return &TransformSupernetTx{
 					BaseTx:  validBaseTx,
-					Subnet:  ids.GenerateTestID(),
+					Supernet:  ids.GenerateTestID(),
 					AssetID: ids.Empty,
 				}
 			},
@@ -92,10 +598,10 @@ func TestTransformSubnetTxSyntacticVerify(t *testing.T) {
 		},
 		{
 			name: "AVAX assetID",
-			txFunc: func(*gomock.Controller) *TransformSubnetTx {
-				return &TransformSubnetTx{
+			txFunc: func(*gomock.Controller) *TransformSupernetTx {
+				return &TransformSupernetTx{
 					BaseTx:  validBaseTx,
-					Subnet:  ids.GenerateTestID(),
+					Supernet:  ids.GenerateTestID(),
 					AssetID: ctx.AVAXAssetID,
 				}
 			},
@@ -103,10 +609,10 @@ func TestTransformSubnetTxSyntacticVerify(t *testing.T) {
 		},
 		{
 			name: "initialSupply == 0",
-			txFunc: func(*gomock.Controller) *TransformSubnetTx {
-				return &TransformSubnetTx{
+			txFunc: func(*gomock.Controller) *TransformSupernetTx {
+				return &TransformSupernetTx{
 					BaseTx:        validBaseTx,
-					Subnet:        ids.GenerateTestID(),
+					Supernet:        ids.GenerateTestID(),
 					AssetID:       ids.GenerateTestID(),
 					InitialSupply: 0,
 				}
@@ -115,10 +621,10 @@ func TestTransformSubnetTxSyntacticVerify(t *testing.T) {
 		},
 		{
 			name: "initialSupply > maximumSupply",
-			txFunc: func(*gomock.Controller) *TransformSubnetTx {
-				return &TransformSubnetTx{
+			txFunc: func(*gomock.Controller) *TransformSupernetTx {
+				return &TransformSupernetTx{
 					BaseTx:        validBaseTx,
-					Subnet:        ids.GenerateTestID(),
+					Supernet:        ids.GenerateTestID(),
 					AssetID:       ids.GenerateTestID(),
 					InitialSupply: 2,
 					MaximumSupply: 1,
@@ -128,10 +634,10 @@ func TestTransformSubnetTxSyntacticVerify(t *testing.T) {
 		},
 		{
 			name: "minConsumptionRate > maxConsumptionRate",
-			txFunc: func(*gomock.Controller) *TransformSubnetTx {
-				return &TransformSubnetTx{
+			txFunc: func(*gomock.Controller) *TransformSupernetTx {
+				return &TransformSupernetTx{
 					BaseTx:             validBaseTx,
-					Subnet:             ids.GenerateTestID(),
+					Supernet:             ids.GenerateTestID(),
 					AssetID:            ids.GenerateTestID(),
 					InitialSupply:      1,
 					MaximumSupply:      1,
@@ -143,10 +649,10 @@ func TestTransformSubnetTxSyntacticVerify(t *testing.T) {
 		},
 		{
 			name: "maxConsumptionRate > 100%",
-			txFunc: func(*gomock.Controller) *TransformSubnetTx {
-				return &TransformSubnetTx{
+			txFunc: func(*gomock.Controller) *TransformSupernetTx {
+				return &TransformSupernetTx{
 					BaseTx:             validBaseTx,
-					Subnet:             ids.GenerateTestID(),
+					Supernet:             ids.GenerateTestID(),
 					AssetID:            ids.GenerateTestID(),
 					InitialSupply:      1,
 					MaximumSupply:      1,
@@ -158,10 +664,10 @@ func TestTransformSubnetTxSyntacticVerify(t *testing.T) {
 		},
 		{
 			name: "minValidatorStake == 0",
-			txFunc: func(*gomock.Controller) *TransformSubnetTx {
-				return &TransformSubnetTx{
+			txFunc: func(*gomock.Controller) *TransformSupernetTx {
+				return &TransformSupernetTx{
 					BaseTx:             validBaseTx,
-					Subnet:             ids.GenerateTestID(),
+					Supernet:             ids.GenerateTestID(),
 					AssetID:            ids.GenerateTestID(),
 					InitialSupply:      1,
 					MaximumSupply:      1,
@@ -174,10 +680,10 @@ func TestTransformSubnetTxSyntacticVerify(t *testing.T) {
 		},
 		{
 			name: "minValidatorStake > initialSupply",
-			txFunc: func(*gomock.Controller) *TransformSubnetTx {
-				return &TransformSubnetTx{
+			txFunc: func(*gomock.Controller) *TransformSupernetTx {
+				return &TransformSupernetTx{
 					BaseTx:             validBaseTx,
-					Subnet:             ids.GenerateTestID(),
+					Supernet:             ids.GenerateTestID(),
 					AssetID:            ids.GenerateTestID(),
 					InitialSupply:      1,
 					MaximumSupply:      1,
@@ -190,10 +696,10 @@ func TestTransformSubnetTxSyntacticVerify(t *testing.T) {
 		},
 		{
 			name: "minValidatorStake > maxValidatorStake",
-			txFunc: func(*gomock.Controller) *TransformSubnetTx {
-				return &TransformSubnetTx{
+			txFunc: func(*gomock.Controller) *TransformSupernetTx {
+				return &TransformSupernetTx{
 					BaseTx:             validBaseTx,
-					Subnet:             ids.GenerateTestID(),
+					Supernet:             ids.GenerateTestID(),
 					AssetID:            ids.GenerateTestID(),
 					InitialSupply:      10,
 					MaximumSupply:      10,
@@ -207,10 +713,10 @@ func TestTransformSubnetTxSyntacticVerify(t *testing.T) {
 		},
 		{
 			name: "maxValidatorStake > maximumSupply",
-			txFunc: func(*gomock.Controller) *TransformSubnetTx {
-				return &TransformSubnetTx{
+			txFunc: func(*gomock.Controller) *TransformSupernetTx {
+				return &TransformSupernetTx{
 					BaseTx:             validBaseTx,
-					Subnet:             ids.GenerateTestID(),
+					Supernet:             ids.GenerateTestID(),
 					AssetID:            ids.GenerateTestID(),
 					InitialSupply:      10,
 					MaximumSupply:      10,
@@ -224,10 +730,10 @@ func TestTransformSubnetTxSyntacticVerify(t *testing.T) {
 		},
 		{
 			name: "minStakeDuration == 0",
-			txFunc: func(*gomock.Controller) *TransformSubnetTx {
-				return &TransformSubnetTx{
+			txFunc: func(*gomock.Controller) *TransformSupernetTx {
+				return &TransformSupernetTx{
 					BaseTx:             validBaseTx,
-					Subnet:             ids.GenerateTestID(),
+					Supernet:             ids.GenerateTestID(),
 					AssetID:            ids.GenerateTestID(),
 					InitialSupply:      10,
 					MaximumSupply:      10,
@@ -242,10 +748,10 @@ func TestTransformSubnetTxSyntacticVerify(t *testing.T) {
 		},
 		{
 			name: "minStakeDuration > maxStakeDuration",
-			txFunc: func(*gomock.Controller) *TransformSubnetTx {
-				return &TransformSubnetTx{
+			txFunc: func(*gomock.Controller) *TransformSupernetTx {
+				return &TransformSupernetTx{
 					BaseTx:             validBaseTx,
-					Subnet:             ids.GenerateTestID(),
+					Supernet:             ids.GenerateTestID(),
 					AssetID:            ids.GenerateTestID(),
 					InitialSupply:      10,
 					MaximumSupply:      10,
@@ -261,10 +767,10 @@ func TestTransformSubnetTxSyntacticVerify(t *testing.T) {
 		},
 		{
 			name: "minDelegationFee > 100%",
-			txFunc: func(*gomock.Controller) *TransformSubnetTx {
-				return &TransformSubnetTx{
+			txFunc: func(*gomock.Controller) *TransformSupernetTx {
+				return &TransformSupernetTx{
 					BaseTx:             validBaseTx,
-					Subnet:             ids.GenerateTestID(),
+					Supernet:             ids.GenerateTestID(),
 					AssetID:            ids.GenerateTestID(),
 					InitialSupply:      10,
 					MaximumSupply:      10,
@@ -281,10 +787,10 @@ func TestTransformSubnetTxSyntacticVerify(t *testing.T) {
 		},
 		{
 			name: "minDelegatorStake == 0",
-			txFunc: func(*gomock.Controller) *TransformSubnetTx {
-				return &TransformSubnetTx{
+			txFunc: func(*gomock.Controller) *TransformSupernetTx {
+				return &TransformSupernetTx{
 					BaseTx:             validBaseTx,
-					Subnet:             ids.GenerateTestID(),
+					Supernet:             ids.GenerateTestID(),
 					AssetID:            ids.GenerateTestID(),
 					InitialSupply:      10,
 					MaximumSupply:      10,
@@ -302,10 +808,10 @@ func TestTransformSubnetTxSyntacticVerify(t *testing.T) {
 		},
 		{
 			name: "maxValidatorWeightFactor == 0",
-			txFunc: func(*gomock.Controller) *TransformSubnetTx {
-				return &TransformSubnetTx{
+			txFunc: func(*gomock.Controller) *TransformSupernetTx {
+				return &TransformSupernetTx{
 					BaseTx:                   validBaseTx,
-					Subnet:                   ids.GenerateTestID(),
+					Supernet:                   ids.GenerateTestID(),
 					AssetID:                  ids.GenerateTestID(),
 					InitialSupply:            10,
 					MaximumSupply:            10,
@@ -324,10 +830,10 @@ func TestTransformSubnetTxSyntacticVerify(t *testing.T) {
 		},
 		{
 			name: "uptimeRequirement > 100%",
-			txFunc: func(*gomock.Controller) *TransformSubnetTx {
-				return &TransformSubnetTx{
+			txFunc: func(*gomock.Controller) *TransformSupernetTx {
+				return &TransformSupernetTx{
 					BaseTx:                   validBaseTx,
-					Subnet:                   ids.GenerateTestID(),
+					Supernet:                   ids.GenerateTestID(),
 					AssetID:                  ids.GenerateTestID(),
 					InitialSupply:            10,
 					MaximumSupply:            10,
@@ -346,14 +852,14 @@ func TestTransformSubnetTxSyntacticVerify(t *testing.T) {
 			err: errUptimeRequirementTooLarge,
 		},
 		{
-			name: "invalid subnetAuth",
-			txFunc: func(ctrl *gomock.Controller) *TransformSubnetTx {
-				// This SubnetAuth fails verification.
-				invalidSubnetAuth := verify.NewMockVerifiable(ctrl)
-				invalidSubnetAuth.EXPECT().Verify().Return(errInvalidSubnetAuth)
-				return &TransformSubnetTx{
+			name: "invalid supernetAuth",
+			txFunc: func(ctrl *gomock.Controller) *TransformSupernetTx {
+				// This SupernetAuth fails verification.
+				invalidSupernetAuth := verify.NewMockVerifiable(ctrl)
+				invalidSupernetAuth.EXPECT().Verify().Return(errInvalidSupernetAuth)
+				return &TransformSupernetTx{
 					BaseTx:                   validBaseTx,
-					Subnet:                   ids.GenerateTestID(),
+					Supernet:                   ids.GenerateTestID(),
 					AssetID:                  ids.GenerateTestID(),
 					InitialSupply:            10,
 					MaximumSupply:            10,
@@ -367,40 +873,17 @@ func TestTransformSubnetTxSyntacticVerify(t *testing.T) {
 					MinDelegatorStake:        1,
 					MaxValidatorWeightFactor: 1,
 					UptimeRequirement:        reward.PercentDenominator,
-					SubnetAuth:               invalidSubnetAuth,
+					SupernetAuth:               invalidSupernetAuth,
 				}
 			},
-			err: errInvalidSubnetAuth,
+			err: errInvalidSupernetAuth,
 		},
 		{
 			name: "invalid BaseTx",
-			txFunc: func(*gomock.Controller) *TransformSubnetTx {
-				return &TransformSubnetTx{
+			txFunc: func(*gomock.Controller) *TransformSupernetTx {
+				return &TransformSupernetTx{
 					BaseTx:                   invalidBaseTx,
-					Subnet:                   ids.GenerateTestID(),
-					AssetID:                  ids.GenerateTestID(),
-					InitialSupply:            10,
-					MaximumSupply:            10,
-					MinConsumptionRate:       0,
-					MaxConsumptionRate:       reward.PercentDenominator,
-					MinValidatorStake:        2,
-					MaxValidatorStake:        10,
-					MinStakeDuration:         1,
-					MaxStakeDuration:         2,
-					MinDelegationFee:         reward.PercentDenominator,
-					MinDelegatorStake:        1,
-					MaxValidatorWeightFactor: 1,
-					UptimeRequirement:        reward.PercentDenominator,
-				}
-			},
-			err: avax.ErrWrongNetworkID,
-		},
-		{
-			name: "invalid BaseTx",
-			txFunc: func(*gomock.Controller) *TransformSubnetTx {
-				return &TransformSubnetTx{
-					BaseTx:                   invalidBaseTx,
-					Subnet:                   ids.GenerateTestID(),
+					Supernet:                   ids.GenerateTestID(),
 					AssetID:                  ids.GenerateTestID(),
 					InitialSupply:            10,
 					MaximumSupply:            10,
@@ -420,13 +903,13 @@ func TestTransformSubnetTxSyntacticVerify(t *testing.T) {
 		},
 		{
 			name: "passes verification",
-			txFunc: func(ctrl *gomock.Controller) *TransformSubnetTx {
-				// This SubnetAuth passes verification.
-				validSubnetAuth := verify.NewMockVerifiable(ctrl)
-				validSubnetAuth.EXPECT().Verify().Return(nil)
-				return &TransformSubnetTx{
+			txFunc: func(ctrl *gomock.Controller) *TransformSupernetTx {
+				// This SupernetAuth passes verification.
+				validSupernetAuth := verify.NewMockVerifiable(ctrl)
+				validSupernetAuth.EXPECT().Verify().Return(nil)
+				return &TransformSupernetTx{
 					BaseTx:                   validBaseTx,
-					Subnet:                   ids.GenerateTestID(),
+					Supernet:                   ids.GenerateTestID(),
 					AssetID:                  ids.GenerateTestID(),
 					InitialSupply:            10,
 					MaximumSupply:            10,
@@ -440,7 +923,7 @@ func TestTransformSubnetTxSyntacticVerify(t *testing.T) {
 					MinDelegatorStake:        1,
 					MaxValidatorWeightFactor: 1,
 					UptimeRequirement:        reward.PercentDenominator,
-					SubnetAuth:               validSubnetAuth,
+					SupernetAuth:               validSupernetAuth,
 				}
 			},
 			err: nil,
@@ -450,7 +933,6 @@ func TestTransformSubnetTxSyntacticVerify(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
 
 			tx := tt.txFunc(ctrl)
 			err := tx.SyntacticVerify(ctx)

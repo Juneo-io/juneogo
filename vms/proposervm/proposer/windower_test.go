@@ -11,14 +11,14 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow/validators"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow/validators"
 )
 
 func TestWindowerNoValidators(t *testing.T) {
 	require := require.New(t)
 
-	subnetID := ids.GenerateTestID()
+	supernetID := ids.GenerateTestID()
 	chainID := ids.GenerateTestID()
 	nodeID := ids.GenerateTestNodeID()
 	vdrState := &validators.TestState{
@@ -28,17 +28,17 @@ func TestWindowerNoValidators(t *testing.T) {
 		},
 	}
 
-	w := New(vdrState, subnetID, chainID)
+	w := New(vdrState, supernetID, chainID)
 
 	delay, err := w.Delay(context.Background(), 1, 0, nodeID)
 	require.NoError(err)
-	require.EqualValues(0, delay)
+	require.Zero(delay)
 }
 
 func TestWindowerRepeatedValidator(t *testing.T) {
 	require := require.New(t)
 
-	subnetID := ids.GenerateTestID()
+	supernetID := ids.GenerateTestID()
 	chainID := ids.GenerateTestID()
 	validatorID := ids.GenerateTestNodeID()
 	nonValidatorID := ids.GenerateTestNodeID()
@@ -54,21 +54,21 @@ func TestWindowerRepeatedValidator(t *testing.T) {
 		},
 	}
 
-	w := New(vdrState, subnetID, chainID)
+	w := New(vdrState, supernetID, chainID)
 
 	validatorDelay, err := w.Delay(context.Background(), 1, 0, validatorID)
 	require.NoError(err)
-	require.EqualValues(0, validatorDelay)
+	require.Zero(validatorDelay)
 
 	nonValidatorDelay, err := w.Delay(context.Background(), 1, 0, nonValidatorID)
 	require.NoError(err)
-	require.EqualValues(MaxDelay, nonValidatorDelay)
+	require.Equal(MaxDelay, nonValidatorDelay)
 }
 
 func TestWindowerChangeByHeight(t *testing.T) {
 	require := require.New(t)
 
-	subnetID := ids.ID{0, 1}
+	supernetID := ids.ID{0, 1}
 	chainID := ids.ID{0, 2}
 	validatorIDs := make([]ids.NodeID, MaxWindows)
 	for i := range validatorIDs {
@@ -88,7 +88,7 @@ func TestWindowerChangeByHeight(t *testing.T) {
 		},
 	}
 
-	w := New(vdrState, subnetID, chainID)
+	w := New(vdrState, supernetID, chainID)
 
 	expectedDelays1 := []time.Duration{
 		2 * WindowDuration,
@@ -102,7 +102,7 @@ func TestWindowerChangeByHeight(t *testing.T) {
 		vdrID := validatorIDs[i]
 		validatorDelay, err := w.Delay(context.Background(), 1, 0, vdrID)
 		require.NoError(err)
-		require.EqualValues(expectedDelay, validatorDelay)
+		require.Equal(expectedDelay, validatorDelay)
 	}
 
 	expectedDelays2 := []time.Duration{
@@ -117,14 +117,14 @@ func TestWindowerChangeByHeight(t *testing.T) {
 		vdrID := validatorIDs[i]
 		validatorDelay, err := w.Delay(context.Background(), 2, 0, vdrID)
 		require.NoError(err)
-		require.EqualValues(expectedDelay, validatorDelay)
+		require.Equal(expectedDelay, validatorDelay)
 	}
 }
 
 func TestWindowerChangeByChain(t *testing.T) {
 	require := require.New(t)
 
-	subnetID := ids.ID{0, 1}
+	supernetID := ids.ID{0, 1}
 
 	rand.Seed(0)
 	chainID0 := ids.ID{}
@@ -150,8 +150,8 @@ func TestWindowerChangeByChain(t *testing.T) {
 		},
 	}
 
-	w0 := New(vdrState, subnetID, chainID0)
-	w1 := New(vdrState, subnetID, chainID1)
+	w0 := New(vdrState, supernetID, chainID0)
+	w1 := New(vdrState, supernetID, chainID1)
 
 	expectedDelays0 := []time.Duration{
 		5 * WindowDuration,
@@ -165,7 +165,7 @@ func TestWindowerChangeByChain(t *testing.T) {
 		vdrID := validatorIDs[i]
 		validatorDelay, err := w0.Delay(context.Background(), 1, 0, vdrID)
 		require.NoError(err)
-		require.EqualValues(expectedDelay, validatorDelay)
+		require.Equal(expectedDelay, validatorDelay)
 	}
 
 	expectedDelays1 := []time.Duration{
@@ -180,6 +180,6 @@ func TestWindowerChangeByChain(t *testing.T) {
 		vdrID := validatorIDs[i]
 		validatorDelay, err := w1.Delay(context.Background(), 1, 0, vdrID)
 		require.NoError(err)
-		require.EqualValues(expectedDelay, validatorDelay)
+		require.Equal(expectedDelay, validatorDelay)
 	}
 }

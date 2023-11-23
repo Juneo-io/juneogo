@@ -6,7 +6,7 @@ package linearcodec
 import (
 	"testing"
 
-	"github.com/ava-labs/avalanchego/codec"
+	"github.com/Juneo-io/juneogo/codec"
 )
 
 func TestVectors(t *testing.T) {
@@ -18,7 +18,12 @@ func TestVectors(t *testing.T) {
 
 func TestMultipleTags(t *testing.T) {
 	for _, test := range codec.MultipleTagsTests {
-		c := New([]string{"tag1", "tag2"}, defaultMaxSliceLength)
+		c := New([]string{"tag1", "tag2"}, DefaultMaxSliceLength)
 		test(c, t)
 	}
+}
+
+func FuzzStructUnmarshalLinearCodec(f *testing.F) {
+	c := NewDefault()
+	codec.FuzzStructUnmarshal(c, f)
 }

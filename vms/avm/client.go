@@ -8,15 +8,15 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/ava-labs/avalanchego/api"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow/choices"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/crypto/secp256k1"
-	"github.com/ava-labs/avalanchego/utils/formatting"
-	"github.com/ava-labs/avalanchego/utils/formatting/address"
-	"github.com/ava-labs/avalanchego/utils/json"
-	"github.com/ava-labs/avalanchego/utils/rpc"
+	"github.com/Juneo-io/juneogo/api"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow/choices"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/crypto/secp256k1"
+	"github.com/Juneo-io/juneogo/utils/formatting"
+	"github.com/Juneo-io/juneogo/utils/formatting/address"
+	"github.com/Juneo-io/juneogo/utils/json"
+	"github.com/Juneo-io/juneogo/utils/rpc"
 )
 
 var _ Client = (*client)(nil)
@@ -65,7 +65,7 @@ type Client interface {
 	) ([][]byte, ids.ShortID, ids.ID, error)
 	// GetAssetDescription returns a description of [assetID]
 	GetAssetDescription(ctx context.Context, assetID string, options ...rpc.Option) (*GetAssetDescriptionReply, error)
-	GetFeesPoolValue(ctx context.Context, options ...rpc.Option) (*GetFeesPoolValueReply, error)
+	GetFeePoolValue(ctx context.Context, options ...rpc.Option) (*GetFeePoolValueReply, error)
 	// GetBalance returns the balance of [assetID] held by [addr].
 	// If [includePartial], balance includes partial owned (i.e. in a multisig) funds.
 	//
@@ -244,7 +244,6 @@ func (c *client) GetBlock(ctx context.Context, blkID ids.ID, options ...rpc.Opti
 	if err != nil {
 		return nil, err
 	}
-
 	return formatting.Decode(res.Encoding, res.Block)
 }
 
@@ -257,7 +256,6 @@ func (c *client) GetBlockByHeight(ctx context.Context, height uint64, options ..
 	if err != nil {
 		return nil, err
 	}
-
 	return formatting.Decode(res.Encoding, res.Block)
 }
 
@@ -317,12 +315,7 @@ func (c *client) GetTx(ctx context.Context, txID ids.ID, options ...rpc.Option) 
 	if err != nil {
 		return nil, err
 	}
-
-	txBytes, err := formatting.Decode(res.Encoding, res.Tx)
-	if err != nil {
-		return nil, err
-	}
-	return txBytes, nil
+	return formatting.Decode(res.Encoding, res.Tx)
 }
 
 func (c *client) GetUTXOs(
@@ -384,9 +377,9 @@ func (c *client) GetAssetDescription(ctx context.Context, assetID string, option
 	return res, err
 }
 
-func (c *client) GetFeesPoolValue(ctx context.Context, options ...rpc.Option) (*GetFeesPoolValueReply, error) {
-	res := &GetFeesPoolValueReply{}
-	err := c.requester.SendRequest(ctx, "jvm.getFeesPoolValue", &GetFeesPoolValueArgs{}, res, options...)
+func (c *client) GetFeePoolValue(ctx context.Context, options ...rpc.Option) (*GetFeePoolValueReply, error) {
+	res := &GetFeePoolValueReply{}
+	err := c.requester.SendRequest(ctx, "jvm.getFeePoolValue", &GetFeePoolValueArgs{}, res, options...)
 	return res, err
 }
 

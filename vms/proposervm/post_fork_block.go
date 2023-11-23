@@ -6,10 +6,10 @@ package proposervm
 import (
 	"context"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow/choices"
-	"github.com/ava-labs/avalanchego/snow/consensus/snowman"
-	"github.com/ava-labs/avalanchego/vms/proposervm/block"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow/choices"
+	"github.com/Juneo-io/juneogo/snow/consensus/snowman"
+	"github.com/Juneo-io/juneogo/vms/proposervm/block"
 )
 
 var _ PostForkBlock = (*postForkBlock)(nil)
@@ -34,16 +34,8 @@ func (b *postForkBlock) acceptOuterBlk() error {
 	// Update in-memory references
 	b.status = choices.Accepted
 	b.vm.lastAcceptedTime = b.Timestamp()
-	b.vm.lastAcceptedHeight = b.Height()
 
-	blkID := b.ID()
-	delete(b.vm.verifiedBlocks, blkID)
-
-	// Persist this block, its height index, and its status
-	if err := b.vm.State.SetLastAccepted(blkID); err != nil {
-		return err
-	}
-	return b.vm.storePostForkBlock(b)
+	return b.vm.acceptPostForkBlock(b)
 }
 
 func (b *postForkBlock) acceptInnerBlk(ctx context.Context) error {

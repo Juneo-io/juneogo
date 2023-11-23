@@ -7,11 +7,11 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/ava-labs/avalanchego/vms/types"
+	"github.com/Juneo-io/juneogo/vms/types"
 
-	"github.com/ava-labs/avalanchego/utils/units"
-	"github.com/ava-labs/avalanchego/vms/components/verify"
-	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
+	"github.com/Juneo-io/juneogo/utils/units"
+	"github.com/Juneo-io/juneogo/vms/components/verify"
+	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
 )
 
 const (
@@ -26,6 +26,8 @@ var (
 )
 
 type TransferOutput struct {
+	verify.IsState `json:"-"`
+
 	GroupID                  uint32              `serialize:"true" json:"groupID"`
 	Payload                  types.JSONByteSlice `serialize:"true" json:"payload"`
 	secp256k1fx.OutputOwners `serialize:"true"`
@@ -54,8 +56,4 @@ func (out *TransferOutput) Verify() error {
 	default:
 		return out.OutputOwners.Verify()
 	}
-}
-
-func (out *TransferOutput) VerifyState() error {
-	return out.Verify()
 }

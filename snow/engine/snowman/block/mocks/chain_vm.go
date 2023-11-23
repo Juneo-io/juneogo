@@ -9,16 +9,17 @@ package mocks
 
 import (
 	context "context"
+	http "net/http"
 	reflect "reflect"
 	time "time"
 
-	manager "github.com/ava-labs/avalanchego/database/manager"
-	ids "github.com/ava-labs/avalanchego/ids"
-	snow "github.com/ava-labs/avalanchego/snow"
-	snowman "github.com/ava-labs/avalanchego/snow/consensus/snowman"
-	common "github.com/ava-labs/avalanchego/snow/engine/common"
-	version "github.com/ava-labs/avalanchego/version"
-	gomock "github.com/golang/mock/gomock"
+	manager "github.com/Juneo-io/juneogo/database/manager"
+	ids "github.com/Juneo-io/juneogo/ids"
+	snow "github.com/Juneo-io/juneogo/snow"
+	snowman "github.com/Juneo-io/juneogo/snow/consensus/snowman"
+	common "github.com/Juneo-io/juneogo/snow/engine/common"
+	version "github.com/Juneo-io/juneogo/version"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockChainVM is a mock of ChainVM interface.
@@ -130,10 +131,10 @@ func (mr *MockChainVMMockRecorder) Connected(arg0, arg1, arg2 interface{}) *gomo
 }
 
 // CreateHandlers mocks base method.
-func (m *MockChainVM) CreateHandlers(arg0 context.Context) (map[string]*common.HTTPHandler, error) {
+func (m *MockChainVM) CreateHandlers(arg0 context.Context) (map[string]http.Handler, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateHandlers", arg0)
-	ret0, _ := ret[0].(map[string]*common.HTTPHandler)
+	ret0, _ := ret[0].(map[string]http.Handler)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -145,10 +146,10 @@ func (mr *MockChainVMMockRecorder) CreateHandlers(arg0 interface{}) *gomock.Call
 }
 
 // CreateStaticHandlers mocks base method.
-func (m *MockChainVM) CreateStaticHandlers(arg0 context.Context) (map[string]*common.HTTPHandler, error) {
+func (m *MockChainVM) CreateStaticHandlers(arg0 context.Context) (map[string]http.Handler, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateStaticHandlers", arg0)
-	ret0, _ := ret[0].(map[string]*common.HTTPHandler)
+	ret0, _ := ret[0].(map[string]http.Handler)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -228,6 +229,21 @@ func (m *MockChainVM) GetBlock(arg0 context.Context, arg1 ids.ID) (snowman.Block
 func (mr *MockChainVMMockRecorder) GetBlock(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBlock", reflect.TypeOf((*MockChainVM)(nil).GetBlock), arg0, arg1)
+}
+
+// GetBlockIDAtHeight mocks base method.
+func (m *MockChainVM) GetBlockIDAtHeight(arg0 context.Context, arg1 uint64) (ids.ID, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetBlockIDAtHeight", arg0, arg1)
+	ret0, _ := ret[0].(ids.ID)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetBlockIDAtHeight indicates an expected call of GetBlockIDAtHeight.
+func (mr *MockChainVMMockRecorder) GetBlockIDAtHeight(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBlockIDAtHeight", reflect.TypeOf((*MockChainVM)(nil).GetBlockIDAtHeight), arg0, arg1)
 }
 
 // HealthCheck mocks base method.
@@ -329,6 +345,20 @@ func (m *MockChainVM) Shutdown(arg0 context.Context) error {
 func (mr *MockChainVMMockRecorder) Shutdown(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Shutdown", reflect.TypeOf((*MockChainVM)(nil).Shutdown), arg0)
+}
+
+// VerifyHeightIndex mocks base method.
+func (m *MockChainVM) VerifyHeightIndex(arg0 context.Context) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VerifyHeightIndex", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// VerifyHeightIndex indicates an expected call of VerifyHeightIndex.
+func (mr *MockChainVMMockRecorder) VerifyHeightIndex(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VerifyHeightIndex", reflect.TypeOf((*MockChainVM)(nil).VerifyHeightIndex), arg0)
 }
 
 // Version mocks base method.

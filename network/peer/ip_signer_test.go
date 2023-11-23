@@ -11,8 +11,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/staking"
-	"github.com/ava-labs/avalanchego/utils/ips"
+	"github.com/Juneo-io/juneogo/staking"
+	"github.com/Juneo-io/juneogo/utils/ips"
 )
 
 func TestIPSigner(t *testing.T) {
@@ -34,22 +34,22 @@ func TestIPSigner(t *testing.T) {
 
 	signedIP1, err := s.GetSignedIP()
 	require.NoError(err)
-	require.EqualValues(dynIP.IPPort(), signedIP1.IPPort)
-	require.EqualValues(10, signedIP1.Timestamp)
+	require.Equal(dynIP.IPPort(), signedIP1.IPPort)
+	require.Equal(uint64(10), signedIP1.Timestamp)
 
 	s.clock.Set(time.Unix(11, 0))
 
 	signedIP2, err := s.GetSignedIP()
 	require.NoError(err)
-	require.EqualValues(dynIP.IPPort(), signedIP2.IPPort)
-	require.EqualValues(10, signedIP2.Timestamp)
-	require.EqualValues(signedIP1.Signature, signedIP2.Signature)
+	require.Equal(dynIP.IPPort(), signedIP2.IPPort)
+	require.Equal(uint64(10), signedIP2.Timestamp)
+	require.Equal(signedIP1.Signature, signedIP2.Signature)
 
 	dynIP.SetIP(net.IPv4(1, 2, 3, 4))
 
 	signedIP3, err := s.GetSignedIP()
 	require.NoError(err)
-	require.EqualValues(dynIP.IPPort(), signedIP3.IPPort)
-	require.EqualValues(11, signedIP3.Timestamp)
-	require.NotEqualValues(signedIP2.Signature, signedIP3.Signature)
+	require.Equal(dynIP.IPPort(), signedIP3.IPPort)
+	require.Equal(uint64(11), signedIP3.Timestamp)
+	require.NotEqual(signedIP2.Signature, signedIP3.Signature)
 }

@@ -9,29 +9,30 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/crypto/secp256k1"
-	"github.com/ava-labs/avalanchego/utils/hashing"
-	"github.com/ava-labs/avalanchego/utils/units"
-	"github.com/ava-labs/avalanchego/vms/components/avax"
-	"github.com/ava-labs/avalanchego/vms/platformvm/state"
-	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
-	"github.com/ava-labs/avalanchego/vms/platformvm/utxo"
-	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
+	"github.com/Juneo-io/juneogo/database"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/crypto/secp256k1"
+	"github.com/Juneo-io/juneogo/utils/hashing"
+	"github.com/Juneo-io/juneogo/utils/units"
+	"github.com/Juneo-io/juneogo/vms/components/avax"
+	"github.com/Juneo-io/juneogo/vms/platformvm/state"
+	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
+	"github.com/Juneo-io/juneogo/vms/platformvm/utxo"
+	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
 )
 
 // Ensure Execute fails when there are not enough control sigs
 func TestCreateChainTxInsufficientControlSigs(t *testing.T) {
 	require := require.New(t)
-	env := newEnvironment(true /*=postBanff*/, false /*=postCortina*/)
+	env := newEnvironment(t, true /*=postBanff*/, false /*=postCortina*/)
 	env.ctx.Lock.Lock()
 	defer func() {
 		require.NoError(shutdownEnvironment(env))
 	}()
 
 	tx, err := env.txBuilder.NewCreateChainTx(
-		testSubnet1.ID(),
+		testSupernet1.ID(),
 		nil,
 		constants.AVMID,
 		nil,
@@ -53,25 +54,25 @@ func TestCreateChainTxInsufficientControlSigs(t *testing.T) {
 		Tx:      tx,
 	}
 	err = tx.Unsigned.Visit(&executor)
-	require.ErrorIs(err, errUnauthorizedSubnetModification)
+	require.ErrorIs(err, errUnauthorizedSupernetModification)
 }
 
 // Ensure Execute fails when an incorrect control signature is given
 func TestCreateChainTxWrongControlSig(t *testing.T) {
 	require := require.New(t)
-	env := newEnvironment(true /*=postBanff*/, false /*=postCortina*/)
+	env := newEnvironment(t, true /*=postBanff*/, false /*=postCortina*/)
 	env.ctx.Lock.Lock()
 	defer func() {
 		require.NoError(shutdownEnvironment(env))
 	}()
 
 	tx, err := env.txBuilder.NewCreateChainTx(
-		testSubnet1.ID(),
+		testSupernet1.ID(),
 		nil,
 		constants.AVMID,
 		nil,
 		"chain name",
-		[]*secp256k1.PrivateKey{testSubnet1ControlKeys[0], testSubnet1ControlKeys[1]},
+		[]*secp256k1.PrivateKey{testSupernet1ControlKeys[0], testSupernet1ControlKeys[1]},
 		ids.ShortEmpty,
 	)
 	require.NoError(err)
@@ -95,31 +96,31 @@ func TestCreateChainTxWrongControlSig(t *testing.T) {
 		Tx:      tx,
 	}
 	err = tx.Unsigned.Visit(&executor)
-	require.ErrorIs(err, errUnauthorizedSubnetModification)
+	require.ErrorIs(err, errUnauthorizedSupernetModification)
 }
 
-// Ensure Execute fails when the Subnet the blockchain specifies as
+// Ensure Execute fails when the Supernet the blockchain specifies as
 // its validator set doesn't exist
-func TestCreateChainTxNoSuchSubnet(t *testing.T) {
+func TestCreateChainTxNoSuchSupernet(t *testing.T) {
 	require := require.New(t)
-	env := newEnvironment(true /*=postBanff*/, false /*=postCortina*/)
+	env := newEnvironment(t, true /*=postBanff*/, false /*=postCortina*/)
 	env.ctx.Lock.Lock()
 	defer func() {
 		require.NoError(shutdownEnvironment(env))
 	}()
 
 	tx, err := env.txBuilder.NewCreateChainTx(
-		testSubnet1.ID(),
+		testSupernet1.ID(),
 		nil,
 		constants.AVMID,
 		nil,
 		"chain name",
-		[]*secp256k1.PrivateKey{testSubnet1ControlKeys[0], testSubnet1ControlKeys[1]},
+		[]*secp256k1.PrivateKey{testSupernet1ControlKeys[0], testSupernet1ControlKeys[1]},
 		ids.ShortEmpty,
 	)
 	require.NoError(err)
 
-	tx.Unsigned.(*txs.CreateChainTx).SubnetID = ids.GenerateTestID()
+	tx.Unsigned.(*txs.CreateChainTx).SupernetID = ids.GenerateTestID()
 
 	stateDiff, err := state.NewDiff(lastAcceptedID, env)
 	require.NoError(err)
@@ -130,25 +131,25 @@ func TestCreateChainTxNoSuchSubnet(t *testing.T) {
 		Tx:      tx,
 	}
 	err = tx.Unsigned.Visit(&executor)
-	require.ErrorIs(err, errCantFindSubnet)
+	require.ErrorIs(err, database.ErrNotFound)
 }
 
 // Ensure valid tx passes semanticVerify
 func TestCreateChainTxValid(t *testing.T) {
 	require := require.New(t)
-	env := newEnvironment(true /*=postBanff*/, false /*=postCortina*/)
+	env := newEnvironment(t, true /*=postBanff*/, false /*=postCortina*/)
 	env.ctx.Lock.Lock()
 	defer func() {
 		require.NoError(shutdownEnvironment(env))
 	}()
 
 	tx, err := env.txBuilder.NewCreateChainTx(
-		testSubnet1.ID(),
+		testSupernet1.ID(),
 		nil,
 		constants.AVMID,
 		nil,
 		"chain name",
-		[]*secp256k1.PrivateKey{testSubnet1ControlKeys[0], testSubnet1ControlKeys[1]},
+		[]*secp256k1.PrivateKey{testSupernet1ControlKeys[0], testSupernet1ControlKeys[1]},
 		ids.ShortEmpty,
 	)
 	require.NoError(err)
@@ -161,8 +162,7 @@ func TestCreateChainTxValid(t *testing.T) {
 		State:   stateDiff,
 		Tx:      tx,
 	}
-	err = tx.Unsigned.Visit(&executor)
-	require.NoError(err)
+	require.NoError(tx.Unsigned.Visit(&executor))
 }
 
 func TestCreateChainTxAP3FeeChange(t *testing.T) {
@@ -196,7 +196,7 @@ func TestCreateChainTxAP3FeeChange(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			require := require.New(t)
 
-			env := newEnvironment(true /*=postBanff*/, false /*=postCortina*/)
+			env := newEnvironment(t, true /*=postBanff*/, false /*=postCortina*/)
 			env.config.ApricotPhase3Time = ap3Time
 
 			defer func() {
@@ -205,10 +205,10 @@ func TestCreateChainTxAP3FeeChange(t *testing.T) {
 			ins, outs, _, signers, err := env.utxosHandler.Spend(env.state, preFundedKeys, 0, test.fee, ids.ShortEmpty)
 			require.NoError(err)
 
-			subnetAuth, subnetSigners, err := env.utxosHandler.Authorize(env.state, testSubnet1.ID(), preFundedKeys)
+			supernetAuth, supernetSigners, err := env.utxosHandler.Authorize(env.state, testSupernet1.ID(), preFundedKeys)
 			require.NoError(err)
 
-			signers = append(signers, subnetSigners)
+			signers = append(signers, supernetSigners)
 
 			// Create the tx
 
@@ -219,13 +219,12 @@ func TestCreateChainTxAP3FeeChange(t *testing.T) {
 					Ins:          ins,
 					Outs:         outs,
 				}},
-				SubnetID:   testSubnet1.ID(),
-				VMID:         constants.AVMID,
-				SubnetAuth: subnetAuth,
+				SupernetID:   testSupernet1.ID(),
+				VMID:       constants.AVMID,
+				SupernetAuth: supernetAuth,
 			}
 			tx := &txs.Tx{Unsigned: utx}
-			err = tx.Sign(txs.Codec, signers)
-			require.NoError(err)
+			require.NoError(tx.Sign(txs.Codec, signers))
 
 			stateDiff, err := state.NewDiff(lastAcceptedID, env)
 			require.NoError(err)

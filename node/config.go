@@ -7,24 +7,24 @@ import (
 	"crypto/tls"
 	"time"
 
-	"github.com/ava-labs/avalanchego/api/server"
-	"github.com/ava-labs/avalanchego/chains"
-	"github.com/ava-labs/avalanchego/genesis"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/nat"
-	"github.com/ava-labs/avalanchego/network"
-	"github.com/ava-labs/avalanchego/snow/networking/benchlist"
-	"github.com/ava-labs/avalanchego/snow/networking/router"
-	"github.com/ava-labs/avalanchego/snow/networking/tracker"
-	"github.com/ava-labs/avalanchego/subnets"
-	"github.com/ava-labs/avalanchego/trace"
-	"github.com/ava-labs/avalanchego/utils/crypto/bls"
-	"github.com/ava-labs/avalanchego/utils/dynamicip"
-	"github.com/ava-labs/avalanchego/utils/ips"
-	"github.com/ava-labs/avalanchego/utils/logging"
-	"github.com/ava-labs/avalanchego/utils/profiler"
-	"github.com/ava-labs/avalanchego/utils/set"
-	"github.com/ava-labs/avalanchego/utils/timer"
+	"github.com/Juneo-io/juneogo/api/server"
+	"github.com/Juneo-io/juneogo/chains"
+	"github.com/Juneo-io/juneogo/genesis"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/nat"
+	"github.com/Juneo-io/juneogo/network"
+	"github.com/Juneo-io/juneogo/snow/networking/benchlist"
+	"github.com/Juneo-io/juneogo/snow/networking/router"
+	"github.com/Juneo-io/juneogo/snow/networking/tracker"
+	"github.com/Juneo-io/juneogo/supernets"
+	"github.com/Juneo-io/juneogo/trace"
+	"github.com/Juneo-io/juneogo/utils/crypto/bls"
+	"github.com/Juneo-io/juneogo/utils/dynamicip"
+	"github.com/Juneo-io/juneogo/utils/ips"
+	"github.com/Juneo-io/juneogo/utils/logging"
+	"github.com/Juneo-io/juneogo/utils/profiler"
+	"github.com/Juneo-io/juneogo/utils/set"
+	"github.com/Juneo-io/juneogo/utils/timer"
 )
 
 type IPCConfig struct {
@@ -53,7 +53,8 @@ type HTTPConfig struct {
 	HTTPSKey     []byte `json:"-"`
 	HTTPSCert    []byte `json:"-"`
 
-	APIAllowedOrigins []string `json:"apiAllowedOrigins"`
+	HTTPAllowedOrigins []string `json:"httpAllowedOrigins"`
+	HTTPAllowedHosts   []string `json:"httpAllowedHosts"`
 
 	ShutdownTimeout time.Duration `json:"shutdownTimeout"`
 	ShutdownWait    time.Duration `json:"shutdownWait"`
@@ -80,17 +81,24 @@ type IPConfig struct {
 	AttemptedNATTraversal bool `json:"attemptedNATTraversal"`
 	// Tries to perform network address translation
 	Nat nat.Router `json:"-"`
+	// The host portion of the address to listen on. The port to
+	// listen on will be sourced from IPPort.
+	//
+	// - If empty, listen on all interfaces (both ipv4 and ipv6).
+	// - If populated, listen only on the specified address.
+	ListenHost string `json:"listenHost"`
 }
 
 type StakingConfig struct {
 	genesis.StakingConfig
-	EnableStaking         bool            `json:"enableStaking"`
-	StakingTLSCert        tls.Certificate `json:"-"`
-	StakingSigningKey     *bls.SecretKey  `json:"-"`
-	DisabledStakingWeight uint64          `json:"disabledStakingWeight"`
-	StakingKeyPath        string          `json:"stakingKeyPath"`
-	StakingCertPath       string          `json:"stakingCertPath"`
-	StakingSignerPath     string          `json:"stakingSignerPath"`
+	SybilProtectionEnabled        bool            `json:"sybilProtectionEnabled"`
+	PartialSyncPrimaryNetwork     bool            `json:"partialSyncPrimaryNetwork"`
+	StakingTLSCert                tls.Certificate `json:"-"`
+	StakingSigningKey             *bls.SecretKey  `json:"-"`
+	SybilProtectionDisabledWeight uint64          `json:"sybilProtectionDisabledWeight"`
+	StakingKeyPath                string          `json:"stakingKeyPath"`
+	StakingCertPath               string          `json:"stakingCertPath"`
+	StakingSignerPath             string          `json:"stakingSignerPath"`
 }
 
 type StateSyncConfig struct {
@@ -119,8 +127,7 @@ type BootstrapConfig struct {
 	// ancestors while responding to a GetAncestors message
 	BootstrapMaxTimeGetAncestors time.Duration `json:"bootstrapMaxTimeGetAncestors"`
 
-	BootstrapIDs []ids.NodeID `json:"bootstrapIDs"`
-	BootstrapIPs []ips.IPPort `json:"bootstrapIPs"`
+	Bootstrappers []genesis.Bootstrapper `json:"bootstrappers"`
 }
 
 type DatabaseConfig struct {
@@ -177,15 +184,15 @@ type Config struct {
 	ConsensusRouter          router.Router       `json:"-"`
 	RouterHealthConfig       router.HealthConfig `json:"routerHealthConfig"`
 	ConsensusShutdownTimeout time.Duration       `json:"consensusShutdownTimeout"`
-	// Gossip a container in the accepted frontier every [ConsensusGossipFrequency]
-	ConsensusGossipFrequency time.Duration `json:"consensusGossipFreq"`
+	// Gossip a container in the accepted frontier every [AcceptedFrontierGossipFrequency]
+	AcceptedFrontierGossipFrequency time.Duration `json:"consensusGossipFreq"`
 	// ConsensusAppConcurrency defines the maximum number of goroutines to
 	// handle App messages per chain.
 	ConsensusAppConcurrency int `json:"consensusAppConcurrency"`
 
-	TrackedSubnets set.Set[ids.ID] `json:"trackedSubnets"`
+	TrackedSupernets set.Set[ids.ID] `json:"trackedSupernets"`
 
-	SubnetConfigs map[ids.ID]subnets.Config `json:"subnetConfigs"`
+	SupernetConfigs map[ids.ID]supernets.Config `json:"supernetConfigs"`
 
 	ChainConfigs map[string]chains.ChainConfig `json:"-"`
 	ChainAliases map[ids.ID][]string           `json:"chainAliases"`
@@ -218,10 +225,6 @@ type Config struct {
 
 	TraceConfig trace.Config `json:"traceConfig"`
 
-	// See comment on [MinPercentConnectedStakeHealthy] in platformvm.Config
-	// TODO: consider moving to subnet config
-	MinPercentConnectedStakeHealthy map[ids.ID]float64 `json:"minPercentConnectedStakeHealthy"`
-
 	// See comment on [UseCurrentHeight] in platformvm.Config
 	UseCurrentHeight bool `json:"useCurrentHeight"`
 
@@ -231,4 +234,8 @@ type Config struct {
 	// ChainDataDir is the root path for per-chain directories where VMs can
 	// write arbitrary data.
 	ChainDataDir string `json:"chainDataDir"`
+
+	// Path to write process context to (including PID, API URI, and
+	// staking address).
+	ProcessContextFilePath string `json:"processContextFilePath"`
 }

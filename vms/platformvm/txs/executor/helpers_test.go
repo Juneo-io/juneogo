@@ -8,50 +8,53 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"testing"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 
-	"github.com/ava-labs/avalanchego/chains"
-	"github.com/ava-labs/avalanchego/chains/atomic"
-	"github.com/ava-labs/avalanchego/codec"
-	"github.com/ava-labs/avalanchego/codec/linearcodec"
-	"github.com/ava-labs/avalanchego/database"
-	"github.com/ava-labs/avalanchego/database/manager"
-	"github.com/ava-labs/avalanchego/database/prefixdb"
-	"github.com/ava-labs/avalanchego/database/versiondb"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/snow/uptime"
-	"github.com/ava-labs/avalanchego/snow/validators"
-	"github.com/ava-labs/avalanchego/utils"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/crypto/secp256k1"
-	"github.com/ava-labs/avalanchego/utils/formatting"
-	"github.com/ava-labs/avalanchego/utils/formatting/address"
-	"github.com/ava-labs/avalanchego/utils/json"
-	"github.com/ava-labs/avalanchego/utils/logging"
-	"github.com/ava-labs/avalanchego/utils/timer/mockable"
-	"github.com/ava-labs/avalanchego/utils/units"
-	"github.com/ava-labs/avalanchego/utils/wrappers"
-	"github.com/ava-labs/avalanchego/version"
-	"github.com/ava-labs/avalanchego/vms/components/avax"
-	"github.com/ava-labs/avalanchego/vms/platformvm/api"
-	"github.com/ava-labs/avalanchego/vms/platformvm/config"
-	"github.com/ava-labs/avalanchego/vms/platformvm/fx"
-	"github.com/ava-labs/avalanchego/vms/platformvm/metrics"
-	"github.com/ava-labs/avalanchego/vms/platformvm/reward"
-	"github.com/ava-labs/avalanchego/vms/platformvm/state"
-	"github.com/ava-labs/avalanchego/vms/platformvm/status"
-	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
-	"github.com/ava-labs/avalanchego/vms/platformvm/txs/builder"
-	"github.com/ava-labs/avalanchego/vms/platformvm/utxo"
-	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
+	"github.com/stretchr/testify/require"
+
+	"github.com/Juneo-io/juneogo/chains"
+	"github.com/Juneo-io/juneogo/chains/atomic"
+	"github.com/Juneo-io/juneogo/codec"
+	"github.com/Juneo-io/juneogo/codec/linearcodec"
+	"github.com/Juneo-io/juneogo/database"
+	"github.com/Juneo-io/juneogo/database/manager"
+	"github.com/Juneo-io/juneogo/database/prefixdb"
+	"github.com/Juneo-io/juneogo/database/versiondb"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/snow/uptime"
+	"github.com/Juneo-io/juneogo/snow/validators"
+	"github.com/Juneo-io/juneogo/utils"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/crypto/secp256k1"
+	"github.com/Juneo-io/juneogo/utils/formatting"
+	"github.com/Juneo-io/juneogo/utils/formatting/address"
+	"github.com/Juneo-io/juneogo/utils/json"
+	"github.com/Juneo-io/juneogo/utils/logging"
+	"github.com/Juneo-io/juneogo/utils/timer/mockable"
+	"github.com/Juneo-io/juneogo/utils/units"
+	"github.com/Juneo-io/juneogo/utils/wrappers"
+	"github.com/Juneo-io/juneogo/version"
+	"github.com/Juneo-io/juneogo/vms/components/avax"
+	"github.com/Juneo-io/juneogo/vms/platformvm/api"
+	"github.com/Juneo-io/juneogo/vms/platformvm/config"
+	"github.com/Juneo-io/juneogo/vms/platformvm/fx"
+	"github.com/Juneo-io/juneogo/vms/platformvm/metrics"
+	"github.com/Juneo-io/juneogo/vms/platformvm/reward"
+	"github.com/Juneo-io/juneogo/vms/platformvm/state"
+	"github.com/Juneo-io/juneogo/vms/platformvm/status"
+	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
+	"github.com/Juneo-io/juneogo/vms/platformvm/txs/builder"
+	"github.com/Juneo-io/juneogo/vms/platformvm/utxo"
+	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
 )
 
 const (
-	testNetworkID = 10 // To be used in tests
 	defaultWeight = 5 * units.MilliAvax
+	trackChecksum = false
 )
 
 var (
@@ -69,14 +72,13 @@ var (
 	cChainID                  = ids.Empty.Prefix(1)
 	lastAcceptedID            = ids.GenerateTestID()
 
-	testSubnet1            *txs.Tx
-	testSubnet1ControlKeys = preFundedKeys[0:3]
+	testSupernet1            *txs.Tx
+	testSupernet1ControlKeys = preFundedKeys[0:3]
 
 	// Used to create and use keys.
 	testKeyfactory secp256k1.Factory
 
-	errMissingPrimaryValidators = errors.New("missing primary validator set")
-	errMissing                  = errors.New("missing")
+	errMissing = errors.New("missing")
 )
 
 type mutableSharedMemory struct {
@@ -112,7 +114,7 @@ func (e *environment) SetState(blkID ids.ID, chainState state.Chain) {
 	e.states[blkID] = chainState
 }
 
-func newEnvironment(postBanff, postCortina bool) *environment {
+func newEnvironment(t *testing.T, postBanff, postCortina bool) *environment {
 	var isBootstrapped utils.Atomic[bool]
 	isBootstrapped.Set(true)
 
@@ -123,19 +125,19 @@ func newEnvironment(postBanff, postCortina bool) *environment {
 	baseDB := versiondb.New(baseDBManager.Current().Database)
 	ctx, msm := defaultCtx(baseDB)
 
-	fx := defaultFx(&clk, ctx.Log, isBootstrapped.Get())
+	fx := defaultFx(clk, ctx.Log, isBootstrapped.Get())
 
 	rewards := reward.NewCalculator(config.RewardConfig)
 	baseState := defaultState(&config, ctx, baseDB, rewards)
 
 	atomicUTXOs := avax.NewAtomicUTXOManager(ctx.SharedMemory, txs.Codec)
-	uptimes := uptime.NewManager(baseState)
-	utxoHandler := utxo.NewHandler(ctx, &clk, fx)
+	uptimes := uptime.NewManager(baseState, clk)
+	utxoHandler := utxo.NewHandler(ctx, clk, fx)
 
 	txBuilder := builder.New(
 		ctx,
 		&config,
-		&clk,
+		clk,
 		fx,
 		baseState,
 		atomicUTXOs,
@@ -145,7 +147,7 @@ func newEnvironment(postBanff, postCortina bool) *environment {
 	backend := Backend{
 		Config:       &config,
 		Ctx:          ctx,
-		Clk:          &clk,
+		Clk:          clk,
 		Bootstrapped: &isBootstrapped,
 		Fx:           fx,
 		FlowChecker:  utxoHandler,
@@ -156,7 +158,7 @@ func newEnvironment(postBanff, postCortina bool) *environment {
 	env := &environment{
 		isBootstrapped: &isBootstrapped,
 		config:         &config,
-		clk:            &clk,
+		clk:            clk,
 		baseDB:         baseDB,
 		ctx:            ctx,
 		msm:            msm,
@@ -170,19 +172,22 @@ func newEnvironment(postBanff, postCortina bool) *environment {
 		backend:        backend,
 	}
 
-	addSubnet(env, txBuilder)
+	addSupernet(t, env, txBuilder)
 
 	return env
 }
 
-func addSubnet(
+func addSupernet(
+	t *testing.T,
 	env *environment,
 	txBuilder builder.Builder,
 ) {
-	// Create a subnet
+	require := require.New(t)
+
+	// Create a supernet
 	var err error
-	testSubnet1, err = txBuilder.NewCreateSubnetTx(
-		2, // threshold; 2 sigs from keys[0], keys[1], keys[2] needed to add validator to this subnet
+	testSupernet1, err = txBuilder.NewCreateSupernetTx(
+		2, // threshold; 2 sigs from keys[0], keys[1], keys[2] needed to add validator to this supernet
 		[]ids.ShortID{ // control keys
 			preFundedKeys[0].PublicKey().Address(),
 			preFundedKeys[1].PublicKey().Address(),
@@ -191,30 +196,21 @@ func addSubnet(
 		[]*secp256k1.PrivateKey{preFundedKeys[0]},
 		preFundedKeys[0].PublicKey().Address(),
 	)
-	if err != nil {
-		panic(err)
-	}
+	require.NoError(err)
 
 	// store it
 	stateDiff, err := state.NewDiff(lastAcceptedID, env)
-	if err != nil {
-		panic(err)
-	}
+	require.NoError(err)
 
 	executor := StandardTxExecutor{
 		Backend: &env.backend,
 		State:   stateDiff,
-		Tx:      testSubnet1,
+		Tx:      testSupernet1,
 	}
-	err = testSubnet1.Unsigned.Visit(&executor)
-	if err != nil {
-		panic(err)
-	}
+	require.NoError(testSupernet1.Unsigned.Visit(&executor))
 
-	stateDiff.AddTx(testSubnet1, status.Committed)
-	if err := stateDiff.Apply(env.state); err != nil {
-		panic(err)
-	}
+	stateDiff.AddTx(testSupernet1, status.Committed)
+	require.NoError(stateDiff.Apply(env.state))
 }
 
 func defaultState(
@@ -224,11 +220,13 @@ func defaultState(
 	rewards reward.Calculator,
 ) state.State {
 	genesisBytes := buildGenesisTest(ctx)
+	execCfg, _ := config.GetExecutionConfig(nil)
 	state, err := state.New(
 		db,
 		genesisBytes,
 		prometheus.NewRegistry(),
 		cfg,
+		execCfg,
 		ctx,
 		metrics.Noop,
 		rewards,
@@ -240,10 +238,6 @@ func defaultState(
 
 	// persist and reload to init a bunch of in-memory stuff
 	state.SetHeight(0)
-	if err := state.Commit(); err != nil {
-		panic(err)
-	}
-	state.SetHeight( /*height*/ 0)
 	if err := state.Commit(); err != nil {
 		panic(err)
 	}
@@ -267,8 +261,8 @@ func defaultCtx(db database.Database) (*snow.Context, *mutableSharedMemory) {
 	ctx.SharedMemory = msm
 
 	ctx.ValidatorState = &validators.TestState{
-		GetSubnetIDF: func(_ context.Context, chainID ids.ID) (ids.ID, error) {
-			subnetID, ok := map[ids.ID]ids.ID{
+		GetSupernetIDF: func(_ context.Context, chainID ids.ID) (ids.ID, error) {
+			supernetID, ok := map[ids.ID]ids.ID{
 				constants.PlatformChainID: constants.PrimaryNetworkID,
 				xChainID:                  constants.PrimaryNetworkID,
 				cChainID:                  constants.PrimaryNetworkID,
@@ -276,7 +270,7 @@ func defaultCtx(db database.Database) (*snow.Context, *mutableSharedMemory) {
 			if !ok {
 				return ids.Empty, errMissing
 			}
-			return subnetID, nil
+			return supernetID, nil
 		},
 	}
 
@@ -293,15 +287,12 @@ func defaultConfig(postBanff, postCortina bool) config.Config {
 		cortinaTime = defaultValidateStartTime.Add(-2 * time.Second)
 	}
 
-	vdrs := validators.NewManager()
-	primaryVdrs := validators.NewSet()
-	_ = vdrs.Add(constants.PrimaryNetworkID, primaryVdrs)
 	return config.Config{
 		Chains:                 chains.TestManager,
 		UptimeLockedCalculator: uptime.NewLockedCalculator(),
-		Validators:             vdrs,
+		Validators:             validators.NewManager(),
 		TxFee:                  defaultTxFee,
-		CreateSubnetTxFee:    100 * defaultTxFee,
+		CreateSupernetTxFee:      100 * defaultTxFee,
 		CreateBlockchainTxFee:  100 * defaultTxFee,
 		MinValidatorStake:      5 * units.MilliAvax,
 		MaxValidatorStake:      500 * units.MilliAvax,
@@ -321,13 +312,13 @@ func defaultConfig(postBanff, postCortina bool) config.Config {
 	}
 }
 
-func defaultClock(postFork bool) mockable.Clock {
+func defaultClock(postFork bool) *mockable.Clock {
 	now := defaultGenesisTime
 	if postFork {
 		// 1 second after Banff fork
 		now = defaultValidateEndTime.Add(-2 * time.Second)
 	}
-	clk := mockable.Clock{}
+	clk := &mockable.Clock{}
 	clk.Set(now)
 	return clk
 }
@@ -370,10 +361,9 @@ func defaultFx(clk *mockable.Clock, log logging.Logger, isBootstrapped bool) fx.
 
 func buildGenesisTest(ctx *snow.Context) []byte {
 	genesisUTXOs := make([]api.UTXO, len(preFundedKeys))
-	hrp := constants.NetworkIDToHRP[testNetworkID]
 	for i, key := range preFundedKeys {
 		id := key.PublicKey().Address()
-		addr, err := address.FormatBech32(hrp, id.Bytes())
+		addr, err := address.FormatBech32(constants.UnitTestHRP, id.Bytes())
 		if err != nil {
 			panic(err)
 		}
@@ -386,7 +376,7 @@ func buildGenesisTest(ctx *snow.Context) []byte {
 	genesisValidators := make([]api.PermissionlessValidator, len(preFundedKeys))
 	for i, key := range preFundedKeys {
 		nodeID := ids.NodeID(key.PublicKey().Address())
-		addr, err := address.FormatBech32(hrp, nodeID.Bytes())
+		addr, err := address.FormatBech32(constants.UnitTestHRP, nodeID.Bytes())
 		if err != nil {
 			panic(err)
 		}
@@ -409,7 +399,7 @@ func buildGenesisTest(ctx *snow.Context) []byte {
 	}
 
 	buildGenesisArgs := api.BuildGenesisArgs{
-		NetworkID:     json.Uint32(testNetworkID),
+		NetworkID:     json.Uint32(constants.UnitTestID),
 		AvaxAssetID:   ctx.AVAXAssetID,
 		UTXOs:         genesisUTXOs,
 		Validators:    genesisValidators,
@@ -435,32 +425,16 @@ func buildGenesisTest(ctx *snow.Context) []byte {
 
 func shutdownEnvironment(env *environment) error {
 	if env.isBootstrapped.Get() {
-		primaryValidatorSet, exist := env.config.Validators.Get(constants.PrimaryNetworkID)
-		if !exist {
-			return errMissingPrimaryValidators
-		}
-		primaryValidators := primaryValidatorSet.List()
+		validatorIDs := env.config.Validators.GetValidatorIDs(constants.PrimaryNetworkID)
 
-		validatorIDs := make([]ids.NodeID, len(primaryValidators))
-		for i, vdr := range primaryValidators {
-			validatorIDs[i] = vdr.NodeID
-		}
 		if err := env.uptimes.StopTracking(validatorIDs, constants.PrimaryNetworkID); err != nil {
 			return err
 		}
 
-		for subnetID := range env.config.TrackedSubnets {
-			vdrs, exist := env.config.Validators.Get(subnetID)
-			if !exist {
-				return nil
-			}
-			validators := vdrs.List()
+		for supernetID := range env.config.TrackedSupernets {
+			validatorIDs := env.config.Validators.GetValidatorIDs(supernetID)
 
-			validatorIDs := make([]ids.NodeID, len(validators))
-			for i, vdr := range validators {
-				validatorIDs[i] = vdr.NodeID
-			}
-			if err := env.uptimes.StopTracking(validatorIDs, subnetID); err != nil {
+			if err := env.uptimes.StopTracking(validatorIDs, supernetID); err != nil {
 				return err
 			}
 		}

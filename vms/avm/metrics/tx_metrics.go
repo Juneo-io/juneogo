@@ -8,8 +8,8 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 
-	"github.com/ava-labs/avalanchego/utils/wrappers"
-	"github.com/ava-labs/avalanchego/vms/avm/txs"
+	"github.com/Juneo-io/juneogo/utils/wrappers"
+	"github.com/Juneo-io/juneogo/vms/avm/txs"
 )
 
 var _ txs.Visitor = (*txMetrics)(nil)

@@ -4,11 +4,11 @@
 package txs
 
 import (
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/utils/set"
-	"github.com/ava-labs/avalanchego/vms/components/avax"
-	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/utils/set"
+	"github.com/Juneo-io/juneogo/vms/components/avax"
+	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
 )
 
 var (
@@ -52,26 +52,6 @@ func (t *OperationTx) InputIDs() set.Set[ids.ID] {
 		}
 	}
 	return inputs
-}
-
-// ConsumedAssetIDs returns the IDs of the assets this transaction consumes
-func (t *OperationTx) ConsumedAssetIDs() set.Set[ids.ID] {
-	assets := t.AssetIDs()
-	for _, op := range t.Ops {
-		if len(op.UTXOIDs) > 0 {
-			assets.Add(op.AssetID())
-		}
-	}
-	return assets
-}
-
-// AssetIDs returns the IDs of the assets this transaction depends on
-func (t *OperationTx) AssetIDs() set.Set[ids.ID] {
-	assets := t.BaseTx.AssetIDs()
-	for _, op := range t.Ops {
-		assets.Add(op.AssetID())
-	}
-	return assets
 }
 
 // NumCredentials returns the number of expected credentials

@@ -8,8 +8,10 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow/consensus/snowman"
+	"github.com/stretchr/testify/require"
+
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow/consensus/snowman"
 )
 
 var (
@@ -35,7 +37,7 @@ func (tsb *TestBlockServer) GetFullPostForkBlock(ctx context.Context, blkID ids.
 		return tsb.GetFullPostForkBlockF(ctx, blkID)
 	}
 	if tsb.CantGetFullPostForkBlock && tsb.T != nil {
-		tsb.T.Fatal(errGetWrappingBlk)
+		require.FailNow(tsb.T, errGetWrappingBlk.Error())
 	}
 	return nil, errGetWrappingBlk
 }
@@ -45,7 +47,7 @@ func (tsb *TestBlockServer) Commit() error {
 		return tsb.CommitF()
 	}
 	if tsb.CantCommit && tsb.T != nil {
-		tsb.T.Fatal(errCommit)
+		require.FailNow(tsb.T, errCommit.Error())
 	}
 	return errCommit
 }

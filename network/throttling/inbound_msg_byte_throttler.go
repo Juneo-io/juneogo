@@ -11,13 +11,14 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow/validators"
-	"github.com/ava-labs/avalanchego/utils/linkedhashmap"
-	"github.com/ava-labs/avalanchego/utils/logging"
-	"github.com/ava-labs/avalanchego/utils/math"
-	"github.com/ava-labs/avalanchego/utils/metric"
-	"github.com/ava-labs/avalanchego/utils/wrappers"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow/validators"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/linkedhashmap"
+	"github.com/Juneo-io/juneogo/utils/logging"
+	"github.com/Juneo-io/juneogo/utils/math"
+	"github.com/Juneo-io/juneogo/utils/metric"
+	"github.com/Juneo-io/juneogo/utils/wrappers"
 )
 
 // See inbound_msg_throttler.go
@@ -26,7 +27,7 @@ func newInboundMsgByteThrottler(
 	log logging.Logger,
 	namespace string,
 	registerer prometheus.Registerer,
-	vdrs validators.Set,
+	vdrs validators.Manager,
 	config MsgByteThrottlerConfig,
 ) (*inboundMsgByteThrottler, error) {
 	t := &inboundMsgByteThrottler{
@@ -96,7 +97,7 @@ func (t *inboundMsgByteThrottler) Acquire(ctx context.Context, msgSize uint64, n
 
 	t.lock.Lock()
 
-	// If there is already a message waiting, log the error but continue
+	// If there is already a message waiting, log the error and return
 	if existingID, exists := t.nodeToWaitingMsgID[nodeID]; exists {
 		t.log.Error("node already waiting on message",
 			zap.Stringer("nodeID", nodeID),
@@ -131,9 +132,16 @@ func (t *inboundMsgByteThrottler) Acquire(ctx context.Context, msgSize uint64, n
 	// Take as many bytes as we can from [nodeID]'s validator allocation.
 	// Calculate [nodeID]'s validator allocation size based on its weight
 	vdrAllocationSize := uint64(0)
-	weight := t.vdrs.GetWeight(nodeID)
+	weight := t.vdrs.GetWeight(constants.PrimaryNetworkID, nodeID)
 	if weight != 0 {
-		vdrAllocationSize = uint64(float64(t.maxVdrBytes) * float64(weight) / float64(t.vdrs.Weight()))
+		totalWeight, err := t.vdrs.TotalWeight(constants.PrimaryNetworkID)
+		if err != nil {
+			t.log.Error("couldn't get total weight of primary network",
+				zap.Error(err),
+			)
+		} else {
+			vdrAllocationSize = uint64(float64(t.maxVdrBytes) * float64(weight) / float64(totalWeight))
+		}
 	}
 	vdrBytesAlreadyUsed := t.nodeToVdrBytesUsed[nodeID]
 	// [vdrBytesAllowed] is the number of bytes this node

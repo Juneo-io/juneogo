@@ -6,9 +6,9 @@ package throttling
 import (
 	"sync"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow/validators"
-	"github.com/ava-labs/avalanchego/utils/logging"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow/validators"
+	"github.com/Juneo-io/juneogo/utils/logging"
 )
 
 // Used by the sybil-safe inbound and outbound message throttlers
@@ -22,8 +22,7 @@ type MsgByteThrottlerConfig struct {
 type commonMsgThrottler struct {
 	log  logging.Logger
 	lock sync.Mutex
-	// Primary network validator set
-	vdrs validators.Set
+	vdrs validators.Manager
 	// Max number of bytes that can be taken from the
 	// at-large byte allocation by a given node.
 	nodeMaxAtLargeBytes uint64

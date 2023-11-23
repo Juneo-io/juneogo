@@ -6,15 +6,15 @@ package txs
 import (
 	"fmt"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/crypto/bls"
-	"github.com/ava-labs/avalanchego/utils/math"
-	"github.com/ava-labs/avalanchego/vms/components/avax"
-	"github.com/ava-labs/avalanchego/vms/components/verify"
-	"github.com/ava-labs/avalanchego/vms/platformvm/fx"
-	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/crypto/bls"
+	"github.com/Juneo-io/juneogo/utils/math"
+	"github.com/Juneo-io/juneogo/vms/components/avax"
+	"github.com/Juneo-io/juneogo/vms/components/verify"
+	"github.com/Juneo-io/juneogo/vms/platformvm/fx"
+	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
 )
 
 var _ DelegatorTx = (*AddPermissionlessDelegatorTx)(nil)
@@ -25,8 +25,8 @@ type AddPermissionlessDelegatorTx struct {
 	BaseTx `serialize:"true"`
 	// Describes the validator
 	Validator `serialize:"true" json:"validator"`
-	// ID of the subnet this validator is validating
-	Subnet ids.ID `serialize:"true" json:"subnetID"`
+	// ID of the supernet this validator is validating
+	Supernet ids.ID `serialize:"true" json:"supernetID"`
 	// Where to send staked tokens when done validating
 	StakeOuts []*avax.TransferableOutput `serialize:"true" json:"stake"`
 	// Where to send staking rewards when done validating
@@ -45,8 +45,22 @@ func (tx *AddPermissionlessDelegatorTx) InitCtx(ctx *snow.Context) {
 	tx.DelegationRewardsOwner.InitCtx(ctx)
 }
 
-func (tx *AddPermissionlessDelegatorTx) SubnetID() ids.ID {
-	return tx.Subnet
+func (tx *AddPermissionlessDelegatorTx) ConsumedValue(assetID ids.ID) uint64 {
+	value := tx.BaseTx.ConsumedValue(assetID)
+	for _, out := range tx.StakeOuts {
+		if out.Asset.AssetID() == assetID {
+			val, err := math.Sub(value, out.Out.Amount())
+			if err != nil {
+				return uint64(0)
+			}
+			value = val
+		}
+	}
+	return value
+}
+
+func (tx *AddPermissionlessDelegatorTx) SupernetID() ids.ID {
+	return tx.Supernet
 }
 
 func (tx *AddPermissionlessDelegatorTx) NodeID() ids.NodeID {
@@ -58,17 +72,17 @@ func (*AddPermissionlessDelegatorTx) PublicKey() (*bls.PublicKey, bool, error) {
 }
 
 func (tx *AddPermissionlessDelegatorTx) PendingPriority() Priority {
-	if tx.Subnet == constants.PrimaryNetworkID {
+	if tx.Supernet == constants.PrimaryNetworkID {
 		return PrimaryNetworkDelegatorBanffPendingPriority
 	}
-	return SubnetPermissionlessDelegatorPendingPriority
+	return SupernetPermissionlessDelegatorPendingPriority
 }
 
 func (tx *AddPermissionlessDelegatorTx) CurrentPriority() Priority {
-	if tx.Subnet == constants.PrimaryNetworkID {
+	if tx.Supernet == constants.PrimaryNetworkID {
 		return PrimaryNetworkDelegatorCurrentPriority
 	}
-	return SubnetPermissionlessDelegatorCurrentPriority
+	return SupernetPermissionlessDelegatorCurrentPriority
 }
 
 func (tx *AddPermissionlessDelegatorTx) Stake() []*avax.TransferableOutput {

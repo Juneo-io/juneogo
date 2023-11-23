@@ -4,10 +4,12 @@
 package syncer
 
 import (
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow/engine/common"
-	"github.com/ava-labs/avalanchego/snow/engine/snowman/block"
-	"github.com/ava-labs/avalanchego/snow/validators"
+	"fmt"
+
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow/engine/common"
+	"github.com/Juneo-io/juneogo/snow/engine/snowman/block"
+	"github.com/Juneo-io/juneogo/snow/validators"
 )
 
 type Config struct {
@@ -25,7 +27,7 @@ type Config struct {
 
 	// StateSyncBeacons are the nodes that will be used to sample and vote over
 	// state summaries.
-	StateSyncBeacons validators.Set
+	StateSyncBeacons validators.Manager
 
 	VM block.ChainVM
 }
@@ -47,14 +49,17 @@ func NewConfig(
 	// If the user has manually provided state syncer IDs, then override the
 	// state sync beacons to them.
 	if len(stateSyncerIDs) != 0 {
-		stateSyncBeacons = validators.NewSet()
+		stateSyncBeacons = validators.NewManager()
 		for _, peerID := range stateSyncerIDs {
 			// Invariant: We never use the TxID or BLS keys populated here.
-			if err := stateSyncBeacons.Add(peerID, nil, ids.Empty, 1); err != nil {
+			if err := stateSyncBeacons.AddStaker(commonCfg.Ctx.SupernetID, peerID, nil, ids.Empty, 1); err != nil {
 				return Config{}, err
 			}
 		}
-		stateSyncingWeight := stateSyncBeacons.Weight()
+		stateSyncingWeight, err := stateSyncBeacons.TotalWeight(commonCfg.Ctx.SupernetID)
+		if err != nil {
+			return Config{}, fmt.Errorf("failed to calculate total weight of state sync beacons for supernet %s: %w", commonCfg.Ctx.SupernetID, err)
+		}
 		if uint64(syncSampleK) > stateSyncingWeight {
 			syncSampleK = int(stateSyncingWeight)
 		}

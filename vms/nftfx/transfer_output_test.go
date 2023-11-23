@@ -6,25 +6,25 @@ package nftfx
 import (
 	"testing"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/vms/components/verify"
-	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
+	"github.com/stretchr/testify/require"
+
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/vms/components/verify"
+	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
 )
 
 func TestTransferOutputVerifyNil(t *testing.T) {
 	to := (*TransferOutput)(nil)
-	if err := to.Verify(); err == nil {
-		t.Fatalf("TransferOutput.Verify should have errored on nil")
-	}
+	err := to.Verify()
+	require.ErrorIs(t, err, errNilTransferOutput)
 }
 
 func TestTransferOutputLargePayload(t *testing.T) {
 	to := TransferOutput{
 		Payload: make([]byte, MaxPayloadSize+1),
 	}
-	if err := to.Verify(); err == nil {
-		t.Fatalf("TransferOutput.Verify should have errored on too large of a payload")
-	}
+	err := to.Verify()
+	require.ErrorIs(t, err, errPayloadTooLarge)
 }
 
 func TestTransferOutputInvalidSecp256k1Output(t *testing.T) {
@@ -36,14 +36,12 @@ func TestTransferOutputInvalidSecp256k1Output(t *testing.T) {
 			},
 		},
 	}
-	if err := to.Verify(); err == nil {
-		t.Fatalf("TransferOutput.Verify should have errored on too large of a payload")
-	}
+	err := to.Verify()
+	require.ErrorIs(t, err, secp256k1fx.ErrOutputUnoptimized)
 }
 
 func TestTransferOutputState(t *testing.T) {
 	intf := interface{}(&TransferOutput{})
-	if _, ok := intf.(verify.State); !ok {
-		t.Fatalf("should be marked as state")
-	}
+	_, ok := intf.(verify.State)
+	require.True(t, ok)
 }

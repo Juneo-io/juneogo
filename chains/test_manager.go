@@ -4,8 +4,8 @@
 package chains
 
 import (
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow/networking/router"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow/networking/router"
 )
 
 // TestManager implements Manager but does nothing. Always returns nil error.
@@ -48,7 +48,7 @@ func (testManager) StartChainCreator(ChainParameters) error {
 	return nil
 }
 
-func (testManager) SubnetID(ids.ID) (ids.ID, error) {
+func (testManager) SupernetID(ids.ID) (ids.ID, error) {
 	return ids.ID{}, nil
 }
 

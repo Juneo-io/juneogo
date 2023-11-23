@@ -9,11 +9,11 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/pubsub"
-	"github.com/ava-labs/avalanchego/vms/avm/txs"
-	"github.com/ava-labs/avalanchego/vms/components/avax"
-	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/pubsub"
+	"github.com/Juneo-io/juneogo/vms/avm/txs"
+	"github.com/Juneo-io/juneogo/vms/components/avax"
+	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
 )
 
 type mockFilter struct {
@@ -42,8 +42,7 @@ func TestFilter(t *testing.T) {
 	addrBytes := addrID[:]
 
 	fp := pubsub.NewFilterParam()
-	err := fp.Add(addrBytes)
-	require.NoError(err)
+	require.NoError(fp.Add(addrBytes))
 
 	parser := NewPubSubFilterer(&tx)
 	fr, _ := parser.Filter([]pubsub.Filter{&mockFilter{addr: addrBytes}})

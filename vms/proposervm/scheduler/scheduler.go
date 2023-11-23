@@ -8,12 +8,15 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/ava-labs/avalanchego/snow/engine/common"
-	"github.com/ava-labs/avalanchego/utils/logging"
+	"github.com/Juneo-io/juneogo/snow/engine/common"
+	"github.com/Juneo-io/juneogo/utils/logging"
 )
 
 type Scheduler interface {
 	Dispatch(startTime time.Time)
+
+	// Client must guarantee that [SetBuildBlockTime]
+	// is never called after [Close]
 	SetBuildBlockTime(t time.Time)
 	Close()
 }

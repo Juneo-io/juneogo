@@ -10,9 +10,9 @@ import (
 
 	"google.golang.org/protobuf/proto"
 
-	"github.com/ava-labs/avalanchego/codec"
+	"github.com/Juneo-io/juneogo/codec"
 
-	pb "github.com/ava-labs/avalanchego/proto/pb/message"
+	pb "github.com/Juneo-io/juneogo/proto/pb/message"
 )
 
 func TestParseGibberish(t *testing.T) {
@@ -38,8 +38,8 @@ func TestParseProto(t *testing.T) {
 	parsedMsgIntf, err := Parse(msgBytes)
 	require.NoError(err)
 
-	parsedMsg, ok := parsedMsgIntf.(*Tx)
-	require.True(ok)
+	require.IsType(&Tx{}, parsedMsgIntf)
+	parsedMsg := parsedMsgIntf.(*Tx)
 
 	require.Equal(txBytes, parsedMsg.Tx)
 

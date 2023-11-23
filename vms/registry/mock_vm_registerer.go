@@ -11,9 +11,9 @@ import (
 	context "context"
 	reflect "reflect"
 
-	ids "github.com/ava-labs/avalanchego/ids"
-	vms "github.com/ava-labs/avalanchego/vms"
-	gomock "github.com/golang/mock/gomock"
+	ids "github.com/Juneo-io/juneogo/ids"
+	vms "github.com/Juneo-io/juneogo/vms"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockVMRegisterer is a mock of VMRegisterer interface.

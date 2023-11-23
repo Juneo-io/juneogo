@@ -7,8 +7,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
 	"reflect"
-	"time"
 
 	stdjson "encoding/json"
 
@@ -18,50 +18,43 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/ava-labs/avalanchego/cache"
-	"github.com/ava-labs/avalanchego/database"
-	"github.com/ava-labs/avalanchego/database/manager"
-	"github.com/ava-labs/avalanchego/database/versiondb"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/pubsub"
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/snow/choices"
-	"github.com/ava-labs/avalanchego/snow/consensus/snowman"
-	"github.com/ava-labs/avalanchego/snow/consensus/snowstorm"
-	"github.com/ava-labs/avalanchego/snow/engine/avalanche/vertex"
-	"github.com/ava-labs/avalanchego/snow/engine/common"
-	"github.com/ava-labs/avalanchego/utils/json"
-	"github.com/ava-labs/avalanchego/utils/linkedhashmap"
-	"github.com/ava-labs/avalanchego/utils/set"
-	"github.com/ava-labs/avalanchego/utils/timer"
-	"github.com/ava-labs/avalanchego/utils/timer/mockable"
-	"github.com/ava-labs/avalanchego/utils/wrappers"
-	"github.com/ava-labs/avalanchego/version"
-	"github.com/ava-labs/avalanchego/vms/avm/blocks"
-	"github.com/ava-labs/avalanchego/vms/avm/config"
-	"github.com/ava-labs/avalanchego/vms/avm/metrics"
-	"github.com/ava-labs/avalanchego/vms/avm/network"
-	"github.com/ava-labs/avalanchego/vms/avm/states"
-	"github.com/ava-labs/avalanchego/vms/avm/txs"
-	"github.com/ava-labs/avalanchego/vms/avm/txs/mempool"
-	"github.com/ava-labs/avalanchego/vms/avm/utxo"
-	"github.com/ava-labs/avalanchego/vms/components/avax"
-	"github.com/ava-labs/avalanchego/vms/components/index"
-	"github.com/ava-labs/avalanchego/vms/components/keystore"
-	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
+	"github.com/Juneo-io/juneogo/cache"
+	"github.com/Juneo-io/juneogo/database"
+	"github.com/Juneo-io/juneogo/database/manager"
+	"github.com/Juneo-io/juneogo/database/versiondb"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/pubsub"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/snow/consensus/snowman"
+	"github.com/Juneo-io/juneogo/snow/consensus/snowstorm"
+	"github.com/Juneo-io/juneogo/snow/engine/avalanche/vertex"
+	"github.com/Juneo-io/juneogo/snow/engine/common"
+	"github.com/Juneo-io/juneogo/utils/json"
+	"github.com/Juneo-io/juneogo/utils/linkedhashmap"
+	"github.com/Juneo-io/juneogo/utils/set"
+	"github.com/Juneo-io/juneogo/utils/timer/mockable"
+	"github.com/Juneo-io/juneogo/utils/wrappers"
+	"github.com/Juneo-io/juneogo/version"
+	"github.com/Juneo-io/juneogo/vms/avm/block"
+	"github.com/Juneo-io/juneogo/vms/avm/config"
+	"github.com/Juneo-io/juneogo/vms/avm/metrics"
+	"github.com/Juneo-io/juneogo/vms/avm/network"
+	"github.com/Juneo-io/juneogo/vms/avm/states"
+	"github.com/Juneo-io/juneogo/vms/avm/txs"
+	"github.com/Juneo-io/juneogo/vms/avm/txs/mempool"
+	"github.com/Juneo-io/juneogo/vms/avm/utxo"
+	"github.com/Juneo-io/juneogo/vms/components/avax"
+	"github.com/Juneo-io/juneogo/vms/components/index"
+	"github.com/Juneo-io/juneogo/vms/components/keystore"
+	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
 
-	blockbuilder "github.com/ava-labs/avalanchego/vms/avm/blocks/builder"
-	blockexecutor "github.com/ava-labs/avalanchego/vms/avm/blocks/executor"
-	extensions "github.com/ava-labs/avalanchego/vms/avm/fxs"
-	txexecutor "github.com/ava-labs/avalanchego/vms/avm/txs/executor"
+	blockbuilder "github.com/Juneo-io/juneogo/vms/avm/block/builder"
+	blockexecutor "github.com/Juneo-io/juneogo/vms/avm/block/executor"
+	extensions "github.com/Juneo-io/juneogo/vms/avm/fxs"
+	txexecutor "github.com/Juneo-io/juneogo/vms/avm/txs/executor"
 )
 
-const (
-	batchTimeout       = time.Second
-	batchSize          = 30
-	assetToFxCacheSize = 1024
-	txDeduplicatorSize = 8192
-)
+const assetToFxCacheSize = 1024
 
 var (
 	errIncompatibleFx            = errors.New("incompatible feature extension")
@@ -92,7 +85,7 @@ type VM struct {
 
 	registerer prometheus.Registerer
 
-	parser blocks.Parser
+	parser block.Parser
 
 	pubsub *pubsub.Server
 
@@ -110,12 +103,6 @@ type VM struct {
 	// Asset ID --> Bit set with fx IDs the asset supports
 	assetToFxCache *cache.LRU[ids.ID, set.Bits64]
 
-	// Transaction issuing
-	timer        *timer.Timer
-	batchTimeout time.Duration
-	txs          []snowstorm.Tx
-	toEngine     chan<- common.Message
-
 	baseDB database.Database
 	db     *versiondb.Database
 
@@ -126,10 +113,7 @@ type VM struct {
 
 	addressTxsIndexer index.AddressTxsIndexer
 
-	uniqueTxs cache.Deduplicator[ids.ID, *UniqueTx]
-
 	txBackend *txexecutor.Backend
-	dagState  *dagState
 
 	// These values are only initialized after the chain has been linearized.
 	blockbuilder.Builder
@@ -154,6 +138,7 @@ func (*VM) Disconnected(context.Context, ids.NodeID) error {
 type Config struct {
 	IndexTransactions    bool `json:"index-transactions"`
 	IndexAllowIncomplete bool `json:"index-allow-incomplete"`
+	ChecksumsEnabled     bool `json:"checksums-enabled"`
 }
 
 func (vm *VM) Initialize(
@@ -163,7 +148,7 @@ func (vm *VM) Initialize(
 	genesisBytes []byte,
 	_ []byte,
 	configBytes []byte,
-	toEngine chan<- common.Message,
+	_ chan<- common.Message,
 	fxs []*common.Fx,
 	appSender common.AppSender,
 ) error {
@@ -198,7 +183,6 @@ func (vm *VM) Initialize(
 
 	db := dbManager.Current().Database
 	vm.ctx = ctx
-	vm.toEngine = toEngine
 	vm.appSender = appSender
 	vm.baseDB = db
 	vm.db = versiondb.New(db)
@@ -224,7 +208,7 @@ func (vm *VM) Initialize(
 	}
 
 	vm.typeToFxIndex = map[reflect.Type]int{}
-	vm.parser, err = blocks.NewCustomParser(
+	vm.parser, err = block.NewCustomParser(
 		vm.typeToFxIndex,
 		&vm.clock,
 		ctx.Log,
@@ -238,7 +222,12 @@ func (vm *VM) Initialize(
 	vm.AtomicUTXOManager = avax.NewAtomicUTXOManager(ctx.SharedMemory, codec)
 	vm.Spender = utxo.NewSpender(&vm.clock, codec)
 
-	state, err := states.New(vm.db, vm.parser, vm.registerer)
+	state, err := states.New(
+		vm.db,
+		vm.parser,
+		vm.registerer,
+		avmConfig.ChecksumsEnabled,
+	)
 	if err != nil {
 		return err
 	}
@@ -249,18 +238,6 @@ func (vm *VM) Initialize(
 		return err
 	}
 
-	vm.timer = timer.NewTimer(func() {
-		ctx.Lock.Lock()
-		defer ctx.Lock.Unlock()
-
-		vm.FlushTxs()
-	})
-	go ctx.Log.RecoverAndPanic(vm.timer.Dispatch)
-	vm.batchTimeout = batchTimeout
-
-	vm.uniqueTxs = &cache.EvictableLRU[ids.ID, *UniqueTx]{
-		Size: txDeduplicatorSize,
-	}
 	vm.walletService.vm = vm
 	vm.walletService.pendingTxs = linkedhashmap.New[ids.ID, *txs.Tx]()
 
@@ -288,10 +265,6 @@ func (vm *VM) Initialize(
 		FeeAssetID:    vm.feeAssetID,
 		Bootstrapped:  false,
 	}
-	vm.dagState = &dagState{
-		Chain: vm.state,
-		vm:    vm,
-	}
 
 	return vm.state.Commit()
 }
@@ -315,19 +288,6 @@ func (vm *VM) onNormalOperationsStarted() error {
 		}
 	}
 
-	txID, err := ids.FromString("2JPwx3rbUy877CWYhtXpfPVS5tD8KfnbiF5pxMRu6jCaq5dnME")
-	if err != nil {
-		return err
-	}
-	utxoID := avax.UTXOID{
-		TxID:        txID,
-		OutputIndex: 192,
-	}
-	vm.state.DeleteUTXO(utxoID.InputID())
-	if err := vm.state.Commit(); err != nil {
-		return err
-	}
-
 	vm.bootstrapped = true
 	return nil
 }
@@ -344,15 +304,9 @@ func (vm *VM) SetState(_ context.Context, state snow.State) error {
 }
 
 func (vm *VM) Shutdown(context.Context) error {
-	if vm.timer == nil {
+	if vm.state == nil {
 		return nil
 	}
-
-	// There is a potential deadlock if the timer is about to execute a timeout.
-	// So, the lock must be released before stopping the timer.
-	vm.ctx.Lock.Unlock()
-	vm.timer.Stop()
-	vm.ctx.Lock.Lock()
 
 	errs := wrappers.Errs{}
 	errs.Add(
@@ -366,7 +320,7 @@ func (*VM) Version(context.Context) (string, error) {
 	return version.Current.String(), nil
 }
 
-func (vm *VM) CreateHandlers(context.Context) (map[string]*common.HTTPHandler, error) {
+func (vm *VM) CreateHandlers(context.Context) (map[string]http.Handler, error) {
 	codec := json.NewCodec()
 
 	rpcServer := rpc.NewServer()
@@ -387,24 +341,22 @@ func (vm *VM) CreateHandlers(context.Context) (map[string]*common.HTTPHandler, e
 	// name this service "wallet"
 	err := walletServer.RegisterService(&vm.walletService, "wallet")
 
-	return map[string]*common.HTTPHandler{
-		"":        {Handler: rpcServer},
-		"/wallet": {Handler: walletServer},
-		"/events": {LockOptions: common.NoLock, Handler: vm.pubsub},
+	return map[string]http.Handler{
+		"":        rpcServer,
+		"/wallet": walletServer,
+		"/events": vm.pubsub,
 	}, err
 }
 
-func (*VM) CreateStaticHandlers(context.Context) (map[string]*common.HTTPHandler, error) {
-	newServer := rpc.NewServer()
+func (*VM) CreateStaticHandlers(context.Context) (map[string]http.Handler, error) {
+	server := rpc.NewServer()
 	codec := json.NewCodec()
-	newServer.RegisterCodec(codec, "application/json")
-	newServer.RegisterCodec(codec, "application/json;charset=UTF-8")
-
-	// name this service "jvm"
+	server.RegisterCodec(codec, "application/json")
+	server.RegisterCodec(codec, "application/json;charset=UTF-8")
 	staticService := CreateStaticService()
-	return map[string]*common.HTTPHandler{
-		"": {LockOptions: common.WriteLock, Handler: newServer},
-	}, newServer.RegisterService(staticService, "jvm")
+	return map[string]http.Handler{
+		"": server,
+	}, server.RegisterService(staticService, "jvm")
 }
 
 /*
@@ -434,6 +386,14 @@ func (vm *VM) LastAccepted(context.Context) (ids.ID, error) {
 	return vm.chainManager.LastAccepted(), nil
 }
 
+func (vm *VM) GetBlockIDAtHeight(_ context.Context, height uint64) (ids.ID, error) {
+	return vm.state.GetBlockIDAtHeight(height)
+}
+
+func (*VM) VerifyHeightIndex(context.Context) error {
+	return nil
+}
+
 /*
  ******************************************************************************
  *********************************** DAG VM ***********************************
@@ -455,9 +415,7 @@ func (vm *VM) Linearize(_ context.Context, stopVertexID ids.ID, toEngine chan<- 
 	vm.chainManager = blockexecutor.NewManager(
 		mempool,
 		vm.metrics,
-		&chainState{
-			State: vm.state,
-		},
+		vm.state,
 		vm.txBackend,
 		&vm.clock,
 		vm.onAccept,
@@ -482,29 +440,39 @@ func (vm *VM) Linearize(_ context.Context, stopVertexID ids.ID, toEngine chan<- 
 	// chainVM has been initialized. Traffic will immediately start being
 	// handled asynchronously.
 	vm.Atomic.Set(vm.network)
+
+	go func() {
+		err := vm.state.Prune(&vm.ctx.Lock, vm.ctx.Log)
+		if err != nil {
+			vm.ctx.Log.Warn("state pruning failed",
+				zap.Error(err),
+			)
+			return
+		}
+		vm.ctx.Log.Info("state pruning finished")
+	}()
+
 	return nil
 }
 
-func (vm *VM) PendingTxs(context.Context) []snowstorm.Tx {
-	vm.timer.Cancel()
-
-	txs := vm.txs
-	vm.txs = nil
-	return txs
-}
-
-func (vm *VM) ParseTx(_ context.Context, b []byte) (snowstorm.Tx, error) {
-	return vm.parseTx(b)
-}
-
-func (vm *VM) GetTx(_ context.Context, txID ids.ID) (snowstorm.Tx, error) {
-	tx := &UniqueTx{
-		vm:   vm,
-		txID: txID,
+func (vm *VM) ParseTx(_ context.Context, bytes []byte) (snowstorm.Tx, error) {
+	tx, err := vm.parser.ParseTx(bytes)
+	if err != nil {
+		return nil, err
 	}
-	// Verify must be called in the case the that tx was flushed from the unique
-	// cache.
-	return tx, tx.verifyWithoutCacheWrites()
+
+	err = tx.Unsigned.Visit(&txexecutor.SyntacticVerifier{
+		Backend: vm.txBackend,
+		Tx:      tx,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &Tx{
+		vm: vm,
+		tx: tx,
+	}, nil
 }
 
 /*
@@ -518,60 +486,27 @@ func (vm *VM) GetTx(_ context.Context, txID ids.ID) (snowstorm.Tx, error) {
 // either accepted or rejected with the appropriate status. This function will
 // go out of scope when the transaction is removed from memory.
 func (vm *VM) IssueTx(b []byte) (ids.ID, error) {
-	if !vm.bootstrapped {
+	if !vm.bootstrapped || vm.Builder == nil {
 		return ids.ID{}, errBootstrapping
 	}
 
-	// If the chain has been linearized, issue the tx to the network.
-	if vm.Builder != nil {
-		tx, err := vm.parser.ParseTx(b)
-		if err != nil {
-			vm.ctx.Log.Debug("failed to parse tx",
-				zap.Error(err),
-			)
-			return ids.ID{}, err
-		}
-
-		err = vm.network.IssueTx(context.TODO(), tx)
-		if err != nil {
-			vm.ctx.Log.Debug("failed to add tx to mempool",
-				zap.Error(err),
-			)
-			return ids.ID{}, err
-		}
-
-		return tx.ID(), nil
-	}
-
-	// TODO: After the chain is linearized, remove the following code.
-	tx, err := vm.parseTx(b)
+	tx, err := vm.parser.ParseTx(b)
 	if err != nil {
+		vm.ctx.Log.Debug("failed to parse tx",
+			zap.Error(err),
+		)
 		return ids.ID{}, err
 	}
-	if err := tx.verifyWithoutCacheWrites(); err != nil {
+
+	err = vm.network.IssueTx(context.TODO(), tx)
+	if err != nil {
+		vm.ctx.Log.Debug("failed to add tx to mempool",
+			zap.Error(err),
+		)
 		return ids.ID{}, err
 	}
-	vm.issueTx(tx)
+
 	return tx.ID(), nil
-}
-
-/*
- ******************************************************************************
- ********************************** Timer API *********************************
- ******************************************************************************
- */
-
-// FlushTxs into consensus
-func (vm *VM) FlushTxs() {
-	vm.timer.Cancel()
-	if len(vm.txs) != 0 {
-		select {
-		case vm.toEngine <- common.PendingTxs:
-		default:
-			vm.ctx.Log.Debug("dropping message to engine due to contention")
-			vm.timer.SetTimeoutIn(vm.batchTimeout)
-		}
-	}
 }
 
 /*
@@ -601,7 +536,7 @@ func (vm *VM) initGenesis(genesisBytes []byte) error {
 		}
 
 		tx := &txs.Tx{
-			Unsigned: &genesisTx.CreateAssetTx,
+			Unsigned: &genesisTx.CreateAssetTx, //nolint:gosec
 		}
 		if err := vm.parser.InitializeGenesisTx(tx); err != nil {
 			return err
@@ -639,45 +574,8 @@ func (vm *VM) initState(tx *txs.Tx) {
 		zap.Stringer("txID", txID),
 	)
 	vm.state.AddTx(tx)
-	vm.state.AddStatus(txID, choices.Accepted)
 	for _, utxo := range tx.UTXOs() {
 		vm.state.AddUTXO(utxo)
-	}
-}
-
-func (vm *VM) parseTx(bytes []byte) (*UniqueTx, error) {
-	rawTx, err := vm.parser.ParseTx(bytes)
-	if err != nil {
-		return nil, err
-	}
-
-	tx := &UniqueTx{
-		TxCachedState: &TxCachedState{
-			Tx: rawTx,
-		},
-		vm:   vm,
-		txID: rawTx.ID(),
-	}
-	if err := tx.SyntacticVerify(); err != nil {
-		return nil, err
-	}
-
-	if tx.Status() == choices.Unknown {
-		vm.state.AddTx(tx.Tx)
-		tx.setStatus(choices.Processing)
-		return tx, vm.state.Commit()
-	}
-
-	return tx, nil
-}
-
-func (vm *VM) issueTx(tx snowstorm.Tx) {
-	vm.txs = append(vm.txs, tx)
-	switch {
-	case len(vm.txs) == batchSize:
-		vm.FlushTxs()
-	case len(vm.txs) == 1:
-		vm.timer.SetTimeoutIn(vm.batchTimeout)
 	}
 }
 
@@ -756,7 +654,7 @@ func (vm *VM) onAccept(tx *txs.Tx) error {
 			continue
 		}
 
-		utxo, err := vm.state.GetUTXOFromID(utxoID)
+		utxo, err := vm.state.GetUTXO(utxoID.InputID())
 		if err == database.ErrNotFound {
 			vm.ctx.Log.Debug("dropping utxo from index",
 				zap.Stringer("txID", txID),
@@ -782,9 +680,4 @@ func (vm *VM) onAccept(tx *txs.Tx) error {
 	vm.pubsub.Publish(NewPubSubFilterer(tx))
 	vm.walletService.decided(txID)
 	return nil
-}
-
-// UniqueTx de-duplicates the transaction.
-func (vm *VM) DeduplicateTx(tx *UniqueTx) *UniqueTx {
-	return vm.uniqueTxs.Deduplicate(tx)
 }

@@ -7,8 +7,8 @@ import (
 	"encoding/hex"
 	"errors"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils/formatting/address"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils/formatting/address"
 )
 
 var errInvalidETHAddress = errors.New("invalid eth address")
@@ -79,8 +79,8 @@ func (us UnparsedStaker) Parse() (Staker, error) {
 
 // UnparsedConfig contains the genesis addresses used to construct a genesis
 type UnparsedConfig struct {
-	NetworkID         uint32 `json:"networkID"`
-	RewardsPoolSupply uint64 `json:"rewardsPoolSupply"`
+	NetworkID        uint32 `json:"networkID"`
+	RewardPoolSupply uint64 `json:"rewardPoolSupply"`
 
 	Allocations []UnparsedAllocation `json:"allocations"`
 
@@ -90,24 +90,16 @@ type UnparsedConfig struct {
 	InitialStakedFunds         []string         `json:"initialStakedFunds"`
 	InitialStakers             []UnparsedStaker `json:"initialStakers"`
 
-	JUNEChainGenesis   string `json:"JUNEChainGenesis"`
-	ETH1ChainGenesis   string `json:"ETH1ChainGenesis"`
-	MBTC1ChainGenesis  string `json:"MBTC1ChainGenesis"`
-	DOGE1ChainGenesis  string `json:"DOGE1ChainGenesis"`
-	TUSD1ChainGenesis  string `json:"TUSD1ChainGenesis"`
-	USDT1ChainGenesis  string `json:"USDT1ChainGenesis"`
-	DAI1ChainGenesis   string `json:"DAI1ChainGenesis"`
-	EUROC1ChainGenesis string `json:"EUROC1ChainGenesis"`
-	LTC1ChainGenesis   string `json:"LTC1ChainGenesis"`
-	XLM1ChainGenesis   string `json:"XLM1ChainGenesis"`
-	BCH1ChainGenesis   string `json:"BCH1ChainGenesis"`
-	PAXG1ChainGenesis  string `json:"PAXG1ChainGenesis"`
-	ICP1ChainGenesis   string `json:"ICP1ChainGenesis"`
-	XIDR1ChainGenesis  string `json:"XIDR1ChainGenesis"`
-	XSGD1ChainGenesis  string `json:"XSGD1ChainGenesis"`
-	ETC1ChainGenesis   string `json:"ETC1ChainGenesis"`
-	R1000ChainGenesis  string `json:"R1000ChainGenesis"`
-	R10ChainGenesis    string `json:"R10ChainGenesis"`
+	JUNEChainGenesis  string `json:"JUNEChainGenesis"`
+	USDT1ChainGenesis string `json:"USDT1ChainGenesis"`
+	USD1ChainGenesis  string `json:"USD1ChainGenesis"`
+	DAI1ChainGenesis  string `json:"DAI1ChainGenesis"`
+	EUR1ChainGenesis  string `json:"EUR1ChainGenesis"`
+	SGD1ChainGenesis  string `json:"SGD1ChainGenesis"`
+	GLD1ChainGenesis  string `json:"GLD1ChainGenesis"`
+	MBTC1ChainGenesis string `json:"MBTC1ChainGenesis"`
+	DOGE1ChainGenesis string `json:"DOGE1ChainGenesis"`
+	LTC1ChainGenesis  string `json:"LTC1ChainGenesis"`
 
 	Message string `json:"message"`
 }
@@ -115,7 +107,7 @@ type UnparsedConfig struct {
 func (uc UnparsedConfig) Parse() (Config, error) {
 	c := Config{
 		NetworkID:                  uc.NetworkID,
-		RewardsPoolSupply:          uc.RewardsPoolSupply,
+		RewardPoolSupply:           uc.RewardPoolSupply,
 		Allocations:                make([]Allocation, len(uc.Allocations)),
 		StartTime:                  uc.StartTime,
 		InitialStakeDuration:       uc.InitialStakeDuration,
@@ -123,23 +115,15 @@ func (uc UnparsedConfig) Parse() (Config, error) {
 		InitialStakedFunds:         make([]ids.ShortID, len(uc.InitialStakedFunds)),
 		InitialStakers:             make([]Staker, len(uc.InitialStakers)),
 		JUNEChainGenesis:           uc.JUNEChainGenesis,
-		ETH1ChainGenesis:           uc.ETH1ChainGenesis,
+		USDT1ChainGenesis:          uc.USDT1ChainGenesis,
+		USD1ChainGenesis:           uc.USD1ChainGenesis,
+		DAI1ChainGenesis:           uc.DAI1ChainGenesis,
+		EUR1ChainGenesis:           uc.EUR1ChainGenesis,
+		SGD1ChainGenesis:           uc.SGD1ChainGenesis,
+		GLD1ChainGenesis:           uc.GLD1ChainGenesis,
 		MBTC1ChainGenesis:          uc.MBTC1ChainGenesis,
 		DOGE1ChainGenesis:          uc.DOGE1ChainGenesis,
-		TUSD1ChainGenesis:          uc.TUSD1ChainGenesis,
-		USDT1ChainGenesis:          uc.USDT1ChainGenesis,
-		DAI1ChainGenesis:           uc.DAI1ChainGenesis,
-		EUROC1ChainGenesis:         uc.EUROC1ChainGenesis,
 		LTC1ChainGenesis:           uc.LTC1ChainGenesis,
-		XLM1ChainGenesis:           uc.XLM1ChainGenesis,
-		BCH1ChainGenesis:           uc.BCH1ChainGenesis,
-		PAXG1ChainGenesis:          uc.PAXG1ChainGenesis,
-		ICP1ChainGenesis:           uc.ICP1ChainGenesis,
-		XIDR1ChainGenesis:          uc.XIDR1ChainGenesis,
-		XSGD1ChainGenesis:          uc.XSGD1ChainGenesis,
-		ETC1ChainGenesis:           uc.ETC1ChainGenesis,
-		R1000ChainGenesis:          uc.R1000ChainGenesis,
-		R10ChainGenesis:            uc.R10ChainGenesis,
 		Message:                    uc.Message,
 	}
 	for i, ua := range uc.Allocations {

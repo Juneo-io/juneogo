@@ -12,12 +12,12 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/formatting/address"
-	"github.com/ava-labs/avalanchego/utils/math"
-	"github.com/ava-labs/avalanchego/utils/wrappers"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/formatting/address"
+	"github.com/Juneo-io/juneogo/utils/math"
+	"github.com/Juneo-io/juneogo/utils/wrappers"
 )
 
 var (
@@ -79,8 +79,8 @@ func (s Staker) Unparse(networkID uint32) (UnparsedStaker, error) {
 
 // Config contains the genesis addresses used to construct a genesis
 type Config struct {
-	NetworkID         uint32 `json:"networkID"`
-	RewardsPoolSupply uint64 `json:"rewardsPoolSupply"`
+	NetworkID        uint32 `json:"networkID"`
+	RewardPoolSupply uint64 `json:"rewardPoolSupply"`
 
 	Allocations []Allocation `json:"allocations"`
 
@@ -90,24 +90,16 @@ type Config struct {
 	InitialStakedFunds         []ids.ShortID `json:"initialStakedFunds"`
 	InitialStakers             []Staker      `json:"initialStakers"`
 
-	JUNEChainGenesis   string `json:"JUNEChainGenesis"`
-	ETH1ChainGenesis   string `json:"ETH1ChainGenesis"`
-	MBTC1ChainGenesis  string `json:"MBTC1ChainGenesis"`
-	DOGE1ChainGenesis  string `json:"DOGE1ChainGenesis"`
-	TUSD1ChainGenesis  string `json:"TUSD1ChainGenesis"`
-	USDT1ChainGenesis  string `json:"USDT1ChainGenesis"`
-	DAI1ChainGenesis   string `json:"DAI1ChainGenesis"`
-	EUROC1ChainGenesis string `json:"EUROC1ChainGenesis"`
-	LTC1ChainGenesis   string `json:"LTC1ChainGenesis"`
-	XLM1ChainGenesis   string `json:"XLM1ChainGenesis"`
-	BCH1ChainGenesis   string `json:"BCH1ChainGenesis"`
-	PAXG1ChainGenesis  string `json:"PAXG1ChainGenesis"`
-	ICP1ChainGenesis   string `json:"ICP1ChainGenesis"`
-	XIDR1ChainGenesis  string `json:"XIDR1ChainGenesis"`
-	XSGD1ChainGenesis  string `json:"XSGD1ChainGenesis"`
-	ETC1ChainGenesis   string `json:"ETC1ChainGenesis"`
-	R1000ChainGenesis  string `json:"R1000ChainGenesis"`
-	R10ChainGenesis    string `json:"R10ChainGenesis"`
+	JUNEChainGenesis  string `json:"JUNEChainGenesis"`
+	USDT1ChainGenesis string `json:"USDT1ChainGenesis"`
+	USD1ChainGenesis  string `json:"USD1ChainGenesis"`
+	DAI1ChainGenesis  string `json:"DAI1ChainGenesis"`
+	EUR1ChainGenesis  string `json:"EUR1ChainGenesis"`
+	SGD1ChainGenesis  string `json:"SGD1ChainGenesis"`
+	GLD1ChainGenesis  string `json:"GLD1ChainGenesis"`
+	MBTC1ChainGenesis string `json:"MBTC1ChainGenesis"`
+	DOGE1ChainGenesis string `json:"DOGE1ChainGenesis"`
+	LTC1ChainGenesis  string `json:"LTC1ChainGenesis"`
 
 	Message string `json:"message"`
 }
@@ -115,7 +107,7 @@ type Config struct {
 func (c Config) Unparse() (UnparsedConfig, error) {
 	uc := UnparsedConfig{
 		NetworkID:                  c.NetworkID,
-		RewardsPoolSupply:          c.RewardsPoolSupply,
+		RewardPoolSupply:           c.RewardPoolSupply,
 		Allocations:                make([]UnparsedAllocation, len(c.Allocations)),
 		StartTime:                  c.StartTime,
 		InitialStakeDuration:       c.InitialStakeDuration,
@@ -123,23 +115,15 @@ func (c Config) Unparse() (UnparsedConfig, error) {
 		InitialStakedFunds:         make([]string, len(c.InitialStakedFunds)),
 		InitialStakers:             make([]UnparsedStaker, len(c.InitialStakers)),
 		JUNEChainGenesis:           c.JUNEChainGenesis,
-		ETH1ChainGenesis:           c.ETH1ChainGenesis,
+		USDT1ChainGenesis:          c.USDT1ChainGenesis,
+		USD1ChainGenesis:           c.USD1ChainGenesis,
+		DAI1ChainGenesis:           c.DAI1ChainGenesis,
+		EUR1ChainGenesis:           c.EUR1ChainGenesis,
+		SGD1ChainGenesis:           c.SGD1ChainGenesis,
+		GLD1ChainGenesis:           c.GLD1ChainGenesis,
 		MBTC1ChainGenesis:          c.MBTC1ChainGenesis,
 		DOGE1ChainGenesis:          c.DOGE1ChainGenesis,
-		TUSD1ChainGenesis:          c.TUSD1ChainGenesis,
-		USDT1ChainGenesis:          c.USDT1ChainGenesis,
-		DAI1ChainGenesis:           c.DAI1ChainGenesis,
-		EUROC1ChainGenesis:         c.EUROC1ChainGenesis,
 		LTC1ChainGenesis:           c.LTC1ChainGenesis,
-		XLM1ChainGenesis:           c.XLM1ChainGenesis,
-		BCH1ChainGenesis:           c.BCH1ChainGenesis,
-		PAXG1ChainGenesis:          c.PAXG1ChainGenesis,
-		ICP1ChainGenesis:           c.ICP1ChainGenesis,
-		XIDR1ChainGenesis:          c.XIDR1ChainGenesis,
-		XSGD1ChainGenesis:          c.XSGD1ChainGenesis,
-		ETC1ChainGenesis:           c.ETC1ChainGenesis,
-		R1000ChainGenesis:          c.R1000ChainGenesis,
-		R10ChainGenesis:            c.R10ChainGenesis,
 		Message:                    c.Message,
 	}
 	for i, a := range c.Allocations {
@@ -186,7 +170,7 @@ func (c *Config) InitialSupply() (uint64, error) {
 		}
 		initialSupply = newInitialSupply
 	}
-	newInitialSupply, err := math.Add64(initialSupply, c.RewardsPoolSupply)
+	newInitialSupply, err := math.Add64(initialSupply, c.RewardPoolSupply)
 	if err != nil {
 		return 0, err
 	}
@@ -276,7 +260,7 @@ func GetConfigContent(genesisContent string) (*Config, error) {
 func parseGenesisJSONBytesToConfig(bytes []byte) (*Config, error) {
 	var unparsedConfig UnparsedConfig
 	if err := json.Unmarshal(bytes, &unparsedConfig); err != nil {
-		return nil, fmt.Errorf("%w: %s", errInvalidGenesisJSON, err)
+		return nil, fmt.Errorf("%w: %w", errInvalidGenesisJSON, err)
 	}
 
 	config, err := unparsedConfig.Parse()

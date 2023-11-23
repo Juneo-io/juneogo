@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package aliasreader;
 
-option go_package = "github.com/ava-labs/avalanchego/proto/pb/aliasreader";
+option go_package = "github.com/Juneo-io/juneogo/proto/pb/aliasreader";
 
 service AliasReader {
   rpc Lookup(Alias) returns (ID);

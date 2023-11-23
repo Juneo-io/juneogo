@@ -7,16 +7,16 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/golang/mock/gomock"
-
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow/networking/router"
-	"github.com/ava-labs/avalanchego/snow/validators"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/timer"
-	"github.com/ava-labs/avalanchego/version"
+	"go.uber.org/mock/gomock"
+
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow/networking/router"
+	"github.com/Juneo-io/juneogo/snow/validators"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/timer"
+	"github.com/Juneo-io/juneogo/version"
 )
 
 const numValidators = 5_000
@@ -27,11 +27,11 @@ func TestBeaconManager_DataRace(t *testing.T) {
 	require := require.New(t)
 
 	validatorIDs := make([]ids.NodeID, 0, numValidators)
-	validatorSet := validators.NewSet()
+	validatorSet := validators.NewManager()
 	for i := 0; i < numValidators; i++ {
 		nodeID := ids.GenerateTestNodeID()
 
-		require.NoError(validatorSet.Add(nodeID, nil, ids.Empty, 1))
+		require.NoError(validatorSet.AddStaker(constants.PrimaryNetworkID, nodeID, nil, ids.Empty, 1))
 		validatorIDs = append(validatorIDs, nodeID)
 	}
 
@@ -66,7 +66,7 @@ func TestBeaconManager_DataRace(t *testing.T) {
 	wg.Wait()
 
 	// we should have a weight of numValidators now
-	require.EqualValues(numValidators, b.numConns)
+	require.Equal(int64(numValidators), b.numConns)
 
 	// disconnect numValidators validators
 	wg.Add(numValidators)

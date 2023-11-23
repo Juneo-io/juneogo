@@ -7,11 +7,11 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/golang/mock/gomock"
-
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/vms/components/avax"
+	"go.uber.org/mock/gomock"
+
+	"github.com/Juneo-io/juneogo/vms/components/avax"
 )
 
 var errTest = errors.New("hi mom")
@@ -64,7 +64,6 @@ func TestLockOutVerify(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
 
 			lockOut := &LockOut{
 				Locktime:        tt.locktime,
@@ -123,7 +122,6 @@ func TestLockInVerify(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
 
 			lockOut := &LockIn{
 				Locktime:       tt.locktime,

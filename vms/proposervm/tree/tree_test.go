@@ -9,9 +9,9 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow/choices"
-	"github.com/ava-labs/avalanchego/snow/consensus/snowman"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow/choices"
+	"github.com/Juneo-io/juneogo/snow/consensus/snowman"
 )
 
 var (
@@ -43,9 +43,11 @@ func TestAcceptSingleBlock(t *testing.T) {
 	_, contains = tr.Get(block)
 	require.True(contains)
 
-	err := tr.Accept(context.Background(), block)
-	require.NoError(err)
+	require.NoError(tr.Accept(context.Background(), block))
 	require.Equal(choices.Accepted, block.Status())
+
+	_, contains = tr.Get(block)
+	require.False(contains)
 }
 
 func TestAcceptBlockConflict(t *testing.T) {
@@ -69,19 +71,26 @@ func TestAcceptBlockConflict(t *testing.T) {
 
 	tr := New()
 
+	// add conflicting blocks
 	tr.Add(blockToAccept)
-	tr.Add(blockToReject)
-
 	_, contains := tr.Get(blockToAccept)
 	require.True(contains)
 
+	tr.Add(blockToReject)
 	_, contains = tr.Get(blockToReject)
 	require.True(contains)
 
-	err := tr.Accept(context.Background(), blockToAccept)
-	require.NoError(err)
+	// accept one of them
+	require.NoError(tr.Accept(context.Background(), blockToAccept))
+
+	// check their statuses and that they are removed from the tree
 	require.Equal(choices.Accepted, blockToAccept.Status())
+	_, contains = tr.Get(blockToAccept)
+	require.False(contains)
+
 	require.Equal(choices.Rejected, blockToReject.Status())
+	_, contains = tr.Get(blockToReject)
+	require.False(contains)
 }
 
 func TestAcceptChainConflict(t *testing.T) {
@@ -113,22 +122,32 @@ func TestAcceptChainConflict(t *testing.T) {
 
 	tr := New()
 
+	// add conflicting blocks.
 	tr.Add(blockToAccept)
-	tr.Add(blockToReject)
-	tr.Add(blockToRejectChild)
-
 	_, contains := tr.Get(blockToAccept)
 	require.True(contains)
 
+	tr.Add(blockToReject)
 	_, contains = tr.Get(blockToReject)
 	require.True(contains)
 
+	tr.Add(blockToRejectChild)
 	_, contains = tr.Get(blockToRejectChild)
 	require.True(contains)
 
-	err := tr.Accept(context.Background(), blockToAccept)
-	require.NoError(err)
+	// accept one of them
+	require.NoError(tr.Accept(context.Background(), blockToAccept))
+
+	// check their statuses and whether they are removed from tree
 	require.Equal(choices.Accepted, blockToAccept.Status())
+	_, contains = tr.Get(blockToAccept)
+	require.False(contains)
+
 	require.Equal(choices.Rejected, blockToReject.Status())
+	_, contains = tr.Get(blockToReject)
+	require.False(contains)
+
 	require.Equal(choices.Rejected, blockToRejectChild.Status())
+	_, contains = tr.Get(blockToRejectChild)
+	require.False(contains)
 }

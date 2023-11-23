@@ -3,18 +3,15 @@
 
 package txheap
 
-var _ Heap = (*byAge)(nil)
-
-type byAge struct {
-	txHeap
-}
+import (
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils/heap"
+)
 
 func NewByAge() Heap {
-	h := &byAge{}
-	h.initialize(h)
-	return h
-}
-
-func (h *byAge) Less(i, j int) bool {
-	return h.txs[i].age < h.txs[j].age
+	return &txHeap{
+		heap: heap.NewMap[ids.ID, heapTx](func(a, b heapTx) bool {
+			return a.age < b.age
+		}),
+	}
 }

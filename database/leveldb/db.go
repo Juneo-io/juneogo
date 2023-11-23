@@ -25,9 +25,9 @@ import (
 
 	"golang.org/x/exp/slices"
 
-	"github.com/ava-labs/avalanchego/database"
-	"github.com/ava-labs/avalanchego/utils"
-	"github.com/ava-labs/avalanchego/utils/logging"
+	"github.com/Juneo-io/juneogo/database"
+	"github.com/Juneo-io/juneogo/utils"
+	"github.com/Juneo-io/juneogo/utils/logging"
 )
 
 const (
@@ -201,7 +201,7 @@ func New(file string, configBytes []byte, log logging.Logger, namespace string, 
 	}
 	if len(configBytes) > 0 {
 		if err := json.Unmarshal(configBytes, &parsedConfig); err != nil {
-			return nil, fmt.Errorf("%w: %s", ErrInvalidConfig, err)
+			return nil, fmt.Errorf("%w: %w", ErrInvalidConfig, err)
 		}
 	}
 
@@ -231,7 +231,7 @@ func New(file string, configBytes []byte, log logging.Logger, namespace string, 
 		db, err = leveldb.RecoverFile(file, nil)
 	}
 	if err != nil {
-		return nil, fmt.Errorf("%w: %s", ErrCouldNotOpen, err)
+		return nil, fmt.Errorf("%w: %w", ErrCouldNotOpen, err)
 	}
 
 	wrappedDB := &Database{

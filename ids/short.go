@@ -9,10 +9,12 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/ava-labs/avalanchego/utils"
-	"github.com/ava-labs/avalanchego/utils/cb58"
-	"github.com/ava-labs/avalanchego/utils/hashing"
+	"github.com/Juneo-io/juneogo/utils"
+	"github.com/Juneo-io/juneogo/utils/cb58"
+	"github.com/Juneo-io/juneogo/utils/hashing"
 )
+
+const ShortIDLen = 20
 
 // ShortEmpty is a useful all zero value
 var (
@@ -22,7 +24,7 @@ var (
 )
 
 // ShortID wraps a 20 byte hash as an identifier
-type ShortID [20]byte
+type ShortID [ShortIDLen]byte
 
 // ToShortID attempt to convert a byte slice into an id
 func ToShortID(bytes []byte) (ShortID, error) {

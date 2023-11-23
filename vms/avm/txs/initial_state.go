@@ -8,11 +8,11 @@ import (
 	"errors"
 	"sort"
 
-	"github.com/ava-labs/avalanchego/codec"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/utils"
-	"github.com/ava-labs/avalanchego/vms/components/verify"
+	"github.com/Juneo-io/juneogo/codec"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/utils"
+	"github.com/Juneo-io/juneogo/vms/components/verify"
 )
 
 var (
@@ -25,9 +25,9 @@ var (
 )
 
 type InitialState struct {
-	FxIndex uint32         `serialize:"true" json:"fxIndex"`
+	FxIndex uint32         `serialize:"true"  json:"fxIndex"`
 	FxID    ids.ID         `serialize:"false" json:"fxID"`
-	Outs    []verify.State `serialize:"true" json:"outputs"`
+	Outs    []verify.State `serialize:"true"  json:"outputs"`
 }
 
 func (is *InitialState) InitCtx(ctx *snow.Context) {

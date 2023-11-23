@@ -7,13 +7,13 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/golang/mock/gomock"
-
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils/logging"
-	"github.com/ava-labs/avalanchego/vms"
+	"go.uber.org/mock/gomock"
+
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils/logging"
+	"github.com/Juneo-io/juneogo/vms"
 )
 
 var errTest = errors.New("non-nil error")
@@ -45,8 +45,9 @@ func initGetVMsTest(t *testing.T) *getVMsTest {
 
 // Tests GetVMs in the happy-case
 func TestGetVMsSuccess(t *testing.T) {
+	require := require.New(t)
+
 	resources := initGetVMsTest(t)
-	defer resources.ctrl.Finish()
 
 	id1 := ids.GenerateTestID()
 	id2 := ids.GenerateTestID()
@@ -67,16 +68,13 @@ func TestGetVMsSuccess(t *testing.T) {
 	resources.mockVMManager.EXPECT().Aliases(id2).Times(1).Return(alias2, nil)
 
 	reply := GetVMsReply{}
-	err := resources.info.GetVMs(nil, nil, &reply)
-
-	require.Equal(t, expectedVMRegistry, reply.VMs)
-	require.NoError(t, err)
+	require.NoError(resources.info.GetVMs(nil, nil, &reply))
+	require.Equal(expectedVMRegistry, reply.VMs)
 }
 
 // Tests GetVMs if we fail to list our vms.
 func TestGetVMsVMsListFactoriesFails(t *testing.T) {
 	resources := initGetVMsTest(t)
-	defer resources.ctrl.Finish()
 
 	resources.mockLog.EXPECT().Debug(gomock.Any(), gomock.Any()).Times(1)
 	resources.mockVMManager.EXPECT().ListFactories().Times(1).Return(nil, errTest)
@@ -89,7 +87,6 @@ func TestGetVMsVMsListFactoriesFails(t *testing.T) {
 // Tests GetVMs if we can't get our vm aliases.
 func TestGetVMsGetAliasesFails(t *testing.T) {
 	resources := initGetVMsTest(t)
-	defer resources.ctrl.Finish()
 
 	id1 := ids.GenerateTestID()
 	id2 := ids.GenerateTestID()

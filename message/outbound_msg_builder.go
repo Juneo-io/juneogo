@@ -6,10 +6,10 @@ package message
 import (
 	"time"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/proto/pb/p2p"
-	"github.com/ava-labs/avalanchego/utils/compression"
-	"github.com/ava-labs/avalanchego/utils/ips"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/proto/pb/p2p"
+	"github.com/Juneo-io/juneogo/utils/compression"
+	"github.com/Juneo-io/juneogo/utils/ips"
 )
 
 var _ OutboundMsgBuilder = (*outMsgBuilder)(nil)
@@ -25,7 +25,7 @@ type OutboundMsgBuilder interface {
 		myVersion string,
 		myVersionTime uint64,
 		sig []byte,
-		trackedSubnets []ids.ID,
+		trackedSupernets []ids.ID,
 	) (OutboundMessage, error)
 
 	PeerList(
@@ -37,11 +37,14 @@ type OutboundMsgBuilder interface {
 		peerAcks []*p2p.PeerAck,
 	) (OutboundMessage, error)
 
-	Ping() (OutboundMessage, error)
+	Ping(
+		primaryUptime uint32,
+		supernetUptimes []*p2p.SupernetUptime,
+	) (OutboundMessage, error)
 
 	Pong(
 		primaryUptime uint32,
-		subnetUptimes []*p2p.SubnetUptime,
+		supernetUptimes []*p2p.SupernetUptime,
 	) (OutboundMessage, error)
 
 	GetStateSummaryFrontier(
@@ -79,7 +82,7 @@ type OutboundMsgBuilder interface {
 	AcceptedFrontier(
 		chainID ids.ID,
 		requestID uint32,
-		containerIDs []ids.ID,
+		containerID ids.ID,
 	) (OutboundMessage, error)
 
 	GetAccepted(
@@ -130,6 +133,7 @@ type OutboundMsgBuilder interface {
 		requestID uint32,
 		deadline time.Duration,
 		container []byte,
+		requestedHeight uint64,
 		engineType p2p.EngineType,
 	) (OutboundMessage, error)
 
@@ -138,14 +142,16 @@ type OutboundMsgBuilder interface {
 		requestID uint32,
 		deadline time.Duration,
 		containerID ids.ID,
+		requestedHeight uint64,
 		engineType p2p.EngineType,
 	) (OutboundMessage, error)
 
 	Chits(
 		chainID ids.ID,
 		requestID uint32,
-		preferredContainerIDs []ids.ID,
-		acceptedContainerIDs []ids.ID,
+		preferredID ids.ID,
+		preferredIDAtHeight ids.ID,
+		acceptedID ids.ID,
 	) (OutboundMessage, error)
 
 	AppRequest(
@@ -182,11 +188,17 @@ func newOutboundBuilder(compressionType compression.Type, builder *msgBuilder) O
 	}
 }
 
-func (b *outMsgBuilder) Ping() (OutboundMessage, error) {
+func (b *outMsgBuilder) Ping(
+	primaryUptime uint32,
+	supernetUptimes []*p2p.SupernetUptime,
+) (OutboundMessage, error) {
 	return b.builder.createOutbound(
 		&p2p.Message{
 			Message: &p2p.Message_Ping{
-				Ping: &p2p.Ping{},
+				Ping: &p2p.Ping{
+					Uptime:        primaryUptime,
+					SupernetUptimes: supernetUptimes,
+				},
 			},
 		},
 		compression.TypeNone,
@@ -196,14 +208,14 @@ func (b *outMsgBuilder) Ping() (OutboundMessage, error) {
 
 func (b *outMsgBuilder) Pong(
 	primaryUptime uint32,
-	subnetUptimes []*p2p.SubnetUptime,
+	supernetUptimes []*p2p.SupernetUptime,
 ) (OutboundMessage, error) {
 	return b.builder.createOutbound(
 		&p2p.Message{
 			Message: &p2p.Message_Pong{
 				Pong: &p2p.Pong{
-					Uptime:          primaryUptime,
-					SubnetUptimes: subnetUptimes,
+					Uptime:        primaryUptime,
+					SupernetUptimes: supernetUptimes,
 				},
 			},
 		},
@@ -219,22 +231,22 @@ func (b *outMsgBuilder) Version(
 	myVersion string,
 	myVersionTime uint64,
 	sig []byte,
-	trackedSubnets []ids.ID,
+	trackedSupernets []ids.ID,
 ) (OutboundMessage, error) {
-	subnetIDBytes := make([][]byte, len(trackedSubnets))
-	encodeIDs(trackedSubnets, subnetIDBytes)
+	supernetIDBytes := make([][]byte, len(trackedSupernets))
+	encodeIDs(trackedSupernets, supernetIDBytes)
 	return b.builder.createOutbound(
 		&p2p.Message{
 			Message: &p2p.Message_Version{
 				Version: &p2p.Version{
-					NetworkId:        networkID,
-					MyTime:           myTime,
-					IpAddr:           ip.IP.To16(),
-					IpPort:           uint32(ip.Port),
-					MyVersion:        myVersion,
-					MyVersionTime:    myVersionTime,
-					Sig:              sig,
-					TrackedSubnets: subnetIDBytes,
+					NetworkId:      networkID,
+					MyTime:         myTime,
+					IpAddr:         ip.IP.To16(),
+					IpPort:         uint32(ip.Port),
+					MyVersion:      myVersion,
+					MyVersionTime:  myVersionTime,
+					Sig:            sig,
+					TrackedSupernets: supernetIDBytes,
 				},
 			},
 		},
@@ -391,17 +403,15 @@ func (b *outMsgBuilder) GetAcceptedFrontier(
 func (b *outMsgBuilder) AcceptedFrontier(
 	chainID ids.ID,
 	requestID uint32,
-	containerIDs []ids.ID,
+	containerID ids.ID,
 ) (OutboundMessage, error) {
-	containerIDBytes := make([][]byte, len(containerIDs))
-	encodeIDs(containerIDs, containerIDBytes)
 	return b.builder.createOutbound(
 		&p2p.Message{
 			Message: &p2p.Message_AcceptedFrontier_{
 				AcceptedFrontier_: &p2p.AcceptedFrontier{
-					ChainId:      chainID[:],
-					RequestId:    requestID,
-					ContainerIds: containerIDBytes,
+					ChainId:     chainID[:],
+					RequestId:   requestID,
+					ContainerId: containerID[:],
 				},
 			},
 		},
@@ -553,17 +563,19 @@ func (b *outMsgBuilder) PushQuery(
 	requestID uint32,
 	deadline time.Duration,
 	container []byte,
+	requestedHeight uint64,
 	engineType p2p.EngineType,
 ) (OutboundMessage, error) {
 	return b.builder.createOutbound(
 		&p2p.Message{
 			Message: &p2p.Message_PushQuery{
 				PushQuery: &p2p.PushQuery{
-					ChainId:    chainID[:],
-					RequestId:  requestID,
-					Deadline:   uint64(deadline),
-					Container:  container,
-					EngineType: engineType,
+					ChainId:         chainID[:],
+					RequestId:       requestID,
+					Deadline:        uint64(deadline),
+					Container:       container,
+					RequestedHeight: requestedHeight,
+					EngineType:      engineType,
 				},
 			},
 		},
@@ -577,17 +589,19 @@ func (b *outMsgBuilder) PullQuery(
 	requestID uint32,
 	deadline time.Duration,
 	containerID ids.ID,
+	requestedHeight uint64,
 	engineType p2p.EngineType,
 ) (OutboundMessage, error) {
 	return b.builder.createOutbound(
 		&p2p.Message{
 			Message: &p2p.Message_PullQuery{
 				PullQuery: &p2p.PullQuery{
-					ChainId:     chainID[:],
-					RequestId:   requestID,
-					Deadline:    uint64(deadline),
-					ContainerId: containerID[:],
-					EngineType:  engineType,
+					ChainId:         chainID[:],
+					RequestId:       requestID,
+					Deadline:        uint64(deadline),
+					ContainerId:     containerID[:],
+					RequestedHeight: requestedHeight,
+					EngineType:      engineType,
 				},
 			},
 		},
@@ -599,21 +613,19 @@ func (b *outMsgBuilder) PullQuery(
 func (b *outMsgBuilder) Chits(
 	chainID ids.ID,
 	requestID uint32,
-	preferredContainerIDs []ids.ID,
-	acceptedContainerIDs []ids.ID,
+	preferredID ids.ID,
+	preferredIDAtHeight ids.ID,
+	acceptedID ids.ID,
 ) (OutboundMessage, error) {
-	preferredContainerIDBytes := make([][]byte, len(preferredContainerIDs))
-	encodeIDs(preferredContainerIDs, preferredContainerIDBytes)
-	acceptedContainerIDBytes := make([][]byte, len(acceptedContainerIDs))
-	encodeIDs(acceptedContainerIDs, acceptedContainerIDBytes)
 	return b.builder.createOutbound(
 		&p2p.Message{
 			Message: &p2p.Message_Chits{
 				Chits: &p2p.Chits{
-					ChainId:               chainID[:],
-					RequestId:             requestID,
-					PreferredContainerIds: preferredContainerIDBytes,
-					AcceptedContainerIds:  acceptedContainerIDBytes,
+					ChainId:             chainID[:],
+					RequestId:           requestID,
+					PreferredId:         preferredID[:],
+					PreferredIdAtHeight: preferredIDAtHeight[:],
+					AcceptedId:          acceptedID[:],
 				},
 			},
 		},

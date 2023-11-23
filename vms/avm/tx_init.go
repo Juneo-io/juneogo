@@ -6,9 +6,9 @@ package avm
 import (
 	"reflect"
 
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/vms/avm/fxs"
-	"github.com/ava-labs/avalanchego/vms/avm/txs"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/vms/avm/fxs"
+	"github.com/Juneo-io/juneogo/vms/avm/txs"
 )
 
 var _ txs.Visitor = (*txInit)(nil)
@@ -44,7 +44,7 @@ func (t *txInit) init() error {
 	t.tx.Unsigned.InitCtx(t.ctx)
 
 	for _, cred := range t.tx.Creds {
-		fx, err := t.getParsedFx(cred.Verifiable)
+		fx, err := t.getParsedFx(cred.Credential)
 		if err != nil {
 			return err
 		}

@@ -6,9 +6,9 @@ package p
 import (
 	stdcontext "context"
 
-	"github.com/ava-labs/avalanchego/api/info"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/vms/avm"
+	"github.com/Juneo-io/juneogo/api/info"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/vms/avm"
 )
 
 var _ Context = (*context)(nil)
@@ -17,26 +17,26 @@ type Context interface {
 	NetworkID() uint32
 	AVAXAssetID() ids.ID
 	BaseTxFee() uint64
-	CreateSubnetTxFee() uint64
-	TransformSubnetTxFee() uint64
+	CreateSupernetTxFee() uint64
+	TransformSupernetTxFee() uint64
 	CreateBlockchainTxFee() uint64
 	AddPrimaryNetworkValidatorFee() uint64
 	AddPrimaryNetworkDelegatorFee() uint64
-	AddSubnetValidatorFee() uint64
-	AddSubnetDelegatorFee() uint64
+	AddSupernetValidatorFee() uint64
+	AddSupernetDelegatorFee() uint64
 }
 
 type context struct {
 	networkID                     uint32
 	avaxAssetID                   ids.ID
 	baseTxFee                     uint64
-	createSubnetTxFee           uint64
-	transformSubnetTxFee        uint64
+	createSupernetTxFee             uint64
+	transformSupernetTxFee          uint64
 	createBlockchainTxFee         uint64
 	addPrimaryNetworkValidatorFee uint64
 	addPrimaryNetworkDelegatorFee uint64
-	addSubnetValidatorFee       uint64
-	addSubnetDelegatorFee       uint64
+	addSupernetValidatorFee         uint64
+	addSupernetDelegatorFee         uint64
 }
 
 func NewContextFromURI(ctx stdcontext.Context, uri string) (Context, error) {
@@ -69,13 +69,13 @@ func NewContextFromClients(
 		networkID,
 		asset.AssetID,
 		uint64(txFees.TxFee),
-		uint64(txFees.CreateSubnetTxFee),
-		uint64(txFees.TransformSubnetTxFee),
+		uint64(txFees.CreateSupernetTxFee),
+		uint64(txFees.TransformSupernetTxFee),
 		uint64(txFees.CreateBlockchainTxFee),
 		uint64(txFees.AddPrimaryNetworkValidatorFee),
 		uint64(txFees.AddPrimaryNetworkDelegatorFee),
-		uint64(txFees.AddSubnetValidatorFee),
-		uint64(txFees.AddSubnetDelegatorFee),
+		uint64(txFees.AddSupernetValidatorFee),
+		uint64(txFees.AddSupernetDelegatorFee),
 	), nil
 }
 
@@ -83,25 +83,25 @@ func NewContext(
 	networkID uint32,
 	avaxAssetID ids.ID,
 	baseTxFee uint64,
-	createSubnetTxFee uint64,
-	transformSubnetTxFee uint64,
+	createSupernetTxFee uint64,
+	transformSupernetTxFee uint64,
 	createBlockchainTxFee uint64,
 	addPrimaryNetworkValidatorFee uint64,
 	addPrimaryNetworkDelegatorFee uint64,
-	addSubnetValidatorFee uint64,
-	addSubnetDelegatorFee uint64,
+	addSupernetValidatorFee uint64,
+	addSupernetDelegatorFee uint64,
 ) Context {
 	return &context{
 		networkID:                     networkID,
 		avaxAssetID:                   avaxAssetID,
 		baseTxFee:                     baseTxFee,
-		createSubnetTxFee:           createSubnetTxFee,
-		transformSubnetTxFee:        transformSubnetTxFee,
+		createSupernetTxFee:             createSupernetTxFee,
+		transformSupernetTxFee:          transformSupernetTxFee,
 		createBlockchainTxFee:         createBlockchainTxFee,
 		addPrimaryNetworkValidatorFee: addPrimaryNetworkValidatorFee,
 		addPrimaryNetworkDelegatorFee: addPrimaryNetworkDelegatorFee,
-		addSubnetValidatorFee:       addSubnetValidatorFee,
-		addSubnetDelegatorFee:       addSubnetDelegatorFee,
+		addSupernetValidatorFee:         addSupernetValidatorFee,
+		addSupernetDelegatorFee:         addSupernetDelegatorFee,
 	}
 }
 
@@ -117,12 +117,12 @@ func (c *context) BaseTxFee() uint64 {
 	return c.baseTxFee
 }
 
-func (c *context) CreateSubnetTxFee() uint64 {
-	return c.createSubnetTxFee
+func (c *context) CreateSupernetTxFee() uint64 {
+	return c.createSupernetTxFee
 }
 
-func (c *context) TransformSubnetTxFee() uint64 {
-	return c.transformSubnetTxFee
+func (c *context) TransformSupernetTxFee() uint64 {
+	return c.transformSupernetTxFee
 }
 
 func (c *context) CreateBlockchainTxFee() uint64 {
@@ -137,10 +137,10 @@ func (c *context) AddPrimaryNetworkDelegatorFee() uint64 {
 	return c.addPrimaryNetworkDelegatorFee
 }
 
-func (c *context) AddSubnetValidatorFee() uint64 {
-	return c.addSubnetValidatorFee
+func (c *context) AddSupernetValidatorFee() uint64 {
+	return c.addSupernetValidatorFee
 }
 
-func (c *context) AddSubnetDelegatorFee() uint64 {
-	return c.addSubnetDelegatorFee
+func (c *context) AddSupernetDelegatorFee() uint64 {
+	return c.addSupernetDelegatorFee
 }

@@ -10,8 +10,8 @@ package tracker
 import (
 	reflect "reflect"
 
-	ids "github.com/ava-labs/avalanchego/ids"
-	gomock "github.com/golang/mock/gomock"
+	ids "github.com/Juneo-io/juneogo/ids"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockTargeter is a mock of Targeter interface.

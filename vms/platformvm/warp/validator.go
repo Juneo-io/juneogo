@@ -11,12 +11,12 @@ import (
 
 	"golang.org/x/exp/maps"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow/validators"
-	"github.com/ava-labs/avalanchego/utils"
-	"github.com/ava-labs/avalanchego/utils/crypto/bls"
-	"github.com/ava-labs/avalanchego/utils/math"
-	"github.com/ava-labs/avalanchego/utils/set"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow/validators"
+	"github.com/Juneo-io/juneogo/utils"
+	"github.com/Juneo-io/juneogo/utils/crypto/bls"
+	"github.com/Juneo-io/juneogo/utils/math"
+	"github.com/Juneo-io/juneogo/utils/set"
 )
 
 var (
@@ -25,6 +25,12 @@ var (
 	ErrUnknownValidator = errors.New("unknown validator")
 	ErrWeightOverflow   = errors.New("weight overflowed")
 )
+
+// ValidatorState defines the functions that must be implemented to get
+// the canonical validator set for warp message validation.
+type ValidatorState interface {
+	GetValidatorSet(ctx context.Context, height uint64, supernetID ids.ID) (map[ids.NodeID]*validators.GetValidatorOutput, error)
+}
 
 type Validator struct {
 	PublicKey      *bls.PublicKey
@@ -37,19 +43,19 @@ func (v *Validator) Less(o *Validator) bool {
 	return bytes.Compare(v.PublicKeyBytes, o.PublicKeyBytes) < 0
 }
 
-// GetCanonicalValidatorSet returns the validator set of [subnetID] at
+// GetCanonicalValidatorSet returns the validator set of [supernetID] at
 // [pChcainHeight] in a canonical ordering. Also returns the total weight on
-// [subnetID].
+// [supernetID].
 func GetCanonicalValidatorSet(
 	ctx context.Context,
-	pChainState validators.State,
+	pChainState ValidatorState,
 	pChainHeight uint64,
-	subnetID ids.ID,
+	supernetID ids.ID,
 ) ([]*Validator, uint64, error) {
 	// Get the validator set at the given height.
-	vdrSet, err := pChainState.GetValidatorSet(ctx, pChainHeight, subnetID)
+	vdrSet, err := pChainState.GetValidatorSet(ctx, pChainHeight, supernetID)
 	if err != nil {
-		return nil, 0, fmt.Errorf("failed to fetch validator set (P-Chain Height: %d, SubnetID: %s): %w", pChainHeight, subnetID, err)
+		return nil, 0, fmt.Errorf("failed to fetch validator set (P-Chain Height: %d, SupernetID: %s): %w", pChainHeight, supernetID, err)
 	}
 
 	var (
@@ -59,7 +65,7 @@ func GetCanonicalValidatorSet(
 	for _, vdr := range vdrSet {
 		totalWeight, err = math.Add64(totalWeight, vdr.Weight)
 		if err != nil {
-			return nil, 0, fmt.Errorf("%w: %v", ErrWeightOverflow, err)
+			return nil, 0, fmt.Errorf("%w: %w", ErrWeightOverflow, err)
 		}
 
 		if vdr.PublicKey == nil {
@@ -124,7 +130,7 @@ func SumWeight(vdrs []*Validator) (uint64, error) {
 	for _, vdr := range vdrs {
 		weight, err = math.Add64(weight, vdr.Weight)
 		if err != nil {
-			return 0, fmt.Errorf("%w: %v", ErrWeightOverflow, err)
+			return 0, fmt.Errorf("%w: %w", ErrWeightOverflow, err)
 		}
 	}
 	return weight, nil

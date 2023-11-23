@@ -9,12 +9,10 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	httppb "github.com/ava-labs/avalanchego/proto/pb/http"
+	httppb "github.com/Juneo-io/juneogo/proto/pb/http"
 )
 
 func TestConvertWriteResponse(t *testing.T) {
-	require := require.New(t)
-
 	scenerios := map[string]struct {
 		resp *httppb.HandleSimpleHTTPResponse
 	}{
@@ -47,8 +45,7 @@ func TestConvertWriteResponse(t *testing.T) {
 	for testName, scenerio := range scenerios {
 		t.Run(testName, func(t *testing.T) {
 			w := httptest.NewRecorder()
-			err := convertWriteResponse(w, scenerio.resp)
-			require.NoError(err)
+			require.NoError(t, convertWriteResponse(w, scenerio.resp))
 		})
 	}
 }

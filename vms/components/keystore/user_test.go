@@ -8,11 +8,11 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/database"
-	"github.com/ava-labs/avalanchego/database/encdb"
-	"github.com/ava-labs/avalanchego/database/memdb"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils/crypto/secp256k1"
+	"github.com/Juneo-io/juneogo/database"
+	"github.com/Juneo-io/juneogo/database/encdb"
+	"github.com/Juneo-io/juneogo/database/memdb"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils/crypto/secp256k1"
 )
 
 // Test user password, must meet minimum complexity/length requirements
@@ -24,8 +24,7 @@ func TestUserClosedDB(t *testing.T) {
 	db, err := encdb.New([]byte(testPassword), memdb.New())
 	require.NoError(err)
 
-	err = db.Close()
-	require.NoError(err)
+	require.NoError(db.Close())
 
 	u := NewUserFromDB(db)
 
@@ -62,12 +61,10 @@ func TestUser(t *testing.T) {
 	sk, err := factory.NewPrivateKey()
 	require.NoError(err)
 
-	err = u.PutKeys(sk)
-	require.NoError(err)
+	require.NoError(u.PutKeys(sk))
 
 	// Putting the same key multiple times should be a noop
-	err = u.PutKeys(sk)
-	require.NoError(err)
+	require.NoError(u.PutKeys(sk))
 
 	addr := sk.PublicKey().Address()
 

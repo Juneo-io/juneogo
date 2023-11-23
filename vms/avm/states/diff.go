@@ -8,11 +8,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/ava-labs/avalanchego/database"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/vms/avm/blocks"
-	"github.com/ava-labs/avalanchego/vms/avm/txs"
-	"github.com/ava-labs/avalanchego/vms/components/avax"
+	"github.com/Juneo-io/juneogo/database"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/vms/avm/block"
+	"github.com/Juneo-io/juneogo/vms/avm/txs"
+	"github.com/Juneo-io/juneogo/vms/components/avax"
 )
 
 var (
@@ -33,13 +33,13 @@ type diff struct {
 
 	// map of modified UTXOID -> *UTXO if the UTXO is nil, it has been removed
 	modifiedUTXOs map[ids.ID]*avax.UTXO
-	addedTxs      map[ids.ID]*txs.Tx      // map of txID -> tx
-	addedBlockIDs map[uint64]ids.ID       // map of height -> blockID
-	addedBlocks   map[ids.ID]blocks.Block // map of blockID -> block
+	addedTxs      map[ids.ID]*txs.Tx     // map of txID -> tx
+	addedBlockIDs map[uint64]ids.ID      // map of height -> blockID
+	addedBlocks   map[ids.ID]block.Block // map of blockID -> block
 
-	lastAccepted  ids.ID
-	timestamp     time.Time
-	feesPoolValue uint64
+	lastAccepted ids.ID
+	timestamp    time.Time
+	feePoolValue uint64
 }
 
 func NewDiff(
@@ -56,10 +56,10 @@ func NewDiff(
 		modifiedUTXOs: make(map[ids.ID]*avax.UTXO),
 		addedTxs:      make(map[ids.ID]*txs.Tx),
 		addedBlockIDs: make(map[uint64]ids.ID),
-		addedBlocks:   make(map[ids.ID]blocks.Block),
+		addedBlocks:   make(map[ids.ID]block.Block),
 		lastAccepted:  parentState.GetLastAccepted(),
 		timestamp:     parentState.GetTimestamp(),
-		feesPoolValue: parentState.GetFeesPoolValue(),
+		feePoolValue:  parentState.GetFeePoolValue(),
 	}, nil
 }
 
@@ -76,10 +76,6 @@ func (d *diff) GetUTXO(utxoID ids.ID) (*avax.UTXO, error) {
 		return nil, fmt.Errorf("%w: %s", ErrMissingParentState, d.parentID)
 	}
 	return parentState.GetUTXO(utxoID)
-}
-
-func (d *diff) GetUTXOFromID(utxoID *avax.UTXOID) (*avax.UTXO, error) {
-	return d.GetUTXO(utxoID.InputID())
 }
 
 func (d *diff) AddUTXO(utxo *avax.UTXO) {
@@ -106,7 +102,7 @@ func (d *diff) AddTx(tx *txs.Tx) {
 	d.addedTxs[tx.ID()] = tx
 }
 
-func (d *diff) GetBlockID(height uint64) (ids.ID, error) {
+func (d *diff) GetBlockIDAtHeight(height uint64) (ids.ID, error) {
 	if blkID, exists := d.addedBlockIDs[height]; exists {
 		return blkID, nil
 	}
@@ -115,10 +111,10 @@ func (d *diff) GetBlockID(height uint64) (ids.ID, error) {
 	if !ok {
 		return ids.Empty, fmt.Errorf("%w: %s", ErrMissingParentState, d.parentID)
 	}
-	return parentState.GetBlockID(height)
+	return parentState.GetBlockIDAtHeight(height)
 }
 
-func (d *diff) GetBlock(blkID ids.ID) (blocks.Block, error) {
+func (d *diff) GetBlock(blkID ids.ID) (block.Block, error) {
 	if blk, exists := d.addedBlocks[blkID]; exists {
 		return blk, nil
 	}
@@ -130,7 +126,7 @@ func (d *diff) GetBlock(blkID ids.ID) (blocks.Block, error) {
 	return parentState.GetBlock(blkID)
 }
 
-func (d *diff) AddBlock(blk blocks.Block) {
+func (d *diff) AddBlock(blk block.Block) {
 	blkID := blk.ID()
 	d.addedBlockIDs[blk.Height()] = blkID
 	d.addedBlocks[blkID] = blk
@@ -152,12 +148,12 @@ func (d *diff) SetTimestamp(t time.Time) {
 	d.timestamp = t
 }
 
-func (d *diff) GetFeesPoolValue() uint64 {
-	return d.feesPoolValue
+func (d *diff) GetFeePoolValue() uint64 {
+	return d.feePoolValue
 }
 
-func (d *diff) SetFeesPoolValue(fpv uint64) {
-	d.feesPoolValue = fpv
+func (d *diff) SetFeePoolValue(fpv uint64) {
+	d.feePoolValue = fpv
 }
 
 func (d *diff) Apply(state Chain) {
@@ -179,5 +175,5 @@ func (d *diff) Apply(state Chain) {
 
 	state.SetLastAccepted(d.lastAccepted)
 	state.SetTimestamp(d.timestamp)
-	state.SetFeesPoolValue(d.feesPoolValue)
+	state.SetFeePoolValue(d.feePoolValue)
 }

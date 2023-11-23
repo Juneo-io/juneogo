@@ -7,14 +7,14 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/golang/mock/gomock"
-
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils/logging"
-	"github.com/ava-labs/avalanchego/vms"
-	"github.com/ava-labs/avalanchego/vms/registry"
+	"go.uber.org/mock/gomock"
+
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils/logging"
+	"github.com/Juneo-io/juneogo/vms"
+	"github.com/Juneo-io/juneogo/vms/registry"
 )
 
 type loadVMsTest struct {
@@ -47,8 +47,9 @@ func initLoadVMsTest(t *testing.T) *loadVMsTest {
 
 // Tests behavior for LoadVMs if everything succeeds.
 func TestLoadVMsSuccess(t *testing.T) {
+	require := require.New(t)
+
 	resources := initLoadVMsTest(t)
-	defer resources.ctrl.Finish()
 
 	id1 := ids.GenerateTestID()
 	id2 := ids.GenerateTestID()
@@ -73,16 +74,15 @@ func TestLoadVMsSuccess(t *testing.T) {
 
 	// execute test
 	reply := LoadVMsReply{}
-	err := resources.admin.LoadVMs(&http.Request{}, nil, &reply)
-
-	require.Equal(t, expectedVMRegistry, reply.NewVMs)
-	require.NoError(t, err)
+	require.NoError(resources.admin.LoadVMs(&http.Request{}, nil, &reply))
+	require.Equal(expectedVMRegistry, reply.NewVMs)
 }
 
 // Tests behavior for LoadVMs if we fail to reload vms.
 func TestLoadVMsReloadFails(t *testing.T) {
+	require := require.New(t)
+
 	resources := initLoadVMsTest(t)
-	defer resources.ctrl.Finish()
 
 	resources.mockLog.EXPECT().Debug(gomock.Any(), gomock.Any()).Times(1)
 	// Reload fails
@@ -90,13 +90,14 @@ func TestLoadVMsReloadFails(t *testing.T) {
 
 	reply := LoadVMsReply{}
 	err := resources.admin.LoadVMs(&http.Request{}, nil, &reply)
-	require.ErrorIs(t, err, errTest)
+	require.ErrorIs(err, errTest)
 }
 
 // Tests behavior for LoadVMs if we fail to fetch our aliases
 func TestLoadVMsGetAliasesFails(t *testing.T) {
+	require := require.New(t)
+
 	resources := initLoadVMsTest(t)
-	defer resources.ctrl.Finish()
 
 	id1 := ids.GenerateTestID()
 	id2 := ids.GenerateTestID()
@@ -114,5 +115,5 @@ func TestLoadVMsGetAliasesFails(t *testing.T) {
 
 	reply := LoadVMsReply{}
 	err := resources.admin.LoadVMs(&http.Request{}, nil, &reply)
-	require.ErrorIs(t, err, errTest)
+	require.ErrorIs(err, errTest)
 }

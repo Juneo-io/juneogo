@@ -11,9 +11,9 @@ import (
 	context "context"
 	reflect "reflect"
 
-	snowman "github.com/ava-labs/avalanchego/snow/consensus/snowman"
-	block "github.com/ava-labs/avalanchego/snow/engine/snowman/block"
-	gomock "github.com/golang/mock/gomock"
+	snowman "github.com/Juneo-io/juneogo/snow/consensus/snowman"
+	block "github.com/Juneo-io/juneogo/snow/engine/snowman/block"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockBuildBlockWithContextChainVM is a mock of BuildBlockWithContextChainVM interface.

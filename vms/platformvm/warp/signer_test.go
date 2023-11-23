@@ -8,8 +8,9 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils/crypto/bls"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/crypto/bls"
 )
 
 func TestSigner(t *testing.T) {
@@ -18,8 +19,8 @@ func TestSigner(t *testing.T) {
 		require.NoError(t, err)
 
 		chainID := ids.GenerateTestID()
-		s := NewSigner(sk, chainID)
+		s := NewSigner(sk, constants.UnitTestID, chainID)
 
-		test(t, s, sk, chainID)
+		test(t, s, sk, constants.UnitTestID, chainID)
 	}
 }

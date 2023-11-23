@@ -8,12 +8,12 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 
-	"github.com/ava-labs/avalanchego/utils/wrappers"
+	"github.com/Juneo-io/juneogo/utils/wrappers"
 )
 
 var (
-	_ SyncMetrics = &mockMetrics{}
-	_ SyncMetrics = &metrics{}
+	_ SyncMetrics = (*mockMetrics)(nil)
+	_ SyncMetrics = (*metrics)(nil)
 )
 
 type SyncMetrics interface {

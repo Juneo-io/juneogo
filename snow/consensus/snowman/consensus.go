@@ -7,11 +7,11 @@ import (
 	"context"
 	"time"
 
-	"github.com/ava-labs/avalanchego/api/health"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/snow/consensus/snowball"
-	"github.com/ava-labs/avalanchego/utils/bag"
+	"github.com/Juneo-io/juneogo/api/health"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/snow/consensus/snowball"
+	"github.com/Juneo-io/juneogo/utils/bag"
 )
 
 // Consensus represents a general snowman instance that can be used directly to
@@ -45,19 +45,19 @@ type Consensus interface {
 	// chain.
 	IsPreferred(Block) bool
 
-	// Returns the ID of the last accepted decision.
-	LastAccepted() ids.ID
+	// Returns the ID and height of the last accepted decision.
+	LastAccepted() (ids.ID, uint64)
 
 	// Returns the ID of the tail of the strongly preferred sequence of
 	// decisions.
 	Preference() ids.ID
 
+	// Returns the ID of the strongly preferred decision with the provided
+	// height. Only the last accepted decision and processing decisions are
+	// tracked.
+	PreferenceAtHeight(height uint64) (ids.ID, bool)
+
 	// RecordPoll collects the results of a network poll. Assumes all decisions
 	// have been previously added. Returns if a critical error has occurred.
 	RecordPoll(context.Context, bag.Bag[ids.ID]) error
-
-	// Finalized returns true if all decisions that have been added have been
-	// finalized. Note, it is possible that after returning finalized, a new
-	// decision may be added such that this instance is no longer finalized.
-	Finalized() bool
 }

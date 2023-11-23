@@ -6,10 +6,10 @@ package gwarp
 import (
 	"context"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/vms/platformvm/warp"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/vms/platformvm/warp"
 
-	pb "github.com/ava-labs/avalanchego/proto/pb/warp"
+	pb "github.com/Juneo-io/juneogo/proto/pb/warp"
 )
 
 var _ pb.SignerServer = (*Server)(nil)
@@ -29,14 +29,9 @@ func (s *Server) Sign(_ context.Context, unsignedMsg *pb.SignRequest) (*pb.SignR
 		return nil, err
 	}
 
-	destinationChainID, err := ids.ToID(unsignedMsg.DestinationChainId)
-	if err != nil {
-		return nil, err
-	}
-
 	msg, err := warp.NewUnsignedMessage(
+		unsignedMsg.NetworkId,
 		sourceChainID,
-		destinationChainID,
 		unsignedMsg.Payload,
 	)
 	if err != nil {

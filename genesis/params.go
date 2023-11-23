@@ -6,8 +6,8 @@ package genesis
 import (
 	"time"
 
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/vms/platformvm/reward"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/vms/platformvm/reward"
 )
 
 type StakingConfig struct {
@@ -20,9 +20,12 @@ type StakingConfig struct {
 	MaxValidatorStake uint64 `json:"maxValidatorStake"`
 	// Minimum stake, in nAVAX, that can be delegated on the primary network
 	MinDelegatorStake uint64 `json:"minDelegatorStake"`
-	// Minimum delegation fee, in the range [0, 1000000], that can be charged
+	// Minimum delegation fee, in the range [0, MaxDelegationFee], that can be charged
 	// for delegation on the primary network.
 	MinDelegationFee uint32 `json:"minDelegationFee"`
+	// Maximum delegation fee, in the range [MinDelegationFee, 1000000], that can be charged
+	// for delegation on the primary network.
+	MaxDelegationFee uint32 `json:"maxDelegationFee"`
 	// MinStakeDuration is the minimum amount of time a validator can validate
 	// for in a single period.
 	MinStakeDuration time.Duration `json:"minStakeDuration"`
@@ -38,20 +41,20 @@ type TxFeeConfig struct {
 	TxFee uint64 `json:"txFee"`
 	// Transaction fee for create asset transactions
 	CreateAssetTxFee uint64 `json:"createAssetTxFee"`
-	// Transaction fee for create subnet transactions
-	CreateSubnetTxFee uint64 `json:"createSubnetTxFee"`
-	// Transaction fee for transform subnet transactions
-	TransformSubnetTxFee uint64 `json:"transformSubnetTxFee"`
+	// Transaction fee for create supernet transactions
+	CreateSupernetTxFee uint64 `json:"createSupernetTxFee"`
+	// Transaction fee for transform supernet transactions
+	TransformSupernetTxFee uint64 `json:"transformSupernetTxFee"`
 	// Transaction fee for create blockchain transactions
 	CreateBlockchainTxFee uint64 `json:"createBlockchainTxFee"`
 	// Transaction fee for adding a primary network validator
 	AddPrimaryNetworkValidatorFee uint64 `json:"addPrimaryNetworkValidatorFee"`
 	// Transaction fee for adding a primary network delegator
 	AddPrimaryNetworkDelegatorFee uint64 `json:"addPrimaryNetworkDelegatorFee"`
-	// Transaction fee for adding a subnet validator
-	AddSubnetValidatorFee uint64 `json:"addSubnetValidatorFee"`
-	// Transaction fee for adding a subnet delegator
-	AddSubnetDelegatorFee uint64 `json:"addSubnetDelegatorFee"`
+	// Transaction fee for adding a supernet validator
+	AddSupernetValidatorFee uint64 `json:"addSupernetValidatorFee"`
+	// Transaction fee for adding a supernet delegator
+	AddSupernetDelegatorFee uint64 `json:"addSupernetDelegatorFee"`
 }
 
 type Params struct {

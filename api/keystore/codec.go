@@ -4,14 +4,14 @@
 package keystore
 
 import (
-	"github.com/ava-labs/avalanchego/codec"
-	"github.com/ava-labs/avalanchego/codec/linearcodec"
-	"github.com/ava-labs/avalanchego/utils/units"
+	"github.com/Juneo-io/juneogo/codec"
+	"github.com/Juneo-io/juneogo/codec/linearcodec"
+	"github.com/Juneo-io/juneogo/utils/units"
 )
 
 const (
 	maxPackerSize  = 1 * units.GiB // max size, in bytes, of something being marshalled by Marshal()
-	maxSliceLength = 256 * 1024
+	maxSliceLength = linearcodec.DefaultMaxSliceLength
 
 	codecVersion = 0
 )

@@ -3,14 +3,12 @@
 
 package common
 
-import (
-	"time"
-)
+import "time"
 
 // Timer describes the standard interface for specifying a timeout
 type Timer interface {
 	// RegisterTimeout specifies how much time to delay the next timeout message
-	// by. If the subnet has been bootstrapped, the timeout will fire
+	// by. If the supernet has been bootstrapped, the timeout will fire
 	// immediately.
 	RegisterTimeout(time.Duration)
 }

@@ -9,14 +9,14 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/ava-labs/avalanchego/cache"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/snow/engine/common"
-	"github.com/ava-labs/avalanchego/vms/avm/blocks/executor"
-	"github.com/ava-labs/avalanchego/vms/avm/txs"
-	"github.com/ava-labs/avalanchego/vms/avm/txs/mempool"
-	"github.com/ava-labs/avalanchego/vms/components/message"
+	"github.com/Juneo-io/juneogo/cache"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/snow/engine/common"
+	"github.com/Juneo-io/juneogo/vms/avm/block/executor"
+	"github.com/Juneo-io/juneogo/vms/avm/txs"
+	"github.com/Juneo-io/juneogo/vms/avm/txs/mempool"
+	"github.com/Juneo-io/juneogo/vms/components/message"
 )
 
 // We allow [recentTxsCacheSize] to be fairly large because we only store hashes

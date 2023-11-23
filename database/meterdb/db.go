@@ -8,8 +8,8 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 
-	"github.com/ava-labs/avalanchego/database"
-	"github.com/ava-labs/avalanchego/utils/timer/mockable"
+	"github.com/Juneo-io/juneogo/database"
+	"github.com/Juneo-io/juneogo/utils/timer/mockable"
 )
 
 var (

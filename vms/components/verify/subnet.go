@@ -8,29 +8,29 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow"
 )
 
 var (
-	ErrSameChainID           = errors.New("same chainID")
-	ErrMismatchedSubnetIDs = errors.New("mismatched subnetIDs")
+	ErrSameChainID         = errors.New("same chainID")
+	ErrMismatchedSupernetIDs = errors.New("mismatched supernetIDs")
 )
 
-// SameSubnet verifies that the provided [ctx] was provided to a chain in the
-// same subnet as [peerChainID], but not the same chain. If this verification
+// SameSupernet verifies that the provided [ctx] was provided to a chain in the
+// same supernet as [peerChainID], but not the same chain. If this verification
 // fails, a non-nil error will be returned.
-func SameSubnet(ctx context.Context, chainCtx *snow.Context, peerChainID ids.ID) error {
+func SameSupernet(ctx context.Context, chainCtx *snow.Context, peerChainID ids.ID) error {
 	if peerChainID == chainCtx.ChainID {
 		return ErrSameChainID
 	}
 
-	subnetID, err := chainCtx.ValidatorState.GetSubnetID(ctx, peerChainID)
+	supernetID, err := chainCtx.ValidatorState.GetSupernetID(ctx, peerChainID)
 	if err != nil {
-		return fmt.Errorf("failed to get subnet of %q: %w", peerChainID, err)
+		return fmt.Errorf("failed to get supernet of %q: %w", peerChainID, err)
 	}
-	if chainCtx.SubnetID != subnetID {
-		return fmt.Errorf("%w; expected %q got %q", ErrMismatchedSubnetIDs, chainCtx.SubnetID, subnetID)
+	if chainCtx.SupernetID != supernetID {
+		return fmt.Errorf("%w; expected %q got %q", ErrMismatchedSupernetIDs, chainCtx.SupernetID, supernetID)
 	}
 	return nil
 }

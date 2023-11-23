@@ -14,13 +14,13 @@ import (
 
 	"golang.org/x/sync/errgroup"
 
-	"github.com/ava-labs/avalanchego/nat"
-	"github.com/ava-labs/avalanchego/node"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/ips"
-	"github.com/ava-labs/avalanchego/utils/logging"
-	"github.com/ava-labs/avalanchego/utils/perms"
-	"github.com/ava-labs/avalanchego/utils/ulimit"
+	"github.com/Juneo-io/juneogo/nat"
+	"github.com/Juneo-io/juneogo/node"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/ips"
+	"github.com/Juneo-io/juneogo/utils/logging"
+	"github.com/Juneo-io/juneogo/utils/perms"
+	"github.com/Juneo-io/juneogo/utils/ulimit"
 )
 
 const (
@@ -136,10 +136,8 @@ func (a *app) Start() error {
 	}
 
 	// Track if sybil control is enforced
-	if !a.config.EnableStaking {
-		log.Warn("sybil control is not enforced",
-			zap.String("reason", "staking is disabled"),
-		)
+	if !a.config.SybilProtectionEnabled {
+		log.Warn("sybil control is not enforced")
 	}
 
 	// TODO move this to config

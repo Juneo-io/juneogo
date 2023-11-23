@@ -11,9 +11,9 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/ava-labs/avalanchego/network/throttling"
-	"github.com/ava-labs/avalanchego/utils/ips"
-	"github.com/ava-labs/avalanchego/utils/logging"
+	"github.com/Juneo-io/juneogo/network/throttling"
+	"github.com/Juneo-io/juneogo/utils/ips"
+	"github.com/Juneo-io/juneogo/utils/logging"
 )
 
 var _ Dialer = (*dialer)(nil)

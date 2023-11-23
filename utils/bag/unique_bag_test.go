@@ -8,7 +8,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/utils/set"
+	"github.com/Juneo-io/juneogo/utils/set"
 )
 
 func TestUniqueBag(t *testing.T) {
@@ -96,8 +96,8 @@ func TestUniqueBagClear(t *testing.T) {
 	require.Empty(b.List())
 
 	bs := b.GetSet(elt1)
-	require.Equal(0, bs.Len())
+	require.Zero(bs.Len())
 
 	bs = b.GetSet(elt2)
-	require.Equal(0, bs.Len())
+	require.Zero(bs.Len())
 }

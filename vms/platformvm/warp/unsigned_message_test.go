@@ -8,15 +8,16 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/codec"
-	"github.com/ava-labs/avalanchego/ids"
+	"github.com/Juneo-io/juneogo/codec"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils/constants"
 )
 
 func TestUnsignedMessage(t *testing.T) {
 	require := require.New(t)
 
 	msg, err := NewUnsignedMessage(
-		ids.GenerateTestID(),
+		constants.UnitTestID,
 		ids.GenerateTestID(),
 		[]byte("payload"),
 	)

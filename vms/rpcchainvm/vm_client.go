@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 	"time"
 
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
@@ -24,49 +25,51 @@ import (
 
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 
-	"github.com/ava-labs/avalanchego/api/keystore/gkeystore"
-	"github.com/ava-labs/avalanchego/api/metrics"
-	"github.com/ava-labs/avalanchego/chains/atomic/gsharedmemory"
-	"github.com/ava-labs/avalanchego/database"
-	"github.com/ava-labs/avalanchego/database/manager"
-	"github.com/ava-labs/avalanchego/database/rpcdb"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/ids/galiasreader"
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/snow/choices"
-	"github.com/ava-labs/avalanchego/snow/consensus/snowman"
-	"github.com/ava-labs/avalanchego/snow/engine/common"
-	"github.com/ava-labs/avalanchego/snow/engine/common/appsender"
-	"github.com/ava-labs/avalanchego/snow/engine/snowman/block"
-	"github.com/ava-labs/avalanchego/snow/validators/gvalidators"
-	"github.com/ava-labs/avalanchego/utils/crypto/bls"
-	"github.com/ava-labs/avalanchego/utils/resource"
-	"github.com/ava-labs/avalanchego/utils/wrappers"
-	"github.com/ava-labs/avalanchego/version"
-	"github.com/ava-labs/avalanchego/vms/components/chain"
-	"github.com/ava-labs/avalanchego/vms/platformvm/warp/gwarp"
-	"github.com/ava-labs/avalanchego/vms/rpcchainvm/ghttp"
-	"github.com/ava-labs/avalanchego/vms/rpcchainvm/grpcutils"
-	"github.com/ava-labs/avalanchego/vms/rpcchainvm/messenger"
-	"github.com/ava-labs/avalanchego/vms/rpcchainvm/runtime"
+	"github.com/Juneo-io/juneogo/api/keystore/gkeystore"
+	"github.com/Juneo-io/juneogo/api/metrics"
+	"github.com/Juneo-io/juneogo/chains/atomic/gsharedmemory"
+	"github.com/Juneo-io/juneogo/database"
+	"github.com/Juneo-io/juneogo/database/manager"
+	"github.com/Juneo-io/juneogo/database/rpcdb"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/ids/galiasreader"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/snow/choices"
+	"github.com/Juneo-io/juneogo/snow/consensus/snowman"
+	"github.com/Juneo-io/juneogo/snow/engine/common"
+	"github.com/Juneo-io/juneogo/snow/engine/common/appsender"
+	"github.com/Juneo-io/juneogo/snow/engine/snowman/block"
+	"github.com/Juneo-io/juneogo/snow/validators/gvalidators"
+	"github.com/Juneo-io/juneogo/utils/crypto/bls"
+	"github.com/Juneo-io/juneogo/utils/resource"
+	"github.com/Juneo-io/juneogo/utils/units"
+	"github.com/Juneo-io/juneogo/utils/wrappers"
+	"github.com/Juneo-io/juneogo/version"
+	"github.com/Juneo-io/juneogo/vms/components/chain"
+	"github.com/Juneo-io/juneogo/vms/platformvm/warp/gwarp"
+	"github.com/Juneo-io/juneogo/vms/rpcchainvm/ghttp"
+	"github.com/Juneo-io/juneogo/vms/rpcchainvm/grpcutils"
+	"github.com/Juneo-io/juneogo/vms/rpcchainvm/messenger"
+	"github.com/Juneo-io/juneogo/vms/rpcchainvm/runtime"
 
-	aliasreaderpb "github.com/ava-labs/avalanchego/proto/pb/aliasreader"
-	appsenderpb "github.com/ava-labs/avalanchego/proto/pb/appsender"
-	httppb "github.com/ava-labs/avalanchego/proto/pb/http"
-	keystorepb "github.com/ava-labs/avalanchego/proto/pb/keystore"
-	messengerpb "github.com/ava-labs/avalanchego/proto/pb/messenger"
-	rpcdbpb "github.com/ava-labs/avalanchego/proto/pb/rpcdb"
-	sharedmemorypb "github.com/ava-labs/avalanchego/proto/pb/sharedmemory"
-	validatorstatepb "github.com/ava-labs/avalanchego/proto/pb/validatorstate"
-	vmpb "github.com/ava-labs/avalanchego/proto/pb/vm"
-	warppb "github.com/ava-labs/avalanchego/proto/pb/warp"
+	aliasreaderpb "github.com/Juneo-io/juneogo/proto/pb/aliasreader"
+	appsenderpb "github.com/Juneo-io/juneogo/proto/pb/appsender"
+	httppb "github.com/Juneo-io/juneogo/proto/pb/http"
+	keystorepb "github.com/Juneo-io/juneogo/proto/pb/keystore"
+	messengerpb "github.com/Juneo-io/juneogo/proto/pb/messenger"
+	rpcdbpb "github.com/Juneo-io/juneogo/proto/pb/rpcdb"
+	sharedmemorypb "github.com/Juneo-io/juneogo/proto/pb/sharedmemory"
+	validatorstatepb "github.com/Juneo-io/juneogo/proto/pb/validatorstate"
+	vmpb "github.com/Juneo-io/juneogo/proto/pb/vm"
+	warppb "github.com/Juneo-io/juneogo/proto/pb/warp"
 )
 
+// TODO: Enable these to be configured by the user
 const (
-	decidedCacheSize    = 2048
+	decidedCacheSize    = 64 * units.MiB
 	missingCacheSize    = 2048
-	unverifiedCacheSize = 2048
-	bytesToIDCacheSize  = 2048
+	unverifiedCacheSize = 64 * units.MiB
+	bytesToIDCacheSize  = 64 * units.MiB
 )
 
 var (
@@ -76,7 +79,6 @@ var (
 	_ block.ChainVM                      = (*VMClient)(nil)
 	_ block.BuildBlockWithContextChainVM = (*VMClient)(nil)
 	_ block.BatchedChainVM               = (*VMClient)(nil)
-	_ block.HeightIndexedChainVM         = (*VMClient)(nil)
 	_ block.StateSyncableVM              = (*VMClient)(nil)
 	_ prometheus.Gatherer                = (*VMClient)(nil)
 
@@ -109,9 +111,10 @@ type VMClient struct {
 }
 
 // NewClient returns a VM connected to a remote VM
-func NewClient(client vmpb.VMClient) *VMClient {
+func NewClient(clientConn *grpc.ClientConn) *VMClient {
 	return &VMClient{
-		client: client,
+		client: vmpb.NewVMClient(clientConn),
+		conns:  []*grpc.ClientConn{clientConn},
 	}
 }
 
@@ -197,7 +200,7 @@ func (vm *VMClient) Initialize(
 
 	resp, err := vm.client.Initialize(ctx, &vmpb.InitializeRequest{
 		NetworkId:    chainCtx.NetworkID,
-		SubnetId:   chainCtx.SubnetID[:],
+		SupernetId:   chainCtx.SupernetID[:],
 		ChainId:      chainCtx.ChainID[:],
 		NodeId:       chainCtx.NodeID.Bytes(),
 		PublicKey:    bls.PublicKeyToBytes(chainCtx.PublicKey),
@@ -367,13 +370,13 @@ func (vm *VMClient) Shutdown(ctx context.Context) error {
 	return errs.Err
 }
 
-func (vm *VMClient) CreateHandlers(ctx context.Context) (map[string]*common.HTTPHandler, error) {
+func (vm *VMClient) CreateHandlers(ctx context.Context) (map[string]http.Handler, error) {
 	resp, err := vm.client.CreateHandlers(ctx, &emptypb.Empty{})
 	if err != nil {
 		return nil, err
 	}
 
-	handlers := make(map[string]*common.HTTPHandler, len(resp.Handlers))
+	handlers := make(map[string]http.Handler, len(resp.Handlers))
 	for _, handler := range resp.Handlers {
 		clientConn, err := grpcutils.Dial(handler.ServerAddr)
 		if err != nil {
@@ -381,21 +384,18 @@ func (vm *VMClient) CreateHandlers(ctx context.Context) (map[string]*common.HTTP
 		}
 
 		vm.conns = append(vm.conns, clientConn)
-		handlers[handler.Prefix] = &common.HTTPHandler{
-			LockOptions: common.LockOption(handler.LockOptions),
-			Handler:     ghttp.NewClient(httppb.NewHTTPClient(clientConn)),
-		}
+		handlers[handler.Prefix] = ghttp.NewClient(httppb.NewHTTPClient(clientConn))
 	}
 	return handlers, nil
 }
 
-func (vm *VMClient) CreateStaticHandlers(ctx context.Context) (map[string]*common.HTTPHandler, error) {
+func (vm *VMClient) CreateStaticHandlers(ctx context.Context) (map[string]http.Handler, error) {
 	resp, err := vm.client.CreateStaticHandlers(ctx, &emptypb.Empty{})
 	if err != nil {
 		return nil, err
 	}
 
-	handlers := make(map[string]*common.HTTPHandler, len(resp.Handlers))
+	handlers := make(map[string]http.Handler, len(resp.Handlers))
 	for _, handler := range resp.Handlers {
 		clientConn, err := grpcutils.Dial(handler.ServerAddr)
 		if err != nil {
@@ -403,10 +403,7 @@ func (vm *VMClient) CreateStaticHandlers(ctx context.Context) (map[string]*commo
 		}
 
 		vm.conns = append(vm.conns, clientConn)
-		handlers[handler.Prefix] = &common.HTTPHandler{
-			LockOptions: common.LockOption(handler.LockOptions),
-			Handler:     ghttp.NewClient(httppb.NewHTTPClient(clientConn)),
-		}
+		handlers[handler.Prefix] = ghttp.NewClient(httppb.NewHTTPClient(clientConn))
 	}
 	return handlers, nil
 }
@@ -527,7 +524,9 @@ func (vm *VMClient) SetPreference(ctx context.Context, blkID ids.ID) error {
 }
 
 func (vm *VMClient) HealthCheck(ctx context.Context) (interface{}, error) {
-	health, err := vm.client.Health(ctx, &emptypb.Empty{})
+	// HealthCheck is a special case, where we want to fail fast instead of block.
+	failFast := grpc.WaitForReady(false)
+	health, err := vm.client.Health(ctx, &emptypb.Empty{}, failFast)
 	if err != nil {
 		return nil, fmt.Errorf("health check failed: %w", err)
 	}

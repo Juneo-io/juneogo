@@ -9,16 +9,16 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/golang/mock/gomock"
-
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow/validators"
-	"github.com/ava-labs/avalanchego/utils/crypto/bls"
-	"github.com/ava-labs/avalanchego/vms/rpcchainvm/grpcutils"
+	"go.uber.org/mock/gomock"
 
-	pb "github.com/ava-labs/avalanchego/proto/pb/validatorstate"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow/validators"
+	"github.com/Juneo-io/juneogo/utils/crypto/bls"
+	"github.com/Juneo-io/juneogo/vms/rpcchainvm/grpcutils"
+
+	pb "github.com/Juneo-io/juneogo/proto/pb/validatorstate"
 )
 
 var errCustom = errors.New("custom")
@@ -30,6 +30,8 @@ type testState struct {
 }
 
 func setupState(t testing.TB, ctrl *gomock.Controller) *testState {
+	require := require.New(t)
+
 	t.Helper()
 
 	state := &testState{
@@ -37,9 +39,7 @@ func setupState(t testing.TB, ctrl *gomock.Controller) *testState {
 	}
 
 	listener, err := grpcutils.NewListener()
-	if err != nil {
-		t.Fatalf("Failed to create listener: %s", err)
-	}
+	require.NoError(err)
 	serverCloser := grpcutils.ServerCloser{}
 
 	server := grpcutils.NewServer()
@@ -49,9 +49,7 @@ func setupState(t testing.TB, ctrl *gomock.Controller) *testState {
 	go grpcutils.Serve(listener, server)
 
 	conn, err := grpcutils.Dial(listener.Addr().String())
-	if err != nil {
-		t.Fatalf("Failed to dial: %s", err)
-	}
+	require.NoError(err)
 
 	state.client = NewClient(pb.NewValidatorStateClient(conn))
 	state.closeFn = func() {
@@ -65,7 +63,6 @@ func setupState(t testing.TB, ctrl *gomock.Controller) *testState {
 func TestGetMinimumHeight(t *testing.T) {
 	require := require.New(t)
 	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
 
 	state := setupState(t, ctrl)
 	defer state.closeFn()
@@ -89,7 +86,6 @@ func TestGetMinimumHeight(t *testing.T) {
 func TestGetCurrentHeight(t *testing.T) {
 	require := require.New(t)
 	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
 
 	state := setupState(t, ctrl)
 	defer state.closeFn()
@@ -110,27 +106,26 @@ func TestGetCurrentHeight(t *testing.T) {
 	require.Error(err) //nolint:forbidigo // currently returns grpc error
 }
 
-func TestGetSubnetID(t *testing.T) {
+func TestGetSupernetID(t *testing.T) {
 	require := require.New(t)
 	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
 
 	state := setupState(t, ctrl)
 	defer state.closeFn()
 
 	// Happy path
 	chainID := ids.GenerateTestID()
-	expectedSubnetID := ids.GenerateTestID()
-	state.server.EXPECT().GetSubnetID(gomock.Any(), chainID).Return(expectedSubnetID, nil)
+	expectedSupernetID := ids.GenerateTestID()
+	state.server.EXPECT().GetSupernetID(gomock.Any(), chainID).Return(expectedSupernetID, nil)
 
-	subnetID, err := state.client.GetSubnetID(context.Background(), chainID)
+	supernetID, err := state.client.GetSupernetID(context.Background(), chainID)
 	require.NoError(err)
-	require.Equal(expectedSubnetID, subnetID)
+	require.Equal(expectedSupernetID, supernetID)
 
 	// Error path
-	state.server.EXPECT().GetSubnetID(gomock.Any(), chainID).Return(expectedSubnetID, errCustom)
+	state.server.EXPECT().GetSupernetID(gomock.Any(), chainID).Return(expectedSupernetID, errCustom)
 
-	_, err = state.client.GetSubnetID(context.Background(), chainID)
+	_, err = state.client.GetSupernetID(context.Background(), chainID)
 	// TODO: require specific error
 	require.Error(err) //nolint:forbidigo // currently returns grpc error
 }
@@ -138,7 +133,6 @@ func TestGetSubnetID(t *testing.T) {
 func TestGetValidatorSet(t *testing.T) {
 	require := require.New(t)
 	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
 
 	state := setupState(t, ctrl)
 	defer state.closeFn()
@@ -172,17 +166,17 @@ func TestGetValidatorSet(t *testing.T) {
 		vdr2.NodeID: vdr2,
 	}
 	height := uint64(1337)
-	subnetID := ids.GenerateTestID()
-	state.server.EXPECT().GetValidatorSet(gomock.Any(), height, subnetID).Return(expectedVdrs, nil)
+	supernetID := ids.GenerateTestID()
+	state.server.EXPECT().GetValidatorSet(gomock.Any(), height, supernetID).Return(expectedVdrs, nil)
 
-	vdrs, err := state.client.GetValidatorSet(context.Background(), height, subnetID)
+	vdrs, err := state.client.GetValidatorSet(context.Background(), height, supernetID)
 	require.NoError(err)
 	require.Equal(expectedVdrs, vdrs)
 
 	// Error path
-	state.server.EXPECT().GetValidatorSet(gomock.Any(), height, subnetID).Return(expectedVdrs, errCustom)
+	state.server.EXPECT().GetValidatorSet(gomock.Any(), height, supernetID).Return(expectedVdrs, errCustom)
 
-	_, err = state.client.GetValidatorSet(context.Background(), height, subnetID)
+	_, err = state.client.GetValidatorSet(context.Background(), height, supernetID)
 	// TODO: require specific error
 	require.Error(err) //nolint:forbidigo // currently returns grpc error
 }
@@ -197,7 +191,7 @@ func TestPublicKeyDeserialize(t *testing.T) {
 	pkBytes := pk.Serialize()
 	pkDe := new(bls.PublicKey).Deserialize(pkBytes)
 	require.NotNil(pkDe)
-	require.EqualValues(pk, pkDe)
+	require.Equal(pk, pkDe)
 }
 
 // BenchmarkGetValidatorSet measures the time it takes complete a gRPC client
@@ -216,16 +210,15 @@ func benchmarkGetValidatorSet(b *testing.B, vs map[ids.NodeID]*validators.GetVal
 	ctrl := gomock.NewController(b)
 	state := setupState(b, ctrl)
 	defer func() {
-		ctrl.Finish()
 		state.closeFn()
 	}()
 
 	height := uint64(1337)
-	subnetID := ids.GenerateTestID()
-	state.server.EXPECT().GetValidatorSet(gomock.Any(), height, subnetID).Return(vs, nil).AnyTimes()
+	supernetID := ids.GenerateTestID()
+	state.server.EXPECT().GetValidatorSet(gomock.Any(), height, supernetID).Return(vs, nil).AnyTimes()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_, err := state.client.GetValidatorSet(context.Background(), height, subnetID)
+		_, err := state.client.GetValidatorSet(context.Background(), height, supernetID)
 		require.NoError(err)
 	}
 	b.StopTimer()

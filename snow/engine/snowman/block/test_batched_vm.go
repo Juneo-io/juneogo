@@ -9,8 +9,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow/consensus/snowman"
+	"github.com/stretchr/testify/require"
+
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow/consensus/snowman"
 )
 
 var (
@@ -63,7 +65,7 @@ func (vm *TestBatchedVM) GetAncestors(
 		)
 	}
 	if vm.CantGetAncestors && vm.T != nil {
-		vm.T.Fatal(errGetAncestor)
+		require.FailNow(vm.T, errGetAncestor.Error())
 	}
 	return nil, errGetAncestor
 }
@@ -76,7 +78,7 @@ func (vm *TestBatchedVM) BatchedParseBlock(
 		return vm.BatchedParseBlockF(ctx, blks)
 	}
 	if vm.CantBatchParseBlock && vm.T != nil {
-		vm.T.Fatal(errBatchedParseBlock)
+		require.FailNow(vm.T, errBatchedParseBlock.Error())
 	}
 	return nil, errBatchedParseBlock
 }

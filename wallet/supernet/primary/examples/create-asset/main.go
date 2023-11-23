@@ -8,26 +8,30 @@ import (
 	"log"
 	"time"
 
-	"github.com/ava-labs/avalanchego/genesis"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils/units"
-	"github.com/ava-labs/avalanchego/vms/components/verify"
-	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
-	"github.com/ava-labs/avalanchego/wallet/subnet/primary"
+	"github.com/Juneo-io/juneogo/genesis"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils/units"
+	"github.com/Juneo-io/juneogo/vms/components/verify"
+	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
+	"github.com/Juneo-io/juneogo/wallet/supernet/primary"
 )
 
 func main() {
 	key := genesis.EWOQKey
 	uri := primary.LocalAPIURI
 	kc := secp256k1fx.NewKeychain(key)
-	subnetOwner := key.Address()
+	supernetOwner := key.Address()
 
 	ctx := context.Background()
 
-	// NewWalletFromURI fetches the available UTXOs owned by [kc] on the network
-	// that [uri] is hosting.
+	// MakeWallet fetches the available UTXOs owned by [kc] on the network that
+	// [uri] is hosting.
 	walletSyncStartTime := time.Now()
-	wallet, err := primary.NewWalletFromURI(ctx, uri, kc)
+	wallet, err := primary.MakeWallet(ctx, &primary.WalletConfig{
+		URI:          uri,
+		AVAXKeychain: kc,
+		EthKeychain:  kc,
+	})
 	if err != nil {
 		log.Fatalf("failed to initialize wallet: %s\n", err)
 	}
@@ -40,12 +44,12 @@ func main() {
 	owner := &secp256k1fx.OutputOwners{
 		Threshold: 1,
 		Addrs: []ids.ShortID{
-			subnetOwner,
+			supernetOwner,
 		},
 	}
 
 	createAssetStartTime := time.Now()
-	createAssetTxID, err := xWallet.IssueCreateAssetTx(
+	createAssetTx, err := xWallet.IssueCreateAssetTx(
 		"HI",
 		"HI",
 		1,
@@ -61,5 +65,5 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to issue create asset transaction: %s\n", err)
 	}
-	log.Printf("created new asset %s in %s\n", createAssetTxID, time.Since(createAssetStartTime))
+	log.Printf("created new asset %s in %s\n", createAssetTx.ID(), time.Since(createAssetStartTime))
 }

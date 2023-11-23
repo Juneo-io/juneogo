@@ -38,7 +38,7 @@ failed to register VM {"vmID": "tGas3T58KzdjcJ2iKSyiYsWiqYctRXaPTqBCA11BqEkNg8kP
 
 ### Protocol Version Mismatch
 
-To ensure RPC compatibility the protocol version of AvalancheGo must match the subnet VM. To correct this error update the subnet VM's dependencies to the latest version AvalancheGo.
+To ensure RPC compatibility the protocol version of AvalancheGo must match the supernet VM. To correct this error update the supernet VM's dependencies to the latest version AvalancheGo.
 
 ```bash
 failed to register VM {"vmID": "tGas3T58KzdjcJ2iKSyiYsWiqYctRXaPTqBCA11BqEkNg8kPc", "error": "handshake failed: protocol version mismatch avalanchego: 19 vm: 18"}

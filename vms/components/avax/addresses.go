@@ -4,16 +4,21 @@
 package avax
 
 import (
+	"errors"
 	"fmt"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/formatting/address"
-	"github.com/ava-labs/avalanchego/utils/set"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/formatting/address"
+	"github.com/Juneo-io/juneogo/utils/set"
 )
 
-var _ AddressManager = (*addressManager)(nil)
+var (
+	_ AddressManager = (*addressManager)(nil)
+
+	ErrMismatchedChainIDs = errors.New("mismatched chainIDs")
+)
 
 type AddressManager interface {
 	// ParseLocalAddress takes in an address for this chain and produces the ID
@@ -49,7 +54,8 @@ func (a *addressManager) ParseLocalAddress(addrStr string) (ids.ShortID, error) 
 	}
 	if chainID != a.ctx.ChainID {
 		return ids.ShortID{}, fmt.Errorf(
-			"expected chainID to be %q but was %q",
+			"%w: expected %q but got %q",
+			ErrMismatchedChainIDs,
 			a.ctx.ChainID,
 			chainID,
 		)

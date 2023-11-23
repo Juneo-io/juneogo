@@ -6,8 +6,12 @@ package tracker
 import (
 	"math"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow/validators"
+	"go.uber.org/zap"
+
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow/validators"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/logging"
 )
 
 var _ Targeter = (*targeter)(nil)
@@ -32,11 +36,13 @@ type TargeterConfig struct {
 }
 
 func NewTargeter(
+	logger logging.Logger,
 	config *TargeterConfig,
-	vdrs validators.Set,
+	vdrs validators.Manager,
 	tracker Tracker,
 ) Targeter {
 	return &targeter{
+		log:                logger,
 		vdrs:               vdrs,
 		tracker:            tracker,
 		vdrAlloc:           config.VdrAlloc,
@@ -46,7 +52,8 @@ func NewTargeter(
 }
 
 type targeter struct {
-	vdrs               validators.Set
+	vdrs               validators.Manager
+	log                logging.Logger
 	tracker            Tracker
 	vdrAlloc           float64
 	maxNonVdrUsage     float64
@@ -60,7 +67,19 @@ func (t *targeter) TargetUsage(nodeID ids.NodeID) float64 {
 	baseAlloc = math.Min(baseAlloc, t.maxNonVdrNodeUsage)
 
 	// This node gets a stake-weighted portion of the validator allocation.
-	weight := t.vdrs.GetWeight(nodeID)
-	vdrAlloc := t.vdrAlloc * float64(weight) / float64(t.vdrs.Weight())
+	weight := t.vdrs.GetWeight(constants.PrimaryNetworkID, nodeID)
+	if weight == 0 {
+		return baseAlloc
+	}
+
+	totalWeight, err := t.vdrs.TotalWeight(constants.PrimaryNetworkID)
+	if err != nil {
+		t.log.Error("couldn't get total weight of primary network",
+			zap.Error(err),
+		)
+		return baseAlloc
+	}
+
+	vdrAlloc := t.vdrAlloc * float64(weight) / float64(totalWeight)
 	return vdrAlloc + baseAlloc
 }

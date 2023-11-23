@@ -6,8 +6,8 @@ package prefixdb
 import (
 	"testing"
 
-	"github.com/ava-labs/avalanchego/database"
-	"github.com/ava-labs/avalanchego/database/memdb"
+	"github.com/Juneo-io/juneogo/database"
+	"github.com/Juneo-io/juneogo/database/memdb"
 )
 
 func TestInterface(t *testing.T) {
@@ -22,10 +22,12 @@ func TestInterface(t *testing.T) {
 	}
 }
 
-func FuzzInterface(f *testing.F) {
-	for _, test := range database.FuzzTests {
-		test(f, New([]byte(""), memdb.New()))
-	}
+func FuzzKeyValue(f *testing.F) {
+	database.FuzzKeyValue(f, New([]byte(""), memdb.New()))
+}
+
+func FuzzNewIteratorWithPrefix(f *testing.F) {
+	database.FuzzNewIteratorWithPrefix(f, New([]byte(""), memdb.New()))
 }
 
 func BenchmarkInterface(b *testing.B) {

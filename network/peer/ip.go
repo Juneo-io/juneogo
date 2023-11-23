@@ -6,11 +6,11 @@ package peer
 import (
 	"crypto"
 	"crypto/rand"
-	"crypto/x509"
 
-	"github.com/ava-labs/avalanchego/utils/hashing"
-	"github.com/ava-labs/avalanchego/utils/ips"
-	"github.com/ava-labs/avalanchego/utils/wrappers"
+	"github.com/Juneo-io/juneogo/staking"
+	"github.com/Juneo-io/juneogo/utils/hashing"
+	"github.com/Juneo-io/juneogo/utils/ips"
+	"github.com/Juneo-io/juneogo/utils/wrappers"
 )
 
 // UnsignedIP is used for a validator to claim an IP. The [Timestamp] is used to
@@ -49,9 +49,9 @@ type SignedIP struct {
 	Signature []byte
 }
 
-func (ip *SignedIP) Verify(cert *x509.Certificate) error {
-	return cert.CheckSignature(
-		cert.SignatureAlgorithm,
+func (ip *SignedIP) Verify(cert *staking.Certificate) error {
+	return staking.CheckSignature(
+		cert,
 		ip.UnsignedIP.bytes(),
 		ip.Signature,
 	)

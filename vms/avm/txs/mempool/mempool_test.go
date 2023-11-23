@@ -10,15 +10,15 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow/engine/common"
-	"github.com/ava-labs/avalanchego/utils"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/crypto/secp256k1"
-	"github.com/ava-labs/avalanchego/vms/avm/txs"
-	"github.com/ava-labs/avalanchego/vms/components/avax"
-	"github.com/ava-labs/avalanchego/vms/components/verify"
-	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow/engine/common"
+	"github.com/Juneo-io/juneogo/utils"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/crypto/secp256k1"
+	"github.com/Juneo-io/juneogo/vms/avm/txs"
+	"github.com/Juneo-io/juneogo/vms/components/avax"
+	"github.com/Juneo-io/juneogo/vms/components/verify"
+	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
 )
 
 var (
@@ -50,8 +50,7 @@ func TestBlockBuilderMaxMempoolSizeHandling(t *testing.T) {
 	// shortcut to simulated almost filled mempool
 	mempool.bytesAvailable = len(tx.Bytes())
 
-	err = mempool.Add(tx)
-	require.NoError(err)
+	require.NoError(mempool.Add(tx))
 }
 
 func TestTxsInMempool(t *testing.T) {
@@ -67,7 +66,7 @@ func TestTxsInMempool(t *testing.T) {
 	mempool.RequestBuildBlock()
 	select {
 	case <-toEngine:
-		t.Fatalf("should not have sent message to engine")
+		require.FailNow("should not have sent message to engine")
 	default:
 	}
 
@@ -83,7 +82,7 @@ func TestTxsInMempool(t *testing.T) {
 		require.True(mempool.Has(txID))
 
 		retrieved := mempool.Get(txID)
-		require.True(retrieved != nil)
+		require.NotNil(retrieved)
 		require.Equal(tx, retrieved)
 
 		// tx exists in mempool
@@ -103,7 +102,7 @@ func TestTxsInMempool(t *testing.T) {
 	select {
 	case <-toEngine:
 	default:
-		t.Fatalf("should have sent message to engine")
+		require.FailNow("should have sent message to engine")
 	}
 
 	mempool.Remove(testTxs)
@@ -111,7 +110,7 @@ func TestTxsInMempool(t *testing.T) {
 	mempool.RequestBuildBlock()
 	select {
 	case <-toEngine:
-		t.Fatalf("should not have sent message to engine")
+		require.FailNow("should not have sent message to engine")
 	default:
 	}
 }

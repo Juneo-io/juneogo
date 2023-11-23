@@ -4,8 +4,8 @@
 package snowball
 
 import (
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils/bag"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils/bag"
 )
 
 var (
@@ -16,14 +16,16 @@ var (
 	_ Consensus = (*Byzantine)(nil)
 )
 
+func NewByzantine(_ Parameters, choice ids.ID) Consensus {
+	return &Byzantine{
+		preference: choice,
+	}
+}
+
 // Byzantine is a naive implementation of a multi-choice snowball instance
 type Byzantine struct {
 	// Hardcode the preference
 	preference ids.ID
-}
-
-func (b *Byzantine) Initialize(_ Parameters, choice ids.ID) {
-	b.preference = choice
 }
 
 func (*Byzantine) Add(ids.ID) {}

@@ -6,13 +6,13 @@ package genesis
 import (
 	"path"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/vms/nftfx"
-	"github.com/ava-labs/avalanchego/vms/platformvm/genesis"
-	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
-	"github.com/ava-labs/avalanchego/vms/propertyfx"
-	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/vms/nftfx"
+	"github.com/Juneo-io/juneogo/vms/platformvm/genesis"
+	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
+	"github.com/Juneo-io/juneogo/vms/propertyfx"
+	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
 )
 
 // Aliases returns the default aliases based on the network ID
@@ -50,12 +50,42 @@ func Aliases(genesisBytes []byte) (map[string][]string, map[ids.ID][]string, err
 				path.Join(constants.ChainAliasPrefix, "JUNE"),
 			}
 			chainAliases[chainID] = []string{"JUNE"}
-		case "ETH1-Chain":
+		case "USDT1-Chain":
 			apiAliases[endpoint] = []string{
-				"ETH1",
-				path.Join(constants.ChainAliasPrefix, "ETH1"),
+				"USDT1",
+				path.Join(constants.ChainAliasPrefix, "USDT1"),
 			}
-			chainAliases[chainID] = []string{"ETH1"}
+			chainAliases[chainID] = []string{"USDT1"}
+		case "USD1-Chain":
+			apiAliases[endpoint] = []string{
+				"USD1",
+				path.Join(constants.ChainAliasPrefix, "USD1"),
+			}
+			chainAliases[chainID] = []string{"USD1"}
+		case "DAI1-Chain":
+			apiAliases[endpoint] = []string{
+				"DAI1",
+				path.Join(constants.ChainAliasPrefix, "DAI1"),
+			}
+			chainAliases[chainID] = []string{"DAI1"}
+		case "EUR1-Chain":
+			apiAliases[endpoint] = []string{
+				"EUR1",
+				path.Join(constants.ChainAliasPrefix, "EUR1"),
+			}
+			chainAliases[chainID] = []string{"EUR1"}
+		case "SGD1-Chain":
+			apiAliases[endpoint] = []string{
+				"SGD1",
+				path.Join(constants.ChainAliasPrefix, "SGD1"),
+			}
+			chainAliases[chainID] = []string{"SGD1"}
+		case "GLD1-Chain":
+			apiAliases[endpoint] = []string{
+				"GLD1",
+				path.Join(constants.ChainAliasPrefix, "GLD1"),
+			}
+			chainAliases[chainID] = []string{"GLD1"}
 		case "mBTC1-Chain":
 			apiAliases[endpoint] = []string{
 				"mBTC1",
@@ -68,90 +98,12 @@ func Aliases(genesisBytes []byte) (map[string][]string, map[ids.ID][]string, err
 				path.Join(constants.ChainAliasPrefix, "DOGE1"),
 			}
 			chainAliases[chainID] = []string{"DOGE1"}
-		case "TUSD1-Chain":
-			apiAliases[endpoint] = []string{
-				"TUSD1",
-				path.Join(constants.ChainAliasPrefix, "TUSD1"),
-			}
-			chainAliases[chainID] = []string{"TUSD1"}
-		case "USDT1-Chain":
-			apiAliases[endpoint] = []string{
-				"USDT1",
-				path.Join(constants.ChainAliasPrefix, "USDT1"),
-			}
-			chainAliases[chainID] = []string{"USDT1"}
-		case "DAI1-Chain":
-			apiAliases[endpoint] = []string{
-				"DAI1",
-				path.Join(constants.ChainAliasPrefix, "DAI1"),
-			}
-			chainAliases[chainID] = []string{"DAI1"}
-		case "EUROC1-Chain":
-			apiAliases[endpoint] = []string{
-				"EUROC1",
-				path.Join(constants.ChainAliasPrefix, "EUROC1"),
-			}
-			chainAliases[chainID] = []string{"EUROC1"}
 		case "LTC1-Chain":
 			apiAliases[endpoint] = []string{
 				"LTC1",
 				path.Join(constants.ChainAliasPrefix, "LTC1"),
 			}
 			chainAliases[chainID] = []string{"LTC1"}
-		case "XLM1-Chain":
-			apiAliases[endpoint] = []string{
-				"XLM1",
-				path.Join(constants.ChainAliasPrefix, "XLM1"),
-			}
-			chainAliases[chainID] = []string{"XLM1"}
-		case "BCH1-Chain":
-			apiAliases[endpoint] = []string{
-				"BCH1",
-				path.Join(constants.ChainAliasPrefix, "BCH1"),
-			}
-			chainAliases[chainID] = []string{"BCH1"}
-		case "PAXG1-Chain":
-			apiAliases[endpoint] = []string{
-				"PAXG1",
-				path.Join(constants.ChainAliasPrefix, "PAXG1"),
-			}
-			chainAliases[chainID] = []string{"PAXG1"}
-		case "ICP1-Chain":
-			apiAliases[endpoint] = []string{
-				"ICP1",
-				path.Join(constants.ChainAliasPrefix, "ICP1"),
-			}
-			chainAliases[chainID] = []string{"ICP1"}
-		case "XIDR1-Chain":
-			apiAliases[endpoint] = []string{
-				"XIDR1",
-				path.Join(constants.ChainAliasPrefix, "XIDR1"),
-			}
-			chainAliases[chainID] = []string{"XIDR1"}
-		case "XSGD1-Chain":
-			apiAliases[endpoint] = []string{
-				"XSGD1",
-				path.Join(constants.ChainAliasPrefix, "XSGD1"),
-			}
-			chainAliases[chainID] = []string{"XSGD1"}
-		case "ETC1-Chain":
-			apiAliases[endpoint] = []string{
-				"ETC1",
-				path.Join(constants.ChainAliasPrefix, "ETC1"),
-			}
-			chainAliases[chainID] = []string{"ETC1"}
-		case "R1000-Chain":
-			apiAliases[endpoint] = []string{
-				"R1000",
-				path.Join(constants.ChainAliasPrefix, "R1000"),
-			}
-			chainAliases[chainID] = []string{"R1000"}
-		case "R10-Chain":
-			apiAliases[endpoint] = []string{
-				"R10",
-				path.Join(constants.ChainAliasPrefix, "R10"),
-			}
-			chainAliases[chainID] = []string{"R10"}
 		}
 	}
 	return apiAliases, chainAliases, nil

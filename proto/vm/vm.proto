@@ -6,7 +6,7 @@ import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 import "io/prometheus/client/metrics.proto";
 
-option go_package = "github.com/ava-labs/avalanchego/proto/pb/vm";
+option go_package = "github.com/Juneo-io/juneogo/proto/pb/vm";
 
 // ref. https://pkg.go.dev/github.com/ava-labs/avalanchego/snow/engine/snowman/block
 // ref. https://pkg.go.dev/github.com/ava-labs/avalanchego/snow/consensus/snowman#Block
@@ -108,14 +108,13 @@ enum Error {
   ERROR_UNSPECIFIED = 0;
   ERROR_CLOSED = 1;
   ERROR_NOT_FOUND = 2;
-  ERROR_HEIGHT_INDEX_NOT_IMPLEMENTED = 3;
-  ERROR_HEIGHT_INDEX_INCOMPLETE = 4;
-  ERROR_STATE_SYNC_NOT_IMPLEMENTED = 5;
+  ERROR_HEIGHT_INDEX_INCOMPLETE = 3;
+  ERROR_STATE_SYNC_NOT_IMPLEMENTED = 4;
 }
 
 message InitializeRequest {
   uint32 network_id = 1;
-  bytes subnet_id = 2;
+  bytes supernet_id = 2;
   bytes chain_id = 3;
   bytes node_id = 4;
   // public_key is the BLS public key that would correspond with any signatures
@@ -132,7 +131,7 @@ message InitializeRequest {
   repeated VersionedDBServer db_servers = 14;
   // server_addr is the address of the gRPC server which serves
   // the messenger, keystore, shared memory, blockchain alias,
-  // subnet alias, and appSender services
+  // supernet alias, and appSender services
   string server_addr = 15;
 }
 
@@ -173,10 +172,9 @@ message CreateStaticHandlersResponse {
 
 message Handler {
   string prefix = 1;
-  uint32 lock_options = 2;
   // server_addr is the address of the gRPC server which serves the
   // HTTP service
-  string server_addr = 3;
+  string server_addr = 2;
 }
 
 message BuildBlockRequest {

@@ -9,24 +9,22 @@ import (
 	"io"
 	"testing"
 
-	"github.com/golang/mock/gomock"
-
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/database/manager"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/snow/choices"
-	"github.com/ava-labs/avalanchego/snow/consensus/snowman"
-	"github.com/ava-labs/avalanchego/snow/engine/snowman/block"
-	"github.com/ava-labs/avalanchego/snow/engine/snowman/block/mocks"
-	"github.com/ava-labs/avalanchego/utils/logging"
-	"github.com/ava-labs/avalanchego/version"
-	"github.com/ava-labs/avalanchego/vms/rpcchainvm/grpcutils"
-	"github.com/ava-labs/avalanchego/vms/rpcchainvm/runtime"
-	"github.com/ava-labs/avalanchego/vms/rpcchainvm/runtime/subprocess"
+	"go.uber.org/mock/gomock"
 
-	vmpb "github.com/ava-labs/avalanchego/proto/pb/vm"
+	"github.com/Juneo-io/juneogo/database/manager"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/snow/choices"
+	"github.com/Juneo-io/juneogo/snow/consensus/snowman"
+	"github.com/Juneo-io/juneogo/snow/engine/snowman/block"
+	"github.com/Juneo-io/juneogo/snow/engine/snowman/block/mocks"
+	"github.com/Juneo-io/juneogo/utils/logging"
+	"github.com/Juneo-io/juneogo/version"
+	"github.com/Juneo-io/juneogo/vms/rpcchainvm/grpcutils"
+	"github.com/Juneo-io/juneogo/vms/rpcchainvm/runtime"
+	"github.com/Juneo-io/juneogo/vms/rpcchainvm/runtime/subprocess"
 )
 
 var (
@@ -72,7 +70,7 @@ type StateSyncEnabledMock struct {
 	*mocks.MockStateSyncableVM
 }
 
-func stateSyncEnabledTestPlugin(t *testing.T, loadExpectations bool) (block.ChainVM, *gomock.Controller) {
+func stateSyncEnabledTestPlugin(t *testing.T, loadExpectations bool) block.ChainVM {
 	// test key is "stateSyncEnabledTestKey"
 
 	// create mock
@@ -91,10 +89,10 @@ func stateSyncEnabledTestPlugin(t *testing.T, loadExpectations bool) (block.Chai
 		)
 	}
 
-	return ssVM, ctrl
+	return ssVM
 }
 
-func getOngoingSyncStateSummaryTestPlugin(t *testing.T, loadExpectations bool) (block.ChainVM, *gomock.Controller) {
+func getOngoingSyncStateSummaryTestPlugin(t *testing.T, loadExpectations bool) block.ChainVM {
 	// test key is "getOngoingSyncStateSummaryTestKey"
 
 	// create mock
@@ -112,10 +110,10 @@ func getOngoingSyncStateSummaryTestPlugin(t *testing.T, loadExpectations bool) (
 		)
 	}
 
-	return ssVM, ctrl
+	return ssVM
 }
 
-func getLastStateSummaryTestPlugin(t *testing.T, loadExpectations bool) (block.ChainVM, *gomock.Controller) {
+func getLastStateSummaryTestPlugin(t *testing.T, loadExpectations bool) block.ChainVM {
 	// test key is "getLastStateSummaryTestKey"
 
 	// create mock
@@ -133,10 +131,10 @@ func getLastStateSummaryTestPlugin(t *testing.T, loadExpectations bool) (block.C
 		)
 	}
 
-	return ssVM, ctrl
+	return ssVM
 }
 
-func parseStateSummaryTestPlugin(t *testing.T, loadExpectations bool) (block.ChainVM, *gomock.Controller) {
+func parseStateSummaryTestPlugin(t *testing.T, loadExpectations bool) block.ChainVM {
 	// test key is "parseStateSummaryTestKey"
 
 	// create mock
@@ -155,10 +153,10 @@ func parseStateSummaryTestPlugin(t *testing.T, loadExpectations bool) (block.Cha
 		)
 	}
 
-	return ssVM, ctrl
+	return ssVM
 }
 
-func getStateSummaryTestPlugin(t *testing.T, loadExpectations bool) (block.ChainVM, *gomock.Controller) {
+func getStateSummaryTestPlugin(t *testing.T, loadExpectations bool) block.ChainVM {
 	// test key is "getStateSummaryTestKey"
 
 	// create mock
@@ -176,10 +174,10 @@ func getStateSummaryTestPlugin(t *testing.T, loadExpectations bool) (block.Chain
 		)
 	}
 
-	return ssVM, ctrl
+	return ssVM
 }
 
-func acceptStateSummaryTestPlugin(t *testing.T, loadExpectations bool) (block.ChainVM, *gomock.Controller) {
+func acceptStateSummaryTestPlugin(t *testing.T, loadExpectations bool) block.ChainVM {
 	// test key is "acceptStateSummaryTestKey"
 
 	// create mock
@@ -222,10 +220,10 @@ func acceptStateSummaryTestPlugin(t *testing.T, loadExpectations bool) (block.Ch
 		)
 	}
 
-	return ssVM, ctrl
+	return ssVM
 }
 
-func lastAcceptedBlockPostStateSummaryAcceptTestPlugin(t *testing.T, loadExpectations bool) (block.ChainVM, *gomock.Controller) {
+func lastAcceptedBlockPostStateSummaryAcceptTestPlugin(t *testing.T, loadExpectations bool) block.ChainVM {
 	// test key is "lastAcceptedBlockPostStateSummaryAcceptTestKey"
 
 	// create mock
@@ -261,7 +259,7 @@ func lastAcceptedBlockPostStateSummaryAcceptTestPlugin(t *testing.T, loadExpecta
 		)
 	}
 
-	return ssVM, ctrl
+	return ssVM
 }
 
 func buildClientHelper(require *require.Assertions, testKey string) (*VMClient, runtime.Stopper) {
@@ -295,7 +293,7 @@ func buildClientHelper(require *require.Assertions, testKey string) (*VMClient, 
 	clientConn, err := grpcutils.Dial(status.Addr)
 	require.NoError(err)
 
-	return NewClient(vmpb.NewVMClient(clientConn)), stopper
+	return NewClient(clientConn), stopper
 }
 
 func TestStateSyncEnabled(t *testing.T) {

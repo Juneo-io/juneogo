@@ -9,13 +9,16 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/ava-labs/avalanchego/chains/atomic"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils/set"
-	"github.com/ava-labs/avalanchego/vms/components/avax"
-	"github.com/ava-labs/avalanchego/vms/components/verify"
-	"github.com/ava-labs/avalanchego/vms/platformvm/state"
-	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
+	"go.uber.org/zap"
+
+	"github.com/Juneo-io/juneogo/chains/atomic"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/set"
+	"github.com/Juneo-io/juneogo/vms/components/avax"
+	"github.com/Juneo-io/juneogo/vms/components/verify"
+	"github.com/Juneo-io/juneogo/vms/platformvm/state"
+	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
 )
 
 var (
@@ -50,7 +53,7 @@ func (e *StandardTxExecutor) CreateChainTx(tx *txs.CreateChainTx) error {
 		return err
 	}
 
-	baseTxCreds, err := verifyPoASubnetAuthorization(e.Backend, e.State, e.Tx, tx.SubnetID, tx.SubnetAuth)
+	baseTxCreds, err := verifyPoASupernetAuthorization(e.Backend, e.State, e.Tx, tx.SupernetID, tx.SupernetAuth)
 	if err != nil {
 		return err
 	}
@@ -80,7 +83,7 @@ func (e *StandardTxExecutor) CreateChainTx(tx *txs.CreateChainTx) error {
 	// Add the new chain to the database
 	e.State.AddChain(e.Tx)
 
-	// If this proposal is committed and this node is a member of the subnet
+	// If this proposal is committed and this node is a member of the supernet
 	// that validates the blockchain, create the blockchain
 	e.OnAccept = func() {
 		e.Config.CreateChain(txID, tx)
@@ -88,7 +91,7 @@ func (e *StandardTxExecutor) CreateChainTx(tx *txs.CreateChainTx) error {
 	return nil
 }
 
-func (e *StandardTxExecutor) CreateSubnetTx(tx *txs.CreateSubnetTx) error {
+func (e *StandardTxExecutor) CreateSupernetTx(tx *txs.CreateSupernetTx) error {
 	// Make sure this transaction is well formed.
 	if err := e.Tx.SyntacticVerify(e.Ctx); err != nil {
 		return err
@@ -96,7 +99,7 @@ func (e *StandardTxExecutor) CreateSubnetTx(tx *txs.CreateSubnetTx) error {
 
 	// Verify the flowcheck
 	timestamp := e.State.GetTimestamp()
-	createSubnetTxFee := e.Config.GetCreateSubnetTxFee(timestamp)
+	createSupernetTxFee := e.Config.GetCreateSupernetTxFee(timestamp)
 	if err := e.FlowChecker.VerifySpend(
 		tx,
 		e.State,
@@ -104,7 +107,7 @@ func (e *StandardTxExecutor) CreateSubnetTx(tx *txs.CreateSubnetTx) error {
 		tx.Outs,
 		e.Tx.Creds,
 		map[ids.ID]uint64{
-			e.Ctx.AVAXAssetID: createSubnetTxFee,
+			e.Ctx.AVAXAssetID: createSupernetTxFee,
 		},
 	); err != nil {
 		return err
@@ -116,8 +119,9 @@ func (e *StandardTxExecutor) CreateSubnetTx(tx *txs.CreateSubnetTx) error {
 	avax.Consume(e.State, tx.Ins)
 	// Produce the UTXOS
 	avax.Produce(e.State, txID, tx.Outs)
-	// Add the new subnet to the database
-	e.State.AddSubnet(e.Tx)
+	// Add the new supernet to the database
+	e.State.AddSupernet(e.Tx)
+	e.State.SetSupernetOwner(txID, tx.Owner)
 	return nil
 }
 
@@ -135,8 +139,10 @@ func (e *StandardTxExecutor) ImportTx(tx *txs.ImportTx) error {
 		utxoIDs[i] = utxoID[:]
 	}
 
-	if e.Bootstrapped.Get() {
-		if err := verify.SameSubnet(context.TODO(), e.Ctx, tx.SourceChain); err != nil {
+	// Skip verification of the shared memory inputs if the other primary
+	// network chains are not guaranteed to be up-to-date.
+	if e.Bootstrapped.Get() && !e.Config.PartialSyncPrimaryNetwork {
+		if err := verify.SameSupernet(context.TODO(), e.Ctx, tx.SourceChain); err != nil {
 			return err
 		}
 
@@ -149,7 +155,7 @@ func (e *StandardTxExecutor) ImportTx(tx *txs.ImportTx) error {
 		for index, input := range tx.Ins {
 			utxo, err := e.State.GetUTXO(input.InputID())
 			if err != nil {
-				return fmt.Errorf("failed to get UTXO %s: %w", &input.UTXOID, err)
+				return fmt.Errorf("failed to get UTXO %s: %w", &input.UTXOID, err) //nolint:gosec
 			}
 			utxos[index] = utxo
 		}
@@ -186,6 +192,9 @@ func (e *StandardTxExecutor) ImportTx(tx *txs.ImportTx) error {
 	// Produce the UTXOS
 	avax.Produce(e.State, txID, tx.Outs)
 
+	// Note: We apply atomic requests even if we are not verifying atomic
+	// requests to ensure the shared state will be correct if we later start
+	// verifying the requests.
 	e.AtomicRequests = map[ids.ID]*atomic.Requests{
 		tx.SourceChain: {
 			RemoveRequests: utxoIDs,
@@ -204,7 +213,7 @@ func (e *StandardTxExecutor) ExportTx(tx *txs.ExportTx) error {
 	copy(outs[len(tx.Outs):], tx.ExportedOutputs)
 
 	if e.Bootstrapped.Get() {
-		if err := verify.SameSubnet(context.TODO(), e.Ctx, tx.DestinationChain); err != nil {
+		if err := verify.SameSupernet(context.TODO(), e.Ctx, tx.DestinationChain); err != nil {
 			return err
 		}
 	}
@@ -230,6 +239,9 @@ func (e *StandardTxExecutor) ExportTx(tx *txs.ExportTx) error {
 	// Produce the UTXOS
 	avax.Produce(e.State, txID, tx.Outs)
 
+	// Note: We apply atomic requests even if we are not verifying atomic
+	// requests to ensure the shared state will be correct if we later start
+	// verifying the requests.
 	elems := make([]*atomic.Element, len(tx.ExportedOutputs))
 	for i, out := range tx.ExportedOutputs {
 		utxo := &avax.UTXO{
@@ -288,11 +300,19 @@ func (e *StandardTxExecutor) AddValidatorTx(tx *txs.AddValidatorTx) error {
 	avax.Consume(e.State, tx.Ins)
 	avax.Produce(e.State, txID, tx.Outs)
 
+	if e.Config.PartialSyncPrimaryNetwork && tx.Validator.NodeID == e.Ctx.NodeID {
+		e.Ctx.Log.Warn("verified transaction that would cause this node to become unhealthy",
+			zap.String("reason", "primary network is not being fully synced"),
+			zap.Stringer("txID", txID),
+			zap.String("txType", "addValidator"),
+			zap.Stringer("nodeID", tx.Validator.NodeID),
+		)
+	}
 	return nil
 }
 
-func (e *StandardTxExecutor) AddSubnetValidatorTx(tx *txs.AddSubnetValidatorTx) error {
-	if err := verifyAddSubnetValidatorTx(
+func (e *StandardTxExecutor) AddSupernetValidatorTx(tx *txs.AddSupernetValidatorTx) error {
+	if err := verifyAddSupernetValidatorTx(
 		e.Backend,
 		e.State,
 		e.Tx,
@@ -337,13 +357,13 @@ func (e *StandardTxExecutor) AddDelegatorTx(tx *txs.AddDelegatorTx) error {
 	return nil
 }
 
-// Verifies a [*txs.RemoveSubnetValidatorTx] and, if it passes, executes it on
-// [e.State]. For verification rules, see [removeSubnetValidatorValidation].
-// This transaction will result in [tx.NodeID] being removed as a validator of
-// [tx.SubnetID].
+// Verifies a [*txs.RemoveSupernetValidatorTx] and, if it passes, executes it on
+// [e.State]. For verification rules, see [verifyRemoveSupernetValidatorTx]. This
+// transaction will result in [tx.NodeID] being removed as a validator of
+// [tx.SupernetID].
 // Note: [tx.NodeID] may be either a current or pending validator.
-func (e *StandardTxExecutor) RemoveSubnetValidatorTx(tx *txs.RemoveSubnetValidatorTx) error {
-	staker, isCurrentValidator, err := removeSubnetValidatorValidation(
+func (e *StandardTxExecutor) RemoveSupernetValidatorTx(tx *txs.RemoveSupernetValidatorTx) error {
+	staker, isCurrentValidator, err := verifyRemoveSupernetValidatorTx(
 		e.Backend,
 		e.State,
 		e.Tx,
@@ -359,7 +379,7 @@ func (e *StandardTxExecutor) RemoveSubnetValidatorTx(tx *txs.RemoveSubnetValidat
 		e.State.DeletePendingValidator(staker)
 	}
 
-	// Invariant: There are no permissioned subnet delegators to remove.
+	// Invariant: There are no permissioned supernet delegators to remove.
 
 	txID := e.Tx.ID()
 	avax.Consume(e.State, tx.Ins)
@@ -368,7 +388,7 @@ func (e *StandardTxExecutor) RemoveSubnetValidatorTx(tx *txs.RemoveSubnetValidat
 	return nil
 }
 
-func (e *StandardTxExecutor) TransformSubnetTx(tx *txs.TransformSubnetTx) error {
+func (e *StandardTxExecutor) TransformSupernetTx(tx *txs.TransformSupernetTx) error {
 	if err := e.Tx.SyntacticVerify(e.Ctx); err != nil {
 		return err
 	}
@@ -379,12 +399,12 @@ func (e *StandardTxExecutor) TransformSubnetTx(tx *txs.TransformSubnetTx) error 
 		return errMaxStakeDurationTooLarge
 	}
 
-	baseTxCreds, err := verifyPoASubnetAuthorization(e.Backend, e.State, e.Tx, tx.Subnet, tx.SubnetAuth)
+	baseTxCreds, err := verifyPoASupernetAuthorization(e.Backend, e.State, e.Tx, tx.Supernet, tx.SupernetAuth)
 	if err != nil {
 		return err
 	}
 
-	totalRewardAmount := tx.InitialRewardsPoolSupply
+	totalRewardAmount := tx.InitialRewardPoolSupply
 	if err := e.Backend.FlowChecker.VerifySpend(
 		tx,
 		e.State,
@@ -395,7 +415,7 @@ func (e *StandardTxExecutor) TransformSubnetTx(tx *txs.TransformSubnetTx) error 
 		//            entry in this map literal from being overwritten by the
 		//            second entry.
 		map[ids.ID]uint64{
-			e.Ctx.AVAXAssetID: e.Config.TransformSubnetTxFee,
+			e.Ctx.AVAXAssetID: e.Config.TransformSupernetTxFee,
 			tx.AssetID:        totalRewardAmount,
 		},
 	); err != nil {
@@ -408,10 +428,10 @@ func (e *StandardTxExecutor) TransformSubnetTx(tx *txs.TransformSubnetTx) error 
 	avax.Consume(e.State, tx.Ins)
 	// Produce the UTXOS
 	avax.Produce(e.State, txID, tx.Outs)
-	// Transform the new subnet in the database
-	e.State.AddSubnetTransformation(e.Tx)
-	e.State.SetCurrentSupply(tx.Subnet, uint64(0))
-	e.State.SetRewardsPoolSupply(tx.Subnet, totalRewardAmount)
+	// Transform the new supernet in the database
+	e.State.AddSupernetTransformation(e.Tx)
+	e.State.SetCurrentSupply(tx.Supernet, uint64(0))
+	e.State.SetRewardPoolSupply(tx.Supernet, totalRewardAmount)
 	return nil
 }
 
@@ -435,6 +455,17 @@ func (e *StandardTxExecutor) AddPermissionlessValidatorTx(tx *txs.AddPermissionl
 	avax.Consume(e.State, tx.Ins)
 	avax.Produce(e.State, txID, tx.Outs)
 
+	if e.Config.PartialSyncPrimaryNetwork &&
+		tx.Supernet == constants.PrimaryNetworkID &&
+		tx.Validator.NodeID == e.Ctx.NodeID {
+		e.Ctx.Log.Warn("verified transaction that would cause this node to become unhealthy",
+			zap.String("reason", "primary network is not being fully synced"),
+			zap.Stringer("txID", txID),
+			zap.String("txType", "addPermissionlessValidator"),
+			zap.Stringer("nodeID", tx.Validator.NodeID),
+		)
+	}
+
 	return nil
 }
 
@@ -455,6 +486,30 @@ func (e *StandardTxExecutor) AddPermissionlessDelegatorTx(tx *txs.AddPermissionl
 	}
 
 	e.State.PutPendingDelegator(newStaker)
+	avax.Consume(e.State, tx.Ins)
+	avax.Produce(e.State, txID, tx.Outs)
+
+	return nil
+}
+
+// Verifies a [*txs.TransferSupernetOwnershipTx] and, if it passes, executes it on
+// [e.State]. For verification rules, see [verifyTransferSupernetOwnershipTx].
+// This transaction will result in the ownership of [tx.Supernet] being transferred
+// to [tx.Owner].
+func (e *StandardTxExecutor) TransferSupernetOwnershipTx(tx *txs.TransferSupernetOwnershipTx) error {
+	err := verifyTransferSupernetOwnershipTx(
+		e.Backend,
+		e.State,
+		e.Tx,
+		tx,
+	)
+	if err != nil {
+		return err
+	}
+
+	e.State.SetSupernetOwner(tx.Supernet, tx.Owner)
+
+	txID := e.Tx.ID()
 	avax.Consume(e.State, tx.Ins)
 	avax.Produce(e.State, txID, tx.Outs)
 

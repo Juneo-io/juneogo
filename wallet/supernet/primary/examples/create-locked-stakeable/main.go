@@ -8,14 +8,14 @@ import (
 	"log"
 	"time"
 
-	"github.com/ava-labs/avalanchego/genesis"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils/formatting/address"
-	"github.com/ava-labs/avalanchego/utils/units"
-	"github.com/ava-labs/avalanchego/vms/components/avax"
-	"github.com/ava-labs/avalanchego/vms/platformvm/stakeable"
-	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
-	"github.com/ava-labs/avalanchego/wallet/subnet/primary"
+	"github.com/Juneo-io/juneogo/genesis"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils/formatting/address"
+	"github.com/Juneo-io/juneogo/utils/units"
+	"github.com/Juneo-io/juneogo/vms/components/avax"
+	"github.com/Juneo-io/juneogo/vms/platformvm/stakeable"
+	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
+	"github.com/Juneo-io/juneogo/wallet/supernet/primary"
 )
 
 func main() {
@@ -33,10 +33,14 @@ func main() {
 
 	ctx := context.Background()
 
-	// NewWalletFromURI fetches the available UTXOs owned by [kc] on the network
-	// that [uri] is hosting.
+	// MakeWallet fetches the available UTXOs owned by [kc] on the network that
+	// [uri] is hosting.
 	walletSyncStartTime := time.Now()
-	wallet, err := primary.NewWalletFromURI(ctx, uri, kc)
+	wallet, err := primary.MakeWallet(ctx, &primary.WalletConfig{
+		URI:          uri,
+		AVAXKeychain: kc,
+		EthKeychain:  kc,
+	})
 	if err != nil {
 		log.Fatalf("failed to initialize wallet: %s\n", err)
 	}
@@ -47,7 +51,7 @@ func main() {
 	avaxAssetID := pWallet.AVAXAssetID()
 
 	issueTxStartTime := time.Now()
-	txID, err := pWallet.IssueBaseTx([]*avax.TransferableOutput{
+	tx, err := pWallet.IssueBaseTx([]*avax.TransferableOutput{
 		{
 			Asset: avax.Asset{
 				ID: avaxAssetID,
@@ -69,5 +73,5 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to issue transaction: %s\n", err)
 	}
-	log.Printf("issued %s in %s\n", txID, time.Since(issueTxStartTime))
+	log.Printf("issued %s in %s\n", tx.ID(), time.Since(issueTxStartTime))
 }

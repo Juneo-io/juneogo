@@ -6,7 +6,7 @@ package common
 import (
 	"context"
 
-	"github.com/ava-labs/avalanchego/ids"
+	"github.com/Juneo-io/juneogo/ids"
 )
 
 type BootstrapableEngine interface {
@@ -21,5 +21,5 @@ type Bootstrapable interface {
 	ForceAccepted(ctx context.Context, acceptedContainerIDs []ids.ID) error
 
 	// Clear removes all containers to be processed upon bootstrapping
-	Clear() error
+	Clear(ctx context.Context) error
 }

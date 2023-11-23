@@ -8,12 +8,12 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils/filesystem"
-	"github.com/ava-labs/avalanchego/utils/resource"
-	"github.com/ava-labs/avalanchego/vms"
-	"github.com/ava-labs/avalanchego/vms/rpcchainvm"
-	"github.com/ava-labs/avalanchego/vms/rpcchainvm/runtime"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils/filesystem"
+	"github.com/Juneo-io/juneogo/utils/resource"
+	"github.com/Juneo-io/juneogo/vms"
+	"github.com/Juneo-io/juneogo/vms/rpcchainvm"
+	"github.com/Juneo-io/juneogo/vms/rpcchainvm/runtime"
 )
 
 var (

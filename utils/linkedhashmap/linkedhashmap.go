@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023, Ava Labs, Inte. All rights reserved.
+// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package linkedhashmap
@@ -7,7 +7,7 @@ import (
 	"container/list"
 	"sync"
 
-	"github.com/ava-labs/avalanchego/utils"
+	"github.com/Juneo-io/juneogo/utils"
 )
 
 var _ LinkedHashmap[int, struct{}] = (*linkedHashmap[int, struct{}])(nil)

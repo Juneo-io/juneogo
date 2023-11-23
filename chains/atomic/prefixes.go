@@ -6,9 +6,9 @@ package atomic
 import (
 	"bytes"
 
-	"github.com/ava-labs/avalanchego/database"
-	"github.com/ava-labs/avalanchego/database/prefixdb"
-	"github.com/ava-labs/avalanchego/ids"
+	"github.com/Juneo-io/juneogo/database"
+	"github.com/Juneo-io/juneogo/database/prefixdb"
+	"github.com/Juneo-io/juneogo/ids"
 )
 
 var (

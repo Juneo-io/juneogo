@@ -6,17 +6,17 @@ package txs
 import (
 	"fmt"
 
-	"github.com/ava-labs/avalanchego/codec"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/utils/crypto/secp256k1"
-	"github.com/ava-labs/avalanchego/utils/hashing"
-	"github.com/ava-labs/avalanchego/utils/set"
-	"github.com/ava-labs/avalanchego/vms/avm/fxs"
-	"github.com/ava-labs/avalanchego/vms/components/avax"
-	"github.com/ava-labs/avalanchego/vms/nftfx"
-	"github.com/ava-labs/avalanchego/vms/propertyfx"
-	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
+	"github.com/Juneo-io/juneogo/codec"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/utils/crypto/secp256k1"
+	"github.com/Juneo-io/juneogo/utils/hashing"
+	"github.com/Juneo-io/juneogo/utils/set"
+	"github.com/Juneo-io/juneogo/vms/avm/fxs"
+	"github.com/Juneo-io/juneogo/vms/components/avax"
+	"github.com/Juneo-io/juneogo/vms/nftfx"
+	"github.com/Juneo-io/juneogo/vms/propertyfx"
+	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
 )
 
 type UnsignedTx interface {
@@ -28,9 +28,6 @@ type UnsignedTx interface {
 	InputIDs() set.Set[ids.ID]
 
 	ConsumedValue(assetID ids.ID) uint64
-
-	ConsumedAssetIDs() set.Set[ids.ID]
-	AssetIDs() set.Set[ids.ID]
 
 	NumCredentials() int
 	// TODO: deprecate after x-chain linearization
@@ -112,7 +109,7 @@ func (t *Tx) SignSECP256K1Fx(c codec.Manager, signers [][]*secp256k1.PrivateKey)
 			}
 			copy(cred.Sigs[i][:], sig)
 		}
-		t.Creds = append(t.Creds, &fxs.FxCredential{Verifiable: cred})
+		t.Creds = append(t.Creds, &fxs.FxCredential{Credential: cred})
 	}
 
 	signedBytes, err := c.Marshal(CodecVersion, t)
@@ -141,7 +138,7 @@ func (t *Tx) SignPropertyFx(c codec.Manager, signers [][]*secp256k1.PrivateKey) 
 			}
 			copy(cred.Sigs[i][:], sig)
 		}
-		t.Creds = append(t.Creds, &fxs.FxCredential{Verifiable: cred})
+		t.Creds = append(t.Creds, &fxs.FxCredential{Credential: cred})
 	}
 
 	signedBytes, err := c.Marshal(CodecVersion, t)
@@ -170,7 +167,7 @@ func (t *Tx) SignNFTFx(c codec.Manager, signers [][]*secp256k1.PrivateKey) error
 			}
 			copy(cred.Sigs[i][:], sig)
 		}
-		t.Creds = append(t.Creds, &fxs.FxCredential{Verifiable: cred})
+		t.Creds = append(t.Creds, &fxs.FxCredential{Credential: cred})
 	}
 
 	signedBytes, err := c.Marshal(CodecVersion, t)

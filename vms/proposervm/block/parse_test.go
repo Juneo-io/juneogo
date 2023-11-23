@@ -11,9 +11,9 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/codec"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/staking"
+	"github.com/Juneo-io/juneogo/codec"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/staking"
 )
 
 func TestParse(t *testing.T) {
@@ -28,7 +28,7 @@ func TestParse(t *testing.T) {
 	tlsCert, err := staking.NewTLSCert()
 	require.NoError(err)
 
-	cert := tlsCert.Leaf
+	cert := staking.CertificateFromX509(tlsCert.Leaf)
 	key := tlsCert.PrivateKey.(crypto.Signer)
 
 	builtBlock, err := Build(

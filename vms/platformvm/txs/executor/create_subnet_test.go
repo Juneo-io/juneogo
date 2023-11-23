@@ -9,46 +9,47 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils/units"
-	"github.com/ava-labs/avalanchego/vms/components/avax"
-	"github.com/ava-labs/avalanchego/vms/platformvm/state"
-	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
-	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils/units"
+	"github.com/Juneo-io/juneogo/vms/components/avax"
+	"github.com/Juneo-io/juneogo/vms/platformvm/state"
+	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
+	"github.com/Juneo-io/juneogo/vms/platformvm/utxo"
+	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
 )
 
-func TestCreateSubnetTxAP3FeeChange(t *testing.T) {
+func TestCreateSupernetTxAP3FeeChange(t *testing.T) {
 	ap3Time := defaultGenesisTime.Add(time.Hour)
 	tests := []struct {
-		name         string
-		time         time.Time
-		fee          uint64
-		expectsError bool
+		name        string
+		time        time.Time
+		fee         uint64
+		expectedErr error
 	}{
 		{
-			name:         "pre-fork - correctly priced",
-			time:         defaultGenesisTime,
-			fee:          0,
-			expectsError: false,
+			name:        "pre-fork - correctly priced",
+			time:        defaultGenesisTime,
+			fee:         0,
+			expectedErr: nil,
 		},
 		{
-			name:         "post-fork - incorrectly priced",
-			time:         ap3Time,
-			fee:          100*defaultTxFee - 1*units.NanoAvax,
-			expectsError: true,
+			name:        "post-fork - incorrectly priced",
+			time:        ap3Time,
+			fee:         100*defaultTxFee - 1*units.NanoAvax,
+			expectedErr: utxo.ErrInsufficientUnlockedFunds,
 		},
 		{
-			name:         "post-fork - correctly priced",
-			time:         ap3Time,
-			fee:          100 * defaultTxFee,
-			expectsError: false,
+			name:        "post-fork - correctly priced",
+			time:        ap3Time,
+			fee:         100 * defaultTxFee,
+			expectedErr: nil,
 		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			require := require.New(t)
 
-			env := newEnvironment(false /*=postBanff*/, false /*=postCortina*/)
+			env := newEnvironment(t, false /*=postBanff*/, false /*=postCortina*/)
 			env.config.ApricotPhase3Time = ap3Time
 			env.ctx.Lock.Lock()
 			defer func() {
@@ -59,7 +60,7 @@ func TestCreateSubnetTxAP3FeeChange(t *testing.T) {
 			require.NoError(err)
 
 			// Create the tx
-			utx := &txs.CreateSubnetTx{
+			utx := &txs.CreateSupernetTx{
 				BaseTx: txs.BaseTx{BaseTx: avax.BaseTx{
 					NetworkID:    env.ctx.NetworkID,
 					BlockchainID: env.ctx.ChainID,
@@ -82,7 +83,7 @@ func TestCreateSubnetTxAP3FeeChange(t *testing.T) {
 				Tx:      tx,
 			}
 			err = tx.Unsigned.Visit(&executor)
-			require.Equal(test.expectsError, err != nil)
+			require.ErrorIs(err, test.expectedErr)
 		})
 	}
 }

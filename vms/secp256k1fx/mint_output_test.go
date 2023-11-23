@@ -8,7 +8,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/ids"
+	"github.com/Juneo-io/juneogo/ids"
 )
 
 func TestMintOutputVerify(t *testing.T) {
@@ -46,8 +46,9 @@ func TestMintOutputVerify(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			require.ErrorIs(t, tt.out.Verify(), tt.expectedErr)
-			require.ErrorIs(t, tt.out.VerifyState(), tt.expectedErr)
+			require := require.New(t)
+			err := tt.out.Verify()
+			require.ErrorIs(err, tt.expectedErr)
 		})
 	}
 }

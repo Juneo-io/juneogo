@@ -8,23 +8,21 @@ import (
 	"testing"
 	"time"
 
-	"github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 
 	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow/networking/tracker"
-	"github.com/ava-labs/avalanchego/utils/math/meter"
-	"github.com/ava-labs/avalanchego/utils/resource"
-	"github.com/ava-labs/avalanchego/utils/timer/mockable"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow/networking/tracker"
+	"github.com/Juneo-io/juneogo/utils/math/meter"
+	"github.com/Juneo-io/juneogo/utils/resource"
+	"github.com/Juneo-io/juneogo/utils/timer/mockable"
 )
 
 func TestNewSystemThrottler(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
 	require := require.New(t)
 	reg := prometheus.NewRegistry()
 	clock := mockable.Clock{}
@@ -40,18 +38,16 @@ func TestNewSystemThrottler(t *testing.T) {
 	targeter := tracker.NewMockTargeter(ctrl)
 	throttlerIntf, err := NewSystemThrottler("", reg, config, cpuTracker, targeter)
 	require.NoError(err)
-	throttler, ok := throttlerIntf.(*systemThrottler)
-	require.True(ok)
-	require.EqualValues(clock, config.Clock)
-	require.EqualValues(time.Second, config.MaxRecheckDelay)
-	require.EqualValues(cpuTracker, throttler.tracker)
-	require.EqualValues(targeter, throttler.targeter)
+	require.IsType(&systemThrottler{}, throttlerIntf)
+	throttler := throttlerIntf.(*systemThrottler)
+	require.Equal(clock, config.Clock)
+	require.Equal(time.Second, config.MaxRecheckDelay)
+	require.Equal(cpuTracker, throttler.tracker)
+	require.Equal(targeter, throttler.targeter)
 }
 
 func TestSystemThrottler(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
 	require := require.New(t)
 
 	// Setup
@@ -135,7 +131,6 @@ func TestSystemThrottler(t *testing.T) {
 func TestSystemThrottlerContextCancel(t *testing.T) {
 	require := require.New(t)
 	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
 
 	// Setup
 	mockTracker := tracker.NewMockTracker(ctrl)

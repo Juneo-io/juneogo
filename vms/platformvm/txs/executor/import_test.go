@@ -10,19 +10,19 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/chains/atomic"
-	"github.com/ava-labs/avalanchego/database/prefixdb"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils/crypto/secp256k1"
-	"github.com/ava-labs/avalanchego/vms/components/avax"
-	"github.com/ava-labs/avalanchego/vms/platformvm/state"
-	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
-	"github.com/ava-labs/avalanchego/vms/platformvm/utxo"
-	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
+	"github.com/Juneo-io/juneogo/chains/atomic"
+	"github.com/Juneo-io/juneogo/database/prefixdb"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils/crypto/secp256k1"
+	"github.com/Juneo-io/juneogo/vms/components/avax"
+	"github.com/Juneo-io/juneogo/vms/platformvm/state"
+	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
+	"github.com/Juneo-io/juneogo/vms/platformvm/utxo"
+	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
 )
 
 func TestNewImportTx(t *testing.T) {
-	env := newEnvironment(false /*=postBanff*/, false /*=postCortina*/)
+	env := newEnvironment(t, false /*=postBanff*/, false /*=postCortina*/)
 	defer func() {
 		require.NoError(t, shutdownEnvironment(env))
 	}()
@@ -72,7 +72,7 @@ func TestNewImportTx(t *testing.T) {
 			require.NoError(t, err)
 
 			inputID := utxo.InputID()
-			err = peerSharedMemory.Apply(map[ids.ID]*atomic.Requests{
+			require.NoError(t, peerSharedMemory.Apply(map[ids.ID]*atomic.Requests{
 				env.ctx.ChainID: {
 					PutRequests: []*atomic.Element{
 						{
@@ -84,9 +84,7 @@ func TestNewImportTx(t *testing.T) {
 						},
 					},
 				},
-			},
-			)
-			require.NoError(t, err)
+			}))
 		}
 
 		return sm
@@ -168,7 +166,8 @@ func TestNewImportTx(t *testing.T) {
 
 			unsignedTx := tx.Unsigned.(*txs.ImportTx)
 			require.NotEmpty(unsignedTx.ImportedInputs)
-			require.Equal(len(tx.Creds), len(unsignedTx.Ins)+len(unsignedTx.ImportedInputs), "should have the same number of credentials as inputs")
+			numInputs := len(unsignedTx.Ins) + len(unsignedTx.ImportedInputs)
+			require.Equal(len(tx.Creds), numInputs, "should have the same number of credentials as inputs")
 
 			totalIn := uint64(0)
 			for _, in := range unsignedTx.Ins {
@@ -198,8 +197,7 @@ func TestNewImportTx(t *testing.T) {
 				StateVersions: env,
 				Tx:            tx,
 			}
-			err = tx.Unsigned.Visit(&verifier)
-			require.NoError(err)
+			require.NoError(tx.Unsigned.Visit(&verifier))
 		})
 	}
 }

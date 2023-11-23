@@ -10,10 +10,10 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/ava-labs/avalanchego/message"
-	"github.com/ava-labs/avalanchego/utils/logging"
-	"github.com/ava-labs/avalanchego/utils/metric"
-	"github.com/ava-labs/avalanchego/utils/wrappers"
+	"github.com/Juneo-io/juneogo/message"
+	"github.com/Juneo-io/juneogo/utils/logging"
+	"github.com/Juneo-io/juneogo/utils/metric"
+	"github.com/Juneo-io/juneogo/utils/wrappers"
 )
 
 type MessageMetrics struct {
@@ -81,6 +81,7 @@ func NewMessageMetrics(
 
 type Metrics struct {
 	Log            logging.Logger
+	ClockSkew      metric.Averager
 	FailedToParse  prometheus.Counter
 	MessageMetrics map[message.Op]*MessageMetrics
 }
@@ -107,6 +108,14 @@ func NewMetrics(
 	for _, op := range message.ExternalOps {
 		m.MessageMetrics[op] = NewMessageMetrics(op, namespace, registerer, &errs)
 	}
+
+	m.ClockSkew = metric.NewAveragerWithErrs(
+		namespace,
+		"clock_skew",
+		"clock skew during peer handshake",
+		registerer,
+		&errs,
+	)
 	return m, errs.Err
 }
 

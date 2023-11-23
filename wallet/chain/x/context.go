@@ -6,9 +6,9 @@ package x
 import (
 	stdcontext "context"
 
-	"github.com/ava-labs/avalanchego/api/info"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/vms/avm"
+	"github.com/Juneo-io/juneogo/api/info"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/vms/avm"
 )
 
 var _ Context = (*context)(nil)

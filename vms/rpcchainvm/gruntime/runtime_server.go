@@ -8,12 +8,12 @@ import (
 
 	"google.golang.org/protobuf/types/known/emptypb"
 
-	"github.com/ava-labs/avalanchego/vms/rpcchainvm/runtime"
+	"github.com/Juneo-io/juneogo/vms/rpcchainvm/runtime"
 
-	pb "github.com/ava-labs/avalanchego/proto/pb/vm/runtime"
+	pb "github.com/Juneo-io/juneogo/proto/pb/vm/runtime"
 )
 
-var _ pb.RuntimeServer = &Server{}
+var _ pb.RuntimeServer = (*Server)(nil)
 
 // Server is a VM runtime initializer controlled by RPC.
 type Server struct {

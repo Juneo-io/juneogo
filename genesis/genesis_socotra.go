@@ -8,38 +8,47 @@ import (
 
 	_ "embed"
 
-	"github.com/ava-labs/avalanchego/utils/units"
-	"github.com/ava-labs/avalanchego/vms/platformvm/reward"
+	"github.com/Juneo-io/juneogo/utils/units"
+	"github.com/Juneo-io/juneogo/vms/platformvm/reward"
 )
 
 var (
 	//go:embed genesis_socotra.json
 	socotraGenesisConfigJSON []byte
 
+	socotraMinStakeDuration time.Duration = 2 * 7 * 24 * time.Hour
+	socotraMaxStakeDuration time.Duration = 365 * 24 * time.Hour
+
 	// SocotraParams are the params used for the socotra testnet
 	SocotraParams = Params{
 		TxFeeConfig: TxFeeConfig{
 			TxFee:                         10 * units.MilliAvax,
 			CreateAssetTxFee:              100 * units.MilliAvax,
-			CreateSubnetTxFee:           100 * units.MilliAvax,
-			TransformSubnetTxFee:        1 * units.Avax,
+			CreateSupernetTxFee:             100 * units.MilliAvax,
+			TransformSupernetTxFee:          10 * units.Avax,
 			CreateBlockchainTxFee:         100 * units.MilliAvax,
 			AddPrimaryNetworkValidatorFee: 0,
 			AddPrimaryNetworkDelegatorFee: 0,
-			AddSubnetValidatorFee:       100 * units.MilliAvax,
-			AddSubnetDelegatorFee:       100 * units.MilliAvax,
+			AddSupernetValidatorFee:         100 * units.MilliAvax,
+			AddSupernetDelegatorFee:         100 * units.MilliAvax,
 		},
 		StakingConfig: StakingConfig{
 			UptimeRequirement: .8, // 80%
 			MinValidatorStake: 1 * units.Avax,
 			MaxValidatorStake: 1 * units.MegaAvax,
-			MinDelegatorStake: 10 * units.MilliAvax,
+			MinDelegatorStake: 100 * units.MilliAvax,
 			MinDelegationFee:  120000, // 12%
-			MinStakeDuration:  24 * time.Hour,
-			MaxStakeDuration:  365 * 24 * time.Hour,
+			MaxDelegationFee:  120000,
+			MinStakeDuration:  socotraMinStakeDuration,
+			MaxStakeDuration:  socotraMaxStakeDuration,
 			RewardConfig: reward.Config{
-				MintingPeriod: 365 * 24 * time.Hour,
-				RewardShare:   65000, // 6.5%,
+				MinStakePeriod:         socotraMinStakeDuration,
+				MaxStakePeriod:         socotraMaxStakeDuration,
+				StakePeriodRewardShare: 2_0000,                                                             // 2%
+				StartRewardShare:       21_5000,                                                            // 21.5%
+				StartRewardTime:        uint64(time.Date(2023, time.June, 1, 0, 0, 0, 0, time.UTC).Unix()), // 1st June 2023
+				TargetRewardShare:      6_7000,                                                             // 6.7%
+				TargetRewardTime:       uint64(time.Date(2028, time.June, 21, 0, 0, 0, 0, time.UTC).Unix()),
 			},
 		},
 	}

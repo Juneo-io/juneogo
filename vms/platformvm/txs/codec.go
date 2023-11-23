@@ -6,12 +6,12 @@ package txs
 import (
 	"math"
 
-	"github.com/ava-labs/avalanchego/codec"
-	"github.com/ava-labs/avalanchego/codec/linearcodec"
-	"github.com/ava-labs/avalanchego/utils/wrappers"
-	"github.com/ava-labs/avalanchego/vms/platformvm/signer"
-	"github.com/ava-labs/avalanchego/vms/platformvm/stakeable"
-	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
+	"github.com/Juneo-io/juneogo/codec"
+	"github.com/Juneo-io/juneogo/codec/linearcodec"
+	"github.com/Juneo-io/juneogo/utils/wrappers"
+	"github.com/Juneo-io/juneogo/vms/platformvm/signer"
+	"github.com/Juneo-io/juneogo/vms/platformvm/stakeable"
+	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
 )
 
 // Version is the current default codec version
@@ -41,6 +41,10 @@ func init() {
 		c.SkipRegistrations(5)
 
 		errs.Add(RegisterUnsignedTxsTypes(c))
+
+		c.SkipRegistrations(4)
+
+		errs.Add(RegisterDUnsignedTxsTypes(c))
 	}
 	errs.Add(
 		Codec.RegisterCodec(Version, c),
@@ -53,28 +57,31 @@ func init() {
 
 // RegisterUnsignedTxsTypes allows registering relevant type of unsigned package
 // in the right sequence. Following repackaging of platformvm package, a few
-// subpackage-level codecs were introduced, each handling serialization of specific types.
+// subpackage-level codecs were introduced, each handling serialization of
+// specific types.
+//
 // RegisterUnsignedTxsTypes is made exportable so to guarantee that other codecs
 // are coherent with components one.
-func RegisterUnsignedTxsTypes(targetCodec codec.Registry) error {
+func RegisterUnsignedTxsTypes(targetCodec linearcodec.Codec) error {
 	errs := wrappers.Errs{}
+
+	// The secp256k1fx is registered here because this is the same place it is
+	// registered in the AVM. This ensures that the typeIDs match up for utxos
+	// in shared memory.
+	errs.Add(targetCodec.RegisterType(&secp256k1fx.TransferInput{}))
+	targetCodec.SkipRegistrations(1)
+	errs.Add(targetCodec.RegisterType(&secp256k1fx.TransferOutput{}))
+	targetCodec.SkipRegistrations(1)
 	errs.Add(
-		// The Fx is registered here because this is the same place it is
-		// registered in the AVM. This ensures that the typeIDs match up for
-		// utxos in shared memory.
-		targetCodec.RegisterType(&secp256k1fx.TransferInput{}),
-		targetCodec.RegisterType(&secp256k1fx.MintOutput{}),
-		targetCodec.RegisterType(&secp256k1fx.TransferOutput{}),
-		targetCodec.RegisterType(&secp256k1fx.MintOperation{}),
 		targetCodec.RegisterType(&secp256k1fx.Credential{}),
 		targetCodec.RegisterType(&secp256k1fx.Input{}),
 		targetCodec.RegisterType(&secp256k1fx.OutputOwners{}),
 
 		targetCodec.RegisterType(&AddValidatorTx{}),
-		targetCodec.RegisterType(&AddSubnetValidatorTx{}),
+		targetCodec.RegisterType(&AddSupernetValidatorTx{}),
 		targetCodec.RegisterType(&AddDelegatorTx{}),
 		targetCodec.RegisterType(&CreateChainTx{}),
-		targetCodec.RegisterType(&CreateSubnetTx{}),
+		targetCodec.RegisterType(&CreateSupernetTx{}),
 		targetCodec.RegisterType(&ImportTx{}),
 		targetCodec.RegisterType(&ExportTx{}),
 		targetCodec.RegisterType(&AdvanceTimeTx{}),
@@ -84,8 +91,8 @@ func RegisterUnsignedTxsTypes(targetCodec codec.Registry) error {
 		targetCodec.RegisterType(&stakeable.LockOut{}),
 
 		// Banff additions:
-		targetCodec.RegisterType(&RemoveSubnetValidatorTx{}),
-		targetCodec.RegisterType(&TransformSubnetTx{}),
+		targetCodec.RegisterType(&RemoveSupernetValidatorTx{}),
+		targetCodec.RegisterType(&TransformSupernetTx{}),
 		targetCodec.RegisterType(&AddPermissionlessValidatorTx{}),
 		targetCodec.RegisterType(&AddPermissionlessDelegatorTx{}),
 
@@ -93,4 +100,8 @@ func RegisterUnsignedTxsTypes(targetCodec codec.Registry) error {
 		targetCodec.RegisterType(&signer.ProofOfPossession{}),
 	)
 	return errs.Err
+}
+
+func RegisterDUnsignedTxsTypes(targetCodec linearcodec.Codec) error {
+	return targetCodec.RegisterType(&TransferSupernetOwnershipTx{})
 }

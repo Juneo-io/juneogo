@@ -9,9 +9,9 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/ava-labs/avalanchego/snow/validators"
-	"github.com/ava-labs/avalanchego/utils/crypto/bls"
-	"github.com/ava-labs/avalanchego/utils/set"
+	"github.com/Juneo-io/juneogo/snow/validators"
+	"github.com/Juneo-io/juneogo/utils/crypto/bls"
+	"github.com/Juneo-io/juneogo/utils/set"
 )
 
 var (
@@ -37,6 +37,7 @@ type Signature interface {
 	Verify(
 		ctx context.Context,
 		msg *UnsignedMessage,
+		networkID uint32,
 		pChainState validators.State,
 		pChainHeight uint64,
 		quorumNum uint64,
@@ -67,17 +68,22 @@ func (s *BitSetSignature) NumSigners() (int, error) {
 func (s *BitSetSignature) Verify(
 	ctx context.Context,
 	msg *UnsignedMessage,
+	networkID uint32,
 	pChainState validators.State,
 	pChainHeight uint64,
 	quorumNum uint64,
 	quorumDen uint64,
 ) error {
-	subnetID, err := pChainState.GetSubnetID(ctx, msg.SourceChainID)
+	if msg.NetworkID != networkID {
+		return ErrWrongNetworkID
+	}
+
+	supernetID, err := pChainState.GetSupernetID(ctx, msg.SourceChainID)
 	if err != nil {
 		return err
 	}
 
-	vdrs, totalWeight, err := GetCanonicalValidatorSet(ctx, pChainState, pChainHeight, subnetID)
+	vdrs, totalWeight, err := GetCanonicalValidatorSet(ctx, pChainState, pChainHeight, supernetID)
 	if err != nil {
 		return err
 	}
@@ -115,7 +121,7 @@ func (s *BitSetSignature) Verify(
 	// Parse the aggregate signature
 	aggSig, err := bls.SignatureFromBytes(s.Signature[:])
 	if err != nil {
-		return fmt.Errorf("%w: %v", ErrParseSignature, err)
+		return fmt.Errorf("%w: %w", ErrParseSignature, err)
 	}
 
 	// Create the aggregate public key

@@ -10,13 +10,13 @@ Apricot allows the following block types with the following content:
 
 - _Standard Blocks_ may contain multiple transactions of the following types:
   - CreateChainTx
-  - CreateSubnetTx
+  - CreateSupernetTx
   - ImportTx
   - ExportTx
 - _Proposal Blocks_ may contain a single transaction of the following types:
   - AddValidatorTx
   - AddDelegatorTx
-  - AddSubnetValidatorTx
+  - AddSupernetValidatorTx
   - RewardValidatorTx
   - AdvanceTimeTx
 - _Options Blocks_, i.e. _Commit Block_ and _Abort Block_ do not contain any transactions.
@@ -46,7 +46,7 @@ While the above steps could be executed in any order, we pick decisions transact
 
 Once all possibilities of create a block not advancing chain time are exhausted, we attempt to build a block which _may_ advance chain time as follows:
 
-1. If the local clock's time is greater than or equal to the earliest change-event timestamp of the staker set, an advance time transaction is issued into a Proposal Block to move current chain time to the earliest change timestamp of the staker set. Upon this Proposal Block's acceptance, chain time will be move ahead and all scheduled changes (e.g. promoting a staker from pending to current) will be carried out.
+1. If the local clock's time is greater than or equal to the earliest change-event timestamp of the staker set, an advance time transaction is issued into a Proposal Block to move current chain time to the earliest change timestamp of the staker set. Upon this Proposal Block's acceptance, chain time will be moved ahead and all scheduled changes (e.g. promoting a staker from pending to current) will be carried out.
 2. If the mempool contains any proposal transactions, the mempool proposal transaction with the earliest start time is selected and included into a Proposal Block[^1]. A mempool proposal transaction as is won't change the current chain time[^2]. However there is an edge case to consider: on low activity chains (e.g. Fuji P-chain) chain time may fall significantly behind the local clock. If a proposal transaction is finally issued, its start time is likely to be quite far in the future relative to the current chain time. This would cause the proposal transaction to be considered invalid and rejected, since a staker added by a proposal transaction's start time must be at most 366 hours (two weeks) after current chain time. To avoid this edge case on low-activity chains, an advance time transaction is issued first to move chain time to the local clock's time. As soon as chain time is advanced, the mempool proposal transaction will be issued and accepted.
 
 Note that the order in which these steps are executed matters. A block updating chain time would be deemed invalid if it would advance time beyond the staker set's next change event, skipping the associated changes. The order above ensures this never happens because it checks first if chain time should be moved to the time of the next staker set change. It can also be verified by inspection that the timestamp selected for the advance time transactions always respect the synchrony bound.
@@ -61,14 +61,14 @@ Banff allows the following block types with the following content:
 
 - _Standard Blocks_ may contain multiple transactions of the following types:
   - CreateChainTx
-  - CreateSubnetTx
+  - CreateSupernetTx
   - ImportTx
   - ExportTx
   - AddValidatorTx
   - AddDelegatorTx
-  - AddSubnetValidatorTx
-  - RemoveSubnetValidatorTx
-  - TransformSubnetTx
+  - AddSupernetValidatorTx
+  - RemoveSupernetValidatorTx
+  - TransformSupernetTx
   - AddPermissionlessValidatorTx
   - AddPermissionlessDelegatorTx
 - _Proposal Blocks_ may contain a single transaction of the following types:
@@ -83,8 +83,8 @@ Note that each block has a header containing:
 
 So the main differences with respect to Apricot are:
 
-- _AddValidatorTx_, _AddDelegatorTx_, _AddSubnetValidatorTx_ are included into Standard Blocks rather than Proposal Blocks so that they don't need to be voted on (i.e. followed by a Commit/Abort Block).
-- New Transaction types: _RemoveSubnetValidatorTx_, _TransformSubnetTx_, _AddPermissionlessValidatorTx_, _AddPermissionlessDelegatorTx_ have been added into Standard Blocks.
+- _AddValidatorTx_, _AddDelegatorTx_, _AddSupernetValidatorTx_ are included into Standard Blocks rather than Proposal Blocks so that they don't need to be voted on (i.e. followed by a Commit/Abort Block).
+- New Transaction types: _RemoveSupernetValidatorTx_, _TransformSupernetTx_, _AddPermissionlessValidatorTx_, _AddPermissionlessDelegatorTx_ have been added into Standard Blocks.
 - Block timestamp is explicitly serialized into block header, to allow chain time update.
 
 ### Banff Block Formation Logic
@@ -98,4 +98,4 @@ Operations are carried out in the following order:
 - We try to fill a Standard Block with mempool decision transactions.
 
 [^1]: Proposal transactions whose start time is too close to local time are dropped first and won't be included in any block.
-[^2]: Advance time transactions are proposal transactions and they do change chain time. But advance time transactions are generated just in time and never stored in the mempool. Here mempool proposal transactions refer to AddValidator, AddDelegator and AddSubnetValidator transactions. Reward validator transactions are proposal transactions which do not change chain time but which never in mempool (they are generated just in time).
+[^2]: Advance time transactions are proposal transactions and they do change chain time. But advance time transactions are generated just in time and never stored in the mempool. Here mempool proposal transactions refer to AddValidator, AddDelegator and AddSupernetValidator transactions. Reward validator transactions are proposal transactions which do not change chain time but which never in mempool (they are generated just in time).

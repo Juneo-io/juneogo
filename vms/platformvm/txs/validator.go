@@ -7,12 +7,12 @@ import (
 	"errors"
 	"time"
 
-	"github.com/ava-labs/avalanchego/ids"
+	"github.com/Juneo-io/juneogo/ids"
 )
 
 var (
 	ErrWeightTooSmall = errors.New("weight of this validator is too low")
-	errBadSubnetID  = errors.New("subnet ID can't be primary network ID")
+	errBadSupernetID    = errors.New("supernet ID can't be primary network ID")
 )
 
 // Validator is a validator.
@@ -60,9 +60,8 @@ func (v *Validator) Verify() error {
 	}
 }
 
-// BoundedBy returns true iff the period that [validator] validates is a
-// (non-strict) subset of the time that [other] validates.
-// Namely, startTime <= v.StartTime() <= v.EndTime() <= endTime
-func (v *Validator) BoundedBy(startTime, endTime time.Time) bool {
-	return !v.StartTime().Before(startTime) && !v.EndTime().After(endTime)
+// BoundedBy returns true iff staker start and end are a
+// (non-strict) subset of the provided time bound
+func BoundedBy(stakerStart, stakerEnd, lowerBound, upperBound time.Time) bool {
+	return !stakerStart.Before(lowerBound) && !stakerEnd.After(upperBound) && !stakerEnd.Before(stakerStart)
 }

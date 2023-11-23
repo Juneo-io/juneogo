@@ -1,8 +1,8 @@
-//go:build windows
-// +build windows
-
 // Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
+
+//go:build windows
+// +build windows
 
 package socket
 
@@ -11,7 +11,7 @@ import (
 
 	"github.com/Microsoft/go-winio"
 
-	"github.com/ava-labs/avalanchego/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/constants"
 )
 
 // listen creates a net.Listen backed by a Windows named pipe

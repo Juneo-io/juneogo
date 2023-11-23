@@ -8,12 +8,12 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils/crypto/secp256k1"
-	"github.com/ava-labs/avalanchego/vms/avm/fxs"
-	"github.com/ava-labs/avalanchego/vms/components/avax"
-	"github.com/ava-labs/avalanchego/vms/components/verify"
-	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils/crypto/secp256k1"
+	"github.com/Juneo-io/juneogo/vms/avm/fxs"
+	"github.com/Juneo-io/juneogo/vms/components/avax"
+	"github.com/Juneo-io/juneogo/vms/components/verify"
+	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
 )
 
 func TestImportTxSerialization(t *testing.T) {
@@ -168,14 +168,13 @@ func TestImportTxSerialization(t *testing.T) {
 		0x1f, 0x49, 0x9b, 0x0a, 0x4f, 0xbf, 0x95, 0xfc, 0x31, 0x39,
 		0x46, 0x4e, 0xa1, 0xaf, 0x00,
 	}
-	err = tx.SignSECP256K1Fx(
+	require.NoError(tx.SignSECP256K1Fx(
 		parser.Codec(),
 		[][]*secp256k1.PrivateKey{
 			{keys[0], keys[0]},
 			{keys[0], keys[0]},
 		},
-	)
-	require.NoError(err)
+	))
 	require.Equal(tx.ID().String(), "pCW7sVBytzdZ1WrqzGY1DvA2S9UaMr72xpUMxVyx1QHBARNYx")
 
 	// there are two credentials

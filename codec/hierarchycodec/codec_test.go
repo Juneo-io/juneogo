@@ -6,7 +6,7 @@ package hierarchycodec
 import (
 	"testing"
 
-	"github.com/ava-labs/avalanchego/codec"
+	"github.com/Juneo-io/juneogo/codec"
 )
 
 func TestVectors(t *testing.T) {
@@ -21,4 +21,9 @@ func TestMultipleTags(t *testing.T) {
 		c := New([]string{"tag1", "tag2"}, defaultMaxSliceLength)
 		test(c, t)
 	}
+}
+
+func FuzzStructUnmarshalHierarchyCodec(f *testing.F) {
+	c := NewDefault()
+	codec.FuzzStructUnmarshal(c, f)
 }

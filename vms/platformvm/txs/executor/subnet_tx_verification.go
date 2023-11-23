@@ -7,39 +7,37 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/ava-labs/avalanchego/database"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/vms/components/verify"
-	"github.com/ava-labs/avalanchego/vms/platformvm/state"
-	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
+	"github.com/Juneo-io/juneogo/database"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/vms/components/verify"
+	"github.com/Juneo-io/juneogo/vms/platformvm/state"
+	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
 )
 
 var (
-	errWrongNumberOfCredentials         = errors.New("should have the same number of credentials as inputs")
-	errCantFindSubnet                 = errors.New("couldn't find subnet")
-	errIsNotSubnet                    = errors.New("is not a subnet")
-	errIsImmutable                      = errors.New("is immutable")
-	errUnauthorizedSubnetModification = errors.New("unauthorized subnet modification")
+	errWrongNumberOfCredentials       = errors.New("should have the same number of credentials as inputs")
+	errIsImmutable                    = errors.New("is immutable")
+	errUnauthorizedSupernetModification = errors.New("unauthorized supernet modification")
 )
 
-// verifyPoASubnetAuthorization carries out the validation for modifying a PoA
-// subnet. This is an extension of [verifySubnetAuthorization] that additionally
-// verifies that the subnet being modified is currently a PoA subnet.
-func verifyPoASubnetAuthorization(
+// verifyPoASupernetAuthorization carries out the validation for modifying a PoA
+// supernet. This is an extension of [verifySupernetAuthorization] that additionally
+// verifies that the supernet being modified is currently a PoA supernet.
+func verifyPoASupernetAuthorization(
 	backend *Backend,
 	chainState state.Chain,
 	sTx *txs.Tx,
-	subnetID ids.ID,
-	subnetAuth verify.Verifiable,
+	supernetID ids.ID,
+	supernetAuth verify.Verifiable,
 ) ([]verify.Verifiable, error) {
-	creds, err := verifySubnetAuthorization(backend, chainState, sTx, subnetID, subnetAuth)
+	creds, err := verifySupernetAuthorization(backend, chainState, sTx, supernetID, supernetAuth)
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = chainState.GetSubnetTransformation(subnetID)
+	_, err = chainState.GetSupernetTransformation(supernetID)
 	if err == nil {
-		return nil, fmt.Errorf("%q %w", subnetID, errIsImmutable)
+		return nil, fmt.Errorf("%q %w", supernetID, errIsImmutable)
 	}
 	if err != database.ErrNotFound {
 		return nil, err
@@ -48,42 +46,32 @@ func verifyPoASubnetAuthorization(
 	return creds, nil
 }
 
-// verifySubnetAuthorization carries out the validation for modifying a subnet.
-// The last credential in [sTx.Creds] is used as the subnet authorization.
+// verifySupernetAuthorization carries out the validation for modifying a supernet.
+// The last credential in [sTx.Creds] is used as the supernet authorization.
 // Returns the remaining tx credentials that should be used to authorize the
 // other operations in the tx.
-func verifySubnetAuthorization(
+func verifySupernetAuthorization(
 	backend *Backend,
 	chainState state.Chain,
 	sTx *txs.Tx,
-	subnetID ids.ID,
-	subnetAuth verify.Verifiable,
+	supernetID ids.ID,
+	supernetAuth verify.Verifiable,
 ) ([]verify.Verifiable, error) {
 	if len(sTx.Creds) == 0 {
-		// Ensure there is at least one credential for the subnet authorization
+		// Ensure there is at least one credential for the supernet authorization
 		return nil, errWrongNumberOfCredentials
 	}
 
 	baseTxCredsLen := len(sTx.Creds) - 1
-	subnetCred := sTx.Creds[baseTxCredsLen]
+	supernetCred := sTx.Creds[baseTxCredsLen]
 
-	subnetIntf, _, err := chainState.GetTx(subnetID)
+	supernetOwner, err := chainState.GetSupernetOwner(supernetID)
 	if err != nil {
-		return nil, fmt.Errorf(
-			"%w %q: %v",
-			errCantFindSubnet,
-			subnetID,
-			err,
-		)
+		return nil, err
 	}
 
-	subnet, ok := subnetIntf.Unsigned.(*txs.CreateSubnetTx)
-	if !ok {
-		return nil, fmt.Errorf("%q %w", subnetID, errIsNotSubnet)
-	}
-
-	if err := backend.Fx.VerifyPermission(sTx.Unsigned, subnetAuth, subnetCred, subnet.Owner); err != nil {
-		return nil, fmt.Errorf("%w: %v", errUnauthorizedSubnetModification, err)
+	if err := backend.Fx.VerifyPermission(sTx.Unsigned, supernetAuth, supernetCred, supernetOwner); err != nil {
+		return nil, fmt.Errorf("%w: %w", errUnauthorizedSupernetModification, err)
 	}
 
 	return sTx.Creds[:baseTxCredsLen], nil

@@ -8,13 +8,13 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow/choices"
-	"github.com/ava-labs/avalanchego/snow/engine/common"
-	"github.com/ava-labs/avalanchego/snow/engine/snowman/block"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/logging"
-	"github.com/ava-labs/avalanchego/utils/metric"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow/choices"
+	"github.com/Juneo-io/juneogo/snow/engine/common"
+	"github.com/Juneo-io/juneogo/snow/engine/snowman/block"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/logging"
+	"github.com/Juneo-io/juneogo/utils/metric"
 )
 
 // Get requests are always served, regardless node state (bootstrapping or normal operations).
@@ -131,7 +131,7 @@ func (gh *getter) GetAcceptedFrontier(ctx context.Context, nodeID ids.NodeID, re
 	if err != nil {
 		return err
 	}
-	gh.sender.SendAcceptedFrontier(ctx, nodeID, requestID, []ids.ID{lastAccepted})
+	gh.sender.SendAcceptedFrontier(ctx, nodeID, requestID, lastAccepted)
 	return nil
 }
 
@@ -150,6 +150,7 @@ func (gh *getter) GetAccepted(ctx context.Context, nodeID ids.NodeID, requestID 
 func (gh *getter) GetAncestors(ctx context.Context, nodeID ids.NodeID, requestID uint32, blkID ids.ID) error {
 	ancestorsBytes, err := block.GetAncestors(
 		ctx,
+		gh.log,
 		gh.vm,
 		blkID,
 		gh.cfg.AncestorsMaxContainersSent,

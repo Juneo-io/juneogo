@@ -7,8 +7,8 @@ import (
 	"math"
 	"time"
 
-	"github.com/ava-labs/avalanchego/utils/compression"
-	"github.com/ava-labs/avalanchego/utils/units"
+	"github.com/Juneo-io/juneogo/utils/compression"
+	"github.com/Juneo-io/juneogo/utils/units"
 )
 
 // Const variables to be exported
@@ -26,11 +26,6 @@ const (
 	DefaultByteSliceCap    = 128
 
 	MaxContainersLen = int(4 * DefaultMaxMessageSize / 5)
-
-	// MinConnectedStakeBuffer is the safety buffer for calculation of MinConnectedStake.
-	// This increases the required stake percentage above alpha/k. Must be [0-1]
-	// 0 means MinConnectedStake = alpha/k, 1 means MinConnectedStake = 1 (fully connected)
-	MinConnectedStakeBuffer = .2
 
 	DefaultNetworkPeerListNumValidatorIPs        = 15
 	DefaultNetworkPeerListValidatorGossipSize    = 20
@@ -55,10 +50,8 @@ const (
 	DefaultNetworkTimeoutCoefficient    = 2
 	DefaultNetworkReadHandshakeTimeout  = 15 * time.Second
 
-	DefaultNetworkCompressionEnabled        = true // TODO remove when NetworkCompressionEnabledKey is removed
-	DefaultNetworkCompressionType           = compression.TypeGzip
+	DefaultNetworkCompressionType           = compression.TypeZstd
 	DefaultNetworkMaxClockDifference        = time.Minute
-	DefaultNetworkAllowPrivateIPs           = true
 	DefaultNetworkRequireValidatorToConnect = false
 	DefaultNetworkPeerReadBufferSize        = 8 * units.KiB
 	DefaultNetworkPeerWriteBufferSize       = 8 * units.KiB
@@ -78,9 +71,9 @@ const (
 	DefaultBenchlistMinFailingDuration = 2*time.Minute + 30*time.Second
 
 	// Router
-	DefaultConsensusGossipFrequency                        = 10 * time.Second
+	DefaultAcceptedFrontierGossipFrequency                 = 10 * time.Second
 	DefaultConsensusAppConcurrency                         = 2
-	DefaultConsensusShutdownTimeout                        = 30 * time.Second
+	DefaultConsensusShutdownTimeout                        = time.Minute
 	DefaultConsensusGossipAcceptedFrontierValidatorSize    = 0
 	DefaultConsensusGossipAcceptedFrontierNonValidatorSize = 0
 	DefaultConsensusGossipAcceptedFrontierPeerSize         = 15
@@ -100,6 +93,7 @@ const (
 	DefaultInboundThrottlerBandwidthMaxBurstSize    = DefaultMaxMessageSize
 	DefaultInboundThrottlerCPUMaxRecheckDelay       = 5 * time.Second
 	DefaultInboundThrottlerDiskMaxRecheckDelay      = 5 * time.Second
+	MinInboundThrottlerMaxRecheckDelay              = time.Millisecond
 
 	// Outbound Throttling
 	DefaultOutboundThrottlerAtLargeAllocSize    = 32 * units.MiB

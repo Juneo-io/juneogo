@@ -10,19 +10,20 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/ava-labs/avalanchego/database"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils"
-	"github.com/ava-labs/avalanchego/utils/logging"
-	"github.com/ava-labs/avalanchego/vms/proposervm/state"
+	"github.com/Juneo-io/juneogo/database"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils"
+	"github.com/Juneo-io/juneogo/utils/logging"
+	"github.com/Juneo-io/juneogo/vms/proposervm/state"
 )
 
 // default number of heights to index before committing
 const (
 	defaultCommitFrequency = 1024
-	// Sleep [sleepDurationMultiplier]x (5x) the amount of time we spend processing the block
-	// to ensure the async indexing does not bottleneck the node.
-	sleepDurationMultiplier = 5
+	// Sleep [sleepDurationMultiplier]x (10x) the amount of time we spend
+	// processing the block to ensure the async indexing does not bottleneck the
+	// node.
+	sleepDurationMultiplier = 10
 )
 
 var _ HeightIndexer = (*heightIndexer)(nil)

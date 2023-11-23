@@ -9,14 +9,14 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/chains/atomic"
-	"github.com/ava-labs/avalanchego/database"
-	"github.com/ava-labs/avalanchego/database/memdb"
-	"github.com/ava-labs/avalanchego/database/prefixdb"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/vms/rpcchainvm/grpcutils"
+	"github.com/Juneo-io/juneogo/chains/atomic"
+	"github.com/Juneo-io/juneogo/database"
+	"github.com/Juneo-io/juneogo/database/memdb"
+	"github.com/Juneo-io/juneogo/database/prefixdb"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/vms/rpcchainvm/grpcutils"
 
-	sharedmemorypb "github.com/ava-labs/avalanchego/proto/pb/sharedmemory"
+	sharedmemorypb "github.com/Juneo-io/juneogo/proto/pb/sharedmemory"
 )
 
 func TestInterface(t *testing.T) {
@@ -37,19 +37,16 @@ func TestInterface(t *testing.T) {
 
 		test(t, chainID0, chainID1, sm0, sm1, testDB)
 
-		err := conn0.Close()
-		require.NoError(err)
-
-		err = conn1.Close()
-		require.NoError(err)
+		require.NoError(conn0.Close())
+		require.NoError(conn1.Close())
 	}
 }
 
 func wrapSharedMemory(t *testing.T, sm atomic.SharedMemory, db database.Database) (atomic.SharedMemory, io.Closer) {
+	require := require.New(t)
+
 	listener, err := grpcutils.NewListener()
-	if err != nil {
-		t.Fatalf("Failed to create listener: %s", err)
-	}
+	require.NoError(err)
 	serverCloser := grpcutils.ServerCloser{}
 
 	server := grpcutils.NewServer()
@@ -59,9 +56,7 @@ func wrapSharedMemory(t *testing.T, sm atomic.SharedMemory, db database.Database
 	go grpcutils.Serve(listener, server)
 
 	conn, err := grpcutils.Dial(listener.Addr().String())
-	if err != nil {
-		t.Fatalf("Failed to dial: %s", err)
-	}
+	require.NoError(err)
 
 	rpcsm := NewClient(sharedmemorypb.NewSharedMemoryClient(conn))
 	return rpcsm, conn

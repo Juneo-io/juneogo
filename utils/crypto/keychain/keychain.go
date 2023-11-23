@@ -7,8 +7,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils/set"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils/set"
 )
 
 var (
@@ -89,8 +89,7 @@ func NewLedgerKeychainFromIndices(l Ledger, indices []uint32) (Keychain, error) 
 		)
 	}
 
-	addrsSet := set.NewSet[ids.ShortID](len(addrs))
-	addrsSet.Add(addrs...)
+	addrsSet := set.Of(addrs...)
 
 	addrToIdx := map[ids.ShortID]uint32{}
 	for i := range indices {

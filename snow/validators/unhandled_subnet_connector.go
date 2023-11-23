@@ -7,17 +7,17 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/ava-labs/avalanchego/ids"
+	"github.com/Juneo-io/juneogo/ids"
 )
 
-var UnhandledSubnetConnector SubnetConnector = &unhandledSubnetConnector{}
+var UnhandledSupernetConnector SupernetConnector = &unhandledSupernetConnector{}
 
-type unhandledSubnetConnector struct{}
+type unhandledSupernetConnector struct{}
 
-func (unhandledSubnetConnector) ConnectedSubnet(_ context.Context, nodeID ids.NodeID, subnetID ids.ID) error {
+func (unhandledSupernetConnector) ConnectedSupernet(_ context.Context, nodeID ids.NodeID, supernetID ids.ID) error {
 	return fmt.Errorf(
-		"unhandled ConnectedSubnet with nodeID=%q and subnetID=%q",
+		"unhandled ConnectedSupernet with nodeID=%q and supernetID=%q",
 		nodeID,
-		subnetID,
+		supernetID,
 	)
 }

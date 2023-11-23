@@ -6,12 +6,12 @@ package block
 import (
 	"crypto"
 	"crypto/rand"
-	"crypto/x509"
 	"time"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils/hashing"
-	"github.com/ava-labs/avalanchego/utils/wrappers"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/staking"
+	"github.com/Juneo-io/juneogo/utils/hashing"
+	"github.com/Juneo-io/juneogo/utils/wrappers"
 )
 
 func BuildUnsigned(
@@ -42,7 +42,7 @@ func Build(
 	parentID ids.ID,
 	timestamp time.Time,
 	pChainHeight uint64,
-	cert *x509.Certificate,
+	cert *staking.Certificate,
 	blockBytes []byte,
 	chainID ids.ID,
 	key crypto.Signer,

@@ -4,9 +4,14 @@
 package propertyfx
 
 import (
-	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
+	"github.com/Juneo-io/juneogo/vms/components/verify"
+	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
 )
 
+var _ verify.State = (*OwnedOutput)(nil)
+
 type OwnedOutput struct {
+	verify.IsState `json:"-"`
+
 	secp256k1fx.OutputOwners `serialize:"true"`
 }

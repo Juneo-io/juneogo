@@ -15,12 +15,12 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/ava-labs/avalanchego/utils/logging"
-	"github.com/ava-labs/avalanchego/vms/rpcchainvm/grpcutils"
-	"github.com/ava-labs/avalanchego/vms/rpcchainvm/gruntime"
-	"github.com/ava-labs/avalanchego/vms/rpcchainvm/runtime"
+	"github.com/Juneo-io/juneogo/utils/logging"
+	"github.com/Juneo-io/juneogo/vms/rpcchainvm/grpcutils"
+	"github.com/Juneo-io/juneogo/vms/rpcchainvm/gruntime"
+	"github.com/Juneo-io/juneogo/vms/rpcchainvm/runtime"
 
-	pb "github.com/ava-labs/avalanchego/proto/pb/vm/runtime"
+	pb "github.com/Juneo-io/juneogo/proto/pb/vm/runtime"
 )
 
 type Config struct {
@@ -132,12 +132,12 @@ func Bootstrap(
 	case <-intitializer.initialized:
 	case <-timeout.C:
 		stopper.Stop(ctx)
-		return nil, nil, fmt.Errorf("%w: %v", runtime.ErrHandshakeFailed, runtime.ErrProcessNotFound)
+		return nil, nil, fmt.Errorf("%w: %w", runtime.ErrHandshakeFailed, runtime.ErrProcessNotFound)
 	}
 
 	if intitializer.err != nil {
 		stopper.Stop(ctx)
-		return nil, nil, fmt.Errorf("%w: %v", runtime.ErrHandshakeFailed, intitializer.err)
+		return nil, nil, fmt.Errorf("%w: %w", runtime.ErrHandshakeFailed, intitializer.err)
 	}
 
 	log.Info("plugin handshake succeeded",

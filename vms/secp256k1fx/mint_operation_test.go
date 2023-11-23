@@ -8,8 +8,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/vms/components/verify"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/vms/components/verify"
 )
 
 func TestMintOperationVerify(t *testing.T) {
@@ -123,8 +123,8 @@ func TestMintOperationVerify(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			require := require.New(t)
-			require.ErrorIs(tt.op.Verify(), tt.expectedErr)
+			err := tt.op.Verify()
+			require.ErrorIs(t, err, tt.expectedErr)
 		})
 	}
 }

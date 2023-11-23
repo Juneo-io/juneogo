@@ -9,7 +9,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 
-	"github.com/ava-labs/avalanchego/utils/wrappers"
+	"github.com/Juneo-io/juneogo/utils/wrappers"
 )
 
 var ErrFailedRegistering = errors.New("failed registering metric")
@@ -44,10 +44,10 @@ func NewAveragerWithErrs(namespace, name, desc string, reg prometheus.Registerer
 	}
 
 	if err := reg.Register(a.count); err != nil {
-		errs.Add(fmt.Errorf("%w: %s", ErrFailedRegistering, err))
+		errs.Add(fmt.Errorf("%w: %w", ErrFailedRegistering, err))
 	}
 	if err := reg.Register(a.sum); err != nil {
-		errs.Add(fmt.Errorf("%w: %s", ErrFailedRegistering, err))
+		errs.Add(fmt.Errorf("%w: %w", ErrFailedRegistering, err))
 	}
 	return &a
 }

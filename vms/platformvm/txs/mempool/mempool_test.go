@@ -13,12 +13,11 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils/crypto/secp256k1"
-	"github.com/ava-labs/avalanchego/utils/timer/mockable"
-	"github.com/ava-labs/avalanchego/vms/components/avax"
-	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
-	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils/crypto/secp256k1"
+	"github.com/Juneo-io/juneogo/vms/components/avax"
+	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
+	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
 )
 
 var _ BlockTimer = (*noopBlkTimer)(nil)
@@ -79,7 +78,7 @@ func TestDecisionTxsInMempool(t *testing.T) {
 		require.True(mpool.Has(tx.ID()))
 
 		retrieved := mpool.Get(tx.ID())
-		require.True(retrieved != nil)
+		require.NotNil(retrieved)
 		require.Equal(tx, retrieved)
 
 		// we can peek it
@@ -134,13 +133,13 @@ func TestProposalTxsInMempool(t *testing.T) {
 		require.True(mpool.Has(tx.ID()))
 
 		retrieved := mpool.Get(tx.ID())
-		require.True(retrieved != nil)
+		require.NotNil(retrieved)
 		require.Equal(tx, retrieved)
 
 		{
 			// we can peek it
 			peeked := mpool.PeekStakerTx()
-			require.True(peeked != nil)
+			require.NotNil(peeked)
 			require.Equal(tx, peeked)
 		}
 
@@ -201,12 +200,12 @@ func createTestDecisionTxs(count int) ([]*txs.Tx, error) {
 					},
 				}},
 			}},
-			SubnetID:   ids.GenerateTestID(),
-			ChainName:    "chainName",
-			VMID:         ids.GenerateTestID(),
-			FxIDs:        []ids.ID{ids.GenerateTestID()},
-			GenesisData:  []byte{'g', 'e', 'n', 'D', 'a', 't', 'a'},
-			SubnetAuth: &secp256k1fx.Input{SigIndices: []uint32{1}},
+			SupernetID:    ids.GenerateTestID(),
+			ChainName:   "chainName",
+			VMID:        ids.GenerateTestID(),
+			FxIDs:       []ids.ID{ids.GenerateTestID()},
+			GenesisData: []byte{'g', 'e', 'n', 'D', 'a', 't', 'a'},
+			SupernetAuth:  &secp256k1fx.Input{SigIndices: []uint32{1}},
 		}
 
 		tx, err := txs.NewSigned(utx, txs.Codec, nil)
@@ -220,13 +219,13 @@ func createTestDecisionTxs(count int) ([]*txs.Tx, error) {
 
 // Proposal txs are sorted by decreasing start time
 func createTestProposalTxs(count int) ([]*txs.Tx, error) {
-	var clk mockable.Clock
+	now := time.Now()
 	proposalTxs := make([]*txs.Tx, 0, count)
 	for i := 0; i < count; i++ {
 		utx := &txs.AddValidatorTx{
 			BaseTx: txs.BaseTx{},
 			Validator: txs.Validator{
-				Start: uint64(clk.Time().Add(time.Duration(count-i) * time.Second).Unix()),
+				Start: uint64(now.Add(time.Duration(count-i) * time.Second).Unix()),
 			},
 			StakeOuts:        nil,
 			RewardsOwner:     &secp256k1fx.OutputOwners{},

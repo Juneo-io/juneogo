@@ -7,14 +7,12 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/ava-labs/avalanchego/utils/logging"
-	"github.com/ava-labs/avalanchego/utils/resource"
-	"github.com/ava-labs/avalanchego/vms"
-	"github.com/ava-labs/avalanchego/vms/rpcchainvm/grpcutils"
-	"github.com/ava-labs/avalanchego/vms/rpcchainvm/runtime"
-	"github.com/ava-labs/avalanchego/vms/rpcchainvm/runtime/subprocess"
-
-	vmpb "github.com/ava-labs/avalanchego/proto/pb/vm"
+	"github.com/Juneo-io/juneogo/utils/logging"
+	"github.com/Juneo-io/juneogo/utils/resource"
+	"github.com/Juneo-io/juneogo/vms"
+	"github.com/Juneo-io/juneogo/vms/rpcchainvm/grpcutils"
+	"github.com/Juneo-io/juneogo/vms/rpcchainvm/runtime"
+	"github.com/Juneo-io/juneogo/vms/rpcchainvm/runtime/subprocess"
 )
 
 var _ vms.Factory = (*factory)(nil)
@@ -61,7 +59,7 @@ func (f *factory) New(log logging.Logger) (interface{}, error) {
 		return nil, err
 	}
 
-	vm := NewClient(vmpb.NewVMClient(clientConn))
+	vm := NewClient(clientConn)
 	vm.SetProcess(stopper, status.Pid, f.processTracker)
 
 	f.runtimeTracker.TrackRuntime(stopper)

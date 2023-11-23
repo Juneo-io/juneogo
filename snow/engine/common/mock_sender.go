@@ -11,10 +11,10 @@ import (
 	context "context"
 	reflect "reflect"
 
-	ids "github.com/ava-labs/avalanchego/ids"
-	snow "github.com/ava-labs/avalanchego/snow"
-	set "github.com/ava-labs/avalanchego/utils/set"
-	gomock "github.com/golang/mock/gomock"
+	ids "github.com/Juneo-io/juneogo/ids"
+	snow "github.com/Juneo-io/juneogo/snow"
+	set "github.com/Juneo-io/juneogo/utils/set"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockSender is a mock of Sender interface.
@@ -159,7 +159,7 @@ func (mr *MockSenderMockRecorder) SendAppResponse(arg0, arg1, arg2, arg3 interfa
 }
 
 // SendChits mocks base method.
-func (m *MockSender) SendChits(arg0 context.Context, arg1 ids.NodeID, arg2 uint32, arg3, arg4 []ids.ID) {
+func (m *MockSender) SendChits(arg0 context.Context, arg1 ids.NodeID, arg2 uint32, arg3, arg4 ids.ID) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "SendChits", arg0, arg1, arg2, arg3, arg4)
 }

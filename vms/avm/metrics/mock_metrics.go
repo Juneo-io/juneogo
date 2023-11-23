@@ -11,10 +11,10 @@ import (
 	http "net/http"
 	reflect "reflect"
 
-	blocks "github.com/ava-labs/avalanchego/vms/avm/blocks"
-	txs "github.com/ava-labs/avalanchego/vms/avm/txs"
-	gomock "github.com/golang/mock/gomock"
+	block "github.com/Juneo-io/juneogo/vms/avm/block"
+	txs "github.com/Juneo-io/juneogo/vms/avm/txs"
 	rpc "github.com/gorilla/rpc/v2"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockMetrics is a mock of Metrics interface.
@@ -103,7 +103,7 @@ func (mr *MockMetricsMockRecorder) InterceptRequest(arg0 interface{}) *gomock.Ca
 }
 
 // MarkBlockAccepted mocks base method.
-func (m *MockMetrics) MarkBlockAccepted(arg0 blocks.Block) error {
+func (m *MockMetrics) MarkBlockAccepted(arg0 block.Block) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MarkBlockAccepted", arg0)
 	ret0, _ := ret[0].(error)

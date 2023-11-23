@@ -7,8 +7,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/ava-labs/avalanchego/proto/pb/p2p"
-	"github.com/ava-labs/avalanchego/utils/set"
+	"github.com/Juneo-io/juneogo/proto/pb/p2p"
+	"github.com/Juneo-io/juneogo/utils/set"
 )
 
 // Op is an opcode
@@ -60,7 +60,7 @@ const (
 	CrossChainAppResponseOp
 	// Internal:
 	ConnectedOp
-	ConnectedSubnetOp
+	ConnectedSupernetOp
 	DisconnectedOp
 	NotifyOp
 	GossipRequestOp
@@ -120,7 +120,7 @@ var (
 		CrossChainAppRequestFailedOp,
 		CrossChainAppResponseOp,
 		ConnectedOp,
-		ConnectedSubnetOp,
+		ConnectedSupernetOp,
 		DisconnectedOp,
 		NotifyOp,
 		GossipRequestOp,
@@ -158,7 +158,7 @@ var (
 		ChitsOp,
 		// Internal
 		ConnectedOp,
-		ConnectedSubnetOp,
+		ConnectedSupernetOp,
 		DisconnectedOp,
 	}
 
@@ -185,19 +185,19 @@ var (
 		AppRequestFailedOp:              AppResponseOp,
 		CrossChainAppRequestFailedOp:    CrossChainAppResponseOp,
 	}
-	UnrequestedOps = set.Set[Op]{
-		GetAcceptedFrontierOp:     {},
-		GetAcceptedOp:             {},
-		GetAncestorsOp:            {},
-		GetOp:                     {},
-		PushQueryOp:               {},
-		PullQueryOp:               {},
-		AppRequestOp:              {},
-		AppGossipOp:               {},
-		CrossChainAppRequestOp:    {},
-		GetStateSummaryFrontierOp: {},
-		GetAcceptedStateSummaryOp: {},
-	}
+	UnrequestedOps = set.Of(
+		GetAcceptedFrontierOp,
+		GetAcceptedOp,
+		GetAncestorsOp,
+		GetOp,
+		PushQueryOp,
+		PullQueryOp,
+		AppRequestOp,
+		AppGossipOp,
+		CrossChainAppRequestOp,
+		GetStateSummaryFrontierOp,
+		GetAcceptedStateSummaryOp,
+	)
 
 	errUnknownMessageType = errors.New("unknown message type")
 )
@@ -281,8 +281,8 @@ func (op Op) String() string {
 		// Internal
 	case ConnectedOp:
 		return "connected"
-	case ConnectedSubnetOp:
-		return "connected_subnet"
+	case ConnectedSupernetOp:
+		return "connected_supernet"
 	case DisconnectedOp:
 		return "disconnected"
 	case NotifyOp:
@@ -296,7 +296,7 @@ func (op Op) String() string {
 	}
 }
 
-func Unwrap(m *p2p.Message) (interface{}, error) {
+func Unwrap(m *p2p.Message) (fmt.Stringer, error) {
 	switch msg := m.GetMessage().(type) {
 	// Handshake:
 	case *p2p.Message_Ping:

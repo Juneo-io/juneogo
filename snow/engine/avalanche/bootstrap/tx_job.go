@@ -12,13 +12,13 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow/choices"
-	"github.com/ava-labs/avalanchego/snow/consensus/snowstorm"
-	"github.com/ava-labs/avalanchego/snow/engine/avalanche/vertex"
-	"github.com/ava-labs/avalanchego/snow/engine/common/queue"
-	"github.com/ava-labs/avalanchego/utils/logging"
-	"github.com/ava-labs/avalanchego/utils/set"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow/choices"
+	"github.com/Juneo-io/juneogo/snow/consensus/snowstorm"
+	"github.com/Juneo-io/juneogo/snow/engine/avalanche/vertex"
+	"github.com/Juneo-io/juneogo/snow/engine/common/queue"
+	"github.com/Juneo-io/juneogo/utils/logging"
+	"github.com/Juneo-io/juneogo/utils/set"
 )
 
 var errMissingTxDependenciesOnAccept = errors.New("attempting to accept a transaction with missing dependencies")
@@ -53,31 +53,13 @@ func (t *txJob) ID() ids.ID {
 }
 
 func (t *txJob) MissingDependencies(context.Context) (set.Set[ids.ID], error) {
-	missing := set.Set[ids.ID]{}
-	deps, err := t.tx.Dependencies()
-	if err != nil {
-		return missing, err
-	}
-	for _, dep := range deps {
-		if dep.Status() != choices.Accepted {
-			missing.Add(dep.ID())
-		}
-	}
-	return missing, nil
+	return t.tx.MissingDependencies()
 }
 
 // Returns true if this tx job has at least 1 missing dependency
 func (t *txJob) HasMissingDependencies(context.Context) (bool, error) {
-	deps, err := t.tx.Dependencies()
-	if err != nil {
-		return false, err
-	}
-	for _, dep := range deps {
-		if dep.Status() != choices.Accepted {
-			return true, nil
-		}
-	}
-	return false, nil
+	deps, err := t.tx.MissingDependencies()
+	return deps.Len() > 0, err
 }
 
 func (t *txJob) Execute(ctx context.Context) error {

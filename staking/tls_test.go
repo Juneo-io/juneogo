@@ -12,7 +12,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/utils/hashing"
+	"github.com/Juneo-io/juneogo/utils/hashing"
 )
 
 func TestMakeKeys(t *testing.T) {
@@ -27,6 +27,5 @@ func TestMakeKeys(t *testing.T) {
 	sig, err := cert.PrivateKey.(crypto.Signer).Sign(rand.Reader, msgHash, crypto.SHA256)
 	require.NoError(err)
 
-	err = cert.Leaf.CheckSignature(cert.Leaf.SignatureAlgorithm, msg, sig)
-	require.NoError(err)
+	require.NoError(cert.Leaf.CheckSignature(cert.Leaf.SignatureAlgorithm, msg, sig))
 }

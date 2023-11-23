@@ -8,14 +8,14 @@ import (
 	"log"
 	"time"
 
-	"github.com/ava-labs/avalanchego/api/info"
-	"github.com/ava-labs/avalanchego/genesis"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils/units"
-	"github.com/ava-labs/avalanchego/vms/platformvm/reward"
-	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
-	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
-	"github.com/ava-labs/avalanchego/wallet/subnet/primary"
+	"github.com/Juneo-io/juneogo/api/info"
+	"github.com/Juneo-io/juneogo/genesis"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils/units"
+	"github.com/Juneo-io/juneogo/vms/platformvm/reward"
+	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
+	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
+	"github.com/Juneo-io/juneogo/wallet/supernet/primary"
 )
 
 func main() {
@@ -39,10 +39,14 @@ func main() {
 	}
 	log.Printf("fetched node ID %s in %s\n", nodeID, time.Since(nodeInfoStartTime))
 
-	// NewWalletFromURI fetches the available UTXOs owned by [kc] on the network
-	// that [uri] is hosting.
+	// MakeWallet fetches the available UTXOs owned by [kc] on the network that
+	// [uri] is hosting.
 	walletSyncStartTime := time.Now()
-	wallet, err := primary.NewWalletFromURI(ctx, uri, kc)
+	wallet, err := primary.MakeWallet(ctx, &primary.WalletConfig{
+		URI:          uri,
+		AVAXKeychain: kc,
+		EthKeychain:  kc,
+	})
 	if err != nil {
 		log.Fatalf("failed to initialize wallet: %s\n", err)
 	}
@@ -53,8 +57,8 @@ func main() {
 	avaxAssetID := pWallet.AVAXAssetID()
 
 	addValidatorStartTime := time.Now()
-	addValidatorTxID, err := pWallet.IssueAddPermissionlessValidatorTx(
-		&txs.SubnetValidator{Validator: txs.Validator{
+	addValidatorTx, err := pWallet.IssueAddPermissionlessValidatorTx(
+		&txs.SupernetValidator{Validator: txs.Validator{
 			NodeID: nodeID,
 			Start:  uint64(startTime.Unix()),
 			End:    uint64(startTime.Add(duration).Unix()),
@@ -75,5 +79,5 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to issue add permissionless validator transaction: %s\n", err)
 	}
-	log.Printf("added new primary network validator %s with %s in %s\n", nodeID, addValidatorTxID, time.Since(addValidatorStartTime))
+	log.Printf("added new primary network validator %s with %s in %s\n", nodeID, addValidatorTx.ID(), time.Since(addValidatorStartTime))
 }

@@ -11,22 +11,37 @@ import (
 // PercentDenominator is the denominator used to calculate percentages
 const PercentDenominator = 1_000_000
 
-// Max bonus rewards given for a full staking period
-const MaxBonusRewardShare = 20_000
-
 // rewardShareDenominator is the magnitude offset used to emulate
 // floating point fractions.
 var rewardShareDenominator = new(big.Int).SetUint64(PercentDenominator)
-var maxBonusRewardShare = new(big.Int).SetUint64(uint64(MaxBonusRewardShare))
 
 type Config struct {
-	// MintingPeriod is period that the staking calculator runs on. It is
-	// not valid for a validator's stake duration to be larger than this.
-	MintingPeriod time.Duration `json:"mintingPeriod"`
-
-	// RewardShare is the share of rewards given for validators.
+	// MinStakePeriod is the minimal stake duration.
+	MinStakePeriod time.Duration
+	// MaxStakePeriod is the maximum stake duration.
+	MaxStakePeriod time.Duration
+	// StakePeriodRewardShare is the maximum period reward given for a
+	// stake period equal to MaxStakePeriod.
+	StakePeriodRewardShare uint64
+	// StartRewardShare is the starting share of rewards given to validators.
 	// Restrictions:
 	// - Must be > 0
-	// - Must be < [reward.PercentDenominator]
-	RewardShare uint64 `serialize:"true" json:"rewardShare"`
+	// - Must be <= [reward.PercentDenominator]
+	StartRewardShare uint64 `serialize:"true" json:"startRewardShare"`
+	// StartRewardTime is the starting timestamp that will be used to calculate
+	// the remaining percentage of rewards given to validators.
+	// Restrictions:
+	// - Must be > 0
+	// - Must be <= [TargetRewardTime]
+	StartRewardTime uint64 `serialize:"true" json:"startRewardTime"`
+	// TargetRewardShare is the target final share of rewards given to validators.
+	// Restrictions:
+	// - Must be > 0
+	// - Must be <= [StartRewardShare]
+	TargetRewardShare uint64 `serialize:"true" json:"targetRewardShare"`
+	// TargetRewardTime is the target timestamp that will be used to calculate
+	// the remaining percentage of rewards given to validators.
+	// Restrictions:
+	// - Must be >= [StartRewardTime]
+	TargetRewardTime uint64 `serialize:"true" json:"targetRewardTime"`
 }

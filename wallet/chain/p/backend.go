@@ -8,27 +8,20 @@ import (
 
 	stdcontext "context"
 
-	"github.com/ava-labs/avalanchego/database"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/set"
-	"github.com/ava-labs/avalanchego/vms/components/avax"
-	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
+	"github.com/Juneo-io/juneogo/database"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/set"
+	"github.com/Juneo-io/juneogo/vms/components/avax"
+	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
+	"github.com/Juneo-io/juneogo/wallet/supernet/primary/common"
 )
 
 var _ Backend = (*backend)(nil)
 
-type ChainUTXOs interface {
-	AddUTXO(ctx stdcontext.Context, destinationChainID ids.ID, utxo *avax.UTXO) error
-	RemoveUTXO(ctx stdcontext.Context, sourceChainID, utxoID ids.ID) error
-
-	UTXOs(ctx stdcontext.Context, sourceChainID ids.ID) ([]*avax.UTXO, error)
-	GetUTXO(ctx stdcontext.Context, sourceChainID, utxoID ids.ID) (*avax.UTXO, error)
-}
-
 // Backend defines the full interface required to support a P-chain wallet.
 type Backend interface {
-	ChainUTXOs
+	common.ChainUTXOs
 	BuilderBackend
 	SignerBackend
 
@@ -37,14 +30,14 @@ type Backend interface {
 
 type backend struct {
 	Context
-	ChainUTXOs
+	common.ChainUTXOs
 
 	txsLock sync.RWMutex
 	// txID -> tx
 	txs map[ids.ID]*txs.Tx
 }
 
-func NewBackend(ctx Context, utxos ChainUTXOs, txs map[ids.ID]*txs.Tx) Backend {
+func NewBackend(ctx Context, utxos common.ChainUTXOs, txs map[ids.ID]*txs.Tx) Backend {
 	return &backend{
 		Context:    ctx,
 		ChainUTXOs: utxos,

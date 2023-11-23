@@ -7,16 +7,18 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/ava-labs/avalanchego/vms/components/verify"
+	"github.com/Juneo-io/juneogo/vms/components/verify"
 )
 
 var (
-	_ verify.State = (*OutputOwners)(nil)
+	_ verify.State = (*TransferOutput)(nil)
 
 	ErrNoValueOutput = errors.New("output has no value")
 )
 
 type TransferOutput struct {
+	verify.IsState `json:"-"`
+
 	Amt uint64 `serialize:"true" json:"amount"`
 
 	OutputOwners `serialize:"true"`
@@ -49,10 +51,6 @@ func (out *TransferOutput) Verify() error {
 	default:
 		return out.OutputOwners.Verify()
 	}
-}
-
-func (out *TransferOutput) VerifyState() error {
-	return out.Verify()
 }
 
 func (out *TransferOutput) Owners() interface{} {

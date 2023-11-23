@@ -4,38 +4,53 @@
 package node
 
 import (
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow/networking/router"
-	"github.com/ava-labs/avalanchego/snow/validators"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/version"
+	"go.uber.org/zap"
+
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow/networking/router"
+	"github.com/Juneo-io/juneogo/snow/validators"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/logging"
+	"github.com/Juneo-io/juneogo/version"
 )
 
 type insecureValidatorManager struct {
 	router.Router
-	vdrs   validators.Set
+	log    logging.Logger
+	vdrs   validators.Manager
 	weight uint64
 }
 
-func (i *insecureValidatorManager) Connected(vdrID ids.NodeID, nodeVersion *version.Application, subnetID ids.ID) {
-	if constants.PrimaryNetworkID == subnetID {
-		// Staking is disabled so we don't have a txID that added the peer as a
-		// validator. Because each validator needs a txID associated with it, we
-		// hack one together by padding the nodeID with zeroes.
+func (i *insecureValidatorManager) Connected(vdrID ids.NodeID, nodeVersion *version.Application, supernetID ids.ID) {
+	if constants.PrimaryNetworkID == supernetID {
+		// Sybil protection is disabled so we don't have a txID that added the
+		// peer as a validator. Because each validator needs a txID associated
+		// with it, we hack one together by padding the nodeID with zeroes.
 		dummyTxID := ids.Empty
 		copy(dummyTxID[:], vdrID[:])
 
-		// Add will only error here if the total weight of the set would go over
-		// [math.MaxUint64]. In this case, we will just not mark this new peer
-		// as a validator.
-		_ = i.vdrs.Add(vdrID, nil, dummyTxID, i.weight)
+		err := i.vdrs.AddStaker(constants.PrimaryNetworkID, vdrID, nil, dummyTxID, i.weight)
+		if err != nil {
+			i.log.Error("failed to add validator",
+				zap.Stringer("nodeID", vdrID),
+				zap.Stringer("supernetID", constants.PrimaryNetworkID),
+				zap.Error(err),
+			)
+		}
 	}
-	i.Router.Connected(vdrID, nodeVersion, subnetID)
+	i.Router.Connected(vdrID, nodeVersion, supernetID)
 }
 
 func (i *insecureValidatorManager) Disconnected(vdrID ids.NodeID) {
 	// RemoveWeight will only error here if there was an error reported during
 	// Add.
-	_ = i.vdrs.RemoveWeight(vdrID, i.weight)
+	err := i.vdrs.RemoveWeight(constants.PrimaryNetworkID, vdrID, i.weight)
+	if err != nil {
+		i.log.Error("failed to remove weight",
+			zap.Stringer("nodeID", vdrID),
+			zap.Stringer("supernetID", constants.PrimaryNetworkID),
+			zap.Error(err),
+		)
+	}
 	i.Router.Disconnected(vdrID)
 }

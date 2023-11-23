@@ -8,11 +8,11 @@ import (
 	"errors"
 	"reflect"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/vms/avm/states"
-	"github.com/ava-labs/avalanchego/vms/avm/txs"
-	"github.com/ava-labs/avalanchego/vms/components/avax"
-	"github.com/ava-labs/avalanchego/vms/components/verify"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/vms/avm/states"
+	"github.com/Juneo-io/juneogo/vms/avm/txs"
+	"github.com/Juneo-io/juneogo/vms/components/avax"
+	"github.com/Juneo-io/juneogo/vms/components/verify"
 )
 
 var (
@@ -34,7 +34,7 @@ func (v *SemanticVerifier) BaseTx(tx *txs.BaseTx) error {
 	for i, in := range tx.Ins {
 		// Note: Verification of the length of [t.tx.Creds] happens during
 		// syntactic verification, which happens before semantic verification.
-		cred := v.Tx.Creds[i].Verifiable
+		cred := v.Tx.Creds[i].Credential
 		if err := v.verifyTransfer(tx, in, cred); err != nil {
 			return err
 		}
@@ -72,7 +72,7 @@ func (v *SemanticVerifier) OperationTx(tx *txs.OperationTx) error {
 	for i, op := range tx.Ops {
 		// Note: Verification of the length of [t.tx.Creds] happens during
 		// syntactic verification, which happens before semantic verification.
-		cred := v.Tx.Creds[i+offset].Verifiable
+		cred := v.Tx.Creds[i+offset].Credential
 		if err := v.verifyOperation(tx, op, cred); err != nil {
 			return err
 		}
@@ -89,7 +89,7 @@ func (v *SemanticVerifier) ImportTx(tx *txs.ImportTx) error {
 		return nil
 	}
 
-	if err := verify.SameSubnet(context.TODO(), v.Ctx, tx.SourceChain); err != nil {
+	if err := verify.SameSupernet(context.TODO(), v.Ctx, tx.SourceChain); err != nil {
 		return err
 	}
 
@@ -113,7 +113,7 @@ func (v *SemanticVerifier) ImportTx(tx *txs.ImportTx) error {
 
 		// Note: Verification of the length of [t.tx.Creds] happens during
 		// syntactic verification, which happens before semantic verification.
-		cred := v.Tx.Creds[i+offset].Verifiable
+		cred := v.Tx.Creds[i+offset].Credential
 		if err := v.verifyTransferOfUTXO(tx, in, cred, &utxo); err != nil {
 			return err
 		}
@@ -127,7 +127,7 @@ func (v *SemanticVerifier) ExportTx(tx *txs.ExportTx) error {
 	}
 
 	if v.Bootstrapped {
-		if err := verify.SameSubnet(context.TODO(), v.Ctx, tx.DestinationChain); err != nil {
+		if err := verify.SameSupernet(context.TODO(), v.Ctx, tx.DestinationChain); err != nil {
 			return err
 		}
 	}
@@ -151,7 +151,7 @@ func (v *SemanticVerifier) verifyTransfer(
 	in *avax.TransferableInput,
 	cred verify.Verifiable,
 ) error {
-	utxo, err := v.State.GetUTXOFromID(&in.UTXOID)
+	utxo, err := v.State.GetUTXO(in.UTXOID.InputID())
 	if err != nil {
 		return err
 	}
@@ -194,7 +194,7 @@ func (v *SemanticVerifier) verifyOperation(
 		utxos     = make([]interface{}, numUTXOs)
 	)
 	for i, utxoID := range op.UTXOIDs {
-		utxo, err := v.State.GetUTXOFromID(utxoID)
+		utxo, err := v.State.GetUTXO(utxoID.InputID())
 		if err != nil {
 			return err
 		}

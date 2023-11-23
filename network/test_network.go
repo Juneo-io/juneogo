@@ -13,31 +13,32 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/message"
-	"github.com/ava-labs/avalanchego/network/dialer"
-	"github.com/ava-labs/avalanchego/network/peer"
-	"github.com/ava-labs/avalanchego/network/throttling"
-	"github.com/ava-labs/avalanchego/snow/networking/router"
-	"github.com/ava-labs/avalanchego/snow/networking/tracker"
-	"github.com/ava-labs/avalanchego/snow/uptime"
-	"github.com/ava-labs/avalanchego/snow/validators"
-	"github.com/ava-labs/avalanchego/staking"
-	"github.com/ava-labs/avalanchego/subnets"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/ips"
-	"github.com/ava-labs/avalanchego/utils/logging"
-	"github.com/ava-labs/avalanchego/utils/math/meter"
-	"github.com/ava-labs/avalanchego/utils/resource"
-	"github.com/ava-labs/avalanchego/utils/set"
-	"github.com/ava-labs/avalanchego/utils/units"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/message"
+	"github.com/Juneo-io/juneogo/network/dialer"
+	"github.com/Juneo-io/juneogo/network/peer"
+	"github.com/Juneo-io/juneogo/network/throttling"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/snow/networking/router"
+	"github.com/Juneo-io/juneogo/snow/networking/tracker"
+	"github.com/Juneo-io/juneogo/snow/uptime"
+	"github.com/Juneo-io/juneogo/snow/validators"
+	"github.com/Juneo-io/juneogo/staking"
+	"github.com/Juneo-io/juneogo/supernets"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/ips"
+	"github.com/Juneo-io/juneogo/utils/logging"
+	"github.com/Juneo-io/juneogo/utils/math/meter"
+	"github.com/Juneo-io/juneogo/utils/resource"
+	"github.com/Juneo-io/juneogo/utils/set"
+	"github.com/Juneo-io/juneogo/utils/units"
 )
 
 var (
 	errClosed = errors.New("closed")
 
-	_ net.Listener      = (*noopListener)(nil)
-	_ subnets.Allower = (*nodeIDConnector)(nil)
+	_ net.Listener    = (*noopListener)(nil)
+	_ supernets.Allower = (*nodeIDConnector)(nil)
 )
 
 type noopListener struct {
@@ -73,8 +74,8 @@ func (*noopListener) Addr() net.Addr {
 func NewTestNetwork(
 	log logging.Logger,
 	networkID uint32,
-	currentValidators validators.Set,
-	trackedSubnets set.Set[ids.ID],
+	currentValidators validators.Manager,
+	trackedSupernets set.Set[ids.ID],
 	router router.ExternalHandler,
 ) (Network, error) {
 	metrics := prometheus.NewRegistry()
@@ -166,7 +167,7 @@ func NewTestNetwork(
 		MaxClockDifference:           constants.DefaultNetworkMaxClockDifference,
 		CompressionType:              constants.DefaultNetworkCompressionType,
 		PingFrequency:                constants.DefaultPingFrequency,
-		AllowPrivateIPs:              constants.DefaultNetworkAllowPrivateIPs,
+		AllowPrivateIPs:              !constants.ProductionNetworkIDs.Contains(networkID),
 		UptimeMetricFreq:             constants.DefaultUptimeMetricFreq,
 		MaximumInboundMessageTimeout: constants.DefaultNetworkMaximumInboundTimeout,
 
@@ -176,7 +177,7 @@ func NewTestNetwork(
 	}
 
 	networkConfig.NetworkID = networkID
-	networkConfig.TrackedSubnets = trackedSubnets
+	networkConfig.TrackedSupernets = trackedSupernets
 
 	tlsCert, err := staking.NewTLSCert()
 	if err != nil {
@@ -186,10 +187,9 @@ func NewTestNetwork(
 	networkConfig.TLSConfig = tlsConfig
 	networkConfig.TLSKey = tlsCert.PrivateKey.(crypto.Signer)
 
-	validatorManager := validators.NewManager()
-	beacons := validators.NewSet()
-	networkConfig.Validators = validatorManager
-	networkConfig.Validators.Add(constants.PrimaryNetworkID, currentValidators)
+	ctx := snow.DefaultConsensusContextTest()
+	beacons := validators.NewManager()
+	networkConfig.Validators = currentValidators
 	networkConfig.Beacons = beacons
 	// This never actually does anything because we never initialize the P-chain
 	networkConfig.UptimeCalculator = uptime.NoOpCalculator
@@ -207,6 +207,7 @@ func NewTestNetwork(
 		return nil, err
 	}
 	networkConfig.CPUTargeter = tracker.NewTargeter(
+		ctx.Log,
 		&tracker.TargeterConfig{
 			VdrAlloc:           float64(runtime.NumCPU()),
 			MaxNonVdrUsage:     .8 * float64(runtime.NumCPU()),
@@ -216,6 +217,7 @@ func NewTestNetwork(
 		networkConfig.ResourceTracker.CPUTracker(),
 	)
 	networkConfig.DiskTargeter = tracker.NewTargeter(
+		ctx.Log,
 		&tracker.TargeterConfig{
 			VdrAlloc:           1000 * units.GiB,
 			MaxNonVdrUsage:     1000 * units.GiB,

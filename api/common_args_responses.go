@@ -4,9 +4,11 @@
 package api
 
 import (
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils/formatting"
-	"github.com/ava-labs/avalanchego/utils/json"
+	stdjson "encoding/json"
+
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils/formatting"
+	"github.com/Juneo-io/juneogo/utils/json"
 )
 
 // This file contains structs used in arguments and responses in services
@@ -75,7 +77,7 @@ type GetBlockByHeightArgs struct {
 
 // GetBlockResponse is the response object for the GetBlock API.
 type GetBlockResponse struct {
-	Block interface{} `json:"block"`
+	Block stdjson.RawMessage `json:"block"`
 	// If GetBlockResponse.Encoding is formatting.Hex, GetBlockResponse.Block is
 	// the string representation of the block under hex encoding.
 	// If GetBlockResponse.Encoding is formatting.JSON, GetBlockResponse.Block
@@ -105,7 +107,7 @@ type GetTxReply struct {
 	// the tx under hex encoding.
 	// If [GetTxArgs.Encoding] is [JSON], [Tx] is the actual tx, which will be
 	// returned as JSON to the caller.
-	Tx       interface{}         `json:"tx"`
+	Tx       stdjson.RawMessage  `json:"tx"`
 	Encoding formatting.Encoding `json:"encoding"`
 }
 
