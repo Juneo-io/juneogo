@@ -12,18 +12,18 @@ import (
 
 	"go.uber.org/mock/gomock"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/utils"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/units"
-	"github.com/ava-labs/avalanchego/vms/components/avax"
-	"github.com/ava-labs/avalanchego/vms/platformvm/fx"
-	"github.com/ava-labs/avalanchego/vms/platformvm/stakeable"
-	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
-	"github.com/ava-labs/avalanchego/vms/types"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/utils"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/units"
+	"github.com/Juneo-io/juneogo/vms/components/avax"
+	"github.com/Juneo-io/juneogo/vms/platformvm/fx"
+	"github.com/Juneo-io/juneogo/vms/platformvm/stakeable"
+	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
+	"github.com/Juneo-io/juneogo/vms/types"
 
-	safemath "github.com/ava-labs/avalanchego/utils/math"
+	safemath "github.com/Juneo-io/juneogo/utils/math"
 )
 
 var errCustom = errors.New("custom error")
@@ -91,7 +91,7 @@ func TestAddPermissionlessPrimaryDelegatorSerialization(t *testing.T) {
 			End:    12345 + 200*24*60*60,
 			Wght:   2 * units.KiloAvax,
 		},
-		Subnet: constants.PrimaryNetworkID,
+		Supernet: constants.PrimaryNetworkID,
 		StakeOuts: []*avax.TransferableOutput{
 			{
 				Asset: avax.Asset{
@@ -175,7 +175,7 @@ func TestAddPermissionlessPrimaryDelegatorSerialization(t *testing.T) {
 		0x00, 0x00, 0x00, 0x00, 0x01, 0x07, 0xdc, 0x39,
 		// Stake weight
 		0x00, 0x00, 0x01, 0xd1, 0xa9, 0x4a, 0x20, 0x00,
-		// Primary network subnetID
+		// Primary network supernetID
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -334,7 +334,7 @@ func TestAddPermissionlessPrimaryDelegatorSerialization(t *testing.T) {
 			End:    12345 + 200*24*60*60,
 			Wght:   5 * units.KiloAvax,
 		},
-		Subnet: constants.PrimaryNetworkID,
+		Supernet: constants.PrimaryNetworkID,
 		StakeOuts: []*avax.TransferableOutput{
 			{
 				Asset: avax.Asset{
@@ -543,7 +543,7 @@ func TestAddPermissionlessPrimaryDelegatorSerialization(t *testing.T) {
 		0x00, 0x00, 0x00, 0x00, 0x01, 0x07, 0xdc, 0x39,
 		// Stake weight
 		0x00, 0x00, 0x04, 0x8c, 0x27, 0x39, 0x50, 0x00,
-		// Primary Network subnet ID
+		// Primary Network supernet ID
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -603,7 +603,7 @@ func TestAddPermissionlessPrimaryDelegatorSerialization(t *testing.T) {
 	require.Equal(expectedUnsignedComplexAddPrimaryTxBytes, unsignedComplexAddPrimaryTxBytes)
 }
 
-func TestAddPermissionlessSubnetDelegatorSerialization(t *testing.T) {
+func TestAddPermissionlessSupernetDelegatorSerialization(t *testing.T) {
 	require := require.New(t)
 
 	addr := ids.ShortID{
@@ -633,14 +633,14 @@ func TestAddPermissionlessSubnetDelegatorSerialization(t *testing.T) {
 		0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88,
 		0x11, 0x22, 0x33, 0x44,
 	}
-	subnetID := ids.ID{
+	supernetID := ids.ID{
 		0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
 		0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18,
 		0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28,
 		0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38,
 	}
 
-	simpleAddSubnetTx := &AddPermissionlessDelegatorTx{
+	simpleAddSupernetTx := &AddPermissionlessDelegatorTx{
 		BaseTx: BaseTx{
 			BaseTx: avax.BaseTx{
 				NetworkID:    constants.MainnetID,
@@ -687,7 +687,7 @@ func TestAddPermissionlessSubnetDelegatorSerialization(t *testing.T) {
 			End:    12346,
 			Wght:   1,
 		},
-		Subnet: subnetID,
+		Supernet: supernetID,
 		StakeOuts: []*avax.TransferableOutput{
 			{
 				Asset: avax.Asset{
@@ -713,16 +713,16 @@ func TestAddPermissionlessSubnetDelegatorSerialization(t *testing.T) {
 			},
 		},
 	}
-	avax.SortTransferableOutputs(simpleAddSubnetTx.Outs, Codec)
-	avax.SortTransferableOutputs(simpleAddSubnetTx.StakeOuts, Codec)
-	utils.Sort(simpleAddSubnetTx.Ins)
-	require.NoError(simpleAddSubnetTx.SyntacticVerify(&snow.Context{
+	avax.SortTransferableOutputs(simpleAddSupernetTx.Outs, Codec)
+	avax.SortTransferableOutputs(simpleAddSupernetTx.StakeOuts, Codec)
+	utils.Sort(simpleAddSupernetTx.Ins)
+	require.NoError(simpleAddSupernetTx.SyntacticVerify(&snow.Context{
 		NetworkID:   1,
 		ChainID:     constants.PlatformChainID,
 		AVAXAssetID: avaxAssetID,
 	}))
 
-	expectedUnsignedSimpleAddSubnetTxBytes := []byte{
+	expectedUnsignedSimpleAddSupernetTxBytes := []byte{
 		// Codec version
 		0x00, 0x00,
 		// AddPermissionlessDelegationTx type ID
@@ -792,7 +792,7 @@ func TestAddPermissionlessSubnetDelegatorSerialization(t *testing.T) {
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x30, 0x3a,
 		// Stake weight
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01,
-		// SubnetID
+		// SupernetID
 		0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
 		0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18,
 		0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28,
@@ -831,12 +831,12 @@ func TestAddPermissionlessSubnetDelegatorSerialization(t *testing.T) {
 		0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb,
 		0x44, 0x55, 0x66, 0x77,
 	}
-	var unsignedSimpleAddSubnetTx UnsignedTx = simpleAddSubnetTx
-	unsignedSimpleAddSubnetTxBytes, err := Codec.Marshal(Version, &unsignedSimpleAddSubnetTx)
+	var unsignedSimpleAddSupernetTx UnsignedTx = simpleAddSupernetTx
+	unsignedSimpleAddSupernetTxBytes, err := Codec.Marshal(Version, &unsignedSimpleAddSupernetTx)
 	require.NoError(err)
-	require.Equal(expectedUnsignedSimpleAddSubnetTxBytes, unsignedSimpleAddSubnetTxBytes)
+	require.Equal(expectedUnsignedSimpleAddSupernetTxBytes, unsignedSimpleAddSupernetTxBytes)
 
-	complexAddSubnetTx := &AddPermissionlessDelegatorTx{
+	complexAddSupernetTx := &AddPermissionlessDelegatorTx{
 		BaseTx: BaseTx{
 			BaseTx: avax.BaseTx{
 				NetworkID:    constants.MainnetID,
@@ -951,7 +951,7 @@ func TestAddPermissionlessSubnetDelegatorSerialization(t *testing.T) {
 			End:    12345 + 1,
 			Wght:   9,
 		},
-		Subnet: subnetID,
+		Supernet: supernetID,
 		StakeOuts: []*avax.TransferableOutput{
 			{
 				Asset: avax.Asset{
@@ -991,13 +991,13 @@ func TestAddPermissionlessSubnetDelegatorSerialization(t *testing.T) {
 			Addrs:     []ids.ShortID{},
 		},
 	}
-	require.NoError(complexAddSubnetTx.SyntacticVerify(&snow.Context{
+	require.NoError(complexAddSupernetTx.SyntacticVerify(&snow.Context{
 		NetworkID:   1,
 		ChainID:     constants.PlatformChainID,
 		AVAXAssetID: avaxAssetID,
 	}))
 
-	expectedUnsignedComplexAddSubnetTxBytes := []byte{
+	expectedUnsignedComplexAddSupernetTxBytes := []byte{
 		// Codec version
 		0x00, 0x00,
 		// AddPermissionlessDelegatorTx type ID
@@ -1160,7 +1160,7 @@ func TestAddPermissionlessSubnetDelegatorSerialization(t *testing.T) {
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x30, 0x3a,
 		// Stake weight
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x09,
-		// subnetID
+		// supernetID
 		0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
 		0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18,
 		0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28,
@@ -1214,10 +1214,10 @@ func TestAddPermissionlessSubnetDelegatorSerialization(t *testing.T) {
 		// number of addresses
 		0x00, 0x00, 0x00, 0x00,
 	}
-	var unsignedComplexAddSubnetTx UnsignedTx = complexAddSubnetTx
-	unsignedComplexAddSubnetTxBytes, err := Codec.Marshal(Version, &unsignedComplexAddSubnetTx)
+	var unsignedComplexAddSupernetTx UnsignedTx = complexAddSupernetTx
+	unsignedComplexAddSupernetTxBytes, err := Codec.Marshal(Version, &unsignedComplexAddSupernetTx)
 	require.NoError(err)
-	require.Equal(expectedUnsignedComplexAddSubnetTxBytes, unsignedComplexAddSubnetTxBytes)
+	require.Equal(expectedUnsignedComplexAddSupernetTxBytes, unsignedComplexAddSupernetTxBytes)
 }
 
 func TestAddPermissionlessDelegatorTxSyntacticVerify(t *testing.T) {
@@ -1312,7 +1312,7 @@ func TestAddPermissionlessDelegatorTxSyntacticVerify(t *testing.T) {
 					Validator: Validator{
 						Wght: 1,
 					},
-					Subnet: ids.GenerateTestID(),
+					Supernet: ids.GenerateTestID(),
 					StakeOuts: []*avax.TransferableOutput{
 						{
 							Asset: avax.Asset{
@@ -1341,7 +1341,7 @@ func TestAddPermissionlessDelegatorTxSyntacticVerify(t *testing.T) {
 					Validator: Validator{
 						Wght: 1,
 					},
-					Subnet: ids.GenerateTestID(),
+					Supernet: ids.GenerateTestID(),
 					StakeOuts: []*avax.TransferableOutput{
 						{
 							Asset: avax.Asset{
@@ -1365,7 +1365,7 @@ func TestAddPermissionlessDelegatorTxSyntacticVerify(t *testing.T) {
 					Validator: Validator{
 						Wght: 1,
 					},
-					Subnet: ids.GenerateTestID(),
+					Supernet: ids.GenerateTestID(),
 					StakeOuts: []*avax.TransferableOutput{
 						{
 							Asset: avax.Asset{
@@ -1400,7 +1400,7 @@ func TestAddPermissionlessDelegatorTxSyntacticVerify(t *testing.T) {
 					Validator: Validator{
 						Wght: 1,
 					},
-					Subnet: ids.GenerateTestID(),
+					Supernet: ids.GenerateTestID(),
 					StakeOuts: []*avax.TransferableOutput{
 						{
 							Asset: avax.Asset{
@@ -1436,7 +1436,7 @@ func TestAddPermissionlessDelegatorTxSyntacticVerify(t *testing.T) {
 						NodeID: ids.GenerateTestNodeID(),
 						Wght:   1,
 					},
-					Subnet: ids.GenerateTestID(),
+					Supernet: ids.GenerateTestID(),
 					StakeOuts: []*avax.TransferableOutput{
 						{
 							Asset: avax.Asset{
@@ -1471,7 +1471,7 @@ func TestAddPermissionlessDelegatorTxSyntacticVerify(t *testing.T) {
 					Validator: Validator{
 						Wght: 1,
 					},
-					Subnet: ids.GenerateTestID(),
+					Supernet: ids.GenerateTestID(),
 					StakeOuts: []*avax.TransferableOutput{
 						{
 							Asset: avax.Asset{
@@ -1496,7 +1496,7 @@ func TestAddPermissionlessDelegatorTxSyntacticVerify(t *testing.T) {
 			err: errDelegatorWeightMismatch,
 		},
 		{
-			name: "valid subnet validator",
+			name: "valid supernet validator",
 			txFunc: func(ctrl *gomock.Controller) *AddPermissionlessDelegatorTx {
 				rewardsOwner := fx.NewMockOwner(ctrl)
 				rewardsOwner.EXPECT().Verify().Return(nil).AnyTimes()
@@ -1506,7 +1506,7 @@ func TestAddPermissionlessDelegatorTxSyntacticVerify(t *testing.T) {
 					Validator: Validator{
 						Wght: 2,
 					},
-					Subnet: ids.GenerateTestID(),
+					Supernet: ids.GenerateTestID(),
 					StakeOuts: []*avax.TransferableOutput{
 						{
 							Asset: avax.Asset{
@@ -1541,7 +1541,7 @@ func TestAddPermissionlessDelegatorTxSyntacticVerify(t *testing.T) {
 					Validator: Validator{
 						Wght: 2,
 					},
-					Subnet: constants.PrimaryNetworkID,
+					Supernet: constants.PrimaryNetworkID,
 					StakeOuts: []*avax.TransferableOutput{
 						{
 							Asset: avax.Asset{

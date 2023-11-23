@@ -6,7 +6,7 @@ package mempool
 import (
 	"errors"
 
-	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
+	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
 )
 
 var (
@@ -34,7 +34,7 @@ func (i *issuer) AddValidatorTx(*txs.AddValidatorTx) error {
 	return nil
 }
 
-func (i *issuer) AddSubnetValidatorTx(*txs.AddSubnetValidatorTx) error {
+func (i *issuer) AddSupernetValidatorTx(*txs.AddSupernetValidatorTx) error {
 	i.m.addStakerTx(i.tx)
 	return nil
 }
@@ -44,7 +44,7 @@ func (i *issuer) AddDelegatorTx(*txs.AddDelegatorTx) error {
 	return nil
 }
 
-func (i *issuer) RemoveSubnetValidatorTx(*txs.RemoveSubnetValidatorTx) error {
+func (i *issuer) RemoveSupernetValidatorTx(*txs.RemoveSupernetValidatorTx) error {
 	i.m.addDecisionTx(i.tx)
 	return nil
 }
@@ -54,7 +54,7 @@ func (i *issuer) CreateChainTx(*txs.CreateChainTx) error {
 	return nil
 }
 
-func (i *issuer) CreateSubnetTx(*txs.CreateSubnetTx) error {
+func (i *issuer) CreateSupernetTx(*txs.CreateSupernetTx) error {
 	i.m.addDecisionTx(i.tx)
 	return nil
 }
@@ -69,12 +69,12 @@ func (i *issuer) ExportTx(*txs.ExportTx) error {
 	return nil
 }
 
-func (i *issuer) TransformSubnetTx(*txs.TransformSubnetTx) error {
+func (i *issuer) TransformSupernetTx(*txs.TransformSupernetTx) error {
 	i.m.addDecisionTx(i.tx)
 	return nil
 }
 
-func (i *issuer) TransferSubnetOwnershipTx(*txs.TransferSubnetOwnershipTx) error {
+func (i *issuer) TransferSupernetOwnershipTx(*txs.TransferSupernetOwnershipTx) error {
 	i.m.addDecisionTx(i.tx)
 	return nil
 }

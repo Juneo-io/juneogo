@@ -8,7 +8,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/utils/sampler"
+	"github.com/Juneo-io/juneogo/utils/sampler"
 )
 
 // Test that a network running the lower AlphaPreference converges faster than a

@@ -4,7 +4,7 @@ package sync;
 
 import "google/protobuf/empty.proto";
 
-option go_package = "github.com/ava-labs/avalanchego/proto/pb/sync";
+option go_package = "github.com/Juneo-io/juneogo/proto/pb/sync";
 
 // Request represents a request for information during syncing.
 message Request {

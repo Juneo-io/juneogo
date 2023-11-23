@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/ava-labs/avalanchego/codec"
+	"github.com/Juneo-io/juneogo/codec"
 )
 
 const (

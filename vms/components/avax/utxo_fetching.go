@@ -8,11 +8,11 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils"
-	"github.com/ava-labs/avalanchego/utils/set"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils"
+	"github.com/Juneo-io/juneogo/utils/set"
 
-	safemath "github.com/ava-labs/avalanchego/utils/math"
+	safemath "github.com/Juneo-io/juneogo/utils/math"
 )
 
 // GetBalance returns the current balance of [addrs]

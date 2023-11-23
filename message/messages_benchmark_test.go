@@ -15,10 +15,10 @@ import (
 
 	"google.golang.org/protobuf/proto"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/proto/pb/p2p"
-	"github.com/ava-labs/avalanchego/utils/compression"
-	"github.com/ava-labs/avalanchego/utils/logging"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/proto/pb/p2p"
+	"github.com/Juneo-io/juneogo/utils/compression"
+	"github.com/Juneo-io/juneogo/utils/logging"
 )
 
 var (
@@ -56,7 +56,7 @@ func BenchmarkMarshalVersion(b *testing.B) {
 				MyVersion:      "v1.2.3",
 				MyVersionTime:  uint64(time.Now().Unix()),
 				Sig:            []byte{'y', 'e', 'e', 't'},
-				TrackedSubnets: [][]byte{id[:]},
+				TrackedSupernets: [][]byte{id[:]},
 			},
 		},
 	}
@@ -112,7 +112,7 @@ func BenchmarkUnmarshalVersion(b *testing.B) {
 				MyVersion:      "v1.2.3",
 				MyVersionTime:  uint64(time.Now().Unix()),
 				Sig:            []byte{'y', 'e', 'e', 't'},
-				TrackedSubnets: [][]byte{id[:]},
+				TrackedSupernets: [][]byte{id[:]},
 			},
 		},
 	}

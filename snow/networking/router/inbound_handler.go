@@ -6,9 +6,9 @@ package router
 import (
 	"context"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/message"
-	"github.com/ava-labs/avalanchego/version"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/message"
+	"github.com/Juneo-io/juneogo/version"
 )
 
 var _ InboundHandler = InboundHandlerFunc(nil)
@@ -31,6 +31,6 @@ func (f InboundHandlerFunc) HandleInbound(ctx context.Context, msg message.Inbou
 type ExternalHandler interface {
 	InboundHandler
 
-	Connected(nodeID ids.NodeID, nodeVersion *version.Application, subnetID ids.ID)
+	Connected(nodeID ids.NodeID, nodeVersion *version.Application, supernetID ids.ID)
 	Disconnected(nodeID ids.NodeID)
 }

@@ -6,53 +6,53 @@ package txs
 import (
 	"errors"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/vms/components/verify"
-	"github.com/ava-labs/avalanchego/vms/platformvm/fx"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/vms/components/verify"
+	"github.com/Juneo-io/juneogo/vms/platformvm/fx"
 )
 
 var (
-	_ UnsignedTx = (*TransferSubnetOwnershipTx)(nil)
+	_ UnsignedTx = (*TransferSupernetOwnershipTx)(nil)
 
-	ErrTransferPermissionlessSubnet = errors.New("cannot transfer ownership of a permissionless subnet")
+	ErrTransferPermissionlessSupernet = errors.New("cannot transfer ownership of a permissionless supernet")
 )
 
-type TransferSubnetOwnershipTx struct {
+type TransferSupernetOwnershipTx struct {
 	// Metadata, inputs and outputs
 	BaseTx `serialize:"true"`
-	// ID of the subnet this tx is modifying
-	Subnet ids.ID `serialize:"true" json:"subnetID"`
-	// Proves that the issuer has the right to remove the node from the subnet.
-	SubnetAuth verify.Verifiable `serialize:"true" json:"subnetAuthorization"`
-	// Who is now authorized to manage this subnet
+	// ID of the supernet this tx is modifying
+	Supernet ids.ID `serialize:"true" json:"supernetID"`
+	// Proves that the issuer has the right to remove the node from the supernet.
+	SupernetAuth verify.Verifiable `serialize:"true" json:"supernetAuthorization"`
+	// Who is now authorized to manage this supernet
 	Owner fx.Owner `serialize:"true" json:"newOwner"`
 }
 
 // InitCtx sets the FxID fields in the inputs and outputs of this
-// [TransferSubnetOwnershipTx]. Also sets the [ctx] to the given [vm.ctx] so
+// [TransferSupernetOwnershipTx]. Also sets the [ctx] to the given [vm.ctx] so
 // that the addresses can be json marshalled into human readable format
-func (tx *TransferSubnetOwnershipTx) InitCtx(ctx *snow.Context) {
+func (tx *TransferSupernetOwnershipTx) InitCtx(ctx *snow.Context) {
 	tx.BaseTx.InitCtx(ctx)
 	tx.Owner.InitCtx(ctx)
 }
 
-func (tx *TransferSubnetOwnershipTx) SyntacticVerify(ctx *snow.Context) error {
+func (tx *TransferSupernetOwnershipTx) SyntacticVerify(ctx *snow.Context) error {
 	switch {
 	case tx == nil:
 		return ErrNilTx
 	case tx.SyntacticallyVerified:
 		// already passed syntactic verification
 		return nil
-	case tx.Subnet == constants.PrimaryNetworkID:
-		return ErrTransferPermissionlessSubnet
+	case tx.Supernet == constants.PrimaryNetworkID:
+		return ErrTransferPermissionlessSupernet
 	}
 
 	if err := tx.BaseTx.SyntacticVerify(ctx); err != nil {
 		return err
 	}
-	if err := verify.All(tx.SubnetAuth, tx.Owner); err != nil {
+	if err := verify.All(tx.SupernetAuth, tx.Owner); err != nil {
 		return err
 	}
 
@@ -60,6 +60,6 @@ func (tx *TransferSubnetOwnershipTx) SyntacticVerify(ctx *snow.Context) error {
 	return nil
 }
 
-func (tx *TransferSubnetOwnershipTx) Visit(visitor Visitor) error {
-	return visitor.TransferSubnetOwnershipTx(tx)
+func (tx *TransferSupernetOwnershipTx) Visit(visitor Visitor) error {
+	return visitor.TransferSupernetOwnershipTx(tx)
 }

@@ -18,10 +18,10 @@ import (
 	"github.com/ava-labs/coreth/params"
 	"github.com/ava-labs/coreth/plugin/evm"
 
-	"github.com/ava-labs/avalanchego/tests"
-	"github.com/ava-labs/avalanchego/tests/e2e"
-	"github.com/ava-labs/avalanchego/tests/fixture/testnet"
-	"github.com/ava-labs/avalanchego/utils/crypto/secp256k1"
+	"github.com/Juneo-io/juneogo/tests"
+	"github.com/Juneo-io/juneogo/tests/e2e"
+	"github.com/Juneo-io/juneogo/tests/fixture/testnet"
+	"github.com/Juneo-io/juneogo/utils/crypto/secp256k1"
 )
 
 // This test uses the compiled bin for `hashing.sol` as

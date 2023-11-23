@@ -10,9 +10,9 @@ package block
 import (
 	reflect "reflect"
 
-	ids "github.com/ava-labs/avalanchego/ids"
-	snow "github.com/ava-labs/avalanchego/snow"
-	txs "github.com/ava-labs/avalanchego/vms/platformvm/txs"
+	ids "github.com/Juneo-io/juneogo/ids"
+	snow "github.com/Juneo-io/juneogo/snow"
+	txs "github.com/Juneo-io/juneogo/vms/platformvm/txs"
 	gomock "go.uber.org/mock/gomock"
 )
 

@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package warp;
 
-option go_package = "github.com/ava-labs/avalanchego/proto/pb/warp";
+option go_package = "github.com/Juneo-io/juneogo/proto/pb/warp";
 
 service Signer {
   rpc Sign(SignRequest) returns (SignResponse);

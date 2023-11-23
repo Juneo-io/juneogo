@@ -6,9 +6,9 @@ package sync
 import (
 	"bytes"
 
-	"github.com/ava-labs/avalanchego/utils/heap"
-	"github.com/ava-labs/avalanchego/utils/math"
-	"github.com/ava-labs/avalanchego/utils/maybe"
+	"github.com/Juneo-io/juneogo/utils/heap"
+	"github.com/Juneo-io/juneogo/utils/math"
+	"github.com/Juneo-io/juneogo/utils/maybe"
 
 	"github.com/google/btree"
 )

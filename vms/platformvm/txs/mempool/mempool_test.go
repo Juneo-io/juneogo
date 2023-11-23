@@ -13,11 +13,11 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils/crypto/secp256k1"
-	"github.com/ava-labs/avalanchego/vms/components/avax"
-	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
-	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils/crypto/secp256k1"
+	"github.com/Juneo-io/juneogo/vms/components/avax"
+	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
+	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
 )
 
 var _ BlockTimer = (*noopBlkTimer)(nil)
@@ -200,12 +200,12 @@ func createTestDecisionTxs(count int) ([]*txs.Tx, error) {
 					},
 				}},
 			}},
-			SubnetID:    ids.GenerateTestID(),
+			SupernetID:    ids.GenerateTestID(),
 			ChainName:   "chainName",
 			VMID:        ids.GenerateTestID(),
 			FxIDs:       []ids.ID{ids.GenerateTestID()},
 			GenesisData: []byte{'g', 'e', 'n', 'D', 'a', 't', 'a'},
-			SubnetAuth:  &secp256k1fx.Input{SigIndices: []uint32{1}},
+			SupernetAuth:  &secp256k1fx.Input{SigIndices: []uint32{1}},
 		}
 
 		tx, err := txs.NewSigned(utx, txs.Codec, nil)

@@ -11,8 +11,8 @@ import (
 	reflect "reflect"
 	time "time"
 
-	ids "github.com/ava-labs/avalanchego/ids"
-	bls "github.com/ava-labs/avalanchego/utils/crypto/bls"
+	ids "github.com/Juneo-io/juneogo/ids"
+	bls "github.com/Juneo-io/juneogo/utils/crypto/bls"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -125,18 +125,18 @@ func (mr *MockStakerMockRecorder) StartTime() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartTime", reflect.TypeOf((*MockStaker)(nil).StartTime))
 }
 
-// SubnetID mocks base method.
-func (m *MockStaker) SubnetID() ids.ID {
+// SupernetID mocks base method.
+func (m *MockStaker) SupernetID() ids.ID {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SubnetID")
+	ret := m.ctrl.Call(m, "SupernetID")
 	ret0, _ := ret[0].(ids.ID)
 	return ret0
 }
 
-// SubnetID indicates an expected call of SubnetID.
-func (mr *MockStakerMockRecorder) SubnetID() *gomock.Call {
+// SupernetID indicates an expected call of SupernetID.
+func (mr *MockStakerMockRecorder) SupernetID() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SubnetID", reflect.TypeOf((*MockStaker)(nil).SubnetID))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SupernetID", reflect.TypeOf((*MockStaker)(nil).SupernetID))
 }
 
 // Weight mocks base method.

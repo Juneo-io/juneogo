@@ -15,8 +15,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/config"
-	"github.com/ava-labs/avalanchego/tests/e2e"
+	"github.com/Juneo-io/juneogo/config"
+	"github.com/Juneo-io/juneogo/tests/e2e"
 )
 
 func TestUpgrade(t *testing.T) {

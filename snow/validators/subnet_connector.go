@@ -6,11 +6,11 @@ package validators
 import (
 	"context"
 
-	"github.com/ava-labs/avalanchego/ids"
+	"github.com/Juneo-io/juneogo/ids"
 )
 
-// SubnetConnector represents a handler that is called when a connection is
-// marked as connected to a subnet
-type SubnetConnector interface {
-	ConnectedSubnet(ctx context.Context, nodeID ids.NodeID, subnetID ids.ID) error
+// SupernetConnector represents a handler that is called when a connection is
+// marked as connected to a supernet
+type SupernetConnector interface {
+	ConnectedSupernet(ctx context.Context, nodeID ids.NodeID, supernetID ids.ID) error
 }

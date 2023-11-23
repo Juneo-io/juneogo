@@ -14,20 +14,20 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/api/admin"
-	"github.com/ava-labs/avalanchego/api/info"
-	"github.com/ava-labs/avalanchego/config"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/tests"
-	"github.com/ava-labs/avalanchego/tests/e2e"
-	"github.com/ava-labs/avalanchego/tests/fixture/testnet"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/crypto/secp256k1"
-	"github.com/ava-labs/avalanchego/utils/units"
-	"github.com/ava-labs/avalanchego/vms/platformvm"
-	"github.com/ava-labs/avalanchego/vms/platformvm/reward"
-	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
-	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
+	"github.com/Juneo-io/juneogo/api/admin"
+	"github.com/Juneo-io/juneogo/api/info"
+	"github.com/Juneo-io/juneogo/config"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/tests"
+	"github.com/Juneo-io/juneogo/tests/e2e"
+	"github.com/Juneo-io/juneogo/tests/fixture/testnet"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/crypto/secp256k1"
+	"github.com/Juneo-io/juneogo/utils/units"
+	"github.com/Juneo-io/juneogo/vms/platformvm"
+	"github.com/Juneo-io/juneogo/vms/platformvm/reward"
+	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
+	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
 )
 
 const (
@@ -116,14 +116,14 @@ var _ = ginkgo.Describe("[Staking Rewards]", func() {
 
 		ginkgo.By("adding alpha node as a validator", func() {
 			_, err := pWallet.IssueAddPermissionlessValidatorTx(
-				&txs.SubnetValidator{
+				&txs.SupernetValidator{
 					Validator: txs.Validator{
 						NodeID: alphaNodeID,
 						Start:  uint64(alphaValidatorStartTime.Unix()),
 						End:    uint64(alphaValidatorEndTime.Unix()),
 						Wght:   weight,
 					},
-					Subnet: constants.PrimaryNetworkID,
+					Supernet: constants.PrimaryNetworkID,
 				},
 				alphaPOP,
 				pWallet.AVAXAssetID(),
@@ -147,14 +147,14 @@ var _ = ginkgo.Describe("[Staking Rewards]", func() {
 
 		ginkgo.By("adding beta node as a validator", func() {
 			_, err := pWallet.IssueAddPermissionlessValidatorTx(
-				&txs.SubnetValidator{
+				&txs.SupernetValidator{
 					Validator: txs.Validator{
 						NodeID: betaNodeID,
 						Start:  uint64(betaValidatorStartTime.Unix()),
 						End:    uint64(betaValidatorEndTime.Unix()),
 						Wght:   weight,
 					},
-					Subnet: constants.PrimaryNetworkID,
+					Supernet: constants.PrimaryNetworkID,
 				},
 				betaPOP,
 				pWallet.AVAXAssetID(),
@@ -177,14 +177,14 @@ var _ = ginkgo.Describe("[Staking Rewards]", func() {
 
 		ginkgo.By("adding gamma as delegator to the alpha node", func() {
 			_, err := pWallet.IssueAddPermissionlessDelegatorTx(
-				&txs.SubnetValidator{
+				&txs.SupernetValidator{
 					Validator: txs.Validator{
 						NodeID: alphaNodeID,
 						Start:  uint64(gammaDelegatorStartTime.Unix()),
 						End:    uint64(gammaDelegatorStartTime.Add(delegationPeriod).Unix()),
 						Wght:   weight,
 					},
-					Subnet: constants.PrimaryNetworkID,
+					Supernet: constants.PrimaryNetworkID,
 				},
 				pWallet.AVAXAssetID(),
 				&secp256k1fx.OutputOwners{
@@ -201,14 +201,14 @@ var _ = ginkgo.Describe("[Staking Rewards]", func() {
 
 		ginkgo.By("adding delta as delegator to the beta node", func() {
 			_, err := pWallet.IssueAddPermissionlessDelegatorTx(
-				&txs.SubnetValidator{
+				&txs.SupernetValidator{
 					Validator: txs.Validator{
 						NodeID: betaNodeID,
 						Start:  uint64(deltaDelegatorStartTime.Unix()),
 						End:    uint64(deltaDelegatorStartTime.Add(delegationPeriod).Unix()),
 						Wght:   weight,
 					},
-					Subnet: constants.PrimaryNetworkID,
+					Supernet: constants.PrimaryNetworkID,
 				},
 				pWallet.AVAXAssetID(),
 				&secp256k1fx.OutputOwners{

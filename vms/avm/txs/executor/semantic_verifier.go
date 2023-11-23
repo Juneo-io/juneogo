@@ -8,11 +8,11 @@ import (
 	"errors"
 	"reflect"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/vms/avm/states"
-	"github.com/ava-labs/avalanchego/vms/avm/txs"
-	"github.com/ava-labs/avalanchego/vms/components/avax"
-	"github.com/ava-labs/avalanchego/vms/components/verify"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/vms/avm/states"
+	"github.com/Juneo-io/juneogo/vms/avm/txs"
+	"github.com/Juneo-io/juneogo/vms/components/avax"
+	"github.com/Juneo-io/juneogo/vms/components/verify"
 )
 
 var (
@@ -89,7 +89,7 @@ func (v *SemanticVerifier) ImportTx(tx *txs.ImportTx) error {
 		return nil
 	}
 
-	if err := verify.SameSubnet(context.TODO(), v.Ctx, tx.SourceChain); err != nil {
+	if err := verify.SameSupernet(context.TODO(), v.Ctx, tx.SourceChain); err != nil {
 		return err
 	}
 
@@ -127,7 +127,7 @@ func (v *SemanticVerifier) ExportTx(tx *txs.ExportTx) error {
 	}
 
 	if v.Bootstrapped {
-		if err := verify.SameSubnet(context.TODO(), v.Ctx, tx.DestinationChain); err != nil {
+		if err := verify.SameSupernet(context.TODO(), v.Ctx, tx.DestinationChain); err != nil {
 			return err
 		}
 	}

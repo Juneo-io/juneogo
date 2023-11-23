@@ -11,9 +11,9 @@ import (
 	reflect "reflect"
 	time "time"
 
-	ids "github.com/ava-labs/avalanchego/ids"
-	message "github.com/ava-labs/avalanchego/message"
-	snow "github.com/ava-labs/avalanchego/snow"
+	ids "github.com/Juneo-io/juneogo/ids"
+	message "github.com/Juneo-io/juneogo/message"
+	snow "github.com/Juneo-io/juneogo/snow"
 	gomock "go.uber.org/mock/gomock"
 )
 

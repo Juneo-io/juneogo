@@ -4,8 +4,8 @@
 package keychain
 
 import (
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/version"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/version"
 )
 
 // Ledger interface for the ledger wrapper

@@ -16,19 +16,19 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/tests"
-	"github.com/ava-labs/avalanchego/tests/e2e"
-	"github.com/ava-labs/avalanchego/tests/fixture"
-	"github.com/ava-labs/avalanchego/tests/fixture/testnet/local"
+	"github.com/Juneo-io/juneogo/tests"
+	"github.com/Juneo-io/juneogo/tests/e2e"
+	"github.com/Juneo-io/juneogo/tests/fixture"
+	"github.com/Juneo-io/juneogo/tests/fixture/testnet/local"
 
 	// ensure test packages are scanned by ginkgo
-	_ "github.com/ava-labs/avalanchego/tests/e2e/banff"
-	_ "github.com/ava-labs/avalanchego/tests/e2e/c"
-	_ "github.com/ava-labs/avalanchego/tests/e2e/faultinjection"
-	_ "github.com/ava-labs/avalanchego/tests/e2e/p"
-	_ "github.com/ava-labs/avalanchego/tests/e2e/static-handlers"
-	_ "github.com/ava-labs/avalanchego/tests/e2e/x"
-	_ "github.com/ava-labs/avalanchego/tests/e2e/x/transfer"
+	_ "github.com/Juneo-io/juneogo/tests/e2e/banff"
+	_ "github.com/Juneo-io/juneogo/tests/e2e/c"
+	_ "github.com/Juneo-io/juneogo/tests/e2e/faultinjection"
+	_ "github.com/Juneo-io/juneogo/tests/e2e/p"
+	_ "github.com/Juneo-io/juneogo/tests/e2e/static-handlers"
+	_ "github.com/Juneo-io/juneogo/tests/e2e/x"
+	_ "github.com/Juneo-io/juneogo/tests/e2e/x/transfer"
 )
 
 func TestE2E(t *testing.T) {

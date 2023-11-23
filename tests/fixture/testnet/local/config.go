@@ -6,8 +6,8 @@ package local
 import (
 	"time"
 
-	"github.com/ava-labs/avalanchego/config"
-	"github.com/ava-labs/avalanchego/tests/fixture/testnet"
+	"github.com/Juneo-io/juneogo/config"
+	"github.com/Juneo-io/juneogo/tests/fixture/testnet"
 )
 
 const (

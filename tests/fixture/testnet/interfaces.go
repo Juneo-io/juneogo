@@ -7,8 +7,8 @@ import (
 	"context"
 	"io"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/node"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/node"
 )
 
 // Defines network capabilities supportable regardless of how a network is orchestrated.

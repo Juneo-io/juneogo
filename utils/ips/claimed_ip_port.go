@@ -4,8 +4,8 @@
 package ips
 
 import (
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/staking"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/staking"
 )
 
 // Can't import these from wrappers package due to circular import.

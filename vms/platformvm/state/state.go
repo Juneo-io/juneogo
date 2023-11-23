@@ -17,35 +17,35 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 
-	"github.com/ava-labs/avalanchego/cache"
-	"github.com/ava-labs/avalanchego/cache/metercacher"
-	"github.com/ava-labs/avalanchego/database"
-	"github.com/ava-labs/avalanchego/database/linkeddb"
-	"github.com/ava-labs/avalanchego/database/prefixdb"
-	"github.com/ava-labs/avalanchego/database/versiondb"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/snow/choices"
-	"github.com/ava-labs/avalanchego/snow/uptime"
-	"github.com/ava-labs/avalanchego/snow/validators"
-	"github.com/ava-labs/avalanchego/utils"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/crypto/bls"
-	"github.com/ava-labs/avalanchego/utils/hashing"
-	"github.com/ava-labs/avalanchego/utils/logging"
-	"github.com/ava-labs/avalanchego/utils/timer"
-	"github.com/ava-labs/avalanchego/utils/wrappers"
-	"github.com/ava-labs/avalanchego/vms/components/avax"
-	"github.com/ava-labs/avalanchego/vms/platformvm/block"
-	"github.com/ava-labs/avalanchego/vms/platformvm/config"
-	"github.com/ava-labs/avalanchego/vms/platformvm/fx"
-	"github.com/ava-labs/avalanchego/vms/platformvm/genesis"
-	"github.com/ava-labs/avalanchego/vms/platformvm/metrics"
-	"github.com/ava-labs/avalanchego/vms/platformvm/reward"
-	"github.com/ava-labs/avalanchego/vms/platformvm/status"
-	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
+	"github.com/Juneo-io/juneogo/cache"
+	"github.com/Juneo-io/juneogo/cache/metercacher"
+	"github.com/Juneo-io/juneogo/database"
+	"github.com/Juneo-io/juneogo/database/linkeddb"
+	"github.com/Juneo-io/juneogo/database/prefixdb"
+	"github.com/Juneo-io/juneogo/database/versiondb"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/snow/choices"
+	"github.com/Juneo-io/juneogo/snow/uptime"
+	"github.com/Juneo-io/juneogo/snow/validators"
+	"github.com/Juneo-io/juneogo/utils"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/crypto/bls"
+	"github.com/Juneo-io/juneogo/utils/hashing"
+	"github.com/Juneo-io/juneogo/utils/logging"
+	"github.com/Juneo-io/juneogo/utils/timer"
+	"github.com/Juneo-io/juneogo/utils/wrappers"
+	"github.com/Juneo-io/juneogo/vms/components/avax"
+	"github.com/Juneo-io/juneogo/vms/platformvm/block"
+	"github.com/Juneo-io/juneogo/vms/platformvm/config"
+	"github.com/Juneo-io/juneogo/vms/platformvm/fx"
+	"github.com/Juneo-io/juneogo/vms/platformvm/genesis"
+	"github.com/Juneo-io/juneogo/vms/platformvm/metrics"
+	"github.com/Juneo-io/juneogo/vms/platformvm/reward"
+	"github.com/Juneo-io/juneogo/vms/platformvm/status"
+	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
 
-	safemath "github.com/ava-labs/avalanchego/utils/math"
+	safemath "github.com/Juneo-io/juneogo/utils/math"
 )
 
 const (
@@ -59,7 +59,7 @@ var (
 	_ State = (*state)(nil)
 
 	errValidatorSetAlreadyPopulated = errors.New("validator set already populated")
-	errIsNotSubnet                  = errors.New("is not a subnet")
+	errIsNotSupernet                  = errors.New("is not a supernet")
 
 	blockIDPrefix                       = []byte("blockID")
 	blockPrefix                         = []byte("block")
@@ -68,8 +68,8 @@ var (
 	pendingPrefix                       = []byte("pending")
 	validatorPrefix                     = []byte("validator")
 	delegatorPrefix                     = []byte("delegator")
-	subnetValidatorPrefix               = []byte("subnetValidator")
-	subnetDelegatorPrefix               = []byte("subnetDelegator")
+	supernetValidatorPrefix               = []byte("supernetValidator")
+	supernetDelegatorPrefix               = []byte("supernetDelegator")
 	nestedValidatorWeightDiffsPrefix    = []byte("validatorDiffs")
 	nestedValidatorPublicKeyDiffsPrefix = []byte("publicKeyDiffs")
 	flatValidatorWeightDiffsPrefix      = []byte("flatValidatorDiffs")
@@ -77,9 +77,9 @@ var (
 	txPrefix                            = []byte("tx")
 	rewardUTXOsPrefix                   = []byte("rewardUTXOs")
 	utxoPrefix                          = []byte("utxo")
-	subnetPrefix                        = []byte("subnet")
-	subnetOwnerPrefix                   = []byte("subnetOwner")
-	transformedSubnetPrefix             = []byte("transformedSubnet")
+	supernetPrefix                        = []byte("supernet")
+	supernetOwnerPrefix                   = []byte("supernetOwner")
+	transformedSupernetPrefix             = []byte("transformedSupernet")
 	supplyPrefix                        = []byte("supply")
 	rewardsSupplyPrefix                 = []byte("rewardsSupply")
 	chainPrefix                         = []byte("chain")
@@ -106,11 +106,11 @@ type Chain interface {
 	GetTimestamp() time.Time
 	SetTimestamp(tm time.Time)
 
-	GetCurrentSupply(subnetID ids.ID) (uint64, error)
-	SetCurrentSupply(subnetID ids.ID, cs uint64)
+	GetCurrentSupply(supernetID ids.ID) (uint64, error)
+	SetCurrentSupply(supernetID ids.ID, cs uint64)
 
-	GetRewardPoolSupply(subnetID ids.ID) (uint64, error)
-	SetRewardPoolSupply(subnetID ids.ID, rps uint64)
+	GetRewardPoolSupply(supernetID ids.ID) (uint64, error)
+	SetRewardPoolSupply(supernetID ids.ID, rps uint64)
 
 	GetFeePoolValue() uint64
 	SetFeePoolValue(fpv uint64)
@@ -118,16 +118,16 @@ type Chain interface {
 	GetRewardUTXOs(txID ids.ID) ([]*avax.UTXO, error)
 	AddRewardUTXO(txID ids.ID, utxo *avax.UTXO)
 
-	GetSubnets() ([]*txs.Tx, error)
-	AddSubnet(createSubnetTx *txs.Tx)
+	GetSupernets() ([]*txs.Tx, error)
+	AddSupernet(createSupernetTx *txs.Tx)
 
-	GetSubnetOwner(subnetID ids.ID) (fx.Owner, error)
-	SetSubnetOwner(subnetID ids.ID, owner fx.Owner)
+	GetSupernetOwner(supernetID ids.ID) (fx.Owner, error)
+	SetSupernetOwner(supernetID ids.ID, owner fx.Owner)
 
-	GetSubnetTransformation(subnetID ids.ID) (*txs.Tx, error)
-	AddSubnetTransformation(transformSubnetTx *txs.Tx)
+	GetSupernetTransformation(supernetID ids.ID) (*txs.Tx, error)
+	AddSupernetTransformation(transformSupernetTx *txs.Tx)
 
-	GetChains(subnetID ids.ID) ([]*txs.Tx, error)
+	GetChains(supernetID ids.ID) ([]*txs.Tx, error)
 	AddChain(createChainTx *txs.Tx)
 
 	GetTx(txID ids.ID) (*txs.Tx, status.Status, error)
@@ -150,8 +150,8 @@ type State interface {
 	GetBlockIDAtHeight(height uint64) (ids.ID, error)
 
 	// ApplyCurrentValidators adds all the current validators and delegators of
-	// [subnetID] into [vdrs].
-	ApplyCurrentValidators(subnetID ids.ID, vdrs validators.Manager) error
+	// [supernetID] into [vdrs].
+	ApplyCurrentValidators(supernetID ids.ID, vdrs validators.Manager) error
 
 	// ApplyValidatorWeightDiffs iterates from [startHeight] towards the genesis
 	// block until it has applied all of the diffs up to and including
@@ -169,7 +169,7 @@ type State interface {
 		validators map[ids.NodeID]*validators.GetValidatorOutput,
 		startHeight uint64,
 		endHeight uint64,
-		subnetID ids.ID,
+		supernetID ids.ID,
 	) error
 
 	// ApplyValidatorPublicKeyDiffs iterates from [startHeight] towards the
@@ -236,10 +236,10 @@ type stateBlk struct {
  * | | |-. delegator
  * | | | '-. list
  * | | |   '-- txID -> potential reward
- * | | |-. subnetValidator
+ * | | |-. supernetValidator
  * | | | '-. list
  * | | |   '-- txID -> uptime + potential reward + potential delegatee reward
- * | | '-. subnetDelegator
+ * | | '-. supernetDelegator
  * | |   '-. list
  * | |     '-- txID -> potential reward
  * | |-. pending
@@ -249,14 +249,14 @@ type stateBlk struct {
  * | | |-. delegator
  * | | | '-. list
  * | | |   '-- txID -> nil
- * | | |-. subnetValidator
+ * | | |-. supernetValidator
  * | | | '-. list
  * | | |   '-- txID -> nil
- * | | '-. subnetDelegator
+ * | | '-. supernetDelegator
  * | |   '-. list
  * | |     '-- txID -> nil
  * | |-. nested weight diffs TODO: Remove once only the flat db is needed
- * | | '-. height+subnet
+ * | | '-. height+supernet
  * | |   '-. list
  * | |     '-- nodeID -> weightChange
  * | |-. nested pub key diffs TODO: Remove once only the flat db is needed
@@ -264,9 +264,9 @@ type stateBlk struct {
  * | |   '-. list
  * | |     '-- nodeID -> compressed public key
  * | |-. flat weight diffs
- * | | '-- subnet+height+nodeID -> weightChange
+ * | | '-- supernet+height+nodeID -> weightChange
  * | '-. flat pub key diffs
- * |   '-- subnet+height+nodeID -> uncompressed public key or nil
+ * |   '-- supernet+height+nodeID -> uncompressed public key or nil
  * |-. blockIDs
  * | '-- height -> blockID
  * |-. blocks
@@ -279,13 +279,13 @@ type stateBlk struct {
  * |     '-- utxoID -> utxo bytes
  * |- utxos
  * | '-- utxoDB
- * |-. subnets
+ * |-. supernets
  * | '-. list
  * |   '-- txID -> nil
- * |-. subnetOwners
- * | '-. subnetID -> owner
+ * |-. supernetOwners
+ * | '-. supernetID -> owner
  * |-. chains
- * | '-. subnetID
+ * | '-. supernetID
  * |   '-. list
  * |     '-- txID -> nil
  * '-. singletons
@@ -328,19 +328,19 @@ type state struct {
 	currentValidatorList         linkeddb.LinkedDB
 	currentDelegatorBaseDB       database.Database
 	currentDelegatorList         linkeddb.LinkedDB
-	currentSubnetValidatorBaseDB database.Database
-	currentSubnetValidatorList   linkeddb.LinkedDB
-	currentSubnetDelegatorBaseDB database.Database
-	currentSubnetDelegatorList   linkeddb.LinkedDB
+	currentSupernetValidatorBaseDB database.Database
+	currentSupernetValidatorList   linkeddb.LinkedDB
+	currentSupernetDelegatorBaseDB database.Database
+	currentSupernetDelegatorList   linkeddb.LinkedDB
 	pendingValidatorsDB          database.Database
 	pendingValidatorBaseDB       database.Database
 	pendingValidatorList         linkeddb.LinkedDB
 	pendingDelegatorBaseDB       database.Database
 	pendingDelegatorList         linkeddb.LinkedDB
-	pendingSubnetValidatorBaseDB database.Database
-	pendingSubnetValidatorList   linkeddb.LinkedDB
-	pendingSubnetDelegatorBaseDB database.Database
-	pendingSubnetDelegatorList   linkeddb.LinkedDB
+	pendingSupernetValidatorBaseDB database.Database
+	pendingSupernetValidatorList   linkeddb.LinkedDB
+	pendingSupernetDelegatorBaseDB database.Database
+	pendingSupernetDelegatorList   linkeddb.LinkedDB
 
 	nestedValidatorWeightDiffsDB    database.Database
 	nestedValidatorPublicKeyDiffsDB database.Database
@@ -359,31 +359,31 @@ type state struct {
 	utxoDB        database.Database
 	utxoState     avax.UTXOState
 
-	cachedSubnets []*txs.Tx // nil if the subnets haven't been loaded
-	addedSubnets  []*txs.Tx
-	subnetBaseDB  database.Database
-	subnetDB      linkeddb.LinkedDB
+	cachedSupernets []*txs.Tx // nil if the supernets haven't been loaded
+	addedSupernets  []*txs.Tx
+	supernetBaseDB  database.Database
+	supernetDB      linkeddb.LinkedDB
 
-	// Subnet ID --> Owner of the subnet
-	subnetOwners     map[ids.ID]fx.Owner
-	subnetOwnerCache cache.Cacher[ids.ID, fxOwnerAndSize] // cache of subnetID -> owner if the entry is nil, it is not in the database
-	subnetOwnerDB    database.Database
+	// Supernet ID --> Owner of the supernet
+	supernetOwners     map[ids.ID]fx.Owner
+	supernetOwnerCache cache.Cacher[ids.ID, fxOwnerAndSize] // cache of supernetID -> owner if the entry is nil, it is not in the database
+	supernetOwnerDB    database.Database
 
-	transformedSubnets     map[ids.ID]*txs.Tx            // map of subnetID -> transformSubnetTx
-	transformedSubnetCache cache.Cacher[ids.ID, *txs.Tx] // cache of subnetID -> transformSubnetTx if the entry is nil, it is not in the database
-	transformedSubnetDB    database.Database
+	transformedSupernets     map[ids.ID]*txs.Tx            // map of supernetID -> transformSupernetTx
+	transformedSupernetCache cache.Cacher[ids.ID, *txs.Tx] // cache of supernetID -> transformSupernetTx if the entry is nil, it is not in the database
+	transformedSupernetDB    database.Database
 
-	modifiedSupplies map[ids.ID]uint64             // map of subnetID -> current supply
-	supplyCache      cache.Cacher[ids.ID, *uint64] // cache of subnetID -> current supply if the entry is nil, it is not in the database
+	modifiedSupplies map[ids.ID]uint64             // map of supernetID -> current supply
+	supplyCache      cache.Cacher[ids.ID, *uint64] // cache of supernetID -> current supply if the entry is nil, it is not in the database
 	supplyDB         database.Database
 
-	modifiedRewardsSupplies map[ids.ID]uint64             // map of subnetID -> reward pool supply
-	rewardsSupplyCache      cache.Cacher[ids.ID, *uint64] // cache of subnetID -> reward pool supply if the entry is nil, it is not in the database
+	modifiedRewardsSupplies map[ids.ID]uint64             // map of supernetID -> reward pool supply
+	rewardsSupplyCache      cache.Cacher[ids.ID, *uint64] // cache of supernetID -> reward pool supply if the entry is nil, it is not in the database
 	rewardsSupplyDB         database.Database
 
-	addedChains  map[ids.ID][]*txs.Tx                    // maps subnetID -> the newly added chains to the subnet
-	chainCache   cache.Cacher[ids.ID, []*txs.Tx]         // cache of subnetID -> the chains after all local modifications []*txs.Tx
-	chainDBCache cache.Cacher[ids.ID, linkeddb.LinkedDB] // cache of subnetID -> linkedDB
+	addedChains  map[ids.ID][]*txs.Tx                    // maps supernetID -> the newly added chains to the supernet
+	chainCache   cache.Cacher[ids.ID, []*txs.Tx]         // cache of supernetID -> the chains after all local modifications []*txs.Tx
+	chainDBCache cache.Cacher[ids.ID, linkeddb.LinkedDB] // cache of supernetID -> linkedDB
 	chainDB      database.Database
 
 	// The persisted fields represent the current database value
@@ -428,9 +428,9 @@ func (v *ValidatorWeightDiff) Add(negative bool, amount uint64) error {
 	return nil
 }
 
-type heightWithSubnet struct {
+type heightWithSupernet struct {
 	Height   uint64 `serialize:"true"`
-	SubnetID ids.ID `serialize:"true"`
+	SupernetID ids.ID `serialize:"true"`
 }
 
 type txBytesAndStatus struct {
@@ -560,14 +560,14 @@ func newState(
 	currentValidatorsDB := prefixdb.New(currentPrefix, validatorsDB)
 	currentValidatorBaseDB := prefixdb.New(validatorPrefix, currentValidatorsDB)
 	currentDelegatorBaseDB := prefixdb.New(delegatorPrefix, currentValidatorsDB)
-	currentSubnetValidatorBaseDB := prefixdb.New(subnetValidatorPrefix, currentValidatorsDB)
-	currentSubnetDelegatorBaseDB := prefixdb.New(subnetDelegatorPrefix, currentValidatorsDB)
+	currentSupernetValidatorBaseDB := prefixdb.New(supernetValidatorPrefix, currentValidatorsDB)
+	currentSupernetDelegatorBaseDB := prefixdb.New(supernetDelegatorPrefix, currentValidatorsDB)
 
 	pendingValidatorsDB := prefixdb.New(pendingPrefix, validatorsDB)
 	pendingValidatorBaseDB := prefixdb.New(validatorPrefix, pendingValidatorsDB)
 	pendingDelegatorBaseDB := prefixdb.New(delegatorPrefix, pendingValidatorsDB)
-	pendingSubnetValidatorBaseDB := prefixdb.New(subnetValidatorPrefix, pendingValidatorsDB)
-	pendingSubnetDelegatorBaseDB := prefixdb.New(subnetDelegatorPrefix, pendingValidatorsDB)
+	pendingSupernetValidatorBaseDB := prefixdb.New(supernetValidatorPrefix, pendingValidatorsDB)
+	pendingSupernetDelegatorBaseDB := prefixdb.New(supernetDelegatorPrefix, pendingValidatorsDB)
 
 	nestedValidatorWeightDiffsDB := prefixdb.New(nestedValidatorWeightDiffsPrefix, validatorsDB)
 	nestedValidatorPublicKeyDiffsDB := prefixdb.New(nestedValidatorPublicKeyDiffsPrefix, validatorsDB)
@@ -599,11 +599,11 @@ func newState(
 		return nil, err
 	}
 
-	subnetBaseDB := prefixdb.New(subnetPrefix, baseDB)
+	supernetBaseDB := prefixdb.New(supernetPrefix, baseDB)
 
-	subnetOwnerDB := prefixdb.New(subnetOwnerPrefix, baseDB)
-	subnetOwnerCache, err := metercacher.New[ids.ID, fxOwnerAndSize](
-		"subnet_owner_cache",
+	supernetOwnerDB := prefixdb.New(supernetOwnerPrefix, baseDB)
+	supernetOwnerCache, err := metercacher.New[ids.ID, fxOwnerAndSize](
+		"supernet_owner_cache",
 		metricsReg,
 		cache.NewSizedLRU[ids.ID, fxOwnerAndSize](execCfg.FxOwnerCacheSize, func(_ ids.ID, f fxOwnerAndSize) int {
 			return ids.IDLen + f.size
@@ -613,10 +613,10 @@ func newState(
 		return nil, err
 	}
 
-	transformedSubnetCache, err := metercacher.New(
-		"transformed_subnet_cache",
+	transformedSupernetCache, err := metercacher.New(
+		"transformed_supernet_cache",
 		metricsReg,
-		cache.NewSizedLRU[ids.ID, *txs.Tx](execCfg.TransformedSubnetTxCacheSize, txSize),
+		cache.NewSizedLRU[ids.ID, *txs.Tx](execCfg.TransformedSupernetTxCacheSize, txSize),
 	)
 	if err != nil {
 		return nil, err
@@ -685,19 +685,19 @@ func newState(
 		currentValidatorList:            linkeddb.NewDefault(currentValidatorBaseDB),
 		currentDelegatorBaseDB:          currentDelegatorBaseDB,
 		currentDelegatorList:            linkeddb.NewDefault(currentDelegatorBaseDB),
-		currentSubnetValidatorBaseDB:    currentSubnetValidatorBaseDB,
-		currentSubnetValidatorList:      linkeddb.NewDefault(currentSubnetValidatorBaseDB),
-		currentSubnetDelegatorBaseDB:    currentSubnetDelegatorBaseDB,
-		currentSubnetDelegatorList:      linkeddb.NewDefault(currentSubnetDelegatorBaseDB),
+		currentSupernetValidatorBaseDB:    currentSupernetValidatorBaseDB,
+		currentSupernetValidatorList:      linkeddb.NewDefault(currentSupernetValidatorBaseDB),
+		currentSupernetDelegatorBaseDB:    currentSupernetDelegatorBaseDB,
+		currentSupernetDelegatorList:      linkeddb.NewDefault(currentSupernetDelegatorBaseDB),
 		pendingValidatorsDB:             pendingValidatorsDB,
 		pendingValidatorBaseDB:          pendingValidatorBaseDB,
 		pendingValidatorList:            linkeddb.NewDefault(pendingValidatorBaseDB),
 		pendingDelegatorBaseDB:          pendingDelegatorBaseDB,
 		pendingDelegatorList:            linkeddb.NewDefault(pendingDelegatorBaseDB),
-		pendingSubnetValidatorBaseDB:    pendingSubnetValidatorBaseDB,
-		pendingSubnetValidatorList:      linkeddb.NewDefault(pendingSubnetValidatorBaseDB),
-		pendingSubnetDelegatorBaseDB:    pendingSubnetDelegatorBaseDB,
-		pendingSubnetDelegatorList:      linkeddb.NewDefault(pendingSubnetDelegatorBaseDB),
+		pendingSupernetValidatorBaseDB:    pendingSupernetValidatorBaseDB,
+		pendingSupernetValidatorList:      linkeddb.NewDefault(pendingSupernetValidatorBaseDB),
+		pendingSupernetDelegatorBaseDB:    pendingSupernetDelegatorBaseDB,
+		pendingSupernetDelegatorList:      linkeddb.NewDefault(pendingSupernetDelegatorBaseDB),
 		nestedValidatorWeightDiffsDB:    nestedValidatorWeightDiffsDB,
 		nestedValidatorPublicKeyDiffsDB: nestedValidatorPublicKeyDiffsDB,
 		flatValidatorWeightDiffsDB:      flatValidatorWeightDiffsDB,
@@ -715,16 +715,16 @@ func newState(
 		utxoDB:        utxoDB,
 		utxoState:     utxoState,
 
-		subnetBaseDB: subnetBaseDB,
-		subnetDB:     linkeddb.NewDefault(subnetBaseDB),
+		supernetBaseDB: supernetBaseDB,
+		supernetDB:     linkeddb.NewDefault(supernetBaseDB),
 
-		subnetOwners:     make(map[ids.ID]fx.Owner),
-		subnetOwnerDB:    subnetOwnerDB,
-		subnetOwnerCache: subnetOwnerCache,
+		supernetOwners:     make(map[ids.ID]fx.Owner),
+		supernetOwnerDB:    supernetOwnerDB,
+		supernetOwnerCache: supernetOwnerCache,
 
-		transformedSubnets:     make(map[ids.ID]*txs.Tx),
-		transformedSubnetCache: transformedSubnetCache,
-		transformedSubnetDB:    prefixdb.New(transformedSubnetPrefix, baseDB),
+		transformedSupernets:     make(map[ids.ID]*txs.Tx),
+		transformedSupernetCache: transformedSupernetCache,
+		transformedSupernetDB:    prefixdb.New(transformedSupernetPrefix, baseDB),
 
 		modifiedSupplies: make(map[ids.ID]uint64),
 		supplyCache:      supplyCache,
@@ -743,8 +743,8 @@ func newState(
 	}, nil
 }
 
-func (s *state) GetCurrentValidator(subnetID ids.ID, nodeID ids.NodeID) (*Staker, error) {
-	return s.currentStakers.GetValidator(subnetID, nodeID)
+func (s *state) GetCurrentValidator(supernetID ids.ID, nodeID ids.NodeID) (*Staker, error) {
+	return s.currentStakers.GetValidator(supernetID, nodeID)
 }
 
 func (s *state) PutCurrentValidator(staker *Staker) {
@@ -755,8 +755,8 @@ func (s *state) DeleteCurrentValidator(staker *Staker) {
 	s.currentStakers.DeleteValidator(staker)
 }
 
-func (s *state) GetCurrentDelegatorIterator(subnetID ids.ID, nodeID ids.NodeID) (StakerIterator, error) {
-	return s.currentStakers.GetDelegatorIterator(subnetID, nodeID), nil
+func (s *state) GetCurrentDelegatorIterator(supernetID ids.ID, nodeID ids.NodeID) (StakerIterator, error) {
+	return s.currentStakers.GetDelegatorIterator(supernetID, nodeID), nil
 }
 
 func (s *state) PutCurrentDelegator(staker *Staker) {
@@ -771,8 +771,8 @@ func (s *state) GetCurrentStakerIterator() (StakerIterator, error) {
 	return s.currentStakers.GetStakerIterator(), nil
 }
 
-func (s *state) GetPendingValidator(subnetID ids.ID, nodeID ids.NodeID) (*Staker, error) {
-	return s.pendingStakers.GetValidator(subnetID, nodeID)
+func (s *state) GetPendingValidator(supernetID ids.ID, nodeID ids.NodeID) (*Staker, error) {
+	return s.pendingStakers.GetValidator(supernetID, nodeID)
 }
 
 func (s *state) PutPendingValidator(staker *Staker) {
@@ -783,8 +783,8 @@ func (s *state) DeletePendingValidator(staker *Staker) {
 	s.pendingStakers.DeleteValidator(staker)
 }
 
-func (s *state) GetPendingDelegatorIterator(subnetID ids.ID, nodeID ids.NodeID) (StakerIterator, error) {
-	return s.pendingStakers.GetDelegatorIterator(subnetID, nodeID), nil
+func (s *state) GetPendingDelegatorIterator(supernetID ids.ID, nodeID ids.NodeID) (StakerIterator, error) {
+	return s.pendingStakers.GetDelegatorIterator(supernetID, nodeID), nil
 }
 
 func (s *state) PutPendingDelegator(staker *Staker) {
@@ -839,61 +839,61 @@ func (s *state) donePrune() error {
 	return s.singletonDB.Put(prunedKey, nil)
 }
 
-func (s *state) GetSubnets() ([]*txs.Tx, error) {
-	if s.cachedSubnets != nil {
-		return s.cachedSubnets, nil
+func (s *state) GetSupernets() ([]*txs.Tx, error) {
+	if s.cachedSupernets != nil {
+		return s.cachedSupernets, nil
 	}
 
-	subnetDBIt := s.subnetDB.NewIterator()
-	defer subnetDBIt.Release()
+	supernetDBIt := s.supernetDB.NewIterator()
+	defer supernetDBIt.Release()
 
 	txs := []*txs.Tx(nil)
-	for subnetDBIt.Next() {
-		subnetIDBytes := subnetDBIt.Key()
-		subnetID, err := ids.ToID(subnetIDBytes)
+	for supernetDBIt.Next() {
+		supernetIDBytes := supernetDBIt.Key()
+		supernetID, err := ids.ToID(supernetIDBytes)
 		if err != nil {
 			return nil, err
 		}
-		subnetTx, _, err := s.GetTx(subnetID)
+		supernetTx, _, err := s.GetTx(supernetID)
 		if err != nil {
 			return nil, err
 		}
-		txs = append(txs, subnetTx)
+		txs = append(txs, supernetTx)
 	}
-	if err := subnetDBIt.Error(); err != nil {
+	if err := supernetDBIt.Error(); err != nil {
 		return nil, err
 	}
-	txs = append(txs, s.addedSubnets...)
-	s.cachedSubnets = txs
+	txs = append(txs, s.addedSupernets...)
+	s.cachedSupernets = txs
 	return txs, nil
 }
 
-func (s *state) AddSubnet(createSubnetTx *txs.Tx) {
-	s.addedSubnets = append(s.addedSubnets, createSubnetTx)
-	if s.cachedSubnets != nil {
-		s.cachedSubnets = append(s.cachedSubnets, createSubnetTx)
+func (s *state) AddSupernet(createSupernetTx *txs.Tx) {
+	s.addedSupernets = append(s.addedSupernets, createSupernetTx)
+	if s.cachedSupernets != nil {
+		s.cachedSupernets = append(s.cachedSupernets, createSupernetTx)
 	}
 }
 
-func (s *state) GetSubnetOwner(subnetID ids.ID) (fx.Owner, error) {
-	if owner, exists := s.subnetOwners[subnetID]; exists {
+func (s *state) GetSupernetOwner(supernetID ids.ID) (fx.Owner, error) {
+	if owner, exists := s.supernetOwners[supernetID]; exists {
 		return owner, nil
 	}
 
-	if ownerAndSize, cached := s.subnetOwnerCache.Get(subnetID); cached {
+	if ownerAndSize, cached := s.supernetOwnerCache.Get(supernetID); cached {
 		if ownerAndSize.owner == nil {
 			return nil, database.ErrNotFound
 		}
 		return ownerAndSize.owner, nil
 	}
 
-	ownerBytes, err := s.subnetOwnerDB.Get(subnetID[:])
+	ownerBytes, err := s.supernetOwnerDB.Get(supernetID[:])
 	if err == nil {
 		var owner fx.Owner
 		if _, err := block.GenesisCodec.Unmarshal(ownerBytes, &owner); err != nil {
 			return nil, err
 		}
-		s.subnetOwnerCache.Put(subnetID, fxOwnerAndSize{
+		s.supernetOwnerCache.Put(supernetID, fxOwnerAndSize{
 			owner: owner,
 			size:  len(ownerBytes),
 		})
@@ -903,66 +903,66 @@ func (s *state) GetSubnetOwner(subnetID ids.ID) (fx.Owner, error) {
 		return nil, err
 	}
 
-	subnetIntf, _, err := s.GetTx(subnetID)
+	supernetIntf, _, err := s.GetTx(supernetID)
 	if err != nil {
 		if err == database.ErrNotFound {
-			s.subnetOwnerCache.Put(subnetID, fxOwnerAndSize{})
+			s.supernetOwnerCache.Put(supernetID, fxOwnerAndSize{})
 		}
 		return nil, err
 	}
 
-	subnet, ok := subnetIntf.Unsigned.(*txs.CreateSubnetTx)
+	supernet, ok := supernetIntf.Unsigned.(*txs.CreateSupernetTx)
 	if !ok {
-		return nil, fmt.Errorf("%q %w", subnetID, errIsNotSubnet)
+		return nil, fmt.Errorf("%q %w", supernetID, errIsNotSupernet)
 	}
 
-	s.SetSubnetOwner(subnetID, subnet.Owner)
-	return subnet.Owner, nil
+	s.SetSupernetOwner(supernetID, supernet.Owner)
+	return supernet.Owner, nil
 }
 
-func (s *state) SetSubnetOwner(subnetID ids.ID, owner fx.Owner) {
-	s.subnetOwners[subnetID] = owner
+func (s *state) SetSupernetOwner(supernetID ids.ID, owner fx.Owner) {
+	s.supernetOwners[supernetID] = owner
 }
 
-func (s *state) GetSubnetTransformation(subnetID ids.ID) (*txs.Tx, error) {
-	if tx, exists := s.transformedSubnets[subnetID]; exists {
+func (s *state) GetSupernetTransformation(supernetID ids.ID) (*txs.Tx, error) {
+	if tx, exists := s.transformedSupernets[supernetID]; exists {
 		return tx, nil
 	}
 
-	if tx, cached := s.transformedSubnetCache.Get(subnetID); cached {
+	if tx, cached := s.transformedSupernetCache.Get(supernetID); cached {
 		if tx == nil {
 			return nil, database.ErrNotFound
 		}
 		return tx, nil
 	}
 
-	transformSubnetTxID, err := database.GetID(s.transformedSubnetDB, subnetID[:])
+	transformSupernetTxID, err := database.GetID(s.transformedSupernetDB, supernetID[:])
 	if err == database.ErrNotFound {
-		s.transformedSubnetCache.Put(subnetID, nil)
+		s.transformedSupernetCache.Put(supernetID, nil)
 		return nil, database.ErrNotFound
 	}
 	if err != nil {
 		return nil, err
 	}
 
-	transformSubnetTx, _, err := s.GetTx(transformSubnetTxID)
+	transformSupernetTx, _, err := s.GetTx(transformSupernetTxID)
 	if err != nil {
 		return nil, err
 	}
-	s.transformedSubnetCache.Put(subnetID, transformSubnetTx)
-	return transformSubnetTx, nil
+	s.transformedSupernetCache.Put(supernetID, transformSupernetTx)
+	return transformSupernetTx, nil
 }
 
-func (s *state) AddSubnetTransformation(transformSubnetTxIntf *txs.Tx) {
-	transformSubnetTx := transformSubnetTxIntf.Unsigned.(*txs.TransformSubnetTx)
-	s.transformedSubnets[transformSubnetTx.Subnet] = transformSubnetTxIntf
+func (s *state) AddSupernetTransformation(transformSupernetTxIntf *txs.Tx) {
+	transformSupernetTx := transformSupernetTxIntf.Unsigned.(*txs.TransformSupernetTx)
+	s.transformedSupernets[transformSupernetTx.Supernet] = transformSupernetTxIntf
 }
 
-func (s *state) GetChains(subnetID ids.ID) ([]*txs.Tx, error) {
-	if chains, cached := s.chainCache.Get(subnetID); cached {
+func (s *state) GetChains(supernetID ids.ID) ([]*txs.Tx, error) {
+	if chains, cached := s.chainCache.Get(supernetID); cached {
 		return chains, nil
 	}
-	chainDB := s.getChainDB(subnetID)
+	chainDB := s.getChainDB(supernetID)
 	chainDBIt := chainDB.NewIterator()
 	defer chainDBIt.Release()
 
@@ -982,28 +982,28 @@ func (s *state) GetChains(subnetID ids.ID) ([]*txs.Tx, error) {
 	if err := chainDBIt.Error(); err != nil {
 		return nil, err
 	}
-	txs = append(txs, s.addedChains[subnetID]...)
-	s.chainCache.Put(subnetID, txs)
+	txs = append(txs, s.addedChains[supernetID]...)
+	s.chainCache.Put(supernetID, txs)
 	return txs, nil
 }
 
 func (s *state) AddChain(createChainTxIntf *txs.Tx) {
 	createChainTx := createChainTxIntf.Unsigned.(*txs.CreateChainTx)
-	subnetID := createChainTx.SubnetID
-	s.addedChains[subnetID] = append(s.addedChains[subnetID], createChainTxIntf)
-	if chains, cached := s.chainCache.Get(subnetID); cached {
+	supernetID := createChainTx.SupernetID
+	s.addedChains[supernetID] = append(s.addedChains[supernetID], createChainTxIntf)
+	if chains, cached := s.chainCache.Get(supernetID); cached {
 		chains = append(chains, createChainTxIntf)
-		s.chainCache.Put(subnetID, chains)
+		s.chainCache.Put(supernetID, chains)
 	}
 }
 
-func (s *state) getChainDB(subnetID ids.ID) linkeddb.LinkedDB {
-	if chainDB, cached := s.chainDBCache.Get(subnetID); cached {
+func (s *state) getChainDB(supernetID ids.ID) linkeddb.LinkedDB {
+	if chainDB, cached := s.chainDBCache.Get(supernetID); cached {
 		return chainDB
 	}
-	rawChainDB := prefixdb.New(subnetID[:], s.chainDB)
+	rawChainDB := prefixdb.New(supernetID[:], s.chainDB)
 	chainDB := linkeddb.NewDefault(rawChainDB)
-	s.chainDBCache.Put(subnetID, chainDB)
+	s.chainDBCache.Put(supernetID, chainDB)
 	return chainDB
 }
 
@@ -1106,8 +1106,8 @@ func (s *state) DeleteUTXO(utxoID ids.ID) {
 	s.modifiedUTXOs[utxoID] = nil
 }
 
-func (s *state) GetStartTime(nodeID ids.NodeID, subnetID ids.ID) (time.Time, error) {
-	staker, err := s.currentStakers.GetValidator(subnetID, nodeID)
+func (s *state) GetStartTime(nodeID ids.NodeID, supernetID ids.ID) (time.Time, error) {
+	staker, err := s.currentStakers.GetValidator(supernetID, nodeID)
 	if err != nil {
 		return time.Time{}, err
 	}
@@ -1130,17 +1130,17 @@ func (s *state) SetLastAccepted(lastAccepted ids.ID) {
 	s.lastAccepted = lastAccepted
 }
 
-func (s *state) GetCurrentSupply(subnetID ids.ID) (uint64, error) {
-	if subnetID == constants.PrimaryNetworkID {
+func (s *state) GetCurrentSupply(supernetID ids.ID) (uint64, error) {
+	if supernetID == constants.PrimaryNetworkID {
 		return s.currentSupply, nil
 	}
 
-	supply, ok := s.modifiedSupplies[subnetID]
+	supply, ok := s.modifiedSupplies[supernetID]
 	if ok {
 		return supply, nil
 	}
 
-	cachedSupply, ok := s.supplyCache.Get(subnetID)
+	cachedSupply, ok := s.supplyCache.Get(supernetID)
 	if ok {
 		if cachedSupply == nil {
 			return 0, database.ErrNotFound
@@ -1148,38 +1148,38 @@ func (s *state) GetCurrentSupply(subnetID ids.ID) (uint64, error) {
 		return *cachedSupply, nil
 	}
 
-	supply, err := database.GetUInt64(s.supplyDB, subnetID[:])
+	supply, err := database.GetUInt64(s.supplyDB, supernetID[:])
 	if err == database.ErrNotFound {
-		s.supplyCache.Put(subnetID, nil)
+		s.supplyCache.Put(supernetID, nil)
 		return 0, database.ErrNotFound
 	}
 	if err != nil {
 		return 0, err
 	}
 
-	s.supplyCache.Put(subnetID, &supply)
+	s.supplyCache.Put(supernetID, &supply)
 	return supply, nil
 }
 
-func (s *state) SetCurrentSupply(subnetID ids.ID, cs uint64) {
-	if subnetID == constants.PrimaryNetworkID {
+func (s *state) SetCurrentSupply(supernetID ids.ID, cs uint64) {
+	if supernetID == constants.PrimaryNetworkID {
 		s.currentSupply = cs
 	} else {
-		s.modifiedSupplies[subnetID] = cs
+		s.modifiedSupplies[supernetID] = cs
 	}
 }
 
-func (s *state) GetRewardPoolSupply(subnetID ids.ID) (uint64, error) {
-	if subnetID == constants.PrimaryNetworkID {
+func (s *state) GetRewardPoolSupply(supernetID ids.ID) (uint64, error) {
+	if supernetID == constants.PrimaryNetworkID {
 		return s.rewardPoolSupply, nil
 	}
 
-	rewardsSupply, ok := s.modifiedRewardsSupplies[subnetID]
+	rewardsSupply, ok := s.modifiedRewardsSupplies[supernetID]
 	if ok {
 		return rewardsSupply, nil
 	}
 
-	cachedRewardsSupply, ok := s.rewardsSupplyCache.Get(subnetID)
+	cachedRewardsSupply, ok := s.rewardsSupplyCache.Get(supernetID)
 	if ok {
 		if cachedRewardsSupply == nil {
 			return 0, database.ErrNotFound
@@ -1187,24 +1187,24 @@ func (s *state) GetRewardPoolSupply(subnetID ids.ID) (uint64, error) {
 		return *cachedRewardsSupply, nil
 	}
 
-	rewardsSupply, err := database.GetUInt64(s.rewardsSupplyDB, subnetID[:])
+	rewardsSupply, err := database.GetUInt64(s.rewardsSupplyDB, supernetID[:])
 	if err == database.ErrNotFound {
-		s.rewardsSupplyCache.Put(subnetID, nil)
+		s.rewardsSupplyCache.Put(supernetID, nil)
 		return 0, database.ErrNotFound
 	}
 	if err != nil {
 		return 0, err
 	}
 
-	s.rewardsSupplyCache.Put(subnetID, &rewardsSupply)
+	s.rewardsSupplyCache.Put(supernetID, &rewardsSupply)
 	return rewardsSupply, nil
 }
 
-func (s *state) SetRewardPoolSupply(subnetID ids.ID, rps uint64) {
-	if subnetID == constants.PrimaryNetworkID {
+func (s *state) SetRewardPoolSupply(supernetID ids.ID, rps uint64) {
+	if supernetID == constants.PrimaryNetworkID {
 		s.rewardPoolSupply = rps
 	} else {
-		s.modifiedRewardsSupplies[subnetID] = rps
+		s.modifiedRewardsSupplies[supernetID] = rps
 	}
 }
 
@@ -1216,17 +1216,17 @@ func (s *state) SetFeePoolValue(fpv uint64) {
 	s.feePoolValue = fpv
 }
 
-func (s *state) ApplyCurrentValidators(subnetID ids.ID, vdrs validators.Manager) error {
-	for nodeID, validator := range s.currentStakers.validators[subnetID] {
+func (s *state) ApplyCurrentValidators(supernetID ids.ID, vdrs validators.Manager) error {
+	for nodeID, validator := range s.currentStakers.validators[supernetID] {
 		staker := validator.validator
-		if err := vdrs.AddStaker(subnetID, nodeID, staker.PublicKey, staker.TxID, staker.Weight); err != nil {
+		if err := vdrs.AddStaker(supernetID, nodeID, staker.PublicKey, staker.TxID, staker.Weight); err != nil {
 			return err
 		}
 
 		delegatorIterator := NewTreeIterator(validator.delegators)
 		for delegatorIterator.Next() {
 			staker := delegatorIterator.Value()
-			if err := vdrs.AddWeight(subnetID, nodeID, staker.Weight); err != nil {
+			if err := vdrs.AddWeight(supernetID, nodeID, staker.Weight); err != nil {
 				delegatorIterator.Release()
 				return err
 			}
@@ -1241,11 +1241,11 @@ func (s *state) ApplyValidatorWeightDiffs(
 	validators map[ids.NodeID]*validators.GetValidatorOutput,
 	startHeight uint64,
 	endHeight uint64,
-	subnetID ids.ID,
+	supernetID ids.ID,
 ) error {
 	diffIter := s.flatValidatorWeightDiffsDB.NewIteratorWithStartAndPrefix(
-		marshalStartDiffKey(subnetID, startHeight),
-		subnetID[:],
+		marshalStartDiffKey(supernetID, startHeight),
+		supernetID[:],
 	)
 	defer diffIter.Release()
 
@@ -1282,16 +1282,16 @@ func (s *state) ApplyValidatorWeightDiffs(
 		return err
 	}
 
-	// TODO: Remove this once it is assumed that all subnet validators have
+	// TODO: Remove this once it is assumed that all supernet validators have
 	// adopted the new indexing.
 	for height := prevHeight - 1; height >= endHeight; height-- {
 		if err := ctx.Err(); err != nil {
 			return err
 		}
 
-		prefixStruct := heightWithSubnet{
+		prefixStruct := heightWithSupernet{
 			Height:   height,
-			SubnetID: subnetID,
+			SupernetID: supernetID,
 		}
 		prefixBytes, err := block.GenesisCodec.Marshal(block.Version, prefixStruct)
 		if err != nil {
@@ -1605,18 +1605,18 @@ func (s *state) loadCurrentValidators() error {
 			return err
 		}
 
-		validator := s.currentStakers.getOrCreateValidator(staker.SubnetID, staker.NodeID)
+		validator := s.currentStakers.getOrCreateValidator(staker.SupernetID, staker.NodeID)
 		validator.validator = staker
 
 		s.currentStakers.stakers.ReplaceOrInsert(staker)
 
-		s.validatorState.LoadValidatorMetadata(staker.NodeID, staker.SubnetID, metadata)
+		s.validatorState.LoadValidatorMetadata(staker.NodeID, staker.SupernetID, metadata)
 	}
 
-	subnetValidatorIt := s.currentSubnetValidatorList.NewIterator()
-	defer subnetValidatorIt.Release()
-	for subnetValidatorIt.Next() {
-		txIDBytes := subnetValidatorIt.Key()
+	supernetValidatorIt := s.currentSupernetValidatorList.NewIterator()
+	defer supernetValidatorIt.Release()
+	for supernetValidatorIt.Next() {
+		txIDBytes := supernetValidatorIt.Key()
 		txID, err := ids.ToID(txIDBytes)
 		if err != nil {
 			return err
@@ -1631,7 +1631,7 @@ func (s *state) loadCurrentValidators() error {
 			return fmt.Errorf("expected tx type txs.Staker but got %T", tx.Unsigned)
 		}
 
-		metadataBytes := subnetValidatorIt.Value()
+		metadataBytes := supernetValidatorIt.Value()
 		metadata := &validatorMetadata{
 			txID: txID,
 			// use the start time as the fallback value
@@ -1646,21 +1646,21 @@ func (s *state) loadCurrentValidators() error {
 		if err != nil {
 			return err
 		}
-		validator := s.currentStakers.getOrCreateValidator(staker.SubnetID, staker.NodeID)
+		validator := s.currentStakers.getOrCreateValidator(staker.SupernetID, staker.NodeID)
 		validator.validator = staker
 
 		s.currentStakers.stakers.ReplaceOrInsert(staker)
 
-		s.validatorState.LoadValidatorMetadata(staker.NodeID, staker.SubnetID, metadata)
+		s.validatorState.LoadValidatorMetadata(staker.NodeID, staker.SupernetID, metadata)
 	}
 
 	delegatorIt := s.currentDelegatorList.NewIterator()
 	defer delegatorIt.Release()
 
-	subnetDelegatorIt := s.currentSubnetDelegatorList.NewIterator()
-	defer subnetDelegatorIt.Release()
+	supernetDelegatorIt := s.currentSupernetDelegatorList.NewIterator()
+	defer supernetDelegatorIt.Release()
 
-	for _, delegatorIt := range []database.Iterator{delegatorIt, subnetDelegatorIt} {
+	for _, delegatorIt := range []database.Iterator{delegatorIt, supernetDelegatorIt} {
 		for delegatorIt.Next() {
 			txIDBytes := delegatorIt.Key()
 			txID, err := ids.ToID(txIDBytes)
@@ -1690,7 +1690,7 @@ func (s *state) loadCurrentValidators() error {
 				return err
 			}
 
-			validator := s.currentStakers.getOrCreateValidator(staker.SubnetID, staker.NodeID)
+			validator := s.currentStakers.getOrCreateValidator(staker.SupernetID, staker.NodeID)
 			if validator.delegators == nil {
 				validator.delegators = btree.NewG(defaultTreeDegree, (*Staker).Less)
 			}
@@ -1703,9 +1703,9 @@ func (s *state) loadCurrentValidators() error {
 	errs := wrappers.Errs{}
 	errs.Add(
 		validatorIt.Error(),
-		subnetValidatorIt.Error(),
+		supernetValidatorIt.Error(),
 		delegatorIt.Error(),
-		subnetDelegatorIt.Error(),
+		supernetDelegatorIt.Error(),
 	)
 	return errs.Err
 }
@@ -1716,10 +1716,10 @@ func (s *state) loadPendingValidators() error {
 	validatorIt := s.pendingValidatorList.NewIterator()
 	defer validatorIt.Release()
 
-	subnetValidatorIt := s.pendingSubnetValidatorList.NewIterator()
-	defer subnetValidatorIt.Release()
+	supernetValidatorIt := s.pendingSupernetValidatorList.NewIterator()
+	defer supernetValidatorIt.Release()
 
-	for _, validatorIt := range []database.Iterator{validatorIt, subnetValidatorIt} {
+	for _, validatorIt := range []database.Iterator{validatorIt, supernetValidatorIt} {
 		for validatorIt.Next() {
 			txIDBytes := validatorIt.Key()
 			txID, err := ids.ToID(txIDBytes)
@@ -1741,7 +1741,7 @@ func (s *state) loadPendingValidators() error {
 				return err
 			}
 
-			validator := s.pendingStakers.getOrCreateValidator(staker.SubnetID, staker.NodeID)
+			validator := s.pendingStakers.getOrCreateValidator(staker.SupernetID, staker.NodeID)
 			validator.validator = staker
 
 			s.pendingStakers.stakers.ReplaceOrInsert(staker)
@@ -1751,10 +1751,10 @@ func (s *state) loadPendingValidators() error {
 	delegatorIt := s.pendingDelegatorList.NewIterator()
 	defer delegatorIt.Release()
 
-	subnetDelegatorIt := s.pendingSubnetDelegatorList.NewIterator()
-	defer subnetDelegatorIt.Release()
+	supernetDelegatorIt := s.pendingSupernetDelegatorList.NewIterator()
+	defer supernetDelegatorIt.Release()
 
-	for _, delegatorIt := range []database.Iterator{delegatorIt, subnetDelegatorIt} {
+	for _, delegatorIt := range []database.Iterator{delegatorIt, supernetDelegatorIt} {
 		for delegatorIt.Next() {
 			txIDBytes := delegatorIt.Key()
 			txID, err := ids.ToID(txIDBytes)
@@ -1776,7 +1776,7 @@ func (s *state) loadPendingValidators() error {
 				return err
 			}
 
-			validator := s.pendingStakers.getOrCreateValidator(staker.SubnetID, staker.NodeID)
+			validator := s.pendingStakers.getOrCreateValidator(staker.SupernetID, staker.NodeID)
 			if validator.delegators == nil {
 				validator.delegators = btree.NewG(defaultTreeDegree, (*Staker).Less)
 			}
@@ -1789,9 +1789,9 @@ func (s *state) loadPendingValidators() error {
 	errs := wrappers.Errs{}
 	errs.Add(
 		validatorIt.Error(),
-		subnetValidatorIt.Error(),
+		supernetValidatorIt.Error(),
 		delegatorIt.Error(),
-		subnetDelegatorIt.Error(),
+		supernetDelegatorIt.Error(),
 	)
 	return errs.Err
 }
@@ -1818,18 +1818,18 @@ func (s *state) initValidatorSets() error {
 	}
 	s.metrics.SetTotalStake(totalWeight)
 
-	for subnetID := range s.cfg.TrackedSubnets {
-		if s.cfg.Validators.Count(subnetID) != 0 {
+	for supernetID := range s.cfg.TrackedSupernets {
+		if s.cfg.Validators.Count(supernetID) != 0 {
 			// Enforce the invariant that the validator set is empty here.
 			return errValidatorSetAlreadyPopulated
 		}
-		err := s.ApplyCurrentValidators(subnetID, s.cfg.Validators)
+		err := s.ApplyCurrentValidators(supernetID, s.cfg.Validators)
 		if err != nil {
 			return err
 		}
 
-		vl := validators.NewLogger(s.ctx.Log, s.bootstrapped, subnetID, s.ctx.NodeID)
-		s.cfg.Validators.RegisterCallbackListener(subnetID, vl)
+		vl := validators.NewLogger(s.ctx.Log, s.bootstrapped, supernetID, s.ctx.NodeID)
+		s.cfg.Validators.RegisterCallbackListener(supernetID, vl)
 	}
 	return nil
 }
@@ -1840,15 +1840,15 @@ func (s *state) write(updateValidators bool, height uint64) error {
 		s.writeBlocks(),
 		s.writeCurrentStakers(updateValidators, height),
 		s.writePendingStakers(),
-		s.WriteValidatorMetadata(s.currentValidatorList, s.currentSubnetValidatorList), // Must be called after writeCurrentStakers
+		s.WriteValidatorMetadata(s.currentValidatorList, s.currentSupernetValidatorList), // Must be called after writeCurrentStakers
 		s.writeTXs(),
 		s.writeRewardUTXOs(),
 		s.writeUTXOs(),
-		s.writeSubnets(),
-		s.writeSubnetOwners(),
-		s.writeTransformedSubnets(),
-		s.writeSubnetSupplies(),
-		s.writeSubnetRewardsSupplies(),
+		s.writeSupernets(),
+		s.writeSupernetOwners(),
+		s.writeTransformedSupernets(),
+		s.writeSupernetSupplies(),
+		s.writeSupernetRewardsSupplies(),
 		s.writeChains(),
 	)
 	var metadataErr error
@@ -1865,13 +1865,13 @@ func (s *state) write(updateValidators bool, height uint64) error {
 func (s *state) Close() error {
 	errs := wrappers.Errs{}
 	errs.Add(
-		s.pendingSubnetValidatorBaseDB.Close(),
-		s.pendingSubnetDelegatorBaseDB.Close(),
+		s.pendingSupernetValidatorBaseDB.Close(),
+		s.pendingSupernetDelegatorBaseDB.Close(),
 		s.pendingDelegatorBaseDB.Close(),
 		s.pendingValidatorBaseDB.Close(),
 		s.pendingValidatorsDB.Close(),
-		s.currentSubnetValidatorBaseDB.Close(),
-		s.currentSubnetDelegatorBaseDB.Close(),
+		s.currentSupernetValidatorBaseDB.Close(),
+		s.currentSupernetDelegatorBaseDB.Close(),
 		s.currentDelegatorBaseDB.Close(),
 		s.currentValidatorBaseDB.Close(),
 		s.currentValidatorsDB.Close(),
@@ -1879,8 +1879,8 @@ func (s *state) Close() error {
 		s.txDB.Close(),
 		s.rewardUTXODB.Close(),
 		s.utxoDB.Close(),
-		s.subnetBaseDB.Close(),
-		s.transformedSubnetDB.Close(),
+		s.supernetBaseDB.Close(),
+		s.transformedSupernetDB.Close(),
 		s.supplyDB.Close(),
 		s.rewardsSupplyDB.Close(),
 		s.chainDB.Close(),
@@ -2083,20 +2083,20 @@ func (s *state) writeCurrentStakers(updateValidators bool, height uint64) error 
 	rawNestedPublicKeyDiffDB := prefixdb.New(heightBytes, s.nestedValidatorPublicKeyDiffsDB)
 	nestedPKDiffDB := linkeddb.NewDefault(rawNestedPublicKeyDiffDB)
 
-	for subnetID, validatorDiffs := range s.currentStakers.validatorDiffs {
-		delete(s.currentStakers.validatorDiffs, subnetID)
+	for supernetID, validatorDiffs := range s.currentStakers.validatorDiffs {
+		delete(s.currentStakers.validatorDiffs, supernetID)
 
 		// Select db to write to
-		validatorDB := s.currentSubnetValidatorList
-		delegatorDB := s.currentSubnetDelegatorList
-		if subnetID == constants.PrimaryNetworkID {
+		validatorDB := s.currentSupernetValidatorList
+		delegatorDB := s.currentSupernetDelegatorList
+		if supernetID == constants.PrimaryNetworkID {
 			validatorDB = s.currentValidatorList
 			delegatorDB = s.currentDelegatorList
 		}
 
-		prefixStruct := heightWithSubnet{
+		prefixStruct := heightWithSupernet{
 			Height:   height,
-			SubnetID: subnetID,
+			SupernetID: supernetID,
 		}
 		prefixBytes, err := block.GenesisCodec.Marshal(block.Version, prefixStruct)
 		if err != nil {
@@ -2156,7 +2156,7 @@ func (s *state) writeCurrentStakers(updateValidators bool, height uint64) error 
 					return fmt.Errorf("failed to write current validator to list: %w", err)
 				}
 
-				s.validatorState.LoadValidatorMetadata(nodeID, subnetID, metadata)
+				s.validatorState.LoadValidatorMetadata(nodeID, supernetID, metadata)
 			case deleted:
 				staker := validatorDiff.validator
 				weightDiff.Amount = staker.Weight
@@ -2193,7 +2193,7 @@ func (s *state) writeCurrentStakers(updateValidators bool, height uint64) error 
 					return fmt.Errorf("failed to delete current staker: %w", err)
 				}
 
-				s.validatorState.DeleteValidatorMetadata(nodeID, subnetID)
+				s.validatorState.DeleteValidatorMetadata(nodeID, supernetID)
 			}
 
 			err := writeCurrentDelegatorDiff(
@@ -2211,7 +2211,7 @@ func (s *state) writeCurrentStakers(updateValidators bool, height uint64) error 
 			}
 
 			err = s.flatValidatorWeightDiffsDB.Put(
-				marshalDiffKey(subnetID, height, nodeID),
+				marshalDiffKey(supernetID, height, nodeID),
 				marshalWeightDiff(weightDiff),
 			)
 			if err != nil {
@@ -2232,25 +2232,25 @@ func (s *state) writeCurrentStakers(updateValidators bool, height uint64) error 
 				continue
 			}
 
-			// We only track the current validator set of tracked subnets.
-			if subnetID != constants.PrimaryNetworkID && !s.cfg.TrackedSubnets.Contains(subnetID) {
+			// We only track the current validator set of tracked supernets.
+			if supernetID != constants.PrimaryNetworkID && !s.cfg.TrackedSupernets.Contains(supernetID) {
 				continue
 			}
 
 			if weightDiff.Decrease {
-				err = s.cfg.Validators.RemoveWeight(subnetID, nodeID, weightDiff.Amount)
+				err = s.cfg.Validators.RemoveWeight(supernetID, nodeID, weightDiff.Amount)
 			} else {
 				if validatorDiff.validatorStatus == added {
 					staker := validatorDiff.validator
 					err = s.cfg.Validators.AddStaker(
-						subnetID,
+						supernetID,
 						nodeID,
 						staker.PublicKey,
 						staker.TxID,
 						weightDiff.Amount,
 					)
 				} else {
-					err = s.cfg.Validators.AddWeight(subnetID, nodeID, weightDiff.Amount)
+					err = s.cfg.Validators.AddWeight(supernetID, nodeID, weightDiff.Amount)
 				}
 			}
 			if err != nil {
@@ -2312,17 +2312,17 @@ func writeCurrentDelegatorDiff(
 }
 
 func (s *state) writePendingStakers() error {
-	for subnetID, subnetValidatorDiffs := range s.pendingStakers.validatorDiffs {
-		delete(s.pendingStakers.validatorDiffs, subnetID)
+	for supernetID, supernetValidatorDiffs := range s.pendingStakers.validatorDiffs {
+		delete(s.pendingStakers.validatorDiffs, supernetID)
 
-		validatorDB := s.pendingSubnetValidatorList
-		delegatorDB := s.pendingSubnetDelegatorList
-		if subnetID == constants.PrimaryNetworkID {
+		validatorDB := s.pendingSupernetValidatorList
+		delegatorDB := s.pendingSupernetDelegatorList
+		if supernetID == constants.PrimaryNetworkID {
 			validatorDB = s.pendingValidatorList
 			delegatorDB = s.pendingDelegatorList
 		}
 
-		for _, validatorDiff := range subnetValidatorDiffs {
+		for _, validatorDiff := range supernetValidatorDiffs {
 			err := writePendingDiff(
 				validatorDB,
 				delegatorDB,
@@ -2438,92 +2438,92 @@ func (s *state) writeUTXOs() error {
 	return nil
 }
 
-func (s *state) writeSubnets() error {
-	for _, subnet := range s.addedSubnets {
-		subnetID := subnet.ID()
+func (s *state) writeSupernets() error {
+	for _, supernet := range s.addedSupernets {
+		supernetID := supernet.ID()
 
-		if err := s.subnetDB.Put(subnetID[:], nil); err != nil {
-			return fmt.Errorf("failed to write subnet: %w", err)
+		if err := s.supernetDB.Put(supernetID[:], nil); err != nil {
+			return fmt.Errorf("failed to write supernet: %w", err)
 		}
 	}
-	s.addedSubnets = nil
+	s.addedSupernets = nil
 	return nil
 }
 
-func (s *state) writeSubnetOwners() error {
-	for subnetID, owner := range s.subnetOwners {
-		subnetID := subnetID
+func (s *state) writeSupernetOwners() error {
+	for supernetID, owner := range s.supernetOwners {
+		supernetID := supernetID
 		owner := owner
-		delete(s.subnetOwners, subnetID)
+		delete(s.supernetOwners, supernetID)
 
 		ownerBytes, err := block.GenesisCodec.Marshal(block.Version, &owner)
 		if err != nil {
-			return fmt.Errorf("failed to marshal subnet owner: %w", err)
+			return fmt.Errorf("failed to marshal supernet owner: %w", err)
 		}
 
-		s.subnetOwnerCache.Put(subnetID, fxOwnerAndSize{
+		s.supernetOwnerCache.Put(supernetID, fxOwnerAndSize{
 			owner: owner,
 			size:  len(ownerBytes),
 		})
 
-		if err := s.subnetOwnerDB.Put(subnetID[:], ownerBytes); err != nil {
-			return fmt.Errorf("failed to write subnet owner: %w", err)
+		if err := s.supernetOwnerDB.Put(supernetID[:], ownerBytes); err != nil {
+			return fmt.Errorf("failed to write supernet owner: %w", err)
 		}
 	}
 	return nil
 }
 
-func (s *state) writeTransformedSubnets() error {
-	for subnetID, tx := range s.transformedSubnets {
+func (s *state) writeTransformedSupernets() error {
+	for supernetID, tx := range s.transformedSupernets {
 		txID := tx.ID()
 
-		delete(s.transformedSubnets, subnetID)
+		delete(s.transformedSupernets, supernetID)
 		// Note: Evict is used rather than Put here because tx may end up
 		// referencing additional data (because of shared byte slices) that
 		// would not be properly accounted for in the cache sizing.
-		s.transformedSubnetCache.Evict(subnetID)
-		if err := database.PutID(s.transformedSubnetDB, subnetID[:], txID); err != nil {
-			return fmt.Errorf("failed to write transformed subnet: %w", err)
+		s.transformedSupernetCache.Evict(supernetID)
+		if err := database.PutID(s.transformedSupernetDB, supernetID[:], txID); err != nil {
+			return fmt.Errorf("failed to write transformed supernet: %w", err)
 		}
 	}
 	return nil
 }
 
-func (s *state) writeSubnetSupplies() error {
-	for subnetID, supply := range s.modifiedSupplies {
+func (s *state) writeSupernetSupplies() error {
+	for supernetID, supply := range s.modifiedSupplies {
 		supply := supply
-		delete(s.modifiedSupplies, subnetID)
-		s.supplyCache.Put(subnetID, &supply)
-		if err := database.PutUInt64(s.supplyDB, subnetID[:], supply); err != nil {
-			return fmt.Errorf("failed to write subnet supply: %w", err)
+		delete(s.modifiedSupplies, supernetID)
+		s.supplyCache.Put(supernetID, &supply)
+		if err := database.PutUInt64(s.supplyDB, supernetID[:], supply); err != nil {
+			return fmt.Errorf("failed to write supernet supply: %w", err)
 		}
 	}
 	return nil
 }
 
-func (s *state) writeSubnetRewardsSupplies() error {
-	for subnetID, rewardsSupply := range s.modifiedRewardsSupplies {
+func (s *state) writeSupernetRewardsSupplies() error {
+	for supernetID, rewardsSupply := range s.modifiedRewardsSupplies {
 		rewardsSupply := rewardsSupply
-		delete(s.modifiedRewardsSupplies, subnetID)
-		s.supplyCache.Put(subnetID, &rewardsSupply)
-		if err := database.PutUInt64(s.rewardsSupplyDB, subnetID[:], rewardsSupply); err != nil {
-			return fmt.Errorf("failed to write subnet rewards supply: %w", err)
+		delete(s.modifiedRewardsSupplies, supernetID)
+		s.supplyCache.Put(supernetID, &rewardsSupply)
+		if err := database.PutUInt64(s.rewardsSupplyDB, supernetID[:], rewardsSupply); err != nil {
+			return fmt.Errorf("failed to write supernet rewards supply: %w", err)
 		}
 	}
 	return nil
 }
 
 func (s *state) writeChains() error {
-	for subnetID, chains := range s.addedChains {
+	for supernetID, chains := range s.addedChains {
 		for _, chain := range chains {
-			chainDB := s.getChainDB(subnetID)
+			chainDB := s.getChainDB(supernetID)
 
 			chainID := chain.ID()
 			if err := chainDB.Put(chainID[:], nil); err != nil {
 				return fmt.Errorf("failed to write chain: %w", err)
 			}
 		}
-		delete(s.addedChains, subnetID)
+		delete(s.addedChains, supernetID)
 	}
 	return nil
 }

@@ -3,7 +3,7 @@
 
 package archivedb
 
-import "github.com/ava-labs/avalanchego/database"
+import "github.com/Juneo-io/juneogo/database"
 
 var _ database.KeyValueReader = (*Reader)(nil)
 

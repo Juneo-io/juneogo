@@ -3,7 +3,7 @@
 
 package merkledb
 
-import "github.com/ava-labs/avalanchego/database"
+import "github.com/Juneo-io/juneogo/database"
 
 var _ database.Batch = (*batch)(nil)
 

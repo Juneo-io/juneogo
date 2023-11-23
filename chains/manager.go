@@ -18,56 +18,56 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/ava-labs/avalanchego/api/health"
-	"github.com/ava-labs/avalanchego/api/keystore"
-	"github.com/ava-labs/avalanchego/api/metrics"
-	"github.com/ava-labs/avalanchego/api/server"
-	"github.com/ava-labs/avalanchego/chains/atomic"
-	"github.com/ava-labs/avalanchego/database/prefixdb"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/message"
-	"github.com/ava-labs/avalanchego/network"
-	"github.com/ava-labs/avalanchego/proto/pb/p2p"
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/snow/engine/avalanche/state"
-	"github.com/ava-labs/avalanchego/snow/engine/avalanche/vertex"
-	"github.com/ava-labs/avalanchego/snow/engine/common"
-	"github.com/ava-labs/avalanchego/snow/engine/common/queue"
-	"github.com/ava-labs/avalanchego/snow/engine/common/tracker"
-	"github.com/ava-labs/avalanchego/snow/engine/snowman/block"
-	"github.com/ava-labs/avalanchego/snow/engine/snowman/syncer"
-	"github.com/ava-labs/avalanchego/snow/networking/handler"
-	"github.com/ava-labs/avalanchego/snow/networking/router"
-	"github.com/ava-labs/avalanchego/snow/networking/sender"
-	"github.com/ava-labs/avalanchego/snow/networking/timeout"
-	"github.com/ava-labs/avalanchego/snow/validators"
-	"github.com/ava-labs/avalanchego/staking"
-	"github.com/ava-labs/avalanchego/subnets"
-	"github.com/ava-labs/avalanchego/trace"
-	"github.com/ava-labs/avalanchego/utils/buffer"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/crypto/bls"
-	"github.com/ava-labs/avalanchego/utils/logging"
-	"github.com/ava-labs/avalanchego/utils/perms"
-	"github.com/ava-labs/avalanchego/utils/set"
-	"github.com/ava-labs/avalanchego/version"
-	"github.com/ava-labs/avalanchego/vms"
-	"github.com/ava-labs/avalanchego/vms/metervm"
-	"github.com/ava-labs/avalanchego/vms/platformvm/warp"
-	"github.com/ava-labs/avalanchego/vms/proposervm"
-	"github.com/ava-labs/avalanchego/vms/tracedvm"
+	"github.com/Juneo-io/juneogo/api/health"
+	"github.com/Juneo-io/juneogo/api/keystore"
+	"github.com/Juneo-io/juneogo/api/metrics"
+	"github.com/Juneo-io/juneogo/api/server"
+	"github.com/Juneo-io/juneogo/chains/atomic"
+	"github.com/Juneo-io/juneogo/database/prefixdb"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/message"
+	"github.com/Juneo-io/juneogo/network"
+	"github.com/Juneo-io/juneogo/proto/pb/p2p"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/snow/engine/avalanche/state"
+	"github.com/Juneo-io/juneogo/snow/engine/avalanche/vertex"
+	"github.com/Juneo-io/juneogo/snow/engine/common"
+	"github.com/Juneo-io/juneogo/snow/engine/common/queue"
+	"github.com/Juneo-io/juneogo/snow/engine/common/tracker"
+	"github.com/Juneo-io/juneogo/snow/engine/snowman/block"
+	"github.com/Juneo-io/juneogo/snow/engine/snowman/syncer"
+	"github.com/Juneo-io/juneogo/snow/networking/handler"
+	"github.com/Juneo-io/juneogo/snow/networking/router"
+	"github.com/Juneo-io/juneogo/snow/networking/sender"
+	"github.com/Juneo-io/juneogo/snow/networking/timeout"
+	"github.com/Juneo-io/juneogo/snow/validators"
+	"github.com/Juneo-io/juneogo/staking"
+	"github.com/Juneo-io/juneogo/supernets"
+	"github.com/Juneo-io/juneogo/trace"
+	"github.com/Juneo-io/juneogo/utils/buffer"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/crypto/bls"
+	"github.com/Juneo-io/juneogo/utils/logging"
+	"github.com/Juneo-io/juneogo/utils/perms"
+	"github.com/Juneo-io/juneogo/utils/set"
+	"github.com/Juneo-io/juneogo/version"
+	"github.com/Juneo-io/juneogo/vms"
+	"github.com/Juneo-io/juneogo/vms/metervm"
+	"github.com/Juneo-io/juneogo/vms/platformvm/warp"
+	"github.com/Juneo-io/juneogo/vms/proposervm"
+	"github.com/Juneo-io/juneogo/vms/tracedvm"
 
-	dbManager "github.com/ava-labs/avalanchego/database/manager"
-	timetracker "github.com/ava-labs/avalanchego/snow/networking/tracker"
+	dbManager "github.com/Juneo-io/juneogo/database/manager"
+	timetracker "github.com/Juneo-io/juneogo/snow/networking/tracker"
 
-	aveng "github.com/ava-labs/avalanchego/snow/engine/avalanche"
-	avbootstrap "github.com/ava-labs/avalanchego/snow/engine/avalanche/bootstrap"
-	avagetter "github.com/ava-labs/avalanchego/snow/engine/avalanche/getter"
+	aveng "github.com/Juneo-io/juneogo/snow/engine/avalanche"
+	avbootstrap "github.com/Juneo-io/juneogo/snow/engine/avalanche/bootstrap"
+	avagetter "github.com/Juneo-io/juneogo/snow/engine/avalanche/getter"
 
-	smcon "github.com/ava-labs/avalanchego/snow/consensus/snowman"
-	smeng "github.com/ava-labs/avalanchego/snow/engine/snowman"
-	smbootstrap "github.com/ava-labs/avalanchego/snow/engine/snowman/bootstrap"
-	snowgetter "github.com/ava-labs/avalanchego/snow/engine/snowman/getter"
+	smcon "github.com/Juneo-io/juneogo/snow/consensus/snowman"
+	smeng "github.com/Juneo-io/juneogo/snow/engine/snowman"
+	smbootstrap "github.com/Juneo-io/juneogo/snow/engine/snowman/bootstrap"
+	snowgetter "github.com/Juneo-io/juneogo/snow/engine/snowman/getter"
 )
 
 const (
@@ -90,8 +90,8 @@ var (
 
 	errUnknownVMType           = errors.New("the vm should have type avalanche.DAGVM or snowman.ChainVM")
 	errCreatePlatformVM        = errors.New("attempted to create a chain running the PlatformVM")
-	errNotBootstrapped         = errors.New("subnets not bootstrapped")
-	errNoPrimaryNetworkConfig  = errors.New("no subnet config for primary network found")
+	errNotBootstrapped         = errors.New("supernets not bootstrapped")
+	errNoPrimaryNetworkConfig  = errors.New("no supernet config for primary network found")
 	errPartialSyncAsAValidator = errors.New("partial sync should not be configured for a validator")
 
 	_ Manager = (*manager)(nil)
@@ -112,7 +112,7 @@ type Manager interface {
 	// Queues a chain to be created in the future after chain creator is unblocked.
 	// This is only called from the P-chain thread to create other chains
 	// Queued chains are created only after P-chain is bootstrapped.
-	// This assumes only chains in tracked subnets are queued.
+	// This assumes only chains in tracked supernets are queued.
 	QueueChainCreation(ChainParameters)
 
 	// Add a registrant [r]. Every time a chain is
@@ -139,8 +139,8 @@ type Manager interface {
 type ChainParameters struct {
 	// The ID of the chain being created.
 	ID ids.ID
-	// ID of the subnet that validates this chain.
-	SubnetID ids.ID
+	// ID of the supernet that validates this chain.
+	SupernetID ids.ID
 	// The genesis data of this chain's ledger.
 	GenesisData []byte
 	// The ID of the vm this chain is running.
@@ -201,7 +201,7 @@ type ManagerConfig struct {
 	Health                      health.Registerer
 	RetryBootstrap              bool                      // Should Bootstrap be retried
 	RetryBootstrapWarnFrequency int                       // Max number of times to retry bootstrap before warning the node operator
-	SubnetConfigs               map[ids.ID]subnets.Config // ID -> SubnetConfig
+	SupernetConfigs               map[ids.ID]supernets.Config // ID -> SupernetConfig
 	ChainConfigs                map[string]ChainConfig    // alias -> ChainConfig
 	// ShutdownNodeFunc allows the chain manager to issue a request to shutdown the node
 	ShutdownNodeFunc func(exitCode int)
@@ -252,10 +252,10 @@ type manager struct {
 	chainCreatorShutdownCh chan struct{}
 	chainCreatorExited     sync.WaitGroup
 
-	subnetsLock sync.RWMutex
-	// Key: Subnet's ID
-	// Value: Subnet description
-	subnets map[ids.ID]subnets.Subnet
+	supernetsLock sync.RWMutex
+	// Key: Supernet's ID
+	// Value: Supernet description
+	supernets map[ids.ID]supernets.Supernet
 
 	chainsLock sync.Mutex
 	// Key: Chain's ID
@@ -273,7 +273,7 @@ func New(config *ManagerConfig) Manager {
 		ManagerConfig:          *config,
 		stakingSigner:          config.StakingTLSCert.PrivateKey.(crypto.Signer),
 		stakingCert:            staking.CertificateFromX509(config.StakingTLSCert.Leaf),
-		subnets:                make(map[ids.ID]subnets.Subnet),
+		supernets:                make(map[ids.ID]supernets.Supernet),
 		chains:                 make(map[ids.ID]handler.Handler),
 		chainsQueue:            buffer.NewUnboundedBlockingDeque[ChainParameters](initialQueueSize),
 		unblockChainCreatorCh:  make(chan struct{}),
@@ -287,27 +287,27 @@ func (m *manager) Router() router.Router {
 }
 
 // QueueChainCreation queues a chain creation request
-// Invariant: Tracked Subnet must be checked before calling this function
+// Invariant: Tracked Supernet must be checked before calling this function
 func (m *manager) QueueChainCreation(chainParams ChainParameters) {
-	m.subnetsLock.Lock()
-	subnetID := chainParams.SubnetID
-	sb, exists := m.subnets[subnetID]
+	m.supernetsLock.Lock()
+	supernetID := chainParams.SupernetID
+	sb, exists := m.supernets[supernetID]
 	if !exists {
-		sbConfig, ok := m.SubnetConfigs[subnetID]
+		sbConfig, ok := m.SupernetConfigs[supernetID]
 		if !ok {
-			// default to primary subnet config
-			sbConfig = m.SubnetConfigs[constants.PrimaryNetworkID]
+			// default to primary supernet config
+			sbConfig = m.SupernetConfigs[constants.PrimaryNetworkID]
 		}
-		sb = subnets.New(m.NodeID, sbConfig)
-		m.subnets[chainParams.SubnetID] = sb
+		sb = supernets.New(m.NodeID, sbConfig)
+		m.supernets[chainParams.SupernetID] = sb
 	}
 	addedChain := sb.AddChain(chainParams.ID)
-	m.subnetsLock.Unlock()
+	m.supernetsLock.Unlock()
 
 	if !addedChain {
 		m.Log.Debug("skipping chain creation",
 			zap.String("reason", "chain already staged"),
-			zap.Stringer("subnetID", subnetID),
+			zap.Stringer("supernetID", supernetID),
 			zap.Stringer("chainID", chainParams.ID),
 			zap.Stringer("vmID", chainParams.VMID),
 		)
@@ -317,7 +317,7 @@ func (m *manager) QueueChainCreation(chainParams ChainParameters) {
 	if ok := m.chainsQueue.PushRight(chainParams); !ok {
 		m.Log.Warn("skipping chain creation",
 			zap.String("reason", "couldn't enqueue chain"),
-			zap.Stringer("subnetID", subnetID),
+			zap.Stringer("supernetID", supernetID),
 			zap.Stringer("chainID", chainParams.ID),
 			zap.Stringer("vmID", chainParams.VMID),
 		)
@@ -326,19 +326,19 @@ func (m *manager) QueueChainCreation(chainParams ChainParameters) {
 
 // createChain creates and starts the chain
 //
-// Note: it is expected for the subnet to already have the chain registered as
+// Note: it is expected for the supernet to already have the chain registered as
 // bootstrapping before this function is called
 func (m *manager) createChain(chainParams ChainParameters) {
 	m.Log.Info("creating chain",
-		zap.Stringer("subnetID", chainParams.SubnetID),
+		zap.Stringer("supernetID", chainParams.SupernetID),
 		zap.Stringer("chainID", chainParams.ID),
 		zap.Stringer("vmID", chainParams.VMID),
 		zap.Stringer("chainAssetID", chainParams.ChainAssetID),
 	)
 
-	m.subnetsLock.RLock()
-	sb := m.subnets[chainParams.SubnetID]
-	m.subnetsLock.RUnlock()
+	m.supernetsLock.RLock()
+	sb := m.supernets[chainParams.SupernetID]
+	m.supernetsLock.RUnlock()
 
 	// Note: buildChain builds all chain's relevant objects (notably engine and handler)
 	// but does not start their operations. Starting of the handler (which could potentially
@@ -350,7 +350,7 @@ func (m *manager) createChain(chainParams ChainParameters) {
 		if m.CriticalChains.Contains(chainParams.ID) {
 			// Shut down if we fail to create a required chain (i.e. X, P or C)
 			m.Log.Fatal("error creating required chain",
-				zap.Stringer("subnetID", chainParams.SubnetID),
+				zap.Stringer("supernetID", chainParams.SupernetID),
 				zap.Stringer("chainID", chainParams.ID),
 				zap.Stringer("vmID", chainParams.VMID),
 				zap.Error(err),
@@ -361,7 +361,7 @@ func (m *manager) createChain(chainParams ChainParameters) {
 
 		chainAlias := m.PrimaryAliasOrDefault(chainParams.ID)
 		m.Log.Error("error creating chain",
-			zap.Stringer("subnetID", chainParams.SubnetID),
+			zap.Stringer("supernetID", chainParams.SupernetID),
 			zap.Stringer("chainID", chainParams.ID),
 			zap.String("chainAlias", chainAlias),
 			zap.Stringer("vmID", chainParams.VMID),
@@ -370,19 +370,19 @@ func (m *manager) createChain(chainParams ChainParameters) {
 
 		// Register the health check for this chain regardless of if it was
 		// created or not. This attempts to notify the node operator that their
-		// node may not be properly validating the subnet they expect to be
+		// node may not be properly validating the supernet they expect to be
 		// validating.
-		healthCheckErr := fmt.Errorf("failed to create chain on subnet: %s", chainParams.SubnetID)
+		healthCheckErr := fmt.Errorf("failed to create chain on supernet: %s", chainParams.SupernetID)
 		err := m.Health.RegisterHealthCheck(
 			chainAlias,
 			health.CheckerFunc(func(context.Context) (interface{}, error) {
 				return nil, healthCheckErr
 			}),
-			chainParams.SubnetID.String(),
+			chainParams.SupernetID.String(),
 		)
 		if err != nil {
 			m.Log.Error("failed to register failing health check",
-				zap.Stringer("subnetID", chainParams.SubnetID),
+				zap.Stringer("supernetID", chainParams.SupernetID),
 				zap.Stringer("chainID", chainParams.ID),
 				zap.String("chainAlias", chainAlias),
 				zap.Stringer("vmID", chainParams.VMID),
@@ -399,7 +399,7 @@ func (m *manager) createChain(chainParams ChainParameters) {
 	// Associate the newly created chain with its default alias
 	if err := m.Alias(chainParams.ID, chainParams.ID.String()); err != nil {
 		m.Log.Error("failed to alias the new chain with itself",
-			zap.Stringer("subnetID", chainParams.SubnetID),
+			zap.Stringer("supernetID", chainParams.SupernetID),
 			zap.Stringer("chainID", chainParams.ID),
 			zap.Stringer("vmID", chainParams.VMID),
 			zap.Error(err),
@@ -432,7 +432,7 @@ func (m *manager) createChain(chainParams ChainParameters) {
 }
 
 // Create a chain
-func (m *manager) buildChain(chainParams ChainParameters, sb subnets.Subnet) (*chain, error) {
+func (m *manager) buildChain(chainParams ChainParameters, sb supernets.Supernet) (*chain, error) {
 	if chainParams.ID != constants.PlatformChainID && chainParams.VMID == constants.PlatformVMID {
 		return nil, errCreatePlatformVM
 	}
@@ -474,7 +474,7 @@ func (m *manager) buildChain(chainParams ChainParameters, sb subnets.Subnet) (*c
 	ctx := &snow.ConsensusContext{
 		Context: &snow.Context{
 			NetworkID: m.NetworkID,
-			SubnetID:  chainParams.SubnetID,
+			SupernetID:  chainParams.SupernetID,
 			ChainID:   chainParams.ID,
 			NodeID:    m.NodeID,
 			PublicKey: bls.PublicFromSecretKey(m.StakingBLSKey),
@@ -590,7 +590,7 @@ func (m *manager) createAvalancheChain(
 	vdrs validators.Manager,
 	vm vertex.LinearizableVMWithEngine,
 	fxs []*common.Fx,
-	sb subnets.Subnet,
+	sb supernets.Supernet,
 ) (*chain, error) {
 	ctx.Lock.Lock()
 	defer ctx.Lock.Unlock()
@@ -751,9 +751,9 @@ func (m *manager) createAvalancheChain(
 		minBlockDelay       = proposervm.DefaultMinBlockDelay
 		numHistoricalBlocks = proposervm.DefaultNumHistoricalBlocks
 	)
-	if subnetCfg, ok := m.SubnetConfigs[ctx.SubnetID]; ok {
-		minBlockDelay = subnetCfg.ProposerMinBlockDelay
-		numHistoricalBlocks = subnetCfg.ProposerNumHistoricalBlocks
+	if supernetCfg, ok := m.SupernetConfigs[ctx.SupernetID]; ok {
+		minBlockDelay = supernetCfg.ProposerMinBlockDelay
+		numHistoricalBlocks = supernetCfg.ProposerNumHistoricalBlocks
 	}
 	m.Log.Info("creating proposervm wrapper",
 		zap.Time("activationTime", m.ApricotPhase4Time),
@@ -809,9 +809,9 @@ func (m *manager) createAvalancheChain(
 		appSender:    snowmanMessageSender,
 	}
 
-	bootstrapWeight, err := vdrs.TotalWeight(ctx.SubnetID)
+	bootstrapWeight, err := vdrs.TotalWeight(ctx.SupernetID)
 	if err != nil {
-		return nil, fmt.Errorf("error while fetching weight for subnet %s: %w", ctx.SubnetID, err)
+		return nil, fmt.Errorf("error while fetching weight for supernet %s: %w", ctx.SupernetID, err)
 	}
 
 	consensusParams := sb.Config().ConsensusParameters
@@ -824,7 +824,7 @@ func (m *manager) createAvalancheChain(
 	if err != nil {
 		return nil, fmt.Errorf("error creating peer tracker: %w", err)
 	}
-	vdrs.RegisterCallbackListener(ctx.SubnetID, connectedValidators)
+	vdrs.RegisterCallbackListener(ctx.SupernetID, connectedValidators)
 
 	// Asynchronously passes messages from the network to the consensus engine
 	h, err := handler.New(
@@ -834,7 +834,7 @@ func (m *manager) createAvalancheChain(
 		m.AcceptedFrontierGossipFrequency,
 		m.ConsensusAppConcurrency,
 		m.ResourceTracker,
-		validators.UnhandledSubnetConnector, // avalanche chains don't use subnet connector
+		validators.UnhandledSupernetConnector, // avalanche chains don't use supernet connector
 		sb,
 		connectedValidators,
 	)
@@ -844,7 +844,7 @@ func (m *manager) createAvalancheChain(
 
 	connectedBeacons := tracker.NewPeers()
 	startupTracker := tracker.NewStartup(connectedBeacons, (3*bootstrapWeight+3)/4)
-	vdrs.RegisterCallbackListener(ctx.SubnetID, startupTracker)
+	vdrs.RegisterCallbackListener(ctx.SupernetID, startupTracker)
 
 	snowmanCommonCfg := common.Config{
 		Ctx:                            ctx,
@@ -976,7 +976,7 @@ func (m *manager) createAvalancheChain(
 	})
 
 	// Register health check for this chain
-	if err := m.Health.RegisterHealthCheck(chainAlias, h, ctx.SubnetID.String()); err != nil {
+	if err := m.Health.RegisterHealthCheck(chainAlias, h, ctx.SupernetID.String()); err != nil {
 		return nil, fmt.Errorf("couldn't add health check for chain %s: %w", chainAlias, err)
 	}
 
@@ -996,7 +996,7 @@ func (m *manager) createSnowmanChain(
 	beacons validators.Manager,
 	vm block.ChainVM,
 	fxs []*common.Fx,
-	sb subnets.Subnet,
+	sb supernets.Supernet,
 ) (*chain, error) {
 	ctx.Lock.Lock()
 	defer ctx.Lock.Unlock()
@@ -1051,7 +1051,7 @@ func (m *manager) createSnowmanChain(
 
 	var (
 		bootstrapFunc   func()
-		subnetConnector = validators.UnhandledSubnetConnector
+		supernetConnector = validators.UnhandledSupernetConnector
 	)
 	// If [m.validatorState] is nil then we are creating the P-Chain. Since the
 	// P-Chain is the first chain to be created, we can use it to initialize
@@ -1090,10 +1090,10 @@ func (m *manager) createSnowmanChain(
 			close(m.unblockChainCreatorCh)
 		}
 
-		// Set up the subnet connector for the P-Chain
-		subnetConnector, ok = vm.(validators.SubnetConnector)
+		// Set up the supernet connector for the P-Chain
+		supernetConnector, ok = vm.(validators.SupernetConnector)
 		if !ok {
-			return nil, fmt.Errorf("expected validators.SubnetConnector but got %T", vm)
+			return nil, fmt.Errorf("expected validators.SupernetConnector but got %T", vm)
 		}
 	}
 
@@ -1107,9 +1107,9 @@ func (m *manager) createSnowmanChain(
 		minBlockDelay       = proposervm.DefaultMinBlockDelay
 		numHistoricalBlocks = proposervm.DefaultNumHistoricalBlocks
 	)
-	if subnetCfg, ok := m.SubnetConfigs[ctx.SubnetID]; ok {
-		minBlockDelay = subnetCfg.ProposerMinBlockDelay
-		numHistoricalBlocks = subnetCfg.ProposerNumHistoricalBlocks
+	if supernetCfg, ok := m.SupernetConfigs[ctx.SupernetID]; ok {
+		minBlockDelay = supernetCfg.ProposerMinBlockDelay
+		numHistoricalBlocks = supernetCfg.ProposerNumHistoricalBlocks
 	}
 	m.Log.Info("creating proposervm wrapper",
 		zap.Time("activationTime", m.ApricotPhase4Time),
@@ -1158,9 +1158,9 @@ func (m *manager) createSnowmanChain(
 		return nil, err
 	}
 
-	bootstrapWeight, err := beacons.TotalWeight(ctx.SubnetID)
+	bootstrapWeight, err := beacons.TotalWeight(ctx.SupernetID)
 	if err != nil {
-		return nil, fmt.Errorf("error while fetching weight for subnet %s: %w", ctx.SubnetID, err)
+		return nil, fmt.Errorf("error while fetching weight for supernet %s: %w", ctx.SupernetID, err)
 	}
 
 	consensusParams := sb.Config().ConsensusParameters
@@ -1173,7 +1173,7 @@ func (m *manager) createSnowmanChain(
 	if err != nil {
 		return nil, fmt.Errorf("error creating peer tracker: %w", err)
 	}
-	vdrs.RegisterCallbackListener(ctx.SubnetID, connectedValidators)
+	vdrs.RegisterCallbackListener(ctx.SupernetID, connectedValidators)
 
 	// Asynchronously passes messages from the network to the consensus engine
 	h, err := handler.New(
@@ -1183,7 +1183,7 @@ func (m *manager) createSnowmanChain(
 		m.AcceptedFrontierGossipFrequency,
 		m.ConsensusAppConcurrency,
 		m.ResourceTracker,
-		subnetConnector,
+		supernetConnector,
 		sb,
 		connectedValidators,
 	)
@@ -1193,7 +1193,7 @@ func (m *manager) createSnowmanChain(
 
 	connectedBeacons := tracker.NewPeers()
 	startupTracker := tracker.NewStartup(connectedBeacons, (3*bootstrapWeight+3)/4)
-	beacons.RegisterCallbackListener(ctx.SubnetID, startupTracker)
+	beacons.RegisterCallbackListener(ctx.SupernetID, startupTracker)
 
 	commonCfg := common.Config{
 		Ctx:                            ctx,
@@ -1292,7 +1292,7 @@ func (m *manager) createSnowmanChain(
 	})
 
 	// Register health checks
-	if err := m.Health.RegisterHealthCheck(chainAlias, h, ctx.SubnetID.String()); err != nil {
+	if err := m.Health.RegisterHealthCheck(chainAlias, h, ctx.SupernetID.String()); err != nil {
 		return nil, fmt.Errorf("couldn't add health check for chain %s: %w", chainAlias, err)
 	}
 
@@ -1315,24 +1315,24 @@ func (m *manager) IsBootstrapped(id ids.ID) bool {
 	return chain.Context().State.Get().State == snow.NormalOp
 }
 
-func (m *manager) subnetsNotBootstrapped() []ids.ID {
-	m.subnetsLock.RLock()
-	defer m.subnetsLock.RUnlock()
+func (m *manager) supernetsNotBootstrapped() []ids.ID {
+	m.supernetsLock.RLock()
+	defer m.supernetsLock.RUnlock()
 
-	subnetsBootstrapping := make([]ids.ID, 0, len(m.subnets))
-	for subnetID, subnet := range m.subnets {
-		if !subnet.IsBootstrapped() {
-			subnetsBootstrapping = append(subnetsBootstrapping, subnetID)
+	supernetsBootstrapping := make([]ids.ID, 0, len(m.supernets))
+	for supernetID, supernet := range m.supernets {
+		if !supernet.IsBootstrapped() {
+			supernetsBootstrapping = append(supernetsBootstrapping, supernetID)
 		}
 	}
-	return subnetsBootstrapping
+	return supernetsBootstrapping
 }
 
 func (m *manager) registerBootstrappedHealthChecks() error {
 	bootstrappedCheck := health.CheckerFunc(func(context.Context) (interface{}, error) {
-		subnetIDs := m.subnetsNotBootstrapped()
-		if len(subnetIDs) != 0 {
-			return subnetIDs, errNotBootstrapped
+		supernetIDs := m.supernetsNotBootstrapped()
+		if len(supernetIDs) != 0 {
+			return supernetIDs, errNotBootstrapped
 		}
 		return []ids.ID{}, nil
 	})
@@ -1373,18 +1373,18 @@ func (m *manager) registerBootstrappedHealthChecks() error {
 
 // Starts chain creation loop to process queued chains
 func (m *manager) StartChainCreator(platformParams ChainParameters) error {
-	// Get the Primary Network's subnet config. If it wasn't registered, then we
+	// Get the Primary Network's supernet config. If it wasn't registered, then we
 	// throw a fatal error.
-	sbConfig, ok := m.SubnetConfigs[constants.PrimaryNetworkID]
+	sbConfig, ok := m.SupernetConfigs[constants.PrimaryNetworkID]
 	if !ok {
 		return errNoPrimaryNetworkConfig
 	}
 
-	sb := subnets.New(m.NodeID, sbConfig)
-	m.subnetsLock.Lock()
-	m.subnets[platformParams.SubnetID] = sb
+	sb := supernets.New(m.NodeID, sbConfig)
+	m.supernetsLock.Lock()
+	m.supernets[platformParams.SupernetID] = sb
 	sb.AddChain(platformParams.ID)
-	m.subnetsLock.Unlock()
+	m.supernetsLock.Unlock()
 
 	// The P-chain is created synchronously to ensure that `VM.Initialize` has
 	// finished before returning from this function. This is required because

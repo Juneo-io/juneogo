@@ -16,33 +16,33 @@ import (
 
 	"go.uber.org/mock/gomock"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/message"
-	"github.com/ava-labs/avalanchego/proto/pb/p2p"
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/snow/engine/common"
-	"github.com/ava-labs/avalanchego/snow/networking/benchlist"
-	"github.com/ava-labs/avalanchego/snow/networking/handler"
-	"github.com/ava-labs/avalanchego/snow/networking/router"
-	"github.com/ava-labs/avalanchego/snow/networking/timeout"
-	"github.com/ava-labs/avalanchego/snow/networking/tracker"
-	"github.com/ava-labs/avalanchego/snow/validators"
-	"github.com/ava-labs/avalanchego/subnets"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/logging"
-	"github.com/ava-labs/avalanchego/utils/math/meter"
-	"github.com/ava-labs/avalanchego/utils/resource"
-	"github.com/ava-labs/avalanchego/utils/set"
-	"github.com/ava-labs/avalanchego/utils/timer"
-	"github.com/ava-labs/avalanchego/version"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/message"
+	"github.com/Juneo-io/juneogo/proto/pb/p2p"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/snow/engine/common"
+	"github.com/Juneo-io/juneogo/snow/networking/benchlist"
+	"github.com/Juneo-io/juneogo/snow/networking/handler"
+	"github.com/Juneo-io/juneogo/snow/networking/router"
+	"github.com/Juneo-io/juneogo/snow/networking/timeout"
+	"github.com/Juneo-io/juneogo/snow/networking/tracker"
+	"github.com/Juneo-io/juneogo/snow/validators"
+	"github.com/Juneo-io/juneogo/supernets"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/logging"
+	"github.com/Juneo-io/juneogo/utils/math/meter"
+	"github.com/Juneo-io/juneogo/utils/resource"
+	"github.com/Juneo-io/juneogo/utils/set"
+	"github.com/Juneo-io/juneogo/utils/timer"
+	"github.com/Juneo-io/juneogo/version"
 
-	commontracker "github.com/ava-labs/avalanchego/snow/engine/common/tracker"
+	commontracker "github.com/Juneo-io/juneogo/snow/engine/common/tracker"
 )
 
 const testThreadPoolSize = 2
 
-var defaultSubnetConfig = subnets.Config{
-	GossipConfig: subnets.GossipConfig{
+var defaultSupernetConfig = supernets.Config{
+	GossipConfig: supernets.GossipConfig{
 		AcceptedFrontierPeerSize:  2,
 		OnAcceptPeerSize:          2,
 		AppGossipValidatorSize:    2,
@@ -55,7 +55,7 @@ func TestTimeout(t *testing.T) {
 
 	ctx := snow.DefaultConsensusContextTest()
 	vdrs := validators.NewManager()
-	require.NoError(vdrs.AddStaker(ctx.SubnetID, ids.GenerateTestNodeID(), nil, ids.Empty, 1))
+	require.NoError(vdrs.AddStaker(ctx.SupernetID, ids.GenerateTestNodeID(), nil, ids.Empty, 1))
 	benchlist := benchlist.NewNoBenchlist()
 	tm, err := timeout.NewManager(
 		&timer.AdaptiveTimeoutConfig{
@@ -108,7 +108,7 @@ func TestTimeout(t *testing.T) {
 		&chainRouter,
 		tm,
 		p2p.EngineType_ENGINE_TYPE_SNOWMAN,
-		subnets.New(ctx.NodeID, defaultSubnetConfig),
+		supernets.New(ctx.NodeID, defaultSupernetConfig),
 	)
 	require.NoError(err)
 
@@ -127,8 +127,8 @@ func TestTimeout(t *testing.T) {
 		time.Hour,
 		testThreadPoolSize,
 		resourceTracker,
-		validators.UnhandledSubnetConnector,
-		subnets.New(ctx.NodeID, subnets.Config{}),
+		validators.UnhandledSupernetConnector,
+		supernets.New(ctx.NodeID, supernets.Config{}),
 		commontracker.NewPeers(),
 	)
 	require.NoError(err)
@@ -290,13 +290,13 @@ func TestTimeout(t *testing.T) {
 	}
 
 	// Send messages to disconnected peers
-	externalSender.SendF = func(_ message.OutboundMessage, nodeIDs set.Set[ids.NodeID], _ ids.ID, _ subnets.Allower) set.Set[ids.NodeID] {
+	externalSender.SendF = func(_ message.OutboundMessage, nodeIDs set.Set[ids.NodeID], _ ids.ID, _ supernets.Allower) set.Set[ids.NodeID] {
 		return nil
 	}
 	sendAll()
 
 	// Send messages to connected peers
-	externalSender.SendF = func(_ message.OutboundMessage, nodeIDs set.Set[ids.NodeID], _ ids.ID, _ subnets.Allower) set.Set[ids.NodeID] {
+	externalSender.SendF = func(_ message.OutboundMessage, nodeIDs set.Set[ids.NodeID], _ ids.ID, _ supernets.Allower) set.Set[ids.NodeID] {
 		return nodeIDs
 	}
 	sendAll()
@@ -312,7 +312,7 @@ func TestReliableMessages(t *testing.T) {
 
 	ctx := snow.DefaultConsensusContextTest()
 	vdrs := validators.NewManager()
-	require.NoError(vdrs.AddStaker(ctx.SubnetID, ids.NodeID{1}, nil, ids.Empty, 1))
+	require.NoError(vdrs.AddStaker(ctx.SupernetID, ids.NodeID{1}, nil, ids.Empty, 1))
 	benchlist := benchlist.NewNoBenchlist()
 	tm, err := timeout.NewManager(
 		&timer.AdaptiveTimeoutConfig{
@@ -366,7 +366,7 @@ func TestReliableMessages(t *testing.T) {
 		&chainRouter,
 		tm,
 		p2p.EngineType_ENGINE_TYPE_SNOWMAN,
-		subnets.New(ctx.NodeID, defaultSubnetConfig),
+		supernets.New(ctx.NodeID, defaultSupernetConfig),
 	)
 	require.NoError(err)
 
@@ -385,8 +385,8 @@ func TestReliableMessages(t *testing.T) {
 		1,
 		testThreadPoolSize,
 		resourceTracker,
-		validators.UnhandledSubnetConnector,
-		subnets.New(ctx.NodeID, subnets.Config{}),
+		validators.UnhandledSupernetConnector,
+		supernets.New(ctx.NodeID, supernets.Config{}),
 		commontracker.NewPeers(),
 	)
 	require.NoError(err)
@@ -461,7 +461,7 @@ func TestReliableMessagesToMyself(t *testing.T) {
 	benchlist := benchlist.NewNoBenchlist()
 	ctx := snow.DefaultConsensusContextTest()
 	vdrs := validators.NewManager()
-	require.NoError(vdrs.AddStaker(ctx.SubnetID, ids.GenerateTestNodeID(), nil, ids.Empty, 1))
+	require.NoError(vdrs.AddStaker(ctx.SupernetID, ids.GenerateTestNodeID(), nil, ids.Empty, 1))
 	tm, err := timeout.NewManager(
 		&timer.AdaptiveTimeoutConfig{
 			InitialTimeout:     10 * time.Millisecond,
@@ -514,7 +514,7 @@ func TestReliableMessagesToMyself(t *testing.T) {
 		&chainRouter,
 		tm,
 		p2p.EngineType_ENGINE_TYPE_SNOWMAN,
-		subnets.New(ctx.NodeID, defaultSubnetConfig),
+		supernets.New(ctx.NodeID, defaultSupernetConfig),
 	)
 	require.NoError(err)
 
@@ -533,8 +533,8 @@ func TestReliableMessagesToMyself(t *testing.T) {
 		time.Second,
 		testThreadPoolSize,
 		resourceTracker,
-		validators.UnhandledSubnetConnector,
-		subnets.New(ctx.NodeID, subnets.Config{}),
+		validators.UnhandledSupernetConnector,
+		supernets.New(ctx.NodeID, supernets.Config{}),
 		commontracker.NewPeers(),
 	)
 	require.NoError(err)
@@ -606,7 +606,7 @@ func TestReliableMessagesToMyself(t *testing.T) {
 func TestSender_Bootstrap_Requests(t *testing.T) {
 	var (
 		chainID       = ids.GenerateTestID()
-		subnetID      = ids.GenerateTestID()
+		supernetID      = ids.GenerateTestID()
 		myNodeID      = ids.GenerateTestNodeID()
 		successNodeID = ids.GenerateTestNodeID()
 		failedNodeID  = ids.GenerateTestNodeID()
@@ -618,7 +618,7 @@ func TestSender_Bootstrap_Requests(t *testing.T) {
 		engineType    = p2p.EngineType_ENGINE_TYPE_SNOWMAN
 	)
 	ctx.ChainID = chainID
-	ctx.SubnetID = subnetID
+	ctx.SupernetID = supernetID
 	ctx.NodeID = myNodeID
 	snowCtx := &snow.ConsensusContext{
 		Context:             ctx,
@@ -667,7 +667,7 @@ func TestSender_Bootstrap_Requests(t *testing.T) {
 					gomock.Any(), // Outbound message
 					// Note [myNodeID] is not in this set
 					set.Of(successNodeID, failedNodeID),
-					subnetID, // Subnet ID
+					supernetID, // Supernet ID
 					gomock.Any(),
 				).Return(set.Of(successNodeID))
 			},
@@ -710,7 +710,7 @@ func TestSender_Bootstrap_Requests(t *testing.T) {
 					gomock.Any(), // Outbound message
 					// Note [myNodeID] is not in this set
 					set.Of(successNodeID, failedNodeID),
-					subnetID, // Subnet ID
+					supernetID, // Supernet ID
 					gomock.Any(),
 				).Return(set.Of(successNodeID))
 			},
@@ -750,7 +750,7 @@ func TestSender_Bootstrap_Requests(t *testing.T) {
 					gomock.Any(), // Outbound message
 					// Note [myNodeID] is not in this set
 					set.Of(successNodeID, failedNodeID),
-					subnetID, // Subnet ID
+					supernetID, // Supernet ID
 					gomock.Any(),
 				).Return(set.Of(successNodeID))
 			},
@@ -792,7 +792,7 @@ func TestSender_Bootstrap_Requests(t *testing.T) {
 					gomock.Any(), // Outbound message
 					// Note [myNodeID] is not in this set
 					set.Of(successNodeID, failedNodeID),
-					subnetID, // Subnet ID
+					supernetID, // Supernet ID
 					gomock.Any(),
 				).Return(set.Of(successNodeID))
 			},
@@ -826,7 +826,7 @@ func TestSender_Bootstrap_Requests(t *testing.T) {
 				router,
 				timeoutManager,
 				engineType,
-				subnets.New(ctx.NodeID, defaultSubnetConfig),
+				supernets.New(ctx.NodeID, defaultSupernetConfig),
 			)
 			require.NoError(err)
 
@@ -878,7 +878,7 @@ func TestSender_Bootstrap_Requests(t *testing.T) {
 func TestSender_Bootstrap_Responses(t *testing.T) {
 	var (
 		chainID           = ids.GenerateTestID()
-		subnetID          = ids.GenerateTestID()
+		supernetID          = ids.GenerateTestID()
 		myNodeID          = ids.GenerateTestNodeID()
 		destinationNodeID = ids.GenerateTestNodeID()
 		deadline          = time.Second
@@ -889,7 +889,7 @@ func TestSender_Bootstrap_Responses(t *testing.T) {
 		engineType        = p2p.EngineType_ENGINE_TYPE_AVALANCHE
 	)
 	ctx.ChainID = chainID
-	ctx.SubnetID = subnetID
+	ctx.SupernetID = supernetID
 	ctx.NodeID = myNodeID
 	snowCtx := &snow.ConsensusContext{
 		Context:             ctx,
@@ -926,7 +926,7 @@ func TestSender_Bootstrap_Responses(t *testing.T) {
 				externalSender.EXPECT().Send(
 					gomock.Any(),              // Outbound message
 					set.Of(destinationNodeID), // Node IDs
-					subnetID,                  // Subnet ID
+					supernetID,                  // Supernet ID
 					gomock.Any(),
 				).Return(nil)
 			},
@@ -956,7 +956,7 @@ func TestSender_Bootstrap_Responses(t *testing.T) {
 				externalSender.EXPECT().Send(
 					gomock.Any(),              // Outbound message
 					set.Of(destinationNodeID), // Node IDs
-					subnetID,                  // Subnet ID
+					supernetID,                  // Supernet ID
 					gomock.Any(),
 				).Return(nil)
 			},
@@ -984,7 +984,7 @@ func TestSender_Bootstrap_Responses(t *testing.T) {
 				externalSender.EXPECT().Send(
 					gomock.Any(),              // Outbound message
 					set.Of(destinationNodeID), // Node IDs
-					subnetID,                  // Subnet ID
+					supernetID,                  // Supernet ID
 					gomock.Any(),
 				).Return(nil)
 			},
@@ -1014,7 +1014,7 @@ func TestSender_Bootstrap_Responses(t *testing.T) {
 				externalSender.EXPECT().Send(
 					gomock.Any(),              // Outbound message
 					set.Of(destinationNodeID), // Node IDs
-					subnetID,                  // Subnet ID
+					supernetID,                  // Supernet ID
 					gomock.Any(),
 				).Return(nil)
 			},
@@ -1048,7 +1048,7 @@ func TestSender_Bootstrap_Responses(t *testing.T) {
 				router,
 				timeoutManager,
 				engineType,
-				subnets.New(ctx.NodeID, defaultSubnetConfig),
+				supernets.New(ctx.NodeID, defaultSupernetConfig),
 			)
 			require.NoError(err)
 
@@ -1086,7 +1086,7 @@ func TestSender_Bootstrap_Responses(t *testing.T) {
 func TestSender_Single_Request(t *testing.T) {
 	var (
 		chainID           = ids.GenerateTestID()
-		subnetID          = ids.GenerateTestID()
+		supernetID          = ids.GenerateTestID()
 		myNodeID          = ids.GenerateTestNodeID()
 		destinationNodeID = ids.GenerateTestNodeID()
 		deadline          = time.Second
@@ -1096,7 +1096,7 @@ func TestSender_Single_Request(t *testing.T) {
 		engineType        = p2p.EngineType_ENGINE_TYPE_SNOWMAN
 	)
 	ctx.ChainID = chainID
-	ctx.SubnetID = subnetID
+	ctx.SupernetID = supernetID
 	ctx.NodeID = myNodeID
 	snowCtx := &snow.ConsensusContext{
 		Context:             ctx,
@@ -1146,7 +1146,7 @@ func TestSender_Single_Request(t *testing.T) {
 				externalSender.EXPECT().Send(
 					gomock.Any(),              // Outbound message
 					set.Of(destinationNodeID), // Node IDs
-					subnetID,
+					supernetID,
 					gomock.Any(),
 				).Return(sentTo)
 			},
@@ -1185,7 +1185,7 @@ func TestSender_Single_Request(t *testing.T) {
 				externalSender.EXPECT().Send(
 					gomock.Any(),              // Outbound message
 					set.Of(destinationNodeID), // Node IDs
-					subnetID,
+					supernetID,
 					gomock.Any(),
 				).Return(sentTo)
 			},
@@ -1215,7 +1215,7 @@ func TestSender_Single_Request(t *testing.T) {
 				router,
 				timeoutManager,
 				engineType,
-				subnets.New(ctx.NodeID, defaultSubnetConfig),
+				supernets.New(ctx.NodeID, defaultSupernetConfig),
 			)
 			require.NoError(err)
 

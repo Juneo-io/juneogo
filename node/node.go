@@ -24,66 +24,66 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/ava-labs/avalanchego/api/admin"
-	"github.com/ava-labs/avalanchego/api/auth"
-	"github.com/ava-labs/avalanchego/api/health"
-	"github.com/ava-labs/avalanchego/api/info"
-	"github.com/ava-labs/avalanchego/api/keystore"
-	"github.com/ava-labs/avalanchego/api/metrics"
-	"github.com/ava-labs/avalanchego/api/server"
-	"github.com/ava-labs/avalanchego/chains"
-	"github.com/ava-labs/avalanchego/chains/atomic"
-	"github.com/ava-labs/avalanchego/database"
-	"github.com/ava-labs/avalanchego/database/leveldb"
-	"github.com/ava-labs/avalanchego/database/manager"
-	"github.com/ava-labs/avalanchego/database/memdb"
-	"github.com/ava-labs/avalanchego/database/prefixdb"
-	"github.com/ava-labs/avalanchego/genesis"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/indexer"
-	"github.com/ava-labs/avalanchego/ipcs"
-	"github.com/ava-labs/avalanchego/message"
-	"github.com/ava-labs/avalanchego/network"
-	"github.com/ava-labs/avalanchego/network/dialer"
-	"github.com/ava-labs/avalanchego/network/peer"
-	"github.com/ava-labs/avalanchego/network/throttling"
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/snow/networking/benchlist"
-	"github.com/ava-labs/avalanchego/snow/networking/router"
-	"github.com/ava-labs/avalanchego/snow/networking/timeout"
-	"github.com/ava-labs/avalanchego/snow/networking/tracker"
-	"github.com/ava-labs/avalanchego/snow/uptime"
-	"github.com/ava-labs/avalanchego/snow/validators"
-	"github.com/ava-labs/avalanchego/staking"
-	"github.com/ava-labs/avalanchego/trace"
-	"github.com/ava-labs/avalanchego/utils"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/crypto/bls"
-	"github.com/ava-labs/avalanchego/utils/filesystem"
-	"github.com/ava-labs/avalanchego/utils/hashing"
-	"github.com/ava-labs/avalanchego/utils/ips"
-	"github.com/ava-labs/avalanchego/utils/logging"
-	"github.com/ava-labs/avalanchego/utils/math/meter"
-	"github.com/ava-labs/avalanchego/utils/perms"
-	"github.com/ava-labs/avalanchego/utils/profiler"
-	"github.com/ava-labs/avalanchego/utils/resource"
-	"github.com/ava-labs/avalanchego/utils/set"
-	"github.com/ava-labs/avalanchego/utils/timer"
-	"github.com/ava-labs/avalanchego/utils/wrappers"
-	"github.com/ava-labs/avalanchego/version"
-	"github.com/ava-labs/avalanchego/vms"
-	"github.com/ava-labs/avalanchego/vms/avm"
-	"github.com/ava-labs/avalanchego/vms/nftfx"
-	"github.com/ava-labs/avalanchego/vms/platformvm"
-	"github.com/ava-labs/avalanchego/vms/platformvm/signer"
-	"github.com/ava-labs/avalanchego/vms/propertyfx"
-	"github.com/ava-labs/avalanchego/vms/registry"
-	"github.com/ava-labs/avalanchego/vms/rpcchainvm/runtime"
-	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
+	"github.com/Juneo-io/juneogo/api/admin"
+	"github.com/Juneo-io/juneogo/api/auth"
+	"github.com/Juneo-io/juneogo/api/health"
+	"github.com/Juneo-io/juneogo/api/info"
+	"github.com/Juneo-io/juneogo/api/keystore"
+	"github.com/Juneo-io/juneogo/api/metrics"
+	"github.com/Juneo-io/juneogo/api/server"
+	"github.com/Juneo-io/juneogo/chains"
+	"github.com/Juneo-io/juneogo/chains/atomic"
+	"github.com/Juneo-io/juneogo/database"
+	"github.com/Juneo-io/juneogo/database/leveldb"
+	"github.com/Juneo-io/juneogo/database/manager"
+	"github.com/Juneo-io/juneogo/database/memdb"
+	"github.com/Juneo-io/juneogo/database/prefixdb"
+	"github.com/Juneo-io/juneogo/genesis"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/indexer"
+	"github.com/Juneo-io/juneogo/ipcs"
+	"github.com/Juneo-io/juneogo/message"
+	"github.com/Juneo-io/juneogo/network"
+	"github.com/Juneo-io/juneogo/network/dialer"
+	"github.com/Juneo-io/juneogo/network/peer"
+	"github.com/Juneo-io/juneogo/network/throttling"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/snow/networking/benchlist"
+	"github.com/Juneo-io/juneogo/snow/networking/router"
+	"github.com/Juneo-io/juneogo/snow/networking/timeout"
+	"github.com/Juneo-io/juneogo/snow/networking/tracker"
+	"github.com/Juneo-io/juneogo/snow/uptime"
+	"github.com/Juneo-io/juneogo/snow/validators"
+	"github.com/Juneo-io/juneogo/staking"
+	"github.com/Juneo-io/juneogo/trace"
+	"github.com/Juneo-io/juneogo/utils"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/crypto/bls"
+	"github.com/Juneo-io/juneogo/utils/filesystem"
+	"github.com/Juneo-io/juneogo/utils/hashing"
+	"github.com/Juneo-io/juneogo/utils/ips"
+	"github.com/Juneo-io/juneogo/utils/logging"
+	"github.com/Juneo-io/juneogo/utils/math/meter"
+	"github.com/Juneo-io/juneogo/utils/perms"
+	"github.com/Juneo-io/juneogo/utils/profiler"
+	"github.com/Juneo-io/juneogo/utils/resource"
+	"github.com/Juneo-io/juneogo/utils/set"
+	"github.com/Juneo-io/juneogo/utils/timer"
+	"github.com/Juneo-io/juneogo/utils/wrappers"
+	"github.com/Juneo-io/juneogo/version"
+	"github.com/Juneo-io/juneogo/vms"
+	"github.com/Juneo-io/juneogo/vms/avm"
+	"github.com/Juneo-io/juneogo/vms/nftfx"
+	"github.com/Juneo-io/juneogo/vms/platformvm"
+	"github.com/Juneo-io/juneogo/vms/platformvm/signer"
+	"github.com/Juneo-io/juneogo/vms/propertyfx"
+	"github.com/Juneo-io/juneogo/vms/registry"
+	"github.com/Juneo-io/juneogo/vms/rpcchainvm/runtime"
+	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
 
-	ipcsapi "github.com/ava-labs/avalanchego/api/ipcs"
-	avmconfig "github.com/ava-labs/avalanchego/vms/avm/config"
-	platformconfig "github.com/ava-labs/avalanchego/vms/platformvm/config"
+	ipcsapi "github.com/Juneo-io/juneogo/api/ipcs"
+	avmconfig "github.com/Juneo-io/juneogo/vms/avm/config"
+	platformconfig "github.com/Juneo-io/juneogo/vms/platformvm/config"
 )
 
 var (
@@ -370,7 +370,7 @@ func (n *Node) initNetworking() error {
 	n.Config.NetworkConfig.Beacons = n.bootstrappers
 	n.Config.NetworkConfig.TLSConfig = tlsConfig
 	n.Config.NetworkConfig.TLSKey = tlsKey
-	n.Config.NetworkConfig.TrackedSubnets = n.Config.TrackedSubnets
+	n.Config.NetworkConfig.TrackedSupernets = n.Config.TrackedSupernets
 	n.Config.NetworkConfig.UptimeCalculator = n.uptimeCalculator
 	n.Config.NetworkConfig.UptimeRequirement = n.Config.UptimeRequirement
 	n.Config.NetworkConfig.ResourceTracker = n.resourceTracker
@@ -658,7 +658,7 @@ func (n *Node) initChains(genesisBytes []byte) error {
 
 	platformChain := chains.ChainParameters{
 		ID:            constants.PlatformChainID,
-		SubnetID:      constants.PrimaryNetworkID,
+		SupernetID:      constants.PrimaryNetworkID,
 		GenesisData:   genesisBytes, // Specifies other chains to create
 		VMID:          constants.PlatformVMID,
 		CustomBeacons: n.bootstrappers,
@@ -826,7 +826,7 @@ func (n *Node) initChainManager(avaxAssetID ids.ID) error {
 		n.Config.ConsensusShutdownTimeout,
 		criticalChains,
 		n.Config.SybilProtectionEnabled,
-		n.Config.TrackedSubnets,
+		n.Config.TrackedSupernets,
 		n.Shutdown,
 		n.Config.RouterHealthConfig,
 		"requests",
@@ -868,7 +868,7 @@ func (n *Node) initChainManager(avaxAssetID ids.ID) error {
 		ShutdownNodeFunc:                        n.Shutdown,
 		MeterVMEnabled:                          n.Config.MeterVMEnabled,
 		Metrics:                                 n.MetricsGatherer,
-		SubnetConfigs:                           n.Config.SubnetConfigs,
+		SupernetConfigs:                           n.Config.SupernetConfigs,
 		ChainConfigs:                            n.Config.ChainConfigs,
 		AcceptedFrontierGossipFrequency:         n.Config.AcceptedFrontierGossipFrequency,
 		ConsensusAppConcurrency:                 n.Config.ConsensusAppConcurrency,
@@ -919,16 +919,16 @@ func (n *Node) initVMs() error {
 				UptimeLockedCalculator:        n.uptimeCalculator,
 				SybilProtectionEnabled:        n.Config.SybilProtectionEnabled,
 				PartialSyncPrimaryNetwork:     n.Config.PartialSyncPrimaryNetwork,
-				TrackedSubnets:                n.Config.TrackedSubnets,
+				TrackedSupernets:                n.Config.TrackedSupernets,
 				TxFee:                         n.Config.TxFee,
 				CreateAssetTxFee:              n.Config.CreateAssetTxFee,
-				CreateSubnetTxFee:             n.Config.CreateSubnetTxFee,
-				TransformSubnetTxFee:          n.Config.TransformSubnetTxFee,
+				CreateSupernetTxFee:             n.Config.CreateSupernetTxFee,
+				TransformSupernetTxFee:          n.Config.TransformSupernetTxFee,
 				CreateBlockchainTxFee:         n.Config.CreateBlockchainTxFee,
 				AddPrimaryNetworkValidatorFee: n.Config.AddPrimaryNetworkValidatorFee,
 				AddPrimaryNetworkDelegatorFee: n.Config.AddPrimaryNetworkDelegatorFee,
-				AddSubnetValidatorFee:         n.Config.AddSubnetValidatorFee,
-				AddSubnetDelegatorFee:         n.Config.AddSubnetDelegatorFee,
+				AddSupernetValidatorFee:         n.Config.AddSupernetValidatorFee,
+				AddSupernetDelegatorFee:         n.Config.AddSupernetDelegatorFee,
 				UptimePercentage:              n.Config.UptimeRequirement,
 				MinValidatorStake:             n.Config.MinValidatorStake,
 				MaxValidatorStake:             n.Config.MaxValidatorStake,
@@ -1117,13 +1117,13 @@ func (n *Node) initInfoAPI() error {
 			NetworkID:                     n.Config.NetworkID,
 			TxFee:                         n.Config.TxFee,
 			CreateAssetTxFee:              n.Config.CreateAssetTxFee,
-			CreateSubnetTxFee:             n.Config.CreateSubnetTxFee,
-			TransformSubnetTxFee:          n.Config.TransformSubnetTxFee,
+			CreateSupernetTxFee:             n.Config.CreateSupernetTxFee,
+			TransformSupernetTxFee:          n.Config.TransformSupernetTxFee,
 			CreateBlockchainTxFee:         n.Config.CreateBlockchainTxFee,
 			AddPrimaryNetworkValidatorFee: n.Config.AddPrimaryNetworkValidatorFee,
 			AddPrimaryNetworkDelegatorFee: n.Config.AddPrimaryNetworkDelegatorFee,
-			AddSubnetValidatorFee:         n.Config.AddSubnetValidatorFee,
-			AddSubnetDelegatorFee:         n.Config.AddSubnetDelegatorFee,
+			AddSupernetValidatorFee:         n.Config.AddSupernetValidatorFee,
+			AddSupernetDelegatorFee:         n.Config.AddSupernetDelegatorFee,
 			VMManager:                     n.VMManager,
 		},
 		n.Log,

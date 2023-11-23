@@ -16,17 +16,17 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/message"
-	"github.com/ava-labs/avalanchego/proto/pb/p2p"
-	"github.com/ava-labs/avalanchego/staking"
-	"github.com/ava-labs/avalanchego/utils"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/ips"
-	"github.com/ava-labs/avalanchego/utils/json"
-	"github.com/ava-labs/avalanchego/utils/set"
-	"github.com/ava-labs/avalanchego/utils/wrappers"
-	"github.com/ava-labs/avalanchego/version"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/message"
+	"github.com/Juneo-io/juneogo/proto/pb/p2p"
+	"github.com/Juneo-io/juneogo/staking"
+	"github.com/Juneo-io/juneogo/utils"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/ips"
+	"github.com/Juneo-io/juneogo/utils/json"
+	"github.com/Juneo-io/juneogo/utils/set"
+	"github.com/Juneo-io/juneogo/utils/wrappers"
+	"github.com/Juneo-io/juneogo/version"
 )
 
 var (
@@ -72,14 +72,14 @@ type Peer interface {
 	// only be called after [Ready] returns true.
 	Version() *version.Application
 
-	// TrackedSubnets returns the subnets this peer is running. It should only
+	// TrackedSupernets returns the supernets this peer is running. It should only
 	// be called after [Ready] returns true.
-	TrackedSubnets() set.Set[ids.ID]
+	TrackedSupernets() set.Set[ids.ID]
 
-	// ObservedUptime returns the local node's subnet uptime according to the
+	// ObservedUptime returns the local node's supernet uptime according to the
 	// peer. The value ranges from [0, 100]. It should only be called after
 	// [Ready] returns true.
-	ObservedUptime(subnetID ids.ID) (uint32, bool)
+	ObservedUptime(supernetID ids.ID) (uint32, bool)
 
 	// Send attempts to send [msg] to the peer. The peer takes ownership of
 	// [msg] for reference counting. This returns false if the message is
@@ -125,13 +125,13 @@ type peer struct {
 	// version is the claimed version the peer is running that we received in
 	// the Version message.
 	version *version.Application
-	// trackedSubnets is the subset of subnetIDs the peer sent us in the Version
+	// trackedSupernets is the subset of supernetIDs the peer sent us in the Version
 	// message that we are also tracking.
-	trackedSubnets set.Set[ids.ID]
+	trackedSupernets set.Set[ids.ID]
 
 	observedUptimesLock sync.RWMutex
 	// [observedUptimesLock] must be held while accessing [observedUptime]
-	// Subnet ID --> Our uptime for the given subnet as perceived by the peer
+	// Supernet ID --> Our uptime for the given supernet as perceived by the peer
 	observedUptimes map[ids.ID]uint32
 
 	// True if this peer has sent us a valid Version message and
@@ -246,15 +246,15 @@ func (p *peer) Info() Info {
 		publicIPStr = p.ip.IPPort.String()
 	}
 
-	trackedSubnets := p.trackedSubnets.List()
-	uptimes := make(map[ids.ID]json.Uint32, len(trackedSubnets))
+	trackedSupernets := p.trackedSupernets.List()
+	uptimes := make(map[ids.ID]json.Uint32, len(trackedSupernets))
 
-	for _, subnetID := range trackedSubnets {
-		uptime, exist := p.ObservedUptime(subnetID)
+	for _, supernetID := range trackedSupernets {
+		uptime, exist := p.ObservedUptime(supernetID)
 		if !exist {
 			continue
 		}
-		uptimes[subnetID] = json.Uint32(uptime)
+		uptimes[supernetID] = json.Uint32(uptime)
 	}
 
 	primaryUptime, exist := p.ObservedUptime(constants.PrimaryNetworkID)
@@ -270,8 +270,8 @@ func (p *peer) Info() Info {
 		LastSent:              p.LastSent(),
 		LastReceived:          p.LastReceived(),
 		ObservedUptime:        json.Uint32(primaryUptime),
-		ObservedSubnetUptimes: uptimes,
-		TrackedSubnets:        trackedSubnets,
+		ObservedSupernetUptimes: uptimes,
+		TrackedSupernets:        trackedSupernets,
 	}
 }
 
@@ -283,15 +283,15 @@ func (p *peer) Version() *version.Application {
 	return p.version
 }
 
-func (p *peer) TrackedSubnets() set.Set[ids.ID] {
-	return p.trackedSubnets
+func (p *peer) TrackedSupernets() set.Set[ids.ID] {
+	return p.trackedSupernets
 }
 
-func (p *peer) ObservedUptime(subnetID ids.ID) (uint32, bool) {
+func (p *peer) ObservedUptime(supernetID ids.ID) (uint32, bool) {
 	p.observedUptimesLock.RLock()
 	defer p.observedUptimesLock.RUnlock()
 
-	uptime, exist := p.observedUptimes[subnetID]
+	uptime, exist := p.observedUptimes[supernetID]
 	return uptime, exist
 }
 
@@ -504,7 +504,7 @@ func (p *peer) writeMessages() {
 		p.VersionCompatibility.Version().String(),
 		mySignedIP.Timestamp,
 		mySignedIP.Signature,
-		p.MySubnets.List(),
+		p.MySupernets.List(),
 	)
 	if err != nil {
 		p.Log.Error("failed to create message",
@@ -650,8 +650,8 @@ func (p *peer) sendNetworkMessages() {
 				}
 			}
 
-			primaryUptime, subnetUptimes := p.getUptimes()
-			pingMessage, err := p.MessageCreator.Ping(primaryUptime, subnetUptimes)
+			primaryUptime, supernetUptimes := p.getUptimes()
+			pingMessage, err := p.MessageCreator.Ping(primaryUptime, supernetUptimes)
 			if err != nil {
 				p.Log.Error("failed to create message",
 					zap.Stringer("messageOp", message.PingOp),
@@ -707,10 +707,10 @@ func (p *peer) handle(msg message.InboundMessage) {
 }
 
 func (p *peer) handlePing(msg *p2p.Ping) {
-	p.observeUptimes(msg.Uptime, msg.SubnetUptimes)
+	p.observeUptimes(msg.Uptime, msg.SupernetUptimes)
 
-	primaryUptime, subnetUptimes := p.getUptimes()
-	pongMessage, err := p.MessageCreator.Pong(primaryUptime, subnetUptimes)
+	primaryUptime, supernetUptimes := p.getUptimes()
+	pongMessage, err := p.MessageCreator.Pong(primaryUptime, supernetUptimes)
 	if err != nil {
 		p.Log.Error("failed to create message",
 			zap.Stringer("messageOp", message.PongOp),
@@ -722,7 +722,7 @@ func (p *peer) handlePing(msg *p2p.Ping) {
 	p.Send(p.onClosingCtx, pongMessage)
 }
 
-func (p *peer) getUptimes() (uint32, []*p2p.SubnetUptime) {
+func (p *peer) getUptimes() (uint32, []*p2p.SupernetUptime) {
 	primaryUptime, err := p.UptimeCalculator.CalculateUptimePercent(
 		p.id,
 		constants.PrimaryNetworkID,
@@ -730,41 +730,41 @@ func (p *peer) getUptimes() (uint32, []*p2p.SubnetUptime) {
 	if err != nil {
 		p.Log.Debug("failed to get peer primary uptime percentage",
 			zap.Stringer("nodeID", p.id),
-			zap.Stringer("subnetID", constants.PrimaryNetworkID),
+			zap.Stringer("supernetID", constants.PrimaryNetworkID),
 			zap.Error(err),
 		)
 		primaryUptime = 0
 	}
 
-	subnetUptimes := make([]*p2p.SubnetUptime, 0, p.trackedSubnets.Len())
-	for subnetID := range p.trackedSubnets {
-		subnetUptime, err := p.UptimeCalculator.CalculateUptimePercent(p.id, subnetID)
+	supernetUptimes := make([]*p2p.SupernetUptime, 0, p.trackedSupernets.Len())
+	for supernetID := range p.trackedSupernets {
+		supernetUptime, err := p.UptimeCalculator.CalculateUptimePercent(p.id, supernetID)
 		if err != nil {
 			p.Log.Debug("failed to get peer uptime percentage",
 				zap.Stringer("nodeID", p.id),
-				zap.Stringer("subnetID", subnetID),
+				zap.Stringer("supernetID", supernetID),
 				zap.Error(err),
 			)
 			continue
 		}
 
-		subnetID := subnetID
-		subnetUptimes = append(subnetUptimes, &p2p.SubnetUptime{
-			SubnetId: subnetID[:],
-			Uptime:   uint32(subnetUptime * 100),
+		supernetID := supernetID
+		supernetUptimes = append(supernetUptimes, &p2p.SupernetUptime{
+			SupernetId: supernetID[:],
+			Uptime:   uint32(supernetUptime * 100),
 		})
 	}
 
 	primaryUptimePercent := uint32(primaryUptime * 100)
-	return primaryUptimePercent, subnetUptimes
+	return primaryUptimePercent, supernetUptimes
 }
 
 func (p *peer) handlePong(msg *p2p.Pong) {
 	// TODO: Remove once everyone sends uptimes in Ping messages.
-	p.observeUptimes(msg.Uptime, msg.SubnetUptimes)
+	p.observeUptimes(msg.Uptime, msg.SupernetUptimes)
 }
 
-func (p *peer) observeUptimes(primaryUptime uint32, subnetUptimes []*p2p.SubnetUptime) {
+func (p *peer) observeUptimes(primaryUptime uint32, supernetUptimes []*p2p.SupernetUptime) {
 	// TODO: Remove once everyone sends uptimes in Ping messages.
 	//
 	// If primaryUptime is 0, the message may not include any uptimes. This may
@@ -776,7 +776,7 @@ func (p *peer) observeUptimes(primaryUptime uint32, subnetUptimes []*p2p.SubnetU
 	if primaryUptime > 100 {
 		p.Log.Debug("dropping message with invalid uptime",
 			zap.Stringer("nodeID", p.id),
-			zap.Stringer("subnetID", constants.PrimaryNetworkID),
+			zap.Stringer("supernetID", constants.PrimaryNetworkID),
 			zap.Uint32("uptime", primaryUptime),
 		)
 		p.StartClose()
@@ -784,10 +784,10 @@ func (p *peer) observeUptimes(primaryUptime uint32, subnetUptimes []*p2p.SubnetU
 	}
 	p.observeUptime(constants.PrimaryNetworkID, primaryUptime)
 
-	for _, subnetUptime := range subnetUptimes {
-		subnetID, err := ids.ToID(subnetUptime.SubnetId)
+	for _, supernetUptime := range supernetUptimes {
+		supernetID, err := ids.ToID(supernetUptime.SupernetId)
 		if err != nil {
-			p.Log.Debug("dropping message with invalid subnetID",
+			p.Log.Debug("dropping message with invalid supernetID",
 				zap.Stringer("nodeID", p.id),
 				zap.Error(err),
 			)
@@ -795,36 +795,36 @@ func (p *peer) observeUptimes(primaryUptime uint32, subnetUptimes []*p2p.SubnetU
 			return
 		}
 
-		if !p.MySubnets.Contains(subnetID) {
-			p.Log.Debug("dropping message with unexpected subnetID",
+		if !p.MySupernets.Contains(supernetID) {
+			p.Log.Debug("dropping message with unexpected supernetID",
 				zap.Stringer("nodeID", p.id),
-				zap.Stringer("subnetID", subnetID),
+				zap.Stringer("supernetID", supernetID),
 			)
 			p.StartClose()
 			return
 		}
 
-		uptime := subnetUptime.Uptime
+		uptime := supernetUptime.Uptime
 		if uptime > 100 {
 			p.Log.Debug("dropping message with invalid uptime",
 				zap.Stringer("nodeID", p.id),
-				zap.Stringer("subnetID", subnetID),
+				zap.Stringer("supernetID", supernetID),
 				zap.Uint32("uptime", uptime),
 			)
 			p.StartClose()
 			return
 		}
-		p.observeUptime(subnetID, uptime)
+		p.observeUptime(supernetID, uptime)
 	}
 }
 
-// Record that the given peer perceives our uptime for the given [subnetID]
+// Record that the given peer perceives our uptime for the given [supernetID]
 // to be [uptime].
-// Assumes [uptime] is in the range [0, 100] and [subnetID] is a valid ID of a
-// subnet this peer tracks.
-func (p *peer) observeUptime(subnetID ids.ID, uptime uint32) {
+// Assumes [uptime] is in the range [0, 100] and [supernetID] is a valid ID of a
+// supernet this peer tracks.
+func (p *peer) observeUptime(supernetID ids.ID, uptime uint32) {
 	p.observedUptimesLock.Lock()
-	p.observedUptimes[subnetID] = uptime // [0, 100] percentage
+	p.observedUptimes[supernetID] = uptime // [0, 100] percentage
 	p.observedUptimesLock.Unlock()
 }
 
@@ -917,20 +917,20 @@ func (p *peer) handleVersion(msg *p2p.Version) {
 		return
 	}
 
-	// handle subnet IDs
-	for _, subnetIDBytes := range msg.TrackedSubnets {
-		subnetID, err := ids.ToID(subnetIDBytes)
+	// handle supernet IDs
+	for _, supernetIDBytes := range msg.TrackedSupernets {
+		supernetID, err := ids.ToID(supernetIDBytes)
 		if err != nil {
-			p.Log.Debug("failed to parse peer's tracked subnets",
+			p.Log.Debug("failed to parse peer's tracked supernets",
 				zap.Stringer("nodeID", p.id),
 				zap.Error(err),
 			)
 			p.StartClose()
 			return
 		}
-		// add only if we also track this subnet
-		if p.MySubnets.Contains(subnetID) {
-			p.trackedSubnets.Add(subnetID)
+		// add only if we also track this supernet
+		if p.MySupernets.Contains(supernetID) {
+			p.trackedSupernets.Add(supernetID)
 		}
 	}
 

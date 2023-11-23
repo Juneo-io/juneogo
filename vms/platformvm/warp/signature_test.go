@@ -13,12 +13,12 @@ import (
 
 	"go.uber.org/mock/gomock"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow/validators"
-	"github.com/ava-labs/avalanchego/utils"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/crypto/bls"
-	"github.com/ava-labs/avalanchego/utils/set"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow/validators"
+	"github.com/Juneo-io/juneogo/utils"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/crypto/bls"
+	"github.com/Juneo-io/juneogo/utils/set"
 )
 
 const pChainHeight uint64 = 1337
@@ -28,7 +28,7 @@ var (
 
 	errTest       = errors.New("non-nil error")
 	sourceChainID = ids.GenerateTestID()
-	subnetID      = ids.GenerateTestID()
+	supernetID      = ids.GenerateTestID()
 
 	testVdrs []*testValidator
 )
@@ -164,11 +164,11 @@ func TestSignatureVerification(t *testing.T) {
 		err       error
 	}{
 		{
-			name:      "can't get subnetID",
+			name:      "can't get supernetID",
 			networkID: constants.UnitTestID,
 			stateF: func(ctrl *gomock.Controller) validators.State {
 				state := validators.NewMockState(ctrl)
-				state.EXPECT().GetSubnetID(gomock.Any(), sourceChainID).Return(subnetID, errTest)
+				state.EXPECT().GetSupernetID(gomock.Any(), sourceChainID).Return(supernetID, errTest)
 				return state
 			},
 			quorumNum: 1,
@@ -195,8 +195,8 @@ func TestSignatureVerification(t *testing.T) {
 			networkID: constants.UnitTestID,
 			stateF: func(ctrl *gomock.Controller) validators.State {
 				state := validators.NewMockState(ctrl)
-				state.EXPECT().GetSubnetID(gomock.Any(), sourceChainID).Return(subnetID, nil)
-				state.EXPECT().GetValidatorSet(gomock.Any(), pChainHeight, subnetID).Return(nil, errTest)
+				state.EXPECT().GetSupernetID(gomock.Any(), sourceChainID).Return(supernetID, nil)
+				state.EXPECT().GetValidatorSet(gomock.Any(), pChainHeight, supernetID).Return(nil, errTest)
 				return state
 			},
 			quorumNum: 1,
@@ -223,8 +223,8 @@ func TestSignatureVerification(t *testing.T) {
 			networkID: constants.UnitTestID,
 			stateF: func(ctrl *gomock.Controller) validators.State {
 				state := validators.NewMockState(ctrl)
-				state.EXPECT().GetSubnetID(gomock.Any(), sourceChainID).Return(subnetID, nil)
-				state.EXPECT().GetValidatorSet(gomock.Any(), pChainHeight, subnetID).Return(map[ids.NodeID]*validators.GetValidatorOutput{
+				state.EXPECT().GetSupernetID(gomock.Any(), sourceChainID).Return(supernetID, nil)
+				state.EXPECT().GetValidatorSet(gomock.Any(), pChainHeight, supernetID).Return(map[ids.NodeID]*validators.GetValidatorOutput{
 					testVdrs[0].nodeID: {
 						NodeID:    testVdrs[0].nodeID,
 						PublicKey: testVdrs[0].vdr.PublicKey,
@@ -258,8 +258,8 @@ func TestSignatureVerification(t *testing.T) {
 			networkID: constants.UnitTestID,
 			stateF: func(ctrl *gomock.Controller) validators.State {
 				state := validators.NewMockState(ctrl)
-				state.EXPECT().GetSubnetID(gomock.Any(), sourceChainID).Return(subnetID, nil)
-				state.EXPECT().GetValidatorSet(gomock.Any(), pChainHeight, subnetID).Return(vdrs, nil)
+				state.EXPECT().GetSupernetID(gomock.Any(), sourceChainID).Return(supernetID, nil)
+				state.EXPECT().GetValidatorSet(gomock.Any(), pChainHeight, supernetID).Return(vdrs, nil)
 				return state
 			},
 			quorumNum: 1,
@@ -289,8 +289,8 @@ func TestSignatureVerification(t *testing.T) {
 			networkID: constants.UnitTestID,
 			stateF: func(ctrl *gomock.Controller) validators.State {
 				state := validators.NewMockState(ctrl)
-				state.EXPECT().GetSubnetID(gomock.Any(), sourceChainID).Return(subnetID, nil)
-				state.EXPECT().GetValidatorSet(gomock.Any(), pChainHeight, subnetID).Return(vdrs, nil)
+				state.EXPECT().GetSupernetID(gomock.Any(), sourceChainID).Return(supernetID, nil)
+				state.EXPECT().GetValidatorSet(gomock.Any(), pChainHeight, supernetID).Return(vdrs, nil)
 				return state
 			},
 			quorumNum: 1,
@@ -323,8 +323,8 @@ func TestSignatureVerification(t *testing.T) {
 			networkID: constants.UnitTestID,
 			stateF: func(ctrl *gomock.Controller) validators.State {
 				state := validators.NewMockState(ctrl)
-				state.EXPECT().GetSubnetID(gomock.Any(), sourceChainID).Return(subnetID, nil)
-				state.EXPECT().GetValidatorSet(gomock.Any(), pChainHeight, subnetID).Return(vdrs, nil)
+				state.EXPECT().GetSupernetID(gomock.Any(), sourceChainID).Return(supernetID, nil)
+				state.EXPECT().GetValidatorSet(gomock.Any(), pChainHeight, supernetID).Return(vdrs, nil)
 				return state
 			},
 			quorumNum: 1,
@@ -368,8 +368,8 @@ func TestSignatureVerification(t *testing.T) {
 			networkID: constants.UnitTestID,
 			stateF: func(ctrl *gomock.Controller) validators.State {
 				state := validators.NewMockState(ctrl)
-				state.EXPECT().GetSubnetID(gomock.Any(), sourceChainID).Return(subnetID, nil)
-				state.EXPECT().GetValidatorSet(gomock.Any(), pChainHeight, subnetID).Return(vdrs, nil)
+				state.EXPECT().GetSupernetID(gomock.Any(), sourceChainID).Return(supernetID, nil)
+				state.EXPECT().GetValidatorSet(gomock.Any(), pChainHeight, supernetID).Return(vdrs, nil)
 				return state
 			},
 			quorumNum: 1,
@@ -403,8 +403,8 @@ func TestSignatureVerification(t *testing.T) {
 			networkID: constants.UnitTestID,
 			stateF: func(ctrl *gomock.Controller) validators.State {
 				state := validators.NewMockState(ctrl)
-				state.EXPECT().GetSubnetID(gomock.Any(), sourceChainID).Return(subnetID, nil)
-				state.EXPECT().GetValidatorSet(gomock.Any(), pChainHeight, subnetID).Return(nil, nil)
+				state.EXPECT().GetSupernetID(gomock.Any(), sourceChainID).Return(supernetID, nil)
+				state.EXPECT().GetValidatorSet(gomock.Any(), pChainHeight, supernetID).Return(nil, nil)
 				return state
 			},
 			quorumNum: 1,
@@ -439,8 +439,8 @@ func TestSignatureVerification(t *testing.T) {
 			networkID: constants.UnitTestID,
 			stateF: func(ctrl *gomock.Controller) validators.State {
 				state := validators.NewMockState(ctrl)
-				state.EXPECT().GetSubnetID(gomock.Any(), sourceChainID).Return(subnetID, nil)
-				state.EXPECT().GetValidatorSet(gomock.Any(), pChainHeight, subnetID).Return(vdrs, nil)
+				state.EXPECT().GetSupernetID(gomock.Any(), sourceChainID).Return(supernetID, nil)
+				state.EXPECT().GetValidatorSet(gomock.Any(), pChainHeight, supernetID).Return(vdrs, nil)
 				return state
 			},
 			quorumNum: 3,
@@ -484,8 +484,8 @@ func TestSignatureVerification(t *testing.T) {
 			networkID: constants.UnitTestID,
 			stateF: func(ctrl *gomock.Controller) validators.State {
 				state := validators.NewMockState(ctrl)
-				state.EXPECT().GetSubnetID(gomock.Any(), sourceChainID).Return(subnetID, nil)
-				state.EXPECT().GetValidatorSet(gomock.Any(), pChainHeight, subnetID).Return(vdrs, nil)
+				state.EXPECT().GetSupernetID(gomock.Any(), sourceChainID).Return(supernetID, nil)
+				state.EXPECT().GetValidatorSet(gomock.Any(), pChainHeight, supernetID).Return(vdrs, nil)
 				return state
 			},
 			quorumNum: 3,
@@ -525,8 +525,8 @@ func TestSignatureVerification(t *testing.T) {
 			networkID: constants.UnitTestID,
 			stateF: func(ctrl *gomock.Controller) validators.State {
 				state := validators.NewMockState(ctrl)
-				state.EXPECT().GetSubnetID(gomock.Any(), sourceChainID).Return(subnetID, nil)
-				state.EXPECT().GetValidatorSet(gomock.Any(), pChainHeight, subnetID).Return(vdrs, nil)
+				state.EXPECT().GetSupernetID(gomock.Any(), sourceChainID).Return(supernetID, nil)
+				state.EXPECT().GetValidatorSet(gomock.Any(), pChainHeight, supernetID).Return(vdrs, nil)
 				return state
 			},
 			quorumNum: 3,
@@ -571,8 +571,8 @@ func TestSignatureVerification(t *testing.T) {
 			networkID: constants.UnitTestID,
 			stateF: func(ctrl *gomock.Controller) validators.State {
 				state := validators.NewMockState(ctrl)
-				state.EXPECT().GetSubnetID(gomock.Any(), sourceChainID).Return(subnetID, nil)
-				state.EXPECT().GetValidatorSet(gomock.Any(), pChainHeight, subnetID).Return(vdrs, nil)
+				state.EXPECT().GetSupernetID(gomock.Any(), sourceChainID).Return(supernetID, nil)
+				state.EXPECT().GetValidatorSet(gomock.Any(), pChainHeight, supernetID).Return(vdrs, nil)
 				return state
 			},
 			quorumNum: 1,
@@ -616,8 +616,8 @@ func TestSignatureVerification(t *testing.T) {
 			networkID: constants.UnitTestID,
 			stateF: func(ctrl *gomock.Controller) validators.State {
 				state := validators.NewMockState(ctrl)
-				state.EXPECT().GetSubnetID(gomock.Any(), sourceChainID).Return(subnetID, nil)
-				state.EXPECT().GetValidatorSet(gomock.Any(), pChainHeight, subnetID).Return(vdrs, nil)
+				state.EXPECT().GetSupernetID(gomock.Any(), sourceChainID).Return(supernetID, nil)
+				state.EXPECT().GetValidatorSet(gomock.Any(), pChainHeight, supernetID).Return(vdrs, nil)
 				return state
 			},
 			quorumNum: 2,
@@ -661,8 +661,8 @@ func TestSignatureVerification(t *testing.T) {
 			networkID: constants.UnitTestID,
 			stateF: func(ctrl *gomock.Controller) validators.State {
 				state := validators.NewMockState(ctrl)
-				state.EXPECT().GetSubnetID(gomock.Any(), sourceChainID).Return(subnetID, nil)
-				state.EXPECT().GetValidatorSet(gomock.Any(), pChainHeight, subnetID).Return(map[ids.NodeID]*validators.GetValidatorOutput{
+				state.EXPECT().GetSupernetID(gomock.Any(), sourceChainID).Return(supernetID, nil)
+				state.EXPECT().GetValidatorSet(gomock.Any(), pChainHeight, supernetID).Return(map[ids.NodeID]*validators.GetValidatorOutput{
 					testVdrs[0].nodeID: {
 						NodeID:    testVdrs[0].nodeID,
 						PublicKey: nil,
@@ -723,8 +723,8 @@ func TestSignatureVerification(t *testing.T) {
 			networkID: constants.UnitTestID,
 			stateF: func(ctrl *gomock.Controller) validators.State {
 				state := validators.NewMockState(ctrl)
-				state.EXPECT().GetSubnetID(gomock.Any(), sourceChainID).Return(subnetID, nil)
-				state.EXPECT().GetValidatorSet(gomock.Any(), pChainHeight, subnetID).Return(map[ids.NodeID]*validators.GetValidatorOutput{
+				state.EXPECT().GetSupernetID(gomock.Any(), sourceChainID).Return(supernetID, nil)
+				state.EXPECT().GetValidatorSet(gomock.Any(), pChainHeight, supernetID).Return(map[ids.NodeID]*validators.GetValidatorOutput{
 					testVdrs[0].nodeID: {
 						NodeID:    testVdrs[0].nodeID,
 						PublicKey: nil,

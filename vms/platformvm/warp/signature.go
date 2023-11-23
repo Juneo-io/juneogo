@@ -9,9 +9,9 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/ava-labs/avalanchego/snow/validators"
-	"github.com/ava-labs/avalanchego/utils/crypto/bls"
-	"github.com/ava-labs/avalanchego/utils/set"
+	"github.com/Juneo-io/juneogo/snow/validators"
+	"github.com/Juneo-io/juneogo/utils/crypto/bls"
+	"github.com/Juneo-io/juneogo/utils/set"
 )
 
 var (
@@ -78,12 +78,12 @@ func (s *BitSetSignature) Verify(
 		return ErrWrongNetworkID
 	}
 
-	subnetID, err := pChainState.GetSubnetID(ctx, msg.SourceChainID)
+	supernetID, err := pChainState.GetSupernetID(ctx, msg.SourceChainID)
 	if err != nil {
 		return err
 	}
 
-	vdrs, totalWeight, err := GetCanonicalValidatorSet(ctx, pChainState, pChainHeight, subnetID)
+	vdrs, totalWeight, err := GetCanonicalValidatorSet(ctx, pChainState, pChainHeight, supernetID)
 	if err != nil {
 		return err
 	}

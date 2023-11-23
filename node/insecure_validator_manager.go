@@ -6,12 +6,12 @@ package node
 import (
 	"go.uber.org/zap"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow/networking/router"
-	"github.com/ava-labs/avalanchego/snow/validators"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/logging"
-	"github.com/ava-labs/avalanchego/version"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow/networking/router"
+	"github.com/Juneo-io/juneogo/snow/validators"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/logging"
+	"github.com/Juneo-io/juneogo/version"
 )
 
 type insecureValidatorManager struct {
@@ -21,8 +21,8 @@ type insecureValidatorManager struct {
 	weight uint64
 }
 
-func (i *insecureValidatorManager) Connected(vdrID ids.NodeID, nodeVersion *version.Application, subnetID ids.ID) {
-	if constants.PrimaryNetworkID == subnetID {
+func (i *insecureValidatorManager) Connected(vdrID ids.NodeID, nodeVersion *version.Application, supernetID ids.ID) {
+	if constants.PrimaryNetworkID == supernetID {
 		// Sybil protection is disabled so we don't have a txID that added the
 		// peer as a validator. Because each validator needs a txID associated
 		// with it, we hack one together by padding the nodeID with zeroes.
@@ -33,12 +33,12 @@ func (i *insecureValidatorManager) Connected(vdrID ids.NodeID, nodeVersion *vers
 		if err != nil {
 			i.log.Error("failed to add validator",
 				zap.Stringer("nodeID", vdrID),
-				zap.Stringer("subnetID", constants.PrimaryNetworkID),
+				zap.Stringer("supernetID", constants.PrimaryNetworkID),
 				zap.Error(err),
 			)
 		}
 	}
-	i.Router.Connected(vdrID, nodeVersion, subnetID)
+	i.Router.Connected(vdrID, nodeVersion, supernetID)
 }
 
 func (i *insecureValidatorManager) Disconnected(vdrID ids.NodeID) {
@@ -48,7 +48,7 @@ func (i *insecureValidatorManager) Disconnected(vdrID ids.NodeID) {
 	if err != nil {
 		i.log.Error("failed to remove weight",
 			zap.Stringer("nodeID", vdrID),
-			zap.Stringer("subnetID", constants.PrimaryNetworkID),
+			zap.Stringer("supernetID", constants.PrimaryNetworkID),
 			zap.Error(err),
 		)
 	}

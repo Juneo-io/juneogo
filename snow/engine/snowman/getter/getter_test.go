@@ -12,14 +12,14 @@ import (
 
 	"go.uber.org/mock/gomock"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/snow/choices"
-	"github.com/ava-labs/avalanchego/snow/consensus/snowman"
-	"github.com/ava-labs/avalanchego/snow/engine/common"
-	"github.com/ava-labs/avalanchego/snow/engine/snowman/block"
-	"github.com/ava-labs/avalanchego/snow/engine/snowman/block/mocks"
-	"github.com/ava-labs/avalanchego/snow/validators"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/snow/choices"
+	"github.com/Juneo-io/juneogo/snow/consensus/snowman"
+	"github.com/Juneo-io/juneogo/snow/engine/common"
+	"github.com/Juneo-io/juneogo/snow/engine/snowman/block"
+	"github.com/Juneo-io/juneogo/snow/engine/snowman/block/mocks"
+	"github.com/Juneo-io/juneogo/snow/validators"
 )
 
 var errUnknownBlock = errors.New("unknown block")
@@ -60,14 +60,14 @@ func testSetup(
 	sender.CantSendGetAcceptedFrontier = false
 
 	peer := ids.GenerateTestNodeID()
-	require.NoError(t, peers.AddStaker(ctx.SubnetID, peer, nil, ids.Empty, 1))
-	totalWeight, err := peers.TotalWeight(ctx.SubnetID)
+	require.NoError(t, peers.AddStaker(ctx.SupernetID, peer, nil, ids.Empty, 1))
+	totalWeight, err := peers.TotalWeight(ctx.SupernetID)
 	require.NoError(t, err)
 
 	commonConfig := common.Config{
 		Ctx:                            ctx,
 		Beacons:                        peers,
-		SampleK:                        peers.Count(ctx.SubnetID),
+		SampleK:                        peers.Count(ctx.SupernetID),
 		Alpha:                          totalWeight/2 + 1,
 		Sender:                         sender,
 		BootstrapTracker:               bootstrapTracker,

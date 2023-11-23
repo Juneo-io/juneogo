@@ -6,8 +6,8 @@ package x
 import (
 	stdcontext "context"
 
-	"github.com/ava-labs/avalanchego/vms/avm/txs"
-	"github.com/ava-labs/avalanchego/wallet/subnet/primary/common"
+	"github.com/Juneo-io/juneogo/vms/avm/txs"
+	"github.com/Juneo-io/juneogo/wallet/supernet/primary/common"
 )
 
 var _ Backend = (*backend)(nil)

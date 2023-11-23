@@ -8,10 +8,10 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/ids"
+	"github.com/Juneo-io/juneogo/ids"
 )
 
-// BootstrapTrackerTest is a test subnet
+// BootstrapTrackerTest is a test supernet
 type BootstrapTrackerTest struct {
 	T *testing.T
 

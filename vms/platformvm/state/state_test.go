@@ -15,28 +15,28 @@ import (
 
 	"go.uber.org/mock/gomock"
 
-	"github.com/ava-labs/avalanchego/database"
-	"github.com/ava-labs/avalanchego/database/memdb"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/snow/choices"
-	"github.com/ava-labs/avalanchego/snow/validators"
-	"github.com/ava-labs/avalanchego/utils"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/crypto/bls"
-	"github.com/ava-labs/avalanchego/utils/units"
-	"github.com/ava-labs/avalanchego/utils/wrappers"
-	"github.com/ava-labs/avalanchego/vms/components/avax"
-	"github.com/ava-labs/avalanchego/vms/platformvm/block"
-	"github.com/ava-labs/avalanchego/vms/platformvm/config"
-	"github.com/ava-labs/avalanchego/vms/platformvm/fx"
-	"github.com/ava-labs/avalanchego/vms/platformvm/genesis"
-	"github.com/ava-labs/avalanchego/vms/platformvm/metrics"
-	"github.com/ava-labs/avalanchego/vms/platformvm/reward"
-	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
-	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
+	"github.com/Juneo-io/juneogo/database"
+	"github.com/Juneo-io/juneogo/database/memdb"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/snow/choices"
+	"github.com/Juneo-io/juneogo/snow/validators"
+	"github.com/Juneo-io/juneogo/utils"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/crypto/bls"
+	"github.com/Juneo-io/juneogo/utils/units"
+	"github.com/Juneo-io/juneogo/utils/wrappers"
+	"github.com/Juneo-io/juneogo/vms/components/avax"
+	"github.com/Juneo-io/juneogo/vms/platformvm/block"
+	"github.com/Juneo-io/juneogo/vms/platformvm/config"
+	"github.com/Juneo-io/juneogo/vms/platformvm/fx"
+	"github.com/Juneo-io/juneogo/vms/platformvm/genesis"
+	"github.com/Juneo-io/juneogo/vms/platformvm/metrics"
+	"github.com/Juneo-io/juneogo/vms/platformvm/reward"
+	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
+	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
 
-	safemath "github.com/ava-labs/avalanchego/utils/math"
+	safemath "github.com/Juneo-io/juneogo/utils/math"
 )
 
 var (
@@ -114,10 +114,10 @@ func newInitializedState(require *require.Assertions) (State, database.Database)
 	require.NoError(initialValidatorTx.Initialize(txs.Codec))
 
 	initialChain := &txs.CreateChainTx{
-		SubnetID:   constants.PrimaryNetworkID,
+		SupernetID:   constants.PrimaryNetworkID,
 		ChainName:  "x",
 		VMID:       constants.AVMID,
-		SubnetAuth: &secp256k1fx.Input{},
+		SupernetAuth: &secp256k1fx.Input{},
 	}
 	initialChainTx := &txs.Tx{Unsigned: initialChain}
 	require.NoError(initialChainTx.Initialize(txs.Codec))
@@ -334,7 +334,7 @@ func TestStateAddRemoveValidator(t *testing.T) {
 
 	var (
 		numNodes  = 3
-		subnetID  = ids.GenerateTestID()
+		supernetID  = ids.GenerateTestID()
 		startTime = time.Now()
 		endTime   = startTime.Add(24 * time.Hour)
 		stakers   = make([]Staker, numNodes)
@@ -349,12 +349,12 @@ func TestStateAddRemoveValidator(t *testing.T) {
 			PotentialReward: uint64(i + 1),
 		}
 		if i%2 == 0 {
-			stakers[i].SubnetID = subnetID
+			stakers[i].SupernetID = supernetID
 		} else {
 			sk, err := bls.NewSecretKey()
 			require.NoError(err)
 			stakers[i].PublicKey = bls.PublicFromSecretKey(sk)
-			stakers[i].SubnetID = constants.PrimaryNetworkID
+			stakers[i].SupernetID = constants.PrimaryNetworkID
 		}
 	}
 
@@ -365,19 +365,19 @@ func TestStateAddRemoveValidator(t *testing.T) {
 		removedValidators []Staker
 
 		expectedPrimaryValidatorSet map[ids.NodeID]*validators.GetValidatorOutput
-		expectedSubnetValidatorSet  map[ids.NodeID]*validators.GetValidatorOutput
+		expectedSupernetValidatorSet  map[ids.NodeID]*validators.GetValidatorOutput
 	}
 	diffs := []diff{
 		{
 			// Do nothing
 			expectedPrimaryValidatorSet: map[ids.NodeID]*validators.GetValidatorOutput{},
-			expectedSubnetValidatorSet:  map[ids.NodeID]*validators.GetValidatorOutput{},
+			expectedSupernetValidatorSet:  map[ids.NodeID]*validators.GetValidatorOutput{},
 		},
 		{
-			// Add a subnet validator
+			// Add a supernet validator
 			addedValidators:             []Staker{stakers[0]},
 			expectedPrimaryValidatorSet: map[ids.NodeID]*validators.GetValidatorOutput{},
-			expectedSubnetValidatorSet: map[ids.NodeID]*validators.GetValidatorOutput{
+			expectedSupernetValidatorSet: map[ids.NodeID]*validators.GetValidatorOutput{
 				stakers[0].NodeID: {
 					NodeID: stakers[0].NodeID,
 					Weight: stakers[0].Weight,
@@ -385,10 +385,10 @@ func TestStateAddRemoveValidator(t *testing.T) {
 			},
 		},
 		{
-			// Remove a subnet validator
+			// Remove a supernet validator
 			removedValidators:           []Staker{stakers[0]},
 			expectedPrimaryValidatorSet: map[ids.NodeID]*validators.GetValidatorOutput{},
-			expectedSubnetValidatorSet:  map[ids.NodeID]*validators.GetValidatorOutput{},
+			expectedSupernetValidatorSet:  map[ids.NodeID]*validators.GetValidatorOutput{},
 		},
 		{ // Add a primary network validator
 			addedValidators: []Staker{stakers[1]},
@@ -399,7 +399,7 @@ func TestStateAddRemoveValidator(t *testing.T) {
 					Weight:    stakers[1].Weight,
 				},
 			},
-			expectedSubnetValidatorSet: map[ids.NodeID]*validators.GetValidatorOutput{},
+			expectedSupernetValidatorSet: map[ids.NodeID]*validators.GetValidatorOutput{},
 		},
 		{
 			// Do nothing
@@ -410,15 +410,15 @@ func TestStateAddRemoveValidator(t *testing.T) {
 					Weight:    stakers[1].Weight,
 				},
 			},
-			expectedSubnetValidatorSet: map[ids.NodeID]*validators.GetValidatorOutput{},
+			expectedSupernetValidatorSet: map[ids.NodeID]*validators.GetValidatorOutput{},
 		},
 		{ // Remove a primary network validator
 			removedValidators:           []Staker{stakers[1]},
 			expectedPrimaryValidatorSet: map[ids.NodeID]*validators.GetValidatorOutput{},
-			expectedSubnetValidatorSet:  map[ids.NodeID]*validators.GetValidatorOutput{},
+			expectedSupernetValidatorSet:  map[ids.NodeID]*validators.GetValidatorOutput{},
 		},
 		{
-			// Add 2 subnet validators and a primary network validator
+			// Add 2 supernet validators and a primary network validator
 			addedValidators: []Staker{stakers[0], stakers[1], stakers[2]},
 			expectedPrimaryValidatorSet: map[ids.NodeID]*validators.GetValidatorOutput{
 				stakers[1].NodeID: {
@@ -427,7 +427,7 @@ func TestStateAddRemoveValidator(t *testing.T) {
 					Weight:    stakers[1].Weight,
 				},
 			},
-			expectedSubnetValidatorSet: map[ids.NodeID]*validators.GetValidatorOutput{
+			expectedSupernetValidatorSet: map[ids.NodeID]*validators.GetValidatorOutput{
 				stakers[0].NodeID: {
 					NodeID: stakers[0].NodeID,
 					Weight: stakers[0].Weight,
@@ -439,10 +439,10 @@ func TestStateAddRemoveValidator(t *testing.T) {
 			},
 		},
 		{
-			// Remove 2 subnet validators and a primary network validator.
+			// Remove 2 supernet validators and a primary network validator.
 			removedValidators:           []Staker{stakers[0], stakers[1], stakers[2]},
 			expectedPrimaryValidatorSet: map[ids.NodeID]*validators.GetValidatorOutput{},
-			expectedSubnetValidatorSet:  map[ids.NodeID]*validators.GetValidatorOutput{},
+			expectedSupernetValidatorSet:  map[ids.NodeID]*validators.GetValidatorOutput{},
 		},
 	}
 	for currentIndex, diff := range diffs {
@@ -469,13 +469,13 @@ func TestStateAddRemoveValidator(t *testing.T) {
 		require.NoError(state.Commit())
 
 		for _, added := range diff.addedValidators {
-			gotValidator, err := state.GetCurrentValidator(added.SubnetID, added.NodeID)
+			gotValidator, err := state.GetCurrentValidator(added.SupernetID, added.NodeID)
 			require.NoError(err)
 			require.Equal(added, *gotValidator)
 		}
 
 		for _, removed := range diff.removedValidators {
-			_, err := state.GetCurrentValidator(removed.SubnetID, removed.NodeID)
+			_, err := state.GetCurrentValidator(removed.SupernetID, removed.NodeID)
 			require.ErrorIs(err, database.ErrNotFound)
 		}
 
@@ -501,15 +501,15 @@ func TestStateAddRemoveValidator(t *testing.T) {
 			))
 			requireEqualPublicKeysValidatorSet(require, prevDiff.expectedPrimaryValidatorSet, primaryValidatorSet)
 
-			subnetValidatorSet := copyValidatorSet(diff.expectedSubnetValidatorSet)
+			supernetValidatorSet := copyValidatorSet(diff.expectedSupernetValidatorSet)
 			require.NoError(state.ApplyValidatorWeightDiffs(
 				context.Background(),
-				subnetValidatorSet,
+				supernetValidatorSet,
 				currentHeight,
 				prevHeight+1,
-				subnetID,
+				supernetID,
 			))
-			requireEqualWeightsValidatorSet(require, prevDiff.expectedSubnetValidatorSet, subnetValidatorSet)
+			requireEqualWeightsValidatorSet(require, prevDiff.expectedSupernetValidatorSet, supernetValidatorSet)
 		}
 	}
 }
@@ -660,7 +660,7 @@ func TestParsedStateBlock(t *testing.T) {
 	}
 }
 
-func TestStateSubnetOwner(t *testing.T) {
+func TestStateSupernetOwner(t *testing.T) {
 	require := require.New(t)
 
 	state, _ := newInitializedState(require)
@@ -670,29 +670,29 @@ func TestStateSubnetOwner(t *testing.T) {
 		owner1 = fx.NewMockOwner(ctrl)
 		owner2 = fx.NewMockOwner(ctrl)
 
-		createSubnetTx = &txs.Tx{
-			Unsigned: &txs.CreateSubnetTx{
+		createSupernetTx = &txs.Tx{
+			Unsigned: &txs.CreateSupernetTx{
 				BaseTx: txs.BaseTx{},
 				Owner:  owner1,
 			},
 		}
 
-		subnetID = createSubnetTx.ID()
+		supernetID = createSupernetTx.ID()
 	)
 
-	owner, err := state.GetSubnetOwner(subnetID)
+	owner, err := state.GetSupernetOwner(supernetID)
 	require.ErrorIs(err, database.ErrNotFound)
 	require.Nil(owner)
 
-	state.AddSubnet(createSubnetTx)
-	state.SetSubnetOwner(subnetID, owner1)
+	state.AddSupernet(createSupernetTx)
+	state.SetSupernetOwner(supernetID, owner1)
 
-	owner, err = state.GetSubnetOwner(subnetID)
+	owner, err = state.GetSupernetOwner(supernetID)
 	require.NoError(err)
 	require.Equal(owner1, owner)
 
-	state.SetSubnetOwner(subnetID, owner2)
-	owner, err = state.GetSubnetOwner(subnetID)
+	state.SetSupernetOwner(supernetID, owner2)
+	owner, err = state.GetSupernetOwner(supernetID)
 	require.NoError(err)
 	require.Equal(owner2, owner)
 }

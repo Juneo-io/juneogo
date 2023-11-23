@@ -7,17 +7,17 @@ import (
 	"context"
 	"time"
 
-	"github.com/ava-labs/avalanchego/database/versiondb"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/snow/engine/common"
-	"github.com/ava-labs/avalanchego/utils/linkedhashmap"
-	"github.com/ava-labs/avalanchego/vms/example/xsvm/chain"
-	"github.com/ava-labs/avalanchego/vms/example/xsvm/execute"
-	"github.com/ava-labs/avalanchego/vms/example/xsvm/tx"
+	"github.com/Juneo-io/juneogo/database/versiondb"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/snow/engine/common"
+	"github.com/Juneo-io/juneogo/utils/linkedhashmap"
+	"github.com/Juneo-io/juneogo/vms/example/xsvm/chain"
+	"github.com/Juneo-io/juneogo/vms/example/xsvm/execute"
+	"github.com/Juneo-io/juneogo/vms/example/xsvm/tx"
 
-	smblock "github.com/ava-labs/avalanchego/snow/engine/snowman/block"
-	xsblock "github.com/ava-labs/avalanchego/vms/example/xsvm/block"
+	smblock "github.com/Juneo-io/juneogo/snow/engine/snowman/block"
+	xsblock "github.com/Juneo-io/juneogo/vms/example/xsvm/block"
 )
 
 const MaxTxsPerBlock = 10

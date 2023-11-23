@@ -12,7 +12,7 @@ import (
 
 	"golang.org/x/exp/slices"
 
-	"github.com/ava-labs/avalanchego/database"
+	"github.com/Juneo-io/juneogo/database"
 )
 
 var (

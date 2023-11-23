@@ -4,7 +4,7 @@ package net.conn;
 
 import "google/protobuf/empty.proto";
 
-option go_package = "github.com/ava-labs/avalanchego/proto/pb/net/conn";
+option go_package = "github.com/Juneo-io/juneogo/proto/pb/net/conn";
 
 // Conn is a net.Conn see: https://pkg.go.dev/net#Conn
 service Conn {

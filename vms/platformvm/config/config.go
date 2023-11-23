@@ -6,14 +6,14 @@ package config
 import (
 	"time"
 
-	"github.com/ava-labs/avalanchego/chains"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow/uptime"
-	"github.com/ava-labs/avalanchego/snow/validators"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/set"
-	"github.com/ava-labs/avalanchego/vms/platformvm/reward"
-	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
+	"github.com/Juneo-io/juneogo/chains"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow/uptime"
+	"github.com/Juneo-io/juneogo/snow/validators"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/set"
+	"github.com/Juneo-io/juneogo/vms/platformvm/reward"
+	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
 )
 
 // Struct collecting all foundational parameters of PlatformVM
@@ -21,7 +21,7 @@ type Config struct {
 	// The node's chain manager
 	Chains chains.Manager
 
-	// Node's validator set maps subnetID -> validators of the subnet
+	// Node's validator set maps supernetID -> validators of the supernet
 	//
 	// Invariant: The primary network's validator set should have been added to
 	//            the manager before calling VM.Initialize.
@@ -38,8 +38,8 @@ type Config struct {
 	// If true, only the P-chain will be instantiated on the primary network.
 	PartialSyncPrimaryNetwork bool
 
-	// Set of subnets that this node is validating
-	TrackedSubnets set.Set[ids.ID]
+	// Set of supernets that this node is validating
+	TrackedSupernets set.Set[ids.ID]
 
 	// Fee that is burned by every non-state creating transaction
 	TxFee uint64
@@ -47,11 +47,11 @@ type Config struct {
 	// Fee that must be burned by every state creating transaction before AP3
 	CreateAssetTxFee uint64
 
-	// Fee that must be burned by every subnet creating transaction after AP3
-	CreateSubnetTxFee uint64
+	// Fee that must be burned by every supernet creating transaction after AP3
+	CreateSupernetTxFee uint64
 
-	// Fee that must be burned by every transform subnet transaction
-	TransformSubnetTxFee uint64
+	// Fee that must be burned by every transform supernet transaction
+	TransformSupernetTxFee uint64
 
 	// Fee that must be burned by every blockchain creating transaction after AP3
 	CreateBlockchainTxFee uint64
@@ -62,11 +62,11 @@ type Config struct {
 	// Transaction fee for adding a primary network delegator
 	AddPrimaryNetworkDelegatorFee uint64
 
-	// Transaction fee for adding a subnet validator
-	AddSubnetValidatorFee uint64
+	// Transaction fee for adding a supernet validator
+	AddSupernetValidatorFee uint64
 
-	// Transaction fee for adding a subnet delegator
-	AddSubnetDelegatorFee uint64
+	// Transaction fee for adding a supernet delegator
+	AddSupernetDelegatorFee uint64
 
 	// The minimum amount of tokens one must bond to be a validator
 	MinValidatorStake uint64
@@ -115,7 +115,7 @@ type Config struct {
 	// window.
 	//
 	// This config is particularly useful for triggering proposervm activation
-	// on recently created subnets (without this, users need to wait for
+	// on recently created supernets (without this, users need to wait for
 	// [recentlyAcceptedWindowTTL] to pass for activation to occur).
 	UseCurrentHeight bool
 }
@@ -148,25 +148,25 @@ func (c *Config) GetCreateBlockchainTxFee(timestamp time.Time) uint64 {
 	return c.CreateAssetTxFee
 }
 
-func (c *Config) GetCreateSubnetTxFee(timestamp time.Time) uint64 {
+func (c *Config) GetCreateSupernetTxFee(timestamp time.Time) uint64 {
 	if c.IsApricotPhase3Activated(timestamp) {
-		return c.CreateSubnetTxFee
+		return c.CreateSupernetTxFee
 	}
 	return c.CreateAssetTxFee
 }
 
 // Create the blockchain described in [tx], but only if this node is a member of
-// the subnet that validates the chain
+// the supernet that validates the chain
 func (c *Config) CreateChain(chainID ids.ID, tx *txs.CreateChainTx) {
 	if c.SybilProtectionEnabled && // Sybil protection is enabled, so nodes might not validate all chains
-		constants.PrimaryNetworkID != tx.SubnetID && // All nodes must validate the primary network
-		!c.TrackedSubnets.Contains(tx.SubnetID) { // This node doesn't validate this blockchain
+		constants.PrimaryNetworkID != tx.SupernetID && // All nodes must validate the primary network
+		!c.TrackedSupernets.Contains(tx.SupernetID) { // This node doesn't validate this blockchain
 		return
 	}
 
 	chainParams := chains.ChainParameters{
 		ID:           chainID,
-		SubnetID:     tx.SubnetID,
+		SupernetID:     tx.SupernetID,
 		GenesisData:  tx.GenesisData,
 		VMID:         tx.VMID,
 		FxIDs:        tx.FxIDs,

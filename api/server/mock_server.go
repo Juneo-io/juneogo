@@ -11,8 +11,8 @@ import (
 	http "net/http"
 	reflect "reflect"
 
-	snow "github.com/ava-labs/avalanchego/snow"
-	common "github.com/ava-labs/avalanchego/snow/engine/common"
+	snow "github.com/Juneo-io/juneogo/snow"
+	common "github.com/Juneo-io/juneogo/snow/engine/common"
 	gomock "go.uber.org/mock/gomock"
 )
 

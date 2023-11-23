@@ -3,10 +3,10 @@
 
 package common
 
-import "github.com/ava-labs/avalanchego/ids"
+import "github.com/Juneo-io/juneogo/ids"
 
 // BootstrapTracker describes the standard interface for tracking the status of
-// a subnet bootstrapping
+// a supernet bootstrapping
 type BootstrapTracker interface {
 	// Returns true iff done bootstrapping
 	IsBootstrapped() bool
