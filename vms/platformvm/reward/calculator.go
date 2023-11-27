@@ -40,7 +40,7 @@ func NewCalculator(c Config) Calculator {
 }
 
 var (
-	DiminishingRewardTime  = uint64(time.Date(2027, time.June, 21, 0, 0, 0, 0, time.UTC).Unix())
+	DiminishingRewardTime  = uint64(time.Date(2027, time.December, 18, 0, 0, 0, 0, time.UTC).Unix())
 	DiminishingRewardShare = uint64(19_5000)
 )
 
