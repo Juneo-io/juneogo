@@ -21,7 +21,7 @@ const (
 )
 
 var (
-	ErrProtocolVersionMismatch = errors.New("RPCChainVM protocol version mismatch between AvalancheGo and Virtual Machine plugin")
+	ErrProtocolVersionMismatch = errors.New("RPCChainVM protocol version mismatch between JuneoGo and Virtual Machine plugin")
 	ErrHandshakeFailed         = errors.New("handshake failed")
 	ErrInvalidConfig           = errors.New("invalid config")
 	ErrProcessNotFound         = errors.New("vm process not found")
