@@ -11,7 +11,7 @@ import (
 
 	"github.com/mr-tron/base58/base58"
 
-	"github.com/Juneo-io/juneogo/utils/hashing"
+	"github.com/ava-labs/avalanchego/utils/hashing"
 )
 
 const checksumLen = 4

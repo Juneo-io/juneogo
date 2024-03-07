@@ -3,7 +3,7 @@
 
 package buffer
 
-import "github.com/Juneo-io/juneogo/utils"
+import "github.com/ava-labs/avalanchego/utils"
 
 const defaultInitSize = 32
 

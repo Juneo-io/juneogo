@@ -9,7 +9,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/Juneo-io/juneogo/api"
+	"github.com/ava-labs/avalanchego/api"
 )
 
 func TestWalletService_SendMultiple(t *testing.T) {

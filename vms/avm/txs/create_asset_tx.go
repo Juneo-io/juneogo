@@ -4,8 +4,8 @@
 package txs
 
 import (
-	"github.com/Juneo-io/juneogo/snow"
-	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
+	"github.com/ava-labs/avalanchego/snow"
+	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
 )
 
 var (

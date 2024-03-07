@@ -13,9 +13,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/Juneo-io/juneogo/tests/fixture/testnet"
-	"github.com/Juneo-io/juneogo/tests/fixture/testnet/local"
-	"github.com/Juneo-io/juneogo/version"
+	"github.com/ava-labs/avalanchego/tests/fixture/testnet"
+	"github.com/ava-labs/avalanchego/tests/fixture/testnet/local"
+	"github.com/ava-labs/avalanchego/version"
 )
 
 const cliVersion = "0.0.1"

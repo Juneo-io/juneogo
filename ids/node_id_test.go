@@ -9,7 +9,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/Juneo-io/juneogo/utils/cb58"
+	"github.com/ava-labs/avalanchego/utils/cb58"
 )
 
 func TestNodeIDEquality(t *testing.T) {

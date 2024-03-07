@@ -12,8 +12,8 @@ import (
 
 	"golang.org/x/exp/slices"
 
-	"github.com/Juneo-io/juneogo/codec"
-	"github.com/Juneo-io/juneogo/utils/wrappers"
+	"github.com/ava-labs/avalanchego/codec"
+	"github.com/ava-labs/avalanchego/utils/wrappers"
 )
 
 // DefaultTagName that enables serialization.

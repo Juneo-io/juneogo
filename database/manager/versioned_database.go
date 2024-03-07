@@ -4,9 +4,9 @@
 package manager
 
 import (
-	"github.com/Juneo-io/juneogo/database"
-	"github.com/Juneo-io/juneogo/utils"
-	"github.com/Juneo-io/juneogo/version"
+	"github.com/ava-labs/avalanchego/database"
+	"github.com/ava-labs/avalanchego/utils"
+	"github.com/ava-labs/avalanchego/version"
 )
 
 var _ utils.Sortable[*VersionedDatabase] = (*VersionedDatabase)(nil)

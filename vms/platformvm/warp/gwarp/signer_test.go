@@ -8,13 +8,13 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/utils/constants"
-	"github.com/Juneo-io/juneogo/utils/crypto/bls"
-	"github.com/Juneo-io/juneogo/vms/platformvm/warp"
-	"github.com/Juneo-io/juneogo/vms/rpcchainvm/grpcutils"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/utils/constants"
+	"github.com/ava-labs/avalanchego/utils/crypto/bls"
+	"github.com/ava-labs/avalanchego/vms/platformvm/warp"
+	"github.com/ava-labs/avalanchego/vms/rpcchainvm/grpcutils"
 
-	pb "github.com/Juneo-io/juneogo/proto/pb/warp"
+	pb "github.com/ava-labs/avalanchego/proto/pb/warp"
 )
 
 type testSigner struct {

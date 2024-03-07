@@ -4,8 +4,8 @@
 package state
 
 import (
-	"github.com/Juneo-io/juneogo/utils/heap"
-	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
+	"github.com/ava-labs/avalanchego/utils/heap"
+	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
 )
 
 var (

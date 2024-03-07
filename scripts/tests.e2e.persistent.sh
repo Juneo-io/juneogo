@@ -57,4 +57,4 @@ print_separator
 #   to validate that a persistent network can be used by an e2e test
 #   suite run. Executing more tests would be duplicative of the testing
 #   performed against an ephemeral test network.
-E2E_USE_PERSISTENT_NETWORK=1 ./scripts/tests.e2e.sh --ginkgo.focus-file=permissionless_supernets.go
+E2E_USE_PERSISTENT_NETWORK=1 ./scripts/tests.e2e.sh --ginkgo.focus-file=permissionless_subnets.go

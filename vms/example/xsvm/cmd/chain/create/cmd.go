@@ -9,12 +9,12 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/Juneo-io/juneogo/utils/set"
-	"github.com/Juneo-io/juneogo/vms/example/xsvm"
-	"github.com/Juneo-io/juneogo/vms/example/xsvm/genesis"
-	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
-	"github.com/Juneo-io/juneogo/wallet/supernet/primary"
-	"github.com/Juneo-io/juneogo/wallet/supernet/primary/common"
+	"github.com/ava-labs/avalanchego/utils/set"
+	"github.com/ava-labs/avalanchego/vms/example/xsvm"
+	"github.com/ava-labs/avalanchego/vms/example/xsvm/genesis"
+	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
+	"github.com/ava-labs/avalanchego/wallet/subnet/primary"
+	"github.com/ava-labs/avalanchego/wallet/subnet/primary/common"
 )
 
 func Command() *cobra.Command {
@@ -45,7 +45,7 @@ func createFunc(c *cobra.Command, args []string) error {
 		URI:              config.URI,
 		AVAXKeychain:     kc,
 		EthKeychain:      kc,
-		PChainTxsToFetch: set.Of(config.SupernetID),
+		PChainTxsToFetch: set.Of(config.SubnetID),
 	})
 	if err != nil {
 		return err
@@ -70,7 +70,7 @@ func createFunc(c *cobra.Command, args []string) error {
 
 	createChainStartTime := time.Now()
 	createChainTxID, err := pWallet.IssueCreateChainTx(
-		config.SupernetID,
+		config.SubnetID,
 		genesisBytes,
 		xsvm.ID,
 		nil,

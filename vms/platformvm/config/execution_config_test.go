@@ -41,7 +41,7 @@ func TestExecutionConfigUnmarshal(t *testing.T) {
 		b := []byte(`{
 			"block-cache-size": 1,
 			"tx-cache-size": 2,
-			"transformed-supernet-tx-cache-size": 3,
+			"transformed-subnet-tx-cache-size": 3,
 			"reward-utxos-cache-size": 5,
 			"chain-cache-size": 6,
 			"chain-db-cache-size": 7,
@@ -54,7 +54,7 @@ func TestExecutionConfigUnmarshal(t *testing.T) {
 		expected := &ExecutionConfig{
 			BlockCacheSize:               1,
 			TxCacheSize:                  2,
-			TransformedSupernetTxCacheSize: 3,
+			TransformedSubnetTxCacheSize: 3,
 			RewardUTXOsCacheSize:         5,
 			ChainCacheSize:               6,
 			ChainDBCacheSize:             7,

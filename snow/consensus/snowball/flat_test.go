@@ -8,7 +8,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/Juneo-io/juneogo/utils/bag"
+	"github.com/ava-labs/avalanchego/utils/bag"
 )
 
 func TestFlat(t *testing.T) {

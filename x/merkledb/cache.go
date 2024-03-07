@@ -7,8 +7,8 @@ import (
 	"errors"
 	"sync"
 
-	"github.com/Juneo-io/juneogo/utils/linkedhashmap"
-	"github.com/Juneo-io/juneogo/utils/wrappers"
+	"github.com/ava-labs/avalanchego/utils/linkedhashmap"
+	"github.com/ava-labs/avalanchego/utils/wrappers"
 )
 
 var errEmptyCacheTooLarge = errors.New("cache is empty yet still too large")

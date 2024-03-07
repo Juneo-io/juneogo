@@ -10,10 +10,10 @@ import (
 
 	"github.com/spf13/pflag"
 
-	"github.com/Juneo-io/juneogo/genesis"
-	"github.com/Juneo-io/juneogo/ids"
+	"github.com/ava-labs/avalanchego/genesis"
+	"github.com/ava-labs/avalanchego/ids"
 
-	xsgenesis "github.com/Juneo-io/juneogo/vms/example/xsvm/genesis"
+	xsgenesis "github.com/ava-labs/avalanchego/vms/example/xsvm/genesis"
 )
 
 const (

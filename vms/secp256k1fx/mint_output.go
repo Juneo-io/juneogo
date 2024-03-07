@@ -3,7 +3,7 @@
 
 package secp256k1fx
 
-import "github.com/Juneo-io/juneogo/vms/components/verify"
+import "github.com/ava-labs/avalanchego/vms/components/verify"
 
 var _ verify.State = (*MintOutput)(nil)
 

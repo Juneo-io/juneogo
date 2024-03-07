@@ -17,8 +17,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Juneo-io/juneogo/utils"
-	"github.com/Juneo-io/juneogo/utils/crypto/secp256k1"
+	"github.com/ava-labs/avalanchego/utils"
+	"github.com/ava-labs/avalanchego/utils/crypto/secp256k1"
 )
 
 const (

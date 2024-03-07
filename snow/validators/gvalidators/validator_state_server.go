@@ -8,10 +8,10 @@ import (
 
 	"google.golang.org/protobuf/types/known/emptypb"
 
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/snow/validators"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/snow/validators"
 
-	pb "github.com/Juneo-io/juneogo/proto/pb/validatorstate"
+	pb "github.com/ava-labs/avalanchego/proto/pb/validatorstate"
 )
 
 var _ pb.ValidatorStateServer = (*Server)(nil)
@@ -35,25 +35,25 @@ func (s *Server) GetCurrentHeight(ctx context.Context, _ *emptypb.Empty) (*pb.Ge
 	return &pb.GetCurrentHeightResponse{Height: height}, err
 }
 
-func (s *Server) GetSupernetID(ctx context.Context, req *pb.GetSupernetIDRequest) (*pb.GetSupernetIDResponse, error) {
+func (s *Server) GetSubnetID(ctx context.Context, req *pb.GetSubnetIDRequest) (*pb.GetSubnetIDResponse, error) {
 	chainID, err := ids.ToID(req.ChainId)
 	if err != nil {
 		return nil, err
 	}
 
-	supernetID, err := s.state.GetSupernetID(ctx, chainID)
-	return &pb.GetSupernetIDResponse{
-		SupernetId: supernetID[:],
+	subnetID, err := s.state.GetSubnetID(ctx, chainID)
+	return &pb.GetSubnetIDResponse{
+		SubnetId: subnetID[:],
 	}, err
 }
 
 func (s *Server) GetValidatorSet(ctx context.Context, req *pb.GetValidatorSetRequest) (*pb.GetValidatorSetResponse, error) {
-	supernetID, err := ids.ToID(req.SupernetId)
+	subnetID, err := ids.ToID(req.SubnetId)
 	if err != nil {
 		return nil, err
 	}
 
-	vdrs, err := s.state.GetValidatorSet(ctx, req.Height, supernetID)
+	vdrs, err := s.state.GetValidatorSet(ctx, req.Height, subnetID)
 	if err != nil {
 		return nil, err
 	}

@@ -13,9 +13,9 @@ import (
 
 	"go.uber.org/mock/gomock"
 
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/snow/validators"
-	"github.com/Juneo-io/juneogo/utils/logging"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/snow/validators"
+	"github.com/ava-labs/avalanchego/utils/logging"
 )
 
 func TestValidatorsSample(t *testing.T) {
@@ -153,7 +153,7 @@ func TestValidatorsSample(t *testing.T) {
 			require := require.New(t)
 			ctrl := gomock.NewController(t)
 
-			supernetID := ids.GenerateTestID()
+			subnetID := ids.GenerateTestID()
 			mockValidators := validators.NewMockState(ctrl)
 
 			calls := make([]*gomock.Call, 0)
@@ -172,12 +172,12 @@ func TestValidatorsSample(t *testing.T) {
 
 				calls = append(calls,
 					mockValidators.EXPECT().
-						GetValidatorSet(gomock.Any(), gomock.Any(), supernetID).
+						GetValidatorSet(gomock.Any(), gomock.Any(), subnetID).
 						Return(validatorSet, call.getValidatorSetErr))
 			}
 			gomock.InOrder(calls...)
 
-			v := NewValidators(logging.NoLog{}, supernetID, mockValidators, tt.maxStaleness)
+			v := NewValidators(logging.NoLog{}, subnetID, mockValidators, tt.maxStaleness)
 			for _, call := range tt.calls {
 				v.lastUpdated = call.time
 				sampled := v.Sample(context.Background(), call.limit)

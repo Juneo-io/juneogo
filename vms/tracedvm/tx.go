@@ -10,8 +10,8 @@ import (
 
 	oteltrace "go.opentelemetry.io/otel/trace"
 
-	"github.com/Juneo-io/juneogo/snow/consensus/snowstorm"
-	"github.com/Juneo-io/juneogo/trace"
+	"github.com/ava-labs/avalanchego/snow/consensus/snowstorm"
+	"github.com/ava-labs/avalanchego/trace"
 )
 
 var _ snowstorm.Tx = (*tracedTx)(nil)

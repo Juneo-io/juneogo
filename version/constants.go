@@ -9,7 +9,7 @@ import (
 
 	_ "embed"
 
-	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/ava-labs/avalanchego/utils/constants"
 )
 
 // RPCChainVMProtocol should be bumped anytime changes are made which require

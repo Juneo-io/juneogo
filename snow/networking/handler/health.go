@@ -44,8 +44,8 @@ func (h *handler) networkHealthCheck() (interface{}, error) {
 	}
 
 	var err error
-	supernetConfig := h.supernet.Config()
-	minPercentConnected := supernetConfig.ConsensusParameters.MinPercentConnectedHealthy()
+	subnetConfig := h.subnet.Config()
+	minPercentConnected := subnetConfig.ConsensusParameters.MinPercentConnectedHealthy()
 	if percentConnected < minPercentConnected {
 		err = fmt.Errorf("%w: connected to %f%%; required at least %f%%",
 			ErrNotConnectedEnoughStake,

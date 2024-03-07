@@ -3,7 +3,7 @@
 
 package merkledb
 
-import "github.com/Juneo-io/juneogo/trace"
+import "github.com/ava-labs/avalanchego/trace"
 
 const (
 	DebugTrace TraceLevel = iota - 1

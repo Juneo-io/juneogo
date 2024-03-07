@@ -9,20 +9,20 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/snow"
-	"github.com/Juneo-io/juneogo/utils/crypto/secp256k1"
-	"github.com/Juneo-io/juneogo/utils/hashing"
-	"github.com/Juneo-io/juneogo/utils/math"
-	"github.com/Juneo-io/juneogo/utils/set"
-	"github.com/Juneo-io/juneogo/utils/timer/mockable"
-	"github.com/Juneo-io/juneogo/vms/components/avax"
-	"github.com/Juneo-io/juneogo/vms/components/verify"
-	"github.com/Juneo-io/juneogo/vms/platformvm/fx"
-	"github.com/Juneo-io/juneogo/vms/platformvm/stakeable"
-	"github.com/Juneo-io/juneogo/vms/platformvm/state"
-	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
-	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/snow"
+	"github.com/ava-labs/avalanchego/utils/crypto/secp256k1"
+	"github.com/ava-labs/avalanchego/utils/hashing"
+	"github.com/ava-labs/avalanchego/utils/math"
+	"github.com/ava-labs/avalanchego/utils/set"
+	"github.com/ava-labs/avalanchego/utils/timer/mockable"
+	"github.com/ava-labs/avalanchego/vms/components/avax"
+	"github.com/ava-labs/avalanchego/vms/components/verify"
+	"github.com/ava-labs/avalanchego/vms/platformvm/fx"
+	"github.com/ava-labs/avalanchego/vms/platformvm/stakeable"
+	"github.com/ava-labs/avalanchego/vms/platformvm/state"
+	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
+	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
 )
 
 var (
@@ -69,11 +69,11 @@ type Spender interface {
 		error,
 	)
 
-	// Authorize an operation on behalf of the named supernet with the provided
+	// Authorize an operation on behalf of the named subnet with the provided
 	// keys.
 	Authorize(
 		state state.Chain,
-		supernetID ids.ID,
+		subnetID ids.ID,
 		keys []*secp256k1.PrivateKey,
 	) (
 		verify.Verifiable, // Input that names owners
@@ -392,26 +392,26 @@ func (h *handler) Spend(
 
 func (h *handler) Authorize(
 	state state.Chain,
-	supernetID ids.ID,
+	subnetID ids.ID,
 	keys []*secp256k1.PrivateKey,
 ) (
 	verify.Verifiable, // Input that names owners
 	[]*secp256k1.PrivateKey, // Keys that prove ownership
 	error,
 ) {
-	supernetOwner, err := state.GetSupernetOwner(supernetID)
+	subnetOwner, err := state.GetSubnetOwner(subnetID)
 	if err != nil {
 		return nil, nil, fmt.Errorf(
-			"failed to fetch supernet owner for %s: %w",
-			supernetID,
+			"failed to fetch subnet owner for %s: %w",
+			subnetID,
 			err,
 		)
 	}
 
-	// Make sure the owners of the supernet match the provided keys
-	owner, ok := supernetOwner.(*secp256k1fx.OutputOwners)
+	// Make sure the owners of the subnet match the provided keys
+	owner, ok := subnetOwner.(*secp256k1fx.OutputOwners)
 	if !ok {
-		return nil, nil, fmt.Errorf("expected *secp256k1fx.OutputOwners but got %T", supernetOwner)
+		return nil, nil, fmt.Errorf("expected *secp256k1fx.OutputOwners but got %T", subnetOwner)
 	}
 
 	// Add the keys to a keychain
@@ -420,7 +420,7 @@ func (h *handler) Authorize(
 	// Make sure that the operation is valid after a minimum time
 	now := uint64(h.clk.Time().Unix())
 
-	// Attempt to prove ownership of the supernet
+	// Attempt to prove ownership of the subnet
 	indices, signers, matches := kc.Match(owner, now)
 	if !matches {
 		return nil, nil, errCantSign

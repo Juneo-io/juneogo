@@ -6,9 +6,9 @@ package gwarp
 import (
 	"context"
 
-	"github.com/Juneo-io/juneogo/vms/platformvm/warp"
+	"github.com/ava-labs/avalanchego/vms/platformvm/warp"
 
-	pb "github.com/Juneo-io/juneogo/proto/pb/warp"
+	pb "github.com/ava-labs/avalanchego/proto/pb/warp"
 )
 
 var _ warp.Signer = (*Client)(nil)

@@ -4,7 +4,7 @@ The activation of the Banff fork changes the way P-chain tracks its `ChainTime`.
 
 ## About `ChainTime`
 
-One of the P-chain's main responsibilities is to record staking periods of any staker (i.e. any validator or delegator) on any supernet to duly reward their activity.
+One of the P-chain's main responsibilities is to record staking periods of any staker (i.e. any validator or delegator) on any subnet to duly reward their activity.
 
 The P-chain tracks a network agreed timestamp called `ChainTime` that allows nodes to reach agreement about when a staker starts and stops staking. These start/stop times are basic inputs to determine whether the staker should be rewarded based on what percentage of `ChainTime` it was perceived as active from other validators.
 

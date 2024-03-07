@@ -9,13 +9,13 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/Juneo-io/juneogo/database"
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/snow/engine/common"
-	"github.com/Juneo-io/juneogo/snow/engine/snowman/block"
-	"github.com/Juneo-io/juneogo/snow/engine/snowman/getter"
-	"github.com/Juneo-io/juneogo/snow/validators"
-	"github.com/Juneo-io/juneogo/utils/hashing"
+	"github.com/ava-labs/avalanchego/database"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/snow/engine/common"
+	"github.com/ava-labs/avalanchego/snow/engine/snowman/block"
+	"github.com/ava-labs/avalanchego/snow/engine/snowman/getter"
+	"github.com/ava-labs/avalanchego/snow/validators"
+	"github.com/ava-labs/avalanchego/utils/hashing"
 )
 
 const (
@@ -54,13 +54,13 @@ type fullVM struct {
 	*block.TestStateSyncableVM
 }
 
-func buildTestPeers(t *testing.T, supernetID ids.ID) validators.Manager {
+func buildTestPeers(t *testing.T, subnetID ids.ID) validators.Manager {
 	// we consider more than common.MaxOutstandingBroadcastRequests peers
 	// so to test the effect of cap on number of requests sent out
 	vdrs := validators.NewManager()
 	for idx := 0; idx < 2*common.MaxOutstandingBroadcastRequests; idx++ {
 		beaconID := ids.GenerateTestNodeID()
-		require.NoError(t, vdrs.AddStaker(supernetID, beaconID, nil, ids.Empty, 1))
+		require.NoError(t, vdrs.AddStaker(subnetID, beaconID, nil, ids.Empty, 1))
 	}
 	return vdrs
 }

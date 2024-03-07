@@ -6,7 +6,7 @@ package executor
 import (
 	"go.uber.org/zap"
 
-	"github.com/Juneo-io/juneogo/vms/platformvm/block"
+	"github.com/ava-labs/avalanchego/vms/platformvm/block"
 )
 
 var _ block.Visitor = (*rejector)(nil)

@@ -6,7 +6,7 @@ package api
 import (
 	"context"
 
-	"github.com/Juneo-io/juneogo/utils/rpc"
+	"github.com/ava-labs/avalanchego/utils/rpc"
 )
 
 var _ StaticClient = (*staticClient)(nil)

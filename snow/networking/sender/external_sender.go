@@ -4,10 +4,10 @@
 package sender
 
 import (
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/message"
-	"github.com/Juneo-io/juneogo/supernets"
-	"github.com/Juneo-io/juneogo/utils/set"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/message"
+	"github.com/ava-labs/avalanchego/subnets"
+	"github.com/ava-labs/avalanchego/utils/set"
 )
 
 // ExternalSender sends consensus messages to other validators
@@ -17,18 +17,18 @@ type ExternalSender interface {
 	Send(
 		msg message.OutboundMessage,
 		nodeIDs set.Set[ids.NodeID],
-		supernetID ids.ID,
-		allower supernets.Allower,
+		subnetID ids.ID,
+		allower subnets.Allower,
 	) set.Set[ids.NodeID]
 
-	// Send a message to a random group of nodes in a supernet.
+	// Send a message to a random group of nodes in a subnet.
 	// Nodes are sampled based on their validator status.
 	Gossip(
 		msg message.OutboundMessage,
-		supernetID ids.ID,
+		subnetID ids.ID,
 		numValidatorsToSend int,
 		numNonValidatorsToSend int,
 		numPeersToSend int,
-		allower supernets.Allower,
+		allower subnets.Allower,
 	) set.Set[ids.NodeID]
 }

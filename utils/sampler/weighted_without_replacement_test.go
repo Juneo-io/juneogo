@@ -12,7 +12,7 @@ import (
 
 	"golang.org/x/exp/slices"
 
-	safemath "github.com/Juneo-io/juneogo/utils/math"
+	safemath "github.com/ava-labs/avalanchego/utils/math"
 )
 
 var (

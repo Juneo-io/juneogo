@@ -10,10 +10,10 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/snow/validators"
-	"github.com/Juneo-io/juneogo/utils/logging"
-	"github.com/Juneo-io/juneogo/utils/set"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/snow/validators"
+	"github.com/ava-labs/avalanchego/utils/logging"
+	"github.com/ava-labs/avalanchego/utils/set"
 )
 
 var (
@@ -25,10 +25,10 @@ type ValidatorSet interface {
 	Has(ctx context.Context, nodeID ids.NodeID) bool
 }
 
-func NewValidators(log logging.Logger, supernetID ids.ID, validators validators.State, maxValidatorSetStaleness time.Duration) *Validators {
+func NewValidators(log logging.Logger, subnetID ids.ID, validators validators.State, maxValidatorSetStaleness time.Duration) *Validators {
 	return &Validators{
 		log:                      log,
-		supernetID:                 supernetID,
+		subnetID:                 subnetID,
 		validators:               validators,
 		maxValidatorSetStaleness: maxValidatorSetStaleness,
 	}
@@ -37,7 +37,7 @@ func NewValidators(log logging.Logger, supernetID ids.ID, validators validators.
 // Validators contains a set of nodes that are staking.
 type Validators struct {
 	log        logging.Logger
-	supernetID   ids.ID
+	subnetID   ids.ID
 	validators validators.State
 
 	lock                     sync.Mutex
@@ -58,7 +58,7 @@ func (v *Validators) refresh(ctx context.Context) {
 		v.log.Warn("failed to get current height", zap.Error(err))
 		return
 	}
-	validatorSet, err := v.validators.GetValidatorSet(ctx, height, v.supernetID)
+	validatorSet, err := v.validators.GetValidatorSet(ctx, height, v.subnetID)
 	if err != nil {
 		v.log.Warn("failed to get validator set", zap.Error(err))
 		return

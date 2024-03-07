@@ -8,18 +8,18 @@ import (
 	"errors"
 	"time"
 
-	"github.com/Juneo-io/juneogo/database"
-	"github.com/Juneo-io/juneogo/database/versiondb"
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/snow"
-	"github.com/Juneo-io/juneogo/snow/choices"
-	"github.com/Juneo-io/juneogo/snow/consensus/snowman"
-	"github.com/Juneo-io/juneogo/utils/set"
-	"github.com/Juneo-io/juneogo/vms/example/xsvm/execute"
-	"github.com/Juneo-io/juneogo/vms/example/xsvm/state"
+	"github.com/ava-labs/avalanchego/database"
+	"github.com/ava-labs/avalanchego/database/versiondb"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/snow"
+	"github.com/ava-labs/avalanchego/snow/choices"
+	"github.com/ava-labs/avalanchego/snow/consensus/snowman"
+	"github.com/ava-labs/avalanchego/utils/set"
+	"github.com/ava-labs/avalanchego/vms/example/xsvm/execute"
+	"github.com/ava-labs/avalanchego/vms/example/xsvm/state"
 
-	smblock "github.com/Juneo-io/juneogo/snow/engine/snowman/block"
-	xsblock "github.com/Juneo-io/juneogo/vms/example/xsvm/block"
+	smblock "github.com/ava-labs/avalanchego/snow/engine/snowman/block"
+	xsblock "github.com/ava-labs/avalanchego/vms/example/xsvm/block"
 )
 
 const maxClockSkew = 10 * time.Second

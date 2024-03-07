@@ -6,7 +6,7 @@ package metervm
 import (
 	"context"
 
-	"github.com/Juneo-io/juneogo/snow/engine/snowman/block"
+	"github.com/ava-labs/avalanchego/snow/engine/snowman/block"
 )
 
 func (vm *blockVM) StateSyncEnabled(ctx context.Context) (bool, error) {

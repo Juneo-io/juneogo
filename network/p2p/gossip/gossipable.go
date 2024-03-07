@@ -3,7 +3,7 @@
 
 package gossip
 
-import "github.com/Juneo-io/juneogo/ids"
+import "github.com/ava-labs/avalanchego/ids"
 
 // Gossipable is an item that can be gossiped across the network
 type Gossipable interface {

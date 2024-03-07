@@ -6,13 +6,13 @@ package config
 import (
 	"encoding/json"
 
-	"github.com/Juneo-io/juneogo/utils/units"
+	"github.com/ava-labs/avalanchego/utils/units"
 )
 
 var DefaultExecutionConfig = ExecutionConfig{
 	BlockCacheSize:               64 * units.MiB,
 	TxCacheSize:                  128 * units.MiB,
-	TransformedSupernetTxCacheSize: 4 * units.MiB,
+	TransformedSubnetTxCacheSize: 4 * units.MiB,
 	RewardUTXOsCacheSize:         2048,
 	ChainCacheSize:               2048,
 	ChainDBCacheSize:             2048,
@@ -25,7 +25,7 @@ var DefaultExecutionConfig = ExecutionConfig{
 type ExecutionConfig struct {
 	BlockCacheSize               int  `json:"block-cache-size"`
 	TxCacheSize                  int  `json:"tx-cache-size"`
-	TransformedSupernetTxCacheSize int  `json:"transformed-supernet-tx-cache-size"`
+	TransformedSubnetTxCacheSize int  `json:"transformed-subnet-tx-cache-size"`
 	RewardUTXOsCacheSize         int  `json:"reward-utxos-cache-size"`
 	ChainCacheSize               int  `json:"chain-cache-size"`
 	ChainDBCacheSize             int  `json:"chain-db-cache-size"`

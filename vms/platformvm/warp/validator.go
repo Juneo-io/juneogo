@@ -11,12 +11,12 @@ import (
 
 	"golang.org/x/exp/maps"
 
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/snow/validators"
-	"github.com/Juneo-io/juneogo/utils"
-	"github.com/Juneo-io/juneogo/utils/crypto/bls"
-	"github.com/Juneo-io/juneogo/utils/math"
-	"github.com/Juneo-io/juneogo/utils/set"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/snow/validators"
+	"github.com/ava-labs/avalanchego/utils"
+	"github.com/ava-labs/avalanchego/utils/crypto/bls"
+	"github.com/ava-labs/avalanchego/utils/math"
+	"github.com/ava-labs/avalanchego/utils/set"
 )
 
 var (
@@ -29,7 +29,7 @@ var (
 // ValidatorState defines the functions that must be implemented to get
 // the canonical validator set for warp message validation.
 type ValidatorState interface {
-	GetValidatorSet(ctx context.Context, height uint64, supernetID ids.ID) (map[ids.NodeID]*validators.GetValidatorOutput, error)
+	GetValidatorSet(ctx context.Context, height uint64, subnetID ids.ID) (map[ids.NodeID]*validators.GetValidatorOutput, error)
 }
 
 type Validator struct {
@@ -43,19 +43,19 @@ func (v *Validator) Less(o *Validator) bool {
 	return bytes.Compare(v.PublicKeyBytes, o.PublicKeyBytes) < 0
 }
 
-// GetCanonicalValidatorSet returns the validator set of [supernetID] at
+// GetCanonicalValidatorSet returns the validator set of [subnetID] at
 // [pChcainHeight] in a canonical ordering. Also returns the total weight on
-// [supernetID].
+// [subnetID].
 func GetCanonicalValidatorSet(
 	ctx context.Context,
 	pChainState ValidatorState,
 	pChainHeight uint64,
-	supernetID ids.ID,
+	subnetID ids.ID,
 ) ([]*Validator, uint64, error) {
 	// Get the validator set at the given height.
-	vdrSet, err := pChainState.GetValidatorSet(ctx, pChainHeight, supernetID)
+	vdrSet, err := pChainState.GetValidatorSet(ctx, pChainHeight, subnetID)
 	if err != nil {
-		return nil, 0, fmt.Errorf("failed to fetch validator set (P-Chain Height: %d, SupernetID: %s): %w", pChainHeight, supernetID, err)
+		return nil, 0, fmt.Errorf("failed to fetch validator set (P-Chain Height: %d, SubnetID: %s): %w", pChainHeight, subnetID, err)
 	}
 
 	var (

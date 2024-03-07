@@ -4,9 +4,9 @@
 package gsharedmemory
 
 import (
-	"github.com/Juneo-io/juneogo/utils/set"
+	"github.com/ava-labs/avalanchego/utils/set"
 
-	sharedmemorypb "github.com/Juneo-io/juneogo/proto/pb/sharedmemory"
+	sharedmemorypb "github.com/ava-labs/avalanchego/proto/pb/sharedmemory"
 )
 
 type filteredBatch struct {

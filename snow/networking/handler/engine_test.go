@@ -8,7 +8,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/Juneo-io/juneogo/proto/pb/p2p"
+	"github.com/ava-labs/avalanchego/proto/pb/p2p"
 )
 
 func TestEngineManager_Get(t *testing.T) {

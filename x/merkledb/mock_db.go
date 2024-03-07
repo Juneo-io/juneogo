@@ -11,9 +11,9 @@ import (
 	context "context"
 	reflect "reflect"
 
-	database "github.com/Juneo-io/juneogo/database"
-	ids "github.com/Juneo-io/juneogo/ids"
-	maybe "github.com/Juneo-io/juneogo/utils/maybe"
+	database "github.com/ava-labs/avalanchego/database"
+	ids "github.com/ava-labs/avalanchego/ids"
+	maybe "github.com/ava-labs/avalanchego/utils/maybe"
 	gomock "go.uber.org/mock/gomock"
 )
 

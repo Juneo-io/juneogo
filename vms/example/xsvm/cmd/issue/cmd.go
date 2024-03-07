@@ -6,9 +6,9 @@ package issue
 import (
 	"github.com/spf13/cobra"
 
-	"github.com/Juneo-io/juneogo/vms/example/xsvm/cmd/issue/export"
-	"github.com/Juneo-io/juneogo/vms/example/xsvm/cmd/issue/importtx"
-	"github.com/Juneo-io/juneogo/vms/example/xsvm/cmd/issue/transfer"
+	"github.com/ava-labs/avalanchego/vms/example/xsvm/cmd/issue/export"
+	"github.com/ava-labs/avalanchego/vms/example/xsvm/cmd/issue/importtx"
+	"github.com/ava-labs/avalanchego/vms/example/xsvm/cmd/issue/transfer"
 )
 
 func Command() *cobra.Command {

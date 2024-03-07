@@ -19,12 +19,12 @@ import (
 
 	"github.com/spf13/cast"
 
-	"github.com/Juneo-io/juneogo/api/health"
-	"github.com/Juneo-io/juneogo/config"
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/node"
-	"github.com/Juneo-io/juneogo/tests/fixture/testnet"
-	"github.com/Juneo-io/juneogo/utils/perms"
+	"github.com/ava-labs/avalanchego/api/health"
+	"github.com/ava-labs/avalanchego/config"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/node"
+	"github.com/ava-labs/avalanchego/tests/fixture/testnet"
+	"github.com/ava-labs/avalanchego/utils/perms"
 )
 
 var errNodeAlreadyRunning = errors.New("failed to start local node: node is already running")

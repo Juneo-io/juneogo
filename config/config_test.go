@@ -17,10 +17,10 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/Juneo-io/juneogo/chains"
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/snow/consensus/snowball"
-	"github.com/Juneo-io/juneogo/supernets"
+	"github.com/ava-labs/avalanchego/chains"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/snow/consensus/snowball"
+	"github.com/ava-labs/avalanchego/subnets"
 )
 
 func TestGetChainConfigsFromFiles(t *testing.T) {
@@ -363,28 +363,28 @@ func TestGetVMAliasesDirNotExists(t *testing.T) {
 	require.NoError(err)
 }
 
-func TestGetSupernetConfigsFromFile(t *testing.T) {
-	supernetID, err := ids.FromString("2Ctt6eGAeo4MLqTmGa7AdRecuVMPGWEX9wSsCLBYrLhX4a394i")
+func TestGetSubnetConfigsFromFile(t *testing.T) {
+	subnetID, err := ids.FromString("2Ctt6eGAeo4MLqTmGa7AdRecuVMPGWEX9wSsCLBYrLhX4a394i")
 	require.NoError(t, err)
 
 	tests := map[string]struct {
 		fileName    string
 		givenJSON   string
-		testF       func(*require.Assertions, map[ids.ID]supernets.Config)
+		testF       func(*require.Assertions, map[ids.ID]subnets.Config)
 		expectedErr error
 	}{
 		"wrong config": {
 			fileName:  "2Ctt6eGAeo4MLqTmGa7AdRecuVMPGWEX9wSsCLBYrLhX4a394i.json",
 			givenJSON: `thisisnotjson`,
-			testF: func(require *require.Assertions, given map[ids.ID]supernets.Config) {
+			testF: func(require *require.Assertions, given map[ids.ID]subnets.Config) {
 				require.Nil(given)
 			},
 			expectedErr: errUnmarshalling,
 		},
-		"supernet is not tracked": {
+		"subnet is not tracked": {
 			fileName:  "Gmt4fuNsGJAd2PX86LBvycGaBpgCYKbuULdCLZs3SEs1Jx1LU.json",
 			givenJSON: `{"validatorOnly": true}`,
-			testF: func(require *require.Assertions, given map[ids.ID]supernets.Config) {
+			testF: func(require *require.Assertions, given map[ids.ID]subnets.Config) {
 				require.Empty(given)
 			},
 			expectedErr: nil,
@@ -392,7 +392,7 @@ func TestGetSupernetConfigsFromFile(t *testing.T) {
 		"wrong extension": {
 			fileName:  "2Ctt6eGAeo4MLqTmGa7AdRecuVMPGWEX9wSsCLBYrLhX4a394i.yaml",
 			givenJSON: `{"validatorOnly": true}`,
-			testF: func(require *require.Assertions, given map[ids.ID]supernets.Config) {
+			testF: func(require *require.Assertions, given map[ids.ID]subnets.Config) {
 				require.Empty(given)
 			},
 			expectedErr: nil,
@@ -400,7 +400,7 @@ func TestGetSupernetConfigsFromFile(t *testing.T) {
 		"invalid consensus parameters": {
 			fileName:  "2Ctt6eGAeo4MLqTmGa7AdRecuVMPGWEX9wSsCLBYrLhX4a394i.json",
 			givenJSON: `{"consensusParameters":{"k": 111, "alphaPreference":1234} }`,
-			testF: func(require *require.Assertions, given map[ids.ID]supernets.Config) {
+			testF: func(require *require.Assertions, given map[ids.ID]subnets.Config) {
 				require.Nil(given)
 			},
 			expectedErr: snowball.ErrParametersInvalid,
@@ -408,7 +408,7 @@ func TestGetSupernetConfigsFromFile(t *testing.T) {
 		"correct config": {
 			fileName:  "2Ctt6eGAeo4MLqTmGa7AdRecuVMPGWEX9wSsCLBYrLhX4a394i.json",
 			givenJSON: `{"validatorOnly": true, "consensusParameters":{"alphaConfidence":16} }`,
-			testF: func(require *require.Assertions, given map[ids.ID]supernets.Config) {
+			testF: func(require *require.Assertions, given map[ids.ID]subnets.Config) {
 				id, _ := ids.FromString("2Ctt6eGAeo4MLqTmGa7AdRecuVMPGWEX9wSsCLBYrLhX4a394i")
 				config, ok := given[id]
 				require.True(ok)
@@ -423,7 +423,7 @@ func TestGetSupernetConfigsFromFile(t *testing.T) {
 		"gossip config": {
 			fileName:  "2Ctt6eGAeo4MLqTmGa7AdRecuVMPGWEX9wSsCLBYrLhX4a394i.json",
 			givenJSON: `{"appGossipNonValidatorSize": 100 }`,
-			testF: func(require *require.Assertions, given map[ids.ID]supernets.Config) {
+			testF: func(require *require.Assertions, given map[ids.ID]subnets.Config) {
 				id, _ := ids.FromString("2Ctt6eGAeo4MLqTmGa7AdRecuVMPGWEX9wSsCLBYrLhX4a394i")
 				config, ok := given[id]
 				require.True(ok)
@@ -441,43 +441,43 @@ func TestGetSupernetConfigsFromFile(t *testing.T) {
 			require := require.New(t)
 
 			root := t.TempDir()
-			supernetPath := filepath.Join(root, "supernets")
+			subnetPath := filepath.Join(root, "subnets")
 
-			configJSON := fmt.Sprintf(`{%q: %q}`, SupernetConfigDirKey, supernetPath)
+			configJSON := fmt.Sprintf(`{%q: %q}`, SubnetConfigDirKey, subnetPath)
 			configFilePath := setupConfigJSON(t, root, configJSON)
 
-			setupFile(t, supernetPath, test.fileName, test.givenJSON)
+			setupFile(t, subnetPath, test.fileName, test.givenJSON)
 
 			v := setupViper(configFilePath)
-			supernetConfigs, err := getSupernetConfigs(v, []ids.ID{supernetID})
+			subnetConfigs, err := getSubnetConfigs(v, []ids.ID{subnetID})
 			require.ErrorIs(err, test.expectedErr)
 			if test.expectedErr != nil {
 				return
 			}
-			test.testF(require, supernetConfigs)
+			test.testF(require, subnetConfigs)
 		})
 	}
 }
 
-func TestGetSupernetConfigsFromFlags(t *testing.T) {
-	supernetID, err := ids.FromString("2Ctt6eGAeo4MLqTmGa7AdRecuVMPGWEX9wSsCLBYrLhX4a394i")
+func TestGetSubnetConfigsFromFlags(t *testing.T) {
+	subnetID, err := ids.FromString("2Ctt6eGAeo4MLqTmGa7AdRecuVMPGWEX9wSsCLBYrLhX4a394i")
 	require.NoError(t, err)
 
 	tests := map[string]struct {
 		givenJSON   string
-		testF       func(*require.Assertions, map[ids.ID]supernets.Config)
+		testF       func(*require.Assertions, map[ids.ID]subnets.Config)
 		expectedErr error
 	}{
 		"no configs": {
 			givenJSON: `{}`,
-			testF: func(require *require.Assertions, given map[ids.ID]supernets.Config) {
+			testF: func(require *require.Assertions, given map[ids.ID]subnets.Config) {
 				require.Empty(given)
 			},
 			expectedErr: nil,
 		},
 		"entry with no config": {
 			givenJSON: `{"2Ctt6eGAeo4MLqTmGa7AdRecuVMPGWEX9wSsCLBYrLhX4a394i":{}}`,
-			testF: func(require *require.Assertions, given map[ids.ID]supernets.Config) {
+			testF: func(require *require.Assertions, given map[ids.ID]subnets.Config) {
 				require.Len(given, 1)
 				id, _ := ids.FromString("2Ctt6eGAeo4MLqTmGa7AdRecuVMPGWEX9wSsCLBYrLhX4a394i")
 				config, ok := given[id]
@@ -487,9 +487,9 @@ func TestGetSupernetConfigsFromFlags(t *testing.T) {
 			},
 			expectedErr: nil,
 		},
-		"supernet is not tracked": {
+		"subnet is not tracked": {
 			givenJSON: `{"Gmt4fuNsGJAd2PX86LBvycGaBpgCYKbuULdCLZs3SEs1Jx1LU":{"validatorOnly":true}}`,
-			testF: func(require *require.Assertions, given map[ids.ID]supernets.Config) {
+			testF: func(require *require.Assertions, given map[ids.ID]subnets.Config) {
 				require.Empty(given)
 			},
 			expectedErr: nil,
@@ -503,7 +503,7 @@ func TestGetSupernetConfigsFromFlags(t *testing.T) {
 					}
 				}
 			}`,
-			testF: func(require *require.Assertions, given map[ids.ID]supernets.Config) {
+			testF: func(require *require.Assertions, given map[ids.ID]subnets.Config) {
 				require.Empty(given)
 			},
 			expectedErr: snowball.ErrParametersInvalid,
@@ -519,7 +519,7 @@ func TestGetSupernetConfigsFromFlags(t *testing.T) {
 					"validatorOnly": true
 				}
 			}`,
-			testF: func(require *require.Assertions, given map[ids.ID]supernets.Config) {
+			testF: func(require *require.Assertions, given map[ids.ID]subnets.Config) {
 				id, _ := ids.FromString("2Ctt6eGAeo4MLqTmGa7AdRecuVMPGWEX9wSsCLBYrLhX4a394i")
 				config, ok := given[id]
 				require.True(ok)
@@ -543,14 +543,14 @@ func TestGetSupernetConfigsFromFlags(t *testing.T) {
 
 			// build viper config
 			v := setupViperFlags()
-			v.Set(SupernetConfigContentKey, encodedFileContent)
+			v.Set(SubnetConfigContentKey, encodedFileContent)
 
-			supernetConfigs, err := getSupernetConfigs(v, []ids.ID{supernetID})
+			subnetConfigs, err := getSubnetConfigs(v, []ids.ID{subnetID})
 			require.ErrorIs(err, test.expectedErr)
 			if test.expectedErr != nil {
 				return
 			}
-			test.testF(require, supernetConfigs)
+			test.testF(require, subnetConfigs)
 		})
 	}
 }

@@ -6,10 +6,10 @@ package merkledb
 import (
 	"sync"
 
-	"github.com/Juneo-io/juneogo/cache"
+	"github.com/ava-labs/avalanchego/cache"
 
-	"github.com/Juneo-io/juneogo/database"
-	"github.com/Juneo-io/juneogo/utils"
+	"github.com/ava-labs/avalanchego/database"
+	"github.com/ava-labs/avalanchego/utils"
 )
 
 var _ database.Iterator = (*iterator)(nil)

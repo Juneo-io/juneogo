@@ -10,10 +10,10 @@ package utxo
 import (
 	reflect "reflect"
 
-	ids "github.com/Juneo-io/juneogo/ids"
-	avax "github.com/Juneo-io/juneogo/vms/components/avax"
-	verify "github.com/Juneo-io/juneogo/vms/components/verify"
-	txs "github.com/Juneo-io/juneogo/vms/platformvm/txs"
+	ids "github.com/ava-labs/avalanchego/ids"
+	avax "github.com/ava-labs/avalanchego/vms/components/avax"
+	verify "github.com/ava-labs/avalanchego/vms/components/verify"
+	txs "github.com/ava-labs/avalanchego/vms/platformvm/txs"
 	gomock "go.uber.org/mock/gomock"
 )
 

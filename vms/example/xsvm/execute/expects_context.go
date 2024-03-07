@@ -4,8 +4,8 @@
 package execute
 
 import (
-	"github.com/Juneo-io/juneogo/vms/example/xsvm/block"
-	"github.com/Juneo-io/juneogo/vms/example/xsvm/tx"
+	"github.com/ava-labs/avalanchego/vms/example/xsvm/block"
+	"github.com/ava-labs/avalanchego/vms/example/xsvm/tx"
 )
 
 var _ tx.Visitor = (*TxExpectsContext)(nil)

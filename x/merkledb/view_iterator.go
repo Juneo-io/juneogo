@@ -6,7 +6,7 @@ package merkledb
 import (
 	"bytes"
 
-	"github.com/Juneo-io/juneogo/database"
+	"github.com/ava-labs/avalanchego/database"
 
 	"golang.org/x/exp/slices"
 )

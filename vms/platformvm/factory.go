@@ -4,9 +4,9 @@
 package platformvm
 
 import (
-	"github.com/Juneo-io/juneogo/utils/logging"
-	"github.com/Juneo-io/juneogo/vms"
-	"github.com/Juneo-io/juneogo/vms/platformvm/config"
+	"github.com/ava-labs/avalanchego/utils/logging"
+	"github.com/ava-labs/avalanchego/vms"
+	"github.com/ava-labs/avalanchego/vms/platformvm/config"
 )
 
 var _ vms.Factory = (*Factory)(nil)

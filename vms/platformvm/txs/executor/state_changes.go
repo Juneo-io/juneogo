@@ -8,12 +8,12 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/utils/constants"
-	"github.com/Juneo-io/juneogo/utils/math"
-	"github.com/Juneo-io/juneogo/vms/platformvm/reward"
-	"github.com/Juneo-io/juneogo/vms/platformvm/state"
-	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/utils/constants"
+	"github.com/ava-labs/avalanchego/utils/math"
+	"github.com/ava-labs/avalanchego/vms/platformvm/reward"
+	"github.com/ava-labs/avalanchego/vms/platformvm/state"
+	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
 )
 
 var (
@@ -74,11 +74,11 @@ type stateChanges struct {
 }
 
 func (s *stateChanges) Apply(stateDiff state.Diff) {
-	for supernetID, supply := range s.updatedSupplies {
-		stateDiff.SetCurrentSupply(supernetID, supply)
+	for subnetID, supply := range s.updatedSupplies {
+		stateDiff.SetCurrentSupply(subnetID, supply)
 	}
-	for supernetID, rewardPoolSupply := range s.updatedRewardPoolSupplies {
-		stateDiff.SetRewardPoolSupply(supernetID, rewardPoolSupply)
+	for subnetID, rewardPoolSupply := range s.updatedRewardPoolSupplies {
+		stateDiff.SetRewardPoolSupply(subnetID, rewardPoolSupply)
 	}
 
 	for _, currentValidatorToAdd := range s.currentValidatorsToAdd {
@@ -145,35 +145,35 @@ func AdvanceTimeTo(
 		stakerToAdd.NextTime = stakerToRemove.EndTime
 		stakerToAdd.Priority = txs.PendingToCurrentPriorities[stakerToRemove.Priority]
 
-		if stakerToRemove.Priority == txs.SupernetPermissionedValidatorPendingPriority {
+		if stakerToRemove.Priority == txs.SubnetPermissionedValidatorPendingPriority {
 			changes.currentValidatorsToAdd = append(changes.currentValidatorsToAdd, &stakerToAdd)
 			changes.pendingValidatorsToRemove = append(changes.pendingValidatorsToRemove, stakerToRemove)
 			continue
 		}
 
-		supply, ok := changes.updatedSupplies[stakerToRemove.SupernetID]
+		supply, ok := changes.updatedSupplies[stakerToRemove.SubnetID]
 		if !ok {
-			supply, err = parentState.GetCurrentSupply(stakerToRemove.SupernetID)
+			supply, err = parentState.GetCurrentSupply(stakerToRemove.SubnetID)
 			if err != nil {
 				return nil, err
 			}
 		}
 
-		rewardPoolSupply := changes.updatedRewardPoolSupplies[stakerToRemove.SupernetID]
+		rewardPoolSupply := changes.updatedRewardPoolSupplies[stakerToRemove.SubnetID]
 		if !ok {
-			rewardPoolSupply, err = parentState.GetRewardPoolSupply(stakerToRemove.SupernetID)
+			rewardPoolSupply, err = parentState.GetRewardPoolSupply(stakerToRemove.SubnetID)
 			if err != nil {
 				return nil, err
 			}
 		}
 
-		rewards, err := GetRewardsCalculator(backend, parentState, stakerToRemove.SupernetID)
+		rewards, err := GetRewardsCalculator(backend, parentState, stakerToRemove.SubnetID)
 		if err != nil {
 			return nil, err
 		}
 
 		potentialReward := uint64(0)
-		if stakerToRemove.SupernetID == constants.PrimaryNetworkID {
+		if stakerToRemove.SubnetID == constants.PrimaryNetworkID {
 			potentialReward = rewards.CalculatePrimary(
 				stakerToRemove.EndTime.Sub(stakerToRemove.StartTime),
 				stakerToRemove.StartTime,
@@ -192,7 +192,7 @@ func AdvanceTimeTo(
 		// Reward value above reward pool supply.
 		extraValue := uint64(0)
 
-		if stakerToRemove.SupernetID == constants.PrimaryNetworkID {
+		if stakerToRemove.SubnetID == constants.PrimaryNetworkID {
 			if potentialReward > rewardPoolSupply {
 				extraValue = potentialReward - rewardPoolSupply
 			}
@@ -209,16 +209,16 @@ func AdvanceTimeTo(
 		if err != nil {
 			return nil, err
 		}
-		changes.updatedRewardPoolSupplies[stakerToRemove.SupernetID] = rewardPoolSupply
+		changes.updatedRewardPoolSupplies[stakerToRemove.SubnetID] = rewardPoolSupply
 
-		changes.updatedSupplies[stakerToRemove.SupernetID] = supply
+		changes.updatedSupplies[stakerToRemove.SubnetID] = supply
 
 		switch stakerToRemove.Priority {
-		case txs.PrimaryNetworkValidatorPendingPriority, txs.SupernetPermissionlessValidatorPendingPriority:
+		case txs.PrimaryNetworkValidatorPendingPriority, txs.SubnetPermissionlessValidatorPendingPriority:
 			changes.currentValidatorsToAdd = append(changes.currentValidatorsToAdd, &stakerToAdd)
 			changes.pendingValidatorsToRemove = append(changes.pendingValidatorsToRemove, stakerToRemove)
 
-		case txs.PrimaryNetworkDelegatorApricotPendingPriority, txs.PrimaryNetworkDelegatorBanffPendingPriority, txs.SupernetPermissionlessDelegatorPendingPriority:
+		case txs.PrimaryNetworkDelegatorApricotPendingPriority, txs.PrimaryNetworkDelegatorBanffPendingPriority, txs.SubnetPermissionlessDelegatorPendingPriority:
 			changes.currentDelegatorsToAdd = append(changes.currentDelegatorsToAdd, &stakerToAdd)
 			changes.pendingDelegatorsToRemove = append(changes.pendingDelegatorsToRemove, stakerToRemove)
 
@@ -241,7 +241,7 @@ func AdvanceTimeTo(
 
 		// Invariant: Permissioned stakers are encountered first for a given
 		//            timestamp because their priority is the smallest.
-		if stakerToRemove.Priority != txs.SupernetPermissionedValidatorCurrentPriority {
+		if stakerToRemove.Priority != txs.SubnetPermissionedValidatorCurrentPriority {
 			// Permissionless stakers are removed by the RewardValidatorTx, not
 			// an AdvanceTimeTx.
 			break
@@ -255,24 +255,24 @@ func AdvanceTimeTo(
 func GetRewardsCalculator(
 	backend *Backend,
 	parentState state.Chain,
-	supernetID ids.ID,
+	subnetID ids.ID,
 ) (reward.Calculator, error) {
-	if supernetID == constants.PrimaryNetworkID {
+	if subnetID == constants.PrimaryNetworkID {
 		return backend.Rewards, nil
 	}
 
-	transformSupernet, err := GetTransformSupernetTx(parentState, supernetID)
+	transformSubnet, err := GetTransformSubnetTx(parentState, subnetID)
 	if err != nil {
 		return nil, err
 	}
 
 	return reward.NewCalculator(reward.Config{
-		MinStakePeriod:         time.Duration(transformSupernet.MinStakeDuration),
-		MaxStakePeriod:         time.Duration(transformSupernet.MaxStakeDuration),
-		StakePeriodRewardShare: transformSupernet.StakePeriodRewardShare,
-		StartRewardShare:       transformSupernet.StartRewardShare,
-		StartRewardTime:        transformSupernet.StartRewardTime,
-		TargetRewardShare:      transformSupernet.TargetRewardShare,
-		TargetRewardTime:       transformSupernet.TargetRewardTime,
+		MinStakePeriod:         time.Duration(transformSubnet.MinStakeDuration),
+		MaxStakePeriod:         time.Duration(transformSubnet.MaxStakeDuration),
+		StakePeriodRewardShare: transformSubnet.StakePeriodRewardShare,
+		StartRewardShare:       transformSubnet.StartRewardShare,
+		StartRewardTime:        transformSubnet.StartRewardTime,
+		TargetRewardShare:      transformSubnet.TargetRewardShare,
+		TargetRewardTime:       transformSubnet.TargetRewardTime,
 	}), nil
 }

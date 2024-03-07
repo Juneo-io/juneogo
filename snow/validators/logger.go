@@ -6,12 +6,12 @@ package validators
 import (
 	"go.uber.org/zap"
 
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/utils"
-	"github.com/Juneo-io/juneogo/utils/crypto/bls"
-	"github.com/Juneo-io/juneogo/utils/logging"
-	"github.com/Juneo-io/juneogo/utils/set"
-	"github.com/Juneo-io/juneogo/vms/types"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/utils"
+	"github.com/ava-labs/avalanchego/utils/crypto/bls"
+	"github.com/ava-labs/avalanchego/utils/logging"
+	"github.com/ava-labs/avalanchego/utils/set"
+	"github.com/ava-labs/avalanchego/vms/types"
 )
 
 var _ SetCallbackListener = (*logger)(nil)
@@ -19,7 +19,7 @@ var _ SetCallbackListener = (*logger)(nil)
 type logger struct {
 	log      logging.Logger
 	enabled  *utils.Atomic[bool]
-	supernetID ids.ID
+	subnetID ids.ID
 	nodeIDs  set.Set[ids.NodeID]
 }
 
@@ -28,14 +28,14 @@ type logger struct {
 func NewLogger(
 	log logging.Logger,
 	enabled *utils.Atomic[bool],
-	supernetID ids.ID,
+	subnetID ids.ID,
 	nodeIDs ...ids.NodeID,
 ) SetCallbackListener {
 	nodeIDSet := set.Of(nodeIDs...)
 	return &logger{
 		log:      log,
 		enabled:  enabled,
-		supernetID: supernetID,
+		subnetID: subnetID,
 		nodeIDs:  nodeIDSet,
 	}
 }
@@ -52,7 +52,7 @@ func (l *logger) OnValidatorAdded(
 			pkBytes = bls.PublicKeyToBytes(pk)
 		}
 		l.log.Info("node added to validator set",
-			zap.Stringer("supernetID", l.supernetID),
+			zap.Stringer("subnetID", l.subnetID),
 			zap.Stringer("nodeID", nodeID),
 			zap.Reflect("publicKey", types.JSONByteSlice(pkBytes)),
 			zap.Stringer("txID", txID),
@@ -67,7 +67,7 @@ func (l *logger) OnValidatorRemoved(
 ) {
 	if l.enabled.Get() && l.nodeIDs.Contains(nodeID) {
 		l.log.Info("node removed from validator set",
-			zap.Stringer("supernetID", l.supernetID),
+			zap.Stringer("subnetID", l.subnetID),
 			zap.Stringer("nodeID", nodeID),
 			zap.Uint64("weight", weight),
 		)
@@ -81,7 +81,7 @@ func (l *logger) OnValidatorWeightChanged(
 ) {
 	if l.enabled.Get() && l.nodeIDs.Contains(nodeID) {
 		l.log.Info("validator weight changed",
-			zap.Stringer("supernetID", l.supernetID),
+			zap.Stringer("subnetID", l.subnetID),
 			zap.Stringer("nodeID", nodeID),
 			zap.Uint64("previousWeight ", oldWeight),
 			zap.Uint64("newWeight ", newWeight),

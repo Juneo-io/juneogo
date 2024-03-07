@@ -13,15 +13,15 @@ import (
 	sync "sync"
 	time "time"
 
-	database "github.com/Juneo-io/juneogo/database"
-	ids "github.com/Juneo-io/juneogo/ids"
-	validators "github.com/Juneo-io/juneogo/snow/validators"
-	logging "github.com/Juneo-io/juneogo/utils/logging"
-	avax "github.com/Juneo-io/juneogo/vms/components/avax"
-	block "github.com/Juneo-io/juneogo/vms/platformvm/block"
-	fx "github.com/Juneo-io/juneogo/vms/platformvm/fx"
-	status "github.com/Juneo-io/juneogo/vms/platformvm/status"
-	txs "github.com/Juneo-io/juneogo/vms/platformvm/txs"
+	database "github.com/ava-labs/avalanchego/database"
+	ids "github.com/ava-labs/avalanchego/ids"
+	validators "github.com/ava-labs/avalanchego/snow/validators"
+	logging "github.com/ava-labs/avalanchego/utils/logging"
+	avax "github.com/ava-labs/avalanchego/vms/components/avax"
+	block "github.com/ava-labs/avalanchego/vms/platformvm/block"
+	fx "github.com/ava-labs/avalanchego/vms/platformvm/fx"
+	status "github.com/ava-labs/avalanchego/vms/platformvm/status"
+	txs "github.com/ava-labs/avalanchego/vms/platformvm/txs"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -96,28 +96,28 @@ func (mr *MockStateMockRecorder) AddStatelessBlock(arg0 interface{}) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddStatelessBlock", reflect.TypeOf((*MockState)(nil).AddStatelessBlock), arg0)
 }
 
-// AddSupernet mocks base method.
-func (m *MockState) AddSupernet(arg0 *txs.Tx) {
+// AddSubnet mocks base method.
+func (m *MockState) AddSubnet(arg0 *txs.Tx) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "AddSupernet", arg0)
+	m.ctrl.Call(m, "AddSubnet", arg0)
 }
 
-// AddSupernet indicates an expected call of AddSupernet.
-func (mr *MockStateMockRecorder) AddSupernet(arg0 interface{}) *gomock.Call {
+// AddSubnet indicates an expected call of AddSubnet.
+func (mr *MockStateMockRecorder) AddSubnet(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddSupernet", reflect.TypeOf((*MockState)(nil).AddSupernet), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddSubnet", reflect.TypeOf((*MockState)(nil).AddSubnet), arg0)
 }
 
-// AddSupernetTransformation mocks base method.
-func (m *MockState) AddSupernetTransformation(arg0 *txs.Tx) {
+// AddSubnetTransformation mocks base method.
+func (m *MockState) AddSubnetTransformation(arg0 *txs.Tx) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "AddSupernetTransformation", arg0)
+	m.ctrl.Call(m, "AddSubnetTransformation", arg0)
 }
 
-// AddSupernetTransformation indicates an expected call of AddSupernetTransformation.
-func (mr *MockStateMockRecorder) AddSupernetTransformation(arg0 interface{}) *gomock.Call {
+// AddSubnetTransformation indicates an expected call of AddSubnetTransformation.
+func (mr *MockStateMockRecorder) AddSubnetTransformation(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddSupernetTransformation", reflect.TypeOf((*MockState)(nil).AddSupernetTransformation), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddSubnetTransformation", reflect.TypeOf((*MockState)(nil).AddSubnetTransformation), arg0)
 }
 
 // AddTx mocks base method.
@@ -512,49 +512,49 @@ func (mr *MockStateMockRecorder) GetStatelessBlock(arg0 interface{}) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetStatelessBlock", reflect.TypeOf((*MockState)(nil).GetStatelessBlock), arg0)
 }
 
-// GetSupernetOwner mocks base method.
-func (m *MockState) GetSupernetOwner(arg0 ids.ID) (fx.Owner, error) {
+// GetSubnetOwner mocks base method.
+func (m *MockState) GetSubnetOwner(arg0 ids.ID) (fx.Owner, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetSupernetOwner", arg0)
+	ret := m.ctrl.Call(m, "GetSubnetOwner", arg0)
 	ret0, _ := ret[0].(fx.Owner)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetSupernetOwner indicates an expected call of GetSupernetOwner.
-func (mr *MockStateMockRecorder) GetSupernetOwner(arg0 interface{}) *gomock.Call {
+// GetSubnetOwner indicates an expected call of GetSubnetOwner.
+func (mr *MockStateMockRecorder) GetSubnetOwner(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSupernetOwner", reflect.TypeOf((*MockState)(nil).GetSupernetOwner), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSubnetOwner", reflect.TypeOf((*MockState)(nil).GetSubnetOwner), arg0)
 }
 
-// GetSupernetTransformation mocks base method.
-func (m *MockState) GetSupernetTransformation(arg0 ids.ID) (*txs.Tx, error) {
+// GetSubnetTransformation mocks base method.
+func (m *MockState) GetSubnetTransformation(arg0 ids.ID) (*txs.Tx, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetSupernetTransformation", arg0)
+	ret := m.ctrl.Call(m, "GetSubnetTransformation", arg0)
 	ret0, _ := ret[0].(*txs.Tx)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetSupernetTransformation indicates an expected call of GetSupernetTransformation.
-func (mr *MockStateMockRecorder) GetSupernetTransformation(arg0 interface{}) *gomock.Call {
+// GetSubnetTransformation indicates an expected call of GetSubnetTransformation.
+func (mr *MockStateMockRecorder) GetSubnetTransformation(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSupernetTransformation", reflect.TypeOf((*MockState)(nil).GetSupernetTransformation), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSubnetTransformation", reflect.TypeOf((*MockState)(nil).GetSubnetTransformation), arg0)
 }
 
-// GetSupernets mocks base method.
-func (m *MockState) GetSupernets() ([]*txs.Tx, error) {
+// GetSubnets mocks base method.
+func (m *MockState) GetSubnets() ([]*txs.Tx, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetSupernets")
+	ret := m.ctrl.Call(m, "GetSubnets")
 	ret0, _ := ret[0].([]*txs.Tx)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetSupernets indicates an expected call of GetSupernets.
-func (mr *MockStateMockRecorder) GetSupernets() *gomock.Call {
+// GetSubnets indicates an expected call of GetSubnets.
+func (mr *MockStateMockRecorder) GetSubnets() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSupernets", reflect.TypeOf((*MockState)(nil).GetSupernets))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSubnets", reflect.TypeOf((*MockState)(nil).GetSubnets))
 }
 
 // GetTimestamp mocks base method.
@@ -730,16 +730,16 @@ func (mr *MockStateMockRecorder) SetLastAccepted(arg0 interface{}) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetLastAccepted", reflect.TypeOf((*MockState)(nil).SetLastAccepted), arg0)
 }
 
-// SetSupernetOwner mocks base method.
-func (m *MockState) SetSupernetOwner(arg0 ids.ID, arg1 fx.Owner) {
+// SetSubnetOwner mocks base method.
+func (m *MockState) SetSubnetOwner(arg0 ids.ID, arg1 fx.Owner) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetSupernetOwner", arg0, arg1)
+	m.ctrl.Call(m, "SetSubnetOwner", arg0, arg1)
 }
 
-// SetSupernetOwner indicates an expected call of SetSupernetOwner.
-func (mr *MockStateMockRecorder) SetSupernetOwner(arg0, arg1 interface{}) *gomock.Call {
+// SetSubnetOwner indicates an expected call of SetSubnetOwner.
+func (mr *MockStateMockRecorder) SetSubnetOwner(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetSupernetOwner", reflect.TypeOf((*MockState)(nil).SetSupernetOwner), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetSubnetOwner", reflect.TypeOf((*MockState)(nil).SetSubnetOwner), arg0, arg1)
 }
 
 // SetTimestamp mocks base method.

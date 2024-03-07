@@ -10,8 +10,8 @@ package fx
 import (
 	reflect "reflect"
 
-	snow "github.com/Juneo-io/juneogo/snow"
-	verify "github.com/Juneo-io/juneogo/vms/components/verify"
+	snow "github.com/ava-labs/avalanchego/snow"
+	verify "github.com/ava-labs/avalanchego/vms/components/verify"
 	gomock "go.uber.org/mock/gomock"
 )
 

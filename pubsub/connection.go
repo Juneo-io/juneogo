@@ -14,7 +14,7 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/Juneo-io/juneogo/utils/bloom"
+	"github.com/ava-labs/avalanchego/utils/bloom"
 )
 
 var (

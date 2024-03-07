@@ -12,7 +12,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/Juneo-io/juneogo/utils/units"
+	"github.com/ava-labs/avalanchego/utils/units"
 )
 
 // MaxRSAKeyBitLen is the maximum RSA key size in bits that we are willing to

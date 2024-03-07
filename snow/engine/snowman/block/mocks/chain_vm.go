@@ -13,12 +13,12 @@ import (
 	reflect "reflect"
 	time "time"
 
-	manager "github.com/Juneo-io/juneogo/database/manager"
-	ids "github.com/Juneo-io/juneogo/ids"
-	snow "github.com/Juneo-io/juneogo/snow"
-	snowman "github.com/Juneo-io/juneogo/snow/consensus/snowman"
-	common "github.com/Juneo-io/juneogo/snow/engine/common"
-	version "github.com/Juneo-io/juneogo/version"
+	manager "github.com/ava-labs/avalanchego/database/manager"
+	ids "github.com/ava-labs/avalanchego/ids"
+	snow "github.com/ava-labs/avalanchego/snow"
+	snowman "github.com/ava-labs/avalanchego/snow/consensus/snowman"
+	common "github.com/ava-labs/avalanchego/snow/engine/common"
+	version "github.com/ava-labs/avalanchego/version"
 	gomock "go.uber.org/mock/gomock"
 )
 

@@ -6,7 +6,7 @@ package choices
 import (
 	"errors"
 
-	"github.com/Juneo-io/juneogo/utils/wrappers"
+	"github.com/ava-labs/avalanchego/utils/wrappers"
 )
 
 var errUnknownStatus = errors.New("unknown status")

@@ -6,7 +6,7 @@ package heap
 import (
 	"container/heap"
 
-	"github.com/Juneo-io/juneogo/utils"
+	"github.com/ava-labs/avalanchego/utils"
 )
 
 var _ heap.Interface = (*queue[int])(nil)

@@ -7,37 +7,37 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/Juneo-io/juneogo/database"
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/vms/components/verify"
-	"github.com/Juneo-io/juneogo/vms/platformvm/state"
-	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
+	"github.com/ava-labs/avalanchego/database"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/vms/components/verify"
+	"github.com/ava-labs/avalanchego/vms/platformvm/state"
+	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
 )
 
 var (
 	errWrongNumberOfCredentials       = errors.New("should have the same number of credentials as inputs")
 	errIsImmutable                    = errors.New("is immutable")
-	errUnauthorizedSupernetModification = errors.New("unauthorized supernet modification")
+	errUnauthorizedSubnetModification = errors.New("unauthorized subnet modification")
 )
 
-// verifyPoASupernetAuthorization carries out the validation for modifying a PoA
-// supernet. This is an extension of [verifySupernetAuthorization] that additionally
-// verifies that the supernet being modified is currently a PoA supernet.
-func verifyPoASupernetAuthorization(
+// verifyPoASubnetAuthorization carries out the validation for modifying a PoA
+// subnet. This is an extension of [verifySubnetAuthorization] that additionally
+// verifies that the subnet being modified is currently a PoA subnet.
+func verifyPoASubnetAuthorization(
 	backend *Backend,
 	chainState state.Chain,
 	sTx *txs.Tx,
-	supernetID ids.ID,
-	supernetAuth verify.Verifiable,
+	subnetID ids.ID,
+	subnetAuth verify.Verifiable,
 ) ([]verify.Verifiable, error) {
-	creds, err := verifySupernetAuthorization(backend, chainState, sTx, supernetID, supernetAuth)
+	creds, err := verifySubnetAuthorization(backend, chainState, sTx, subnetID, subnetAuth)
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = chainState.GetSupernetTransformation(supernetID)
+	_, err = chainState.GetSubnetTransformation(subnetID)
 	if err == nil {
-		return nil, fmt.Errorf("%q %w", supernetID, errIsImmutable)
+		return nil, fmt.Errorf("%q %w", subnetID, errIsImmutable)
 	}
 	if err != database.ErrNotFound {
 		return nil, err
@@ -46,32 +46,32 @@ func verifyPoASupernetAuthorization(
 	return creds, nil
 }
 
-// verifySupernetAuthorization carries out the validation for modifying a supernet.
-// The last credential in [sTx.Creds] is used as the supernet authorization.
+// verifySubnetAuthorization carries out the validation for modifying a subnet.
+// The last credential in [sTx.Creds] is used as the subnet authorization.
 // Returns the remaining tx credentials that should be used to authorize the
 // other operations in the tx.
-func verifySupernetAuthorization(
+func verifySubnetAuthorization(
 	backend *Backend,
 	chainState state.Chain,
 	sTx *txs.Tx,
-	supernetID ids.ID,
-	supernetAuth verify.Verifiable,
+	subnetID ids.ID,
+	subnetAuth verify.Verifiable,
 ) ([]verify.Verifiable, error) {
 	if len(sTx.Creds) == 0 {
-		// Ensure there is at least one credential for the supernet authorization
+		// Ensure there is at least one credential for the subnet authorization
 		return nil, errWrongNumberOfCredentials
 	}
 
 	baseTxCredsLen := len(sTx.Creds) - 1
-	supernetCred := sTx.Creds[baseTxCredsLen]
+	subnetCred := sTx.Creds[baseTxCredsLen]
 
-	supernetOwner, err := chainState.GetSupernetOwner(supernetID)
+	subnetOwner, err := chainState.GetSubnetOwner(subnetID)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := backend.Fx.VerifyPermission(sTx.Unsigned, supernetAuth, supernetCred, supernetOwner); err != nil {
-		return nil, fmt.Errorf("%w: %w", errUnauthorizedSupernetModification, err)
+	if err := backend.Fx.VerifyPermission(sTx.Unsigned, subnetAuth, subnetCred, subnetOwner); err != nil {
+		return nil, fmt.Errorf("%w: %w", errUnauthorizedSubnetModification, err)
 	}
 
 	return sTx.Creds[:baseTxCredsLen], nil

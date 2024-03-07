@@ -6,10 +6,10 @@ package message
 import (
 	"time"
 
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/proto/pb/p2p"
-	"github.com/Juneo-io/juneogo/utils/compression"
-	"github.com/Juneo-io/juneogo/utils/ips"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/proto/pb/p2p"
+	"github.com/ava-labs/avalanchego/utils/compression"
+	"github.com/ava-labs/avalanchego/utils/ips"
 )
 
 var _ OutboundMsgBuilder = (*outMsgBuilder)(nil)
@@ -25,7 +25,7 @@ type OutboundMsgBuilder interface {
 		myVersion string,
 		myVersionTime uint64,
 		sig []byte,
-		trackedSupernets []ids.ID,
+		trackedSubnets []ids.ID,
 	) (OutboundMessage, error)
 
 	PeerList(
@@ -39,12 +39,12 @@ type OutboundMsgBuilder interface {
 
 	Ping(
 		primaryUptime uint32,
-		supernetUptimes []*p2p.SupernetUptime,
+		subnetUptimes []*p2p.SubnetUptime,
 	) (OutboundMessage, error)
 
 	Pong(
 		primaryUptime uint32,
-		supernetUptimes []*p2p.SupernetUptime,
+		subnetUptimes []*p2p.SubnetUptime,
 	) (OutboundMessage, error)
 
 	GetStateSummaryFrontier(
@@ -190,14 +190,14 @@ func newOutboundBuilder(compressionType compression.Type, builder *msgBuilder) O
 
 func (b *outMsgBuilder) Ping(
 	primaryUptime uint32,
-	supernetUptimes []*p2p.SupernetUptime,
+	subnetUptimes []*p2p.SubnetUptime,
 ) (OutboundMessage, error) {
 	return b.builder.createOutbound(
 		&p2p.Message{
 			Message: &p2p.Message_Ping{
 				Ping: &p2p.Ping{
 					Uptime:        primaryUptime,
-					SupernetUptimes: supernetUptimes,
+					SubnetUptimes: subnetUptimes,
 				},
 			},
 		},
@@ -208,14 +208,14 @@ func (b *outMsgBuilder) Ping(
 
 func (b *outMsgBuilder) Pong(
 	primaryUptime uint32,
-	supernetUptimes []*p2p.SupernetUptime,
+	subnetUptimes []*p2p.SubnetUptime,
 ) (OutboundMessage, error) {
 	return b.builder.createOutbound(
 		&p2p.Message{
 			Message: &p2p.Message_Pong{
 				Pong: &p2p.Pong{
 					Uptime:        primaryUptime,
-					SupernetUptimes: supernetUptimes,
+					SubnetUptimes: subnetUptimes,
 				},
 			},
 		},
@@ -231,10 +231,10 @@ func (b *outMsgBuilder) Version(
 	myVersion string,
 	myVersionTime uint64,
 	sig []byte,
-	trackedSupernets []ids.ID,
+	trackedSubnets []ids.ID,
 ) (OutboundMessage, error) {
-	supernetIDBytes := make([][]byte, len(trackedSupernets))
-	encodeIDs(trackedSupernets, supernetIDBytes)
+	subnetIDBytes := make([][]byte, len(trackedSubnets))
+	encodeIDs(trackedSubnets, subnetIDBytes)
 	return b.builder.createOutbound(
 		&p2p.Message{
 			Message: &p2p.Message_Version{
@@ -246,7 +246,7 @@ func (b *outMsgBuilder) Version(
 					MyVersion:      myVersion,
 					MyVersionTime:  myVersionTime,
 					Sig:            sig,
-					TrackedSupernets: supernetIDBytes,
+					TrackedSubnets: subnetIDBytes,
 				},
 			},
 		},

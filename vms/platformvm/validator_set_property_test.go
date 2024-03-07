@@ -18,52 +18,52 @@ import (
 
 	"golang.org/x/exp/maps"
 
-	"github.com/Juneo-io/juneogo/chains"
-	"github.com/Juneo-io/juneogo/chains/atomic"
-	"github.com/Juneo-io/juneogo/database/manager"
-	"github.com/Juneo-io/juneogo/database/prefixdb"
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/snow"
-	"github.com/Juneo-io/juneogo/snow/consensus/snowman"
-	"github.com/Juneo-io/juneogo/snow/engine/common"
-	"github.com/Juneo-io/juneogo/snow/uptime"
-	"github.com/Juneo-io/juneogo/snow/validators"
-	"github.com/Juneo-io/juneogo/utils/constants"
-	"github.com/Juneo-io/juneogo/utils/crypto/bls"
-	"github.com/Juneo-io/juneogo/utils/crypto/secp256k1"
-	"github.com/Juneo-io/juneogo/utils/formatting"
-	"github.com/Juneo-io/juneogo/utils/formatting/address"
-	"github.com/Juneo-io/juneogo/utils/json"
-	"github.com/Juneo-io/juneogo/utils/timer/mockable"
-	"github.com/Juneo-io/juneogo/utils/units"
-	"github.com/Juneo-io/juneogo/version"
-	"github.com/Juneo-io/juneogo/vms/components/avax"
-	"github.com/Juneo-io/juneogo/vms/platformvm/api"
-	"github.com/Juneo-io/juneogo/vms/platformvm/block"
-	"github.com/Juneo-io/juneogo/vms/platformvm/config"
-	"github.com/Juneo-io/juneogo/vms/platformvm/reward"
-	"github.com/Juneo-io/juneogo/vms/platformvm/signer"
-	"github.com/Juneo-io/juneogo/vms/platformvm/state"
-	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
-	"github.com/Juneo-io/juneogo/vms/platformvm/utxo"
-	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
+	"github.com/ava-labs/avalanchego/chains"
+	"github.com/ava-labs/avalanchego/chains/atomic"
+	"github.com/ava-labs/avalanchego/database/manager"
+	"github.com/ava-labs/avalanchego/database/prefixdb"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/snow"
+	"github.com/ava-labs/avalanchego/snow/consensus/snowman"
+	"github.com/ava-labs/avalanchego/snow/engine/common"
+	"github.com/ava-labs/avalanchego/snow/uptime"
+	"github.com/ava-labs/avalanchego/snow/validators"
+	"github.com/ava-labs/avalanchego/utils/constants"
+	"github.com/ava-labs/avalanchego/utils/crypto/bls"
+	"github.com/ava-labs/avalanchego/utils/crypto/secp256k1"
+	"github.com/ava-labs/avalanchego/utils/formatting"
+	"github.com/ava-labs/avalanchego/utils/formatting/address"
+	"github.com/ava-labs/avalanchego/utils/json"
+	"github.com/ava-labs/avalanchego/utils/timer/mockable"
+	"github.com/ava-labs/avalanchego/utils/units"
+	"github.com/ava-labs/avalanchego/version"
+	"github.com/ava-labs/avalanchego/vms/components/avax"
+	"github.com/ava-labs/avalanchego/vms/platformvm/api"
+	"github.com/ava-labs/avalanchego/vms/platformvm/block"
+	"github.com/ava-labs/avalanchego/vms/platformvm/config"
+	"github.com/ava-labs/avalanchego/vms/platformvm/reward"
+	"github.com/ava-labs/avalanchego/vms/platformvm/signer"
+	"github.com/ava-labs/avalanchego/vms/platformvm/state"
+	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
+	"github.com/ava-labs/avalanchego/vms/platformvm/utxo"
+	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
 
-	blockexecutor "github.com/Juneo-io/juneogo/vms/platformvm/block/executor"
-	txexecutor "github.com/Juneo-io/juneogo/vms/platformvm/txs/executor"
+	blockexecutor "github.com/ava-labs/avalanchego/vms/platformvm/block/executor"
+	txexecutor "github.com/ava-labs/avalanchego/vms/platformvm/txs/executor"
 )
 
 const (
 	startPrimaryWithBLS uint8 = iota
 	startPrimaryWithoutBLS
-	startSupernetValidator
+	startSubnetValidator
 )
 
 var errEmptyEventsList = errors.New("empty events list")
 
-// for a given (permissioned) supernet, the test stakes and restakes multiple
-// times a node as a primary and supernet validator. The BLS key of the node is
+// for a given (permissioned) subnet, the test stakes and restakes multiple
+// times a node as a primary and subnet validator. The BLS key of the node is
 // changed across staking periods, and it can even be nil. We test that
-// GetValidatorSet returns the correct primary and supernet validators data, with
+// GetValidatorSet returns the correct primary and subnet validators data, with
 // the right BLS key version at all relevant heights.
 func TestGetValidatorsSetProperty(t *testing.T) {
 	properties := gopter.NewProperties(nil)
@@ -74,7 +74,7 @@ func TestGetValidatorsSetProperty(t *testing.T) {
 
 	properties.Property("check GetValidatorSet", prop.ForAll(
 		func(events []uint8) string {
-			vm, supernetID, err := buildVM(t)
+			vm, subnetID, err := buildVM(t)
 			if err != nil {
 				return fmt.Sprintf("failed building vm: %s", err.Error())
 			}
@@ -96,37 +96,37 @@ func TestGetValidatorsSetProperty(t *testing.T) {
 				return fmt.Sprintf("failed building events sequence: %s", err.Error())
 			}
 
-			validatorSetByHeightAndSupernet := make(map[uint64]map[ids.ID]map[ids.NodeID]*validators.GetValidatorOutput)
-			if err := takeValidatorsSnapshotAtCurrentHeight(vm, validatorSetByHeightAndSupernet); err != nil {
+			validatorSetByHeightAndSubnet := make(map[uint64]map[ids.ID]map[ids.NodeID]*validators.GetValidatorOutput)
+			if err := takeValidatorsSnapshotAtCurrentHeight(vm, validatorSetByHeightAndSubnet); err != nil {
 				return fmt.Sprintf("could not take validators snapshot: %s", err.Error())
 			}
 
 			// insert validator sequence
 			var (
 				currentPrimaryValidator = (*state.Staker)(nil)
-				currentSupernetValidator  = (*state.Staker)(nil)
+				currentSubnetValidator  = (*state.Staker)(nil)
 			)
 			for _, ev := range validatorsTimes {
-				// at each step we remove at least a supernet validator
-				if currentSupernetValidator != nil {
-					err := terminateSupernetValidator(vm, currentSupernetValidator)
+				// at each step we remove at least a subnet validator
+				if currentSubnetValidator != nil {
+					err := terminateSubnetValidator(vm, currentSubnetValidator)
 					if err != nil {
-						return fmt.Sprintf("could not terminate current supernet validator: %s", err.Error())
+						return fmt.Sprintf("could not terminate current subnet validator: %s", err.Error())
 					}
-					currentSupernetValidator = nil
+					currentSubnetValidator = nil
 
-					if err := takeValidatorsSnapshotAtCurrentHeight(vm, validatorSetByHeightAndSupernet); err != nil {
+					if err := takeValidatorsSnapshotAtCurrentHeight(vm, validatorSetByHeightAndSubnet); err != nil {
 						return fmt.Sprintf("could not take validators snapshot: %s", err.Error())
 					}
 				}
 
 				switch ev.eventType {
-				case startSupernetValidator:
-					currentSupernetValidator, err = addSupernetValidator(vm, ev, supernetID)
+				case startSubnetValidator:
+					currentSubnetValidator, err = addSubnetValidator(vm, ev, subnetID)
 					if err != nil {
-						return fmt.Sprintf("could not add supernet validator: %s", err.Error())
+						return fmt.Sprintf("could not add subnet validator: %s", err.Error())
 					}
-					if err := takeValidatorsSnapshotAtCurrentHeight(vm, validatorSetByHeightAndSupernet); err != nil {
+					if err := takeValidatorsSnapshotAtCurrentHeight(vm, validatorSetByHeightAndSubnet); err != nil {
 						return fmt.Sprintf("could not take validators snapshot: %s", err.Error())
 					}
 
@@ -141,7 +141,7 @@ func TestGetValidatorsSetProperty(t *testing.T) {
 						// no need to nil current primary validator, we'll
 						// reassign immediately
 
-						if err := takeValidatorsSnapshotAtCurrentHeight(vm, validatorSetByHeightAndSupernet); err != nil {
+						if err := takeValidatorsSnapshotAtCurrentHeight(vm, validatorSetByHeightAndSubnet); err != nil {
 							return fmt.Sprintf("could not take validators snapshot: %s", err.Error())
 						}
 					}
@@ -149,7 +149,7 @@ func TestGetValidatorsSetProperty(t *testing.T) {
 					if err != nil {
 						return fmt.Sprintf("could not add primary validator without BLS key: %s", err.Error())
 					}
-					if err := takeValidatorsSnapshotAtCurrentHeight(vm, validatorSetByHeightAndSupernet); err != nil {
+					if err := takeValidatorsSnapshotAtCurrentHeight(vm, validatorSetByHeightAndSubnet); err != nil {
 						return fmt.Sprintf("could not take validators snapshot: %s", err.Error())
 					}
 
@@ -164,7 +164,7 @@ func TestGetValidatorsSetProperty(t *testing.T) {
 						// no need to nil current primary validator, we'll
 						// reassign immediately
 
-						if err := takeValidatorsSnapshotAtCurrentHeight(vm, validatorSetByHeightAndSupernet); err != nil {
+						if err := takeValidatorsSnapshotAtCurrentHeight(vm, validatorSetByHeightAndSubnet); err != nil {
 							return fmt.Sprintf("could not take validators snapshot: %s", err.Error())
 						}
 					}
@@ -172,7 +172,7 @@ func TestGetValidatorsSetProperty(t *testing.T) {
 					if err != nil {
 						return fmt.Sprintf("could not add primary validator with BLS key: %s", err.Error())
 					}
-					if err := takeValidatorsSnapshotAtCurrentHeight(vm, validatorSetByHeightAndSupernet); err != nil {
+					if err := takeValidatorsSnapshotAtCurrentHeight(vm, validatorSetByHeightAndSubnet); err != nil {
 						return fmt.Sprintf("could not take validators snapshot: %s", err.Error())
 					}
 
@@ -183,7 +183,7 @@ func TestGetValidatorsSetProperty(t *testing.T) {
 
 			// Checks: let's look back at validator sets at previous heights and
 			// make sure they match the snapshots already taken
-			snapshotHeights := maps.Keys(validatorSetByHeightAndSupernet)
+			snapshotHeights := maps.Keys(validatorSetByHeightAndSubnet)
 			sort.Slice(snapshotHeights, func(i, j int) bool { return snapshotHeights[i] < snapshotHeights[j] })
 			for idx, snapShotHeight := range snapshotHeights {
 				lastAcceptedHeight, err := vm.GetCurrentHeight(context.Background())
@@ -199,8 +199,8 @@ func TestGetValidatorsSetProperty(t *testing.T) {
 				// within [snapShotHeight] and [nextSnapShotHeight], the validator set
 				// does not change and must be equal to snapshot at [snapShotHeight]
 				for height := snapShotHeight; height < nextSnapShotHeight; height++ {
-					for supernetID, validatorsSet := range validatorSetByHeightAndSupernet[snapShotHeight] {
-						res, err := vm.GetValidatorSet(context.Background(), height, supernetID)
+					for subnetID, validatorsSet := range validatorSetByHeightAndSubnet[snapShotHeight] {
+						res, err := vm.GetValidatorSet(context.Background(), height, subnetID)
 						if err != nil {
 							return fmt.Sprintf("failed GetValidatorSet at height %v: %v", height, err)
 						}
@@ -218,7 +218,7 @@ func TestGetValidatorsSetProperty(t *testing.T) {
 			gen.OneConstOf(
 				startPrimaryWithBLS,
 				startPrimaryWithoutBLS,
-				startSupernetValidator,
+				startSubnetValidator,
 			),
 		).SuchThat(func(v interface{}) bool {
 			list := v.([]uint8)
@@ -229,9 +229,9 @@ func TestGetValidatorsSetProperty(t *testing.T) {
 	properties.TestingRun(t)
 }
 
-func takeValidatorsSnapshotAtCurrentHeight(vm *VM, validatorsSetByHeightAndSupernet map[uint64]map[ids.ID]map[ids.NodeID]*validators.GetValidatorOutput) error {
-	if validatorsSetByHeightAndSupernet == nil {
-		validatorsSetByHeightAndSupernet = make(map[uint64]map[ids.ID]map[ids.NodeID]*validators.GetValidatorOutput)
+func takeValidatorsSnapshotAtCurrentHeight(vm *VM, validatorsSetByHeightAndSubnet map[uint64]map[ids.ID]map[ids.NodeID]*validators.GetValidatorOutput) error {
+	if validatorsSetByHeightAndSubnet == nil {
+		validatorsSetByHeightAndSubnet = make(map[uint64]map[ids.ID]map[ids.NodeID]*validators.GetValidatorOutput)
 	}
 
 	lastBlkID := vm.state.GetLastAccepted()
@@ -240,10 +240,10 @@ func takeValidatorsSnapshotAtCurrentHeight(vm *VM, validatorsSetByHeightAndSuper
 		return err
 	}
 	height := lastBlk.Height()
-	validatorsSetBySupernet, ok := validatorsSetByHeightAndSupernet[height]
+	validatorsSetBySubnet, ok := validatorsSetByHeightAndSubnet[height]
 	if !ok {
-		validatorsSetByHeightAndSupernet[height] = make(map[ids.ID]map[ids.NodeID]*validators.GetValidatorOutput)
-		validatorsSetBySupernet = validatorsSetByHeightAndSupernet[height]
+		validatorsSetByHeightAndSubnet[height] = make(map[ids.ID]map[ids.NodeID]*validators.GetValidatorOutput)
+		validatorsSetBySubnet = validatorsSetByHeightAndSubnet[height]
 	}
 
 	stakerIt, err := vm.state.GetCurrentStakerIterator()
@@ -253,14 +253,14 @@ func takeValidatorsSnapshotAtCurrentHeight(vm *VM, validatorsSetByHeightAndSuper
 	defer stakerIt.Release()
 	for stakerIt.Next() {
 		v := stakerIt.Value()
-		validatorsSet, ok := validatorsSetBySupernet[v.SupernetID]
+		validatorsSet, ok := validatorsSetBySubnet[v.SubnetID]
 		if !ok {
-			validatorsSetBySupernet[v.SupernetID] = make(map[ids.NodeID]*validators.GetValidatorOutput)
-			validatorsSet = validatorsSetBySupernet[v.SupernetID]
+			validatorsSetBySubnet[v.SubnetID] = make(map[ids.NodeID]*validators.GetValidatorOutput)
+			validatorsSet = validatorsSetBySubnet[v.SubnetID]
 		}
 
 		blsKey := v.PublicKey
-		if v.SupernetID != constants.PrimaryNetworkID {
+		if v.SubnetID != constants.PrimaryNetworkID {
 			// pick bls key from primary validator
 			s, err := vm.state.GetCurrentValidator(constants.PlatformChainID, v.NodeID)
 			if err != nil {
@@ -278,19 +278,19 @@ func takeValidatorsSnapshotAtCurrentHeight(vm *VM, validatorsSetByHeightAndSuper
 	return nil
 }
 
-func addSupernetValidator(vm *VM, data *validatorInputData, supernetID ids.ID) (*state.Staker, error) {
+func addSubnetValidator(vm *VM, data *validatorInputData, subnetID ids.ID) (*state.Staker, error) {
 	addr := keys[0].PublicKey().Address()
-	signedTx, err := vm.txBuilder.NewAddSupernetValidatorTx(
+	signedTx, err := vm.txBuilder.NewAddSubnetValidatorTx(
 		vm.Config.MinValidatorStake,
 		uint64(data.startTime.Unix()),
 		uint64(data.endTime.Unix()),
 		data.nodeID,
-		supernetID,
+		subnetID,
 		[]*secp256k1.PrivateKey{keys[0], keys[1]},
 		addr,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("could not create AddSupernetValidatorTx: %w", err)
+		return nil, fmt.Errorf("could not create AddSubnetValidatorTx: %w", err)
 	}
 	return internalAddValidator(vm, signedTx)
 }
@@ -326,7 +326,7 @@ func addPrimaryValidatorWithBLSKey(vm *VM, data *validatorInputData) (*state.Sta
 			End:    uint64(data.endTime.Unix()),
 			Wght:   vm.MinValidatorStake,
 		},
-		Supernet:    constants.PrimaryNetworkID,
+		Subnet:    constants.PrimaryNetworkID,
 		Signer:    signer.NewProofOfPossession(sk),
 		StakeOuts: stakedOuts,
 		ValidatorRewardsOwner: &secp256k1fx.OutputOwners{
@@ -412,10 +412,10 @@ func internalAddValidator(vm *VM, signedTx *txs.Tx) (*state.Staker, error) {
 		return nil, fmt.Errorf("failed setting preference: %w", err)
 	}
 
-	return vm.state.GetCurrentValidator(stakerTx.SupernetID(), stakerTx.NodeID())
+	return vm.state.GetCurrentValidator(stakerTx.SubnetID(), stakerTx.NodeID())
 }
 
-func terminateSupernetValidator(vm *VM, validator *state.Staker) error {
+func terminateSubnetValidator(vm *VM, validator *state.Staker) error {
 	currentTime := validator.EndTime
 	vm.clock.Set(currentTime)
 	vm.state.SetTimestamp(currentTime)
@@ -520,16 +520,16 @@ func buildTimestampsList(events []uint8, currentTime time.Time, nodeID ids.NodeI
 	}
 
 	// track current primary validator to make sure its staking period
-	// covers all of its supernet validators
+	// covers all of its subnet validators
 	currentPrimaryVal := res[0]
 	for i := 1; i < len(events); i++ {
 		currentTime = currentTime.Add(txexecutor.SyncBound)
 
 		switch currentEvent := events[i]; currentEvent {
-		case startSupernetValidator:
+		case startSubnetValidator:
 			endTime := currentTime.Add(defaultMinStakingDuration)
 			res = append(res, &validatorInputData{
-				eventType: startSupernetValidator,
+				eventType: startSubnetValidator,
 				startTime: currentTime,
 				endTime:   endTime,
 				nodeID:    nodeID,
@@ -590,21 +590,21 @@ func TestTimestampListGenerator(t *testing.T) {
 				return errEmptyEventsList.Error()
 			}
 
-			// nil out non supernet validators
-			supernetIndexes := make([]int, 0)
+			// nil out non subnet validators
+			subnetIndexes := make([]int, 0)
 			for idx, ev := range validatorsTimes {
-				if ev.eventType == startSupernetValidator {
-					supernetIndexes = append(supernetIndexes, idx)
+				if ev.eventType == startSubnetValidator {
+					subnetIndexes = append(subnetIndexes, idx)
 				}
 			}
-			for _, idx := range supernetIndexes {
+			for _, idx := range subnetIndexes {
 				validatorsTimes[idx] = nil
 			}
 
 			currentEventTime := currentTime
 			for i, ev := range validatorsTimes {
 				if ev == nil {
-					continue // a supernet validator
+					continue // a subnet validator
 				}
 				if currentEventTime.After(ev.startTime) {
 					return fmt.Sprintf("validator %d start time larger than current event time", i)
@@ -622,14 +622,14 @@ func TestTimestampListGenerator(t *testing.T) {
 		gen.SliceOf(gen.OneConstOf(
 			startPrimaryWithBLS,
 			startPrimaryWithoutBLS,
-			startSupernetValidator,
+			startSubnetValidator,
 		)).SuchThat(func(v interface{}) bool {
 			list := v.([]uint8)
 			return len(list) > 0 && (list[0] == startPrimaryWithBLS || list[0] == startPrimaryWithoutBLS)
 		}),
 	))
 
-	properties.Property("supernet validators are returned in sequence", prop.ForAll(
+	properties.Property("subnet validators are returned in sequence", prop.ForAll(
 		func(events []uint8) string {
 			currentTime := time.Now()
 			nodeID := ids.GenerateTestNodeID()
@@ -642,21 +642,21 @@ func TestTimestampListGenerator(t *testing.T) {
 				return errEmptyEventsList.Error()
 			}
 
-			// nil out non supernet validators
-			nonSupernetIndexes := make([]int, 0)
+			// nil out non subnet validators
+			nonSubnetIndexes := make([]int, 0)
 			for idx, ev := range validatorsTimes {
-				if ev.eventType != startSupernetValidator {
-					nonSupernetIndexes = append(nonSupernetIndexes, idx)
+				if ev.eventType != startSubnetValidator {
+					nonSubnetIndexes = append(nonSubnetIndexes, idx)
 				}
 			}
-			for _, idx := range nonSupernetIndexes {
+			for _, idx := range nonSubnetIndexes {
 				validatorsTimes[idx] = nil
 			}
 
 			currentEventTime := currentTime
 			for i, ev := range validatorsTimes {
 				if ev == nil {
-					continue // a non-supernet validator
+					continue // a non-subnet validator
 				}
 				if currentEventTime.After(ev.startTime) {
 					return fmt.Sprintf("validator %d start time larger than current event time", i)
@@ -674,14 +674,14 @@ func TestTimestampListGenerator(t *testing.T) {
 		gen.SliceOf(gen.OneConstOf(
 			startPrimaryWithBLS,
 			startPrimaryWithoutBLS,
-			startSupernetValidator,
+			startSubnetValidator,
 		)).SuchThat(func(v interface{}) bool {
 			list := v.([]uint8)
 			return len(list) > 0 && (list[0] == startPrimaryWithBLS || list[0] == startPrimaryWithoutBLS)
 		}),
 	))
 
-	properties.Property("supernet validators' times are bound by a primary validator's times", prop.ForAll(
+	properties.Property("subnet validators' times are bound by a primary validator's times", prop.ForAll(
 		func(events []uint8) string {
 			currentTime := time.Now()
 			nodeID := ids.GenerateTestNodeID()
@@ -696,15 +696,15 @@ func TestTimestampListGenerator(t *testing.T) {
 
 			currentPrimaryValidator := validatorsTimes[0]
 			for i := 1; i < len(validatorsTimes); i++ {
-				if validatorsTimes[i].eventType != startSupernetValidator {
+				if validatorsTimes[i].eventType != startSubnetValidator {
 					currentPrimaryValidator = validatorsTimes[i]
 					continue
 				}
 
-				supernetVal := validatorsTimes[i]
-				if currentPrimaryValidator.startTime.After(supernetVal.startTime) ||
-					supernetVal.endTime.After(currentPrimaryValidator.endTime) {
-					return "supernet validator not bounded by primary network ones"
+				subnetVal := validatorsTimes[i]
+				if currentPrimaryValidator.startTime.After(subnetVal.startTime) ||
+					subnetVal.endTime.After(currentPrimaryValidator.endTime) {
+					return "subnet validator not bounded by primary network ones"
 				}
 			}
 			return ""
@@ -712,7 +712,7 @@ func TestTimestampListGenerator(t *testing.T) {
 		gen.SliceOf(gen.OneConstOf(
 			startPrimaryWithBLS,
 			startPrimaryWithoutBLS,
-			startSupernetValidator,
+			startSubnetValidator,
 		)).SuchThat(func(v interface{}) bool {
 			list := v.([]uint8)
 			return len(list) > 0 && (list[0] == startPrimaryWithBLS || list[0] == startPrimaryWithoutBLS)
@@ -732,8 +732,8 @@ func buildVM(t *testing.T) (*VM, ids.ID, error) {
 		SybilProtectionEnabled: true,
 		Validators:             validators.NewManager(),
 		TxFee:                  defaultTxFee,
-		CreateSupernetTxFee:      100 * defaultTxFee,
-		TransformSupernetTxFee:   100 * defaultTxFee,
+		CreateSubnetTxFee:      100 * defaultTxFee,
+		TransformSubnetTxFee:   100 * defaultTxFee,
 		CreateBlockchainTxFee:  100 * defaultTxFee,
 		MinValidatorStake:      defaultMinValidatorStake,
 		MaxValidatorStake:      defaultMaxValidatorStake,
@@ -791,10 +791,10 @@ func buildVM(t *testing.T) (*VM, ids.ID, error) {
 		return nil, ids.Empty, err
 	}
 
-	// Create a supernet and store it in testSupernet1
+	// Create a subnet and store it in testSubnet1
 	// Note: following Banff activation, block acceptance will move
 	// chain time ahead
-	testSupernet1, err = vm.txBuilder.NewCreateSupernetTx(
+	testSubnet1, err = vm.txBuilder.NewCreateSubnetTx(
 		1, // threshold
 		[]ids.ShortID{keys[0].PublicKey().Address()},
 		[]*secp256k1.PrivateKey{keys[len(keys)-1]}, // pays tx fee
@@ -803,7 +803,7 @@ func buildVM(t *testing.T) (*VM, ids.ID, error) {
 	if err != nil {
 		return nil, ids.Empty, err
 	}
-	if err := vm.Builder.AddUnverifiedTx(testSupernet1); err != nil {
+	if err := vm.Builder.AddUnverifiedTx(testSubnet1); err != nil {
 		return nil, ids.Empty, err
 	}
 
@@ -821,7 +821,7 @@ func buildVM(t *testing.T) (*VM, ids.ID, error) {
 		return nil, ids.Empty, err
 	}
 
-	return vm, testSupernet1.ID(), nil
+	return vm, testSubnet1.ID(), nil
 }
 
 func buildCustomGenesis() ([]byte, error) {

@@ -7,12 +7,12 @@ import (
 	"context"
 	"errors"
 
-	"github.com/Juneo-io/juneogo/database"
-	"github.com/Juneo-io/juneogo/snow"
-	"github.com/Juneo-io/juneogo/vms/example/xsvm/state"
+	"github.com/ava-labs/avalanchego/database"
+	"github.com/ava-labs/avalanchego/snow"
+	"github.com/ava-labs/avalanchego/vms/example/xsvm/state"
 
-	smblock "github.com/Juneo-io/juneogo/snow/engine/snowman/block"
-	xsblock "github.com/Juneo-io/juneogo/vms/example/xsvm/block"
+	smblock "github.com/ava-labs/avalanchego/snow/engine/snowman/block"
+	xsblock "github.com/ava-labs/avalanchego/vms/example/xsvm/block"
 )
 
 var errNoTxs = errors.New("no transactions")

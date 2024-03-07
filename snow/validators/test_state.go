@@ -10,13 +10,13 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/Juneo-io/juneogo/ids"
+	"github.com/ava-labs/avalanchego/ids"
 )
 
 var (
 	errMinimumHeight   = errors.New("unexpectedly called GetMinimumHeight")
 	errCurrentHeight   = errors.New("unexpectedly called GetCurrentHeight")
-	errSupernetID        = errors.New("unexpectedly called GetSupernetID")
+	errSubnetID        = errors.New("unexpectedly called GetSubnetID")
 	errGetValidatorSet = errors.New("unexpectedly called GetValidatorSet")
 )
 
@@ -27,13 +27,13 @@ type TestState struct {
 
 	CantGetMinimumHeight,
 	CantGetCurrentHeight,
-	CantGetSupernetID,
+	CantGetSubnetID,
 	CantGetValidatorSet bool
 
 	GetMinimumHeightF func(ctx context.Context) (uint64, error)
 	GetCurrentHeightF func(ctx context.Context) (uint64, error)
-	GetSupernetIDF      func(ctx context.Context, chainID ids.ID) (ids.ID, error)
-	GetValidatorSetF  func(ctx context.Context, height uint64, supernetID ids.ID) (map[ids.NodeID]*GetValidatorOutput, error)
+	GetSubnetIDF      func(ctx context.Context, chainID ids.ID) (ids.ID, error)
+	GetValidatorSetF  func(ctx context.Context, height uint64, subnetID ids.ID) (map[ids.NodeID]*GetValidatorOutput, error)
 }
 
 func (vm *TestState) GetMinimumHeight(ctx context.Context) (uint64, error) {
@@ -56,23 +56,23 @@ func (vm *TestState) GetCurrentHeight(ctx context.Context) (uint64, error) {
 	return 0, errCurrentHeight
 }
 
-func (vm *TestState) GetSupernetID(ctx context.Context, chainID ids.ID) (ids.ID, error) {
-	if vm.GetSupernetIDF != nil {
-		return vm.GetSupernetIDF(ctx, chainID)
+func (vm *TestState) GetSubnetID(ctx context.Context, chainID ids.ID) (ids.ID, error) {
+	if vm.GetSubnetIDF != nil {
+		return vm.GetSubnetIDF(ctx, chainID)
 	}
-	if vm.CantGetSupernetID && vm.T != nil {
-		require.FailNow(vm.T, errSupernetID.Error())
+	if vm.CantGetSubnetID && vm.T != nil {
+		require.FailNow(vm.T, errSubnetID.Error())
 	}
-	return ids.Empty, errSupernetID
+	return ids.Empty, errSubnetID
 }
 
 func (vm *TestState) GetValidatorSet(
 	ctx context.Context,
 	height uint64,
-	supernetID ids.ID,
+	subnetID ids.ID,
 ) (map[ids.NodeID]*GetValidatorOutput, error) {
 	if vm.GetValidatorSetF != nil {
-		return vm.GetValidatorSetF(ctx, height, supernetID)
+		return vm.GetValidatorSetF(ctx, height, subnetID)
 	}
 	if vm.CantGetValidatorSet && vm.T != nil {
 		require.FailNow(vm.T, errGetValidatorSet.Error())
