@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package state
@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
-
 	"go.uber.org/mock/gomock"
 
 	"github.com/ava-labs/avalanchego/ids"
@@ -144,20 +143,19 @@ func TestNewCurrentStaker(t *testing.T) {
 	subnetID := ids.GenerateTestID()
 	weight := uint64(12345)
 	startTime := time.Now()
-	endTime := time.Now()
+	endTime := startTime.Add(time.Hour)
 	potentialReward := uint64(54321)
 	currentPriority := txs.SubnetPermissionedValidatorCurrentPriority
 
 	stakerTx := txs.NewMockStaker(ctrl)
+	stakerTx.EXPECT().EndTime().Return(endTime)
 	stakerTx.EXPECT().NodeID().Return(nodeID)
 	stakerTx.EXPECT().PublicKey().Return(publicKey, true, nil)
 	stakerTx.EXPECT().SubnetID().Return(subnetID)
 	stakerTx.EXPECT().Weight().Return(weight)
-	stakerTx.EXPECT().StartTime().Return(startTime)
-	stakerTx.EXPECT().EndTime().Return(endTime)
 	stakerTx.EXPECT().CurrentPriority().Return(currentPriority)
 
-	staker, err := NewCurrentStaker(txID, stakerTx, potentialReward)
+	staker, err := NewCurrentStaker(txID, stakerTx, startTime, potentialReward)
 	require.NotNil(staker)
 	require.NoError(err)
 	require.Equal(txID, staker.TxID)
@@ -173,7 +171,7 @@ func TestNewCurrentStaker(t *testing.T) {
 
 	stakerTx.EXPECT().PublicKey().Return(nil, false, errCustom)
 
-	_, err = NewCurrentStaker(txID, stakerTx, potentialReward)
+	_, err = NewCurrentStaker(txID, stakerTx, startTime, potentialReward)
 	require.ErrorIs(err, errCustom)
 }
 
@@ -192,7 +190,7 @@ func TestNewPendingStaker(t *testing.T) {
 	endTime := time.Now()
 	pendingPriority := txs.SubnetPermissionedValidatorPendingPriority
 
-	stakerTx := txs.NewMockStaker(ctrl)
+	stakerTx := txs.NewMockScheduledStaker(ctrl)
 	stakerTx.EXPECT().NodeID().Return(nodeID)
 	stakerTx.EXPECT().PublicKey().Return(publicKey, true, nil)
 	stakerTx.EXPECT().SubnetID().Return(subnetID)

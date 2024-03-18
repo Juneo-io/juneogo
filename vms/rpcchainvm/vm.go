@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package rpcchainvm
@@ -14,8 +14,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health"
 
-	healthpb "google.golang.org/grpc/health/grpc_health_v1"
-
 	"github.com/ava-labs/avalanchego/snow/engine/snowman/block"
 	"github.com/ava-labs/avalanchego/utils"
 	"github.com/ava-labs/avalanchego/version"
@@ -25,6 +23,7 @@ import (
 
 	vmpb "github.com/ava-labs/avalanchego/proto/pb/vm"
 	runtimepb "github.com/ava-labs/avalanchego/proto/pb/vm/runtime"
+	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 )
 
 const defaultRuntimeDialTimeout = 5 * time.Second

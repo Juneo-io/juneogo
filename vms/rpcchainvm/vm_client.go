@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package rpcchainvm
@@ -11,25 +11,16 @@ import (
 	"net/http"
 	"time"
 
-	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
-
 	"github.com/prometheus/client_golang/prometheus"
-
-	dto "github.com/prometheus/client_model/go"
-
 	"go.uber.org/zap"
-
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health"
 	"google.golang.org/protobuf/types/known/emptypb"
-
-	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 
 	"github.com/ava-labs/avalanchego/api/keystore/gkeystore"
 	"github.com/ava-labs/avalanchego/api/metrics"
 	"github.com/ava-labs/avalanchego/chains/atomic/gsharedmemory"
 	"github.com/ava-labs/avalanchego/database"
-	"github.com/ava-labs/avalanchego/database/manager"
 	"github.com/ava-labs/avalanchego/database/rpcdb"
 	"github.com/ava-labs/avalanchego/ids"
 	"github.com/ava-labs/avalanchego/ids/galiasreader"
@@ -62,6 +53,9 @@ import (
 	validatorstatepb "github.com/ava-labs/avalanchego/proto/pb/validatorstate"
 	vmpb "github.com/ava-labs/avalanchego/proto/pb/vm"
 	warppb "github.com/ava-labs/avalanchego/proto/pb/warp"
+	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
+	dto "github.com/prometheus/client_model/go"
+	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 )
 
 // TODO: Enable these to be configured by the user
@@ -129,7 +123,7 @@ func (vm *VMClient) SetProcess(runtime runtime.Stopper, pid int, processTracker 
 func (vm *VMClient) Initialize(
 	ctx context.Context,
 	chainCtx *snow.Context,
-	dbManager manager.Manager,
+	db database.Database,
 	genesisBytes []byte,
 	upgradeBytes []byte,
 	configBytes []byte,
@@ -155,33 +149,21 @@ func (vm *VMClient) Initialize(
 		return err
 	}
 
-	// Initialize and serve each database and construct the db manager
-	// initialize request parameters
-	versionedDBs := dbManager.GetDatabases()
-	versionedDBServers := make([]*vmpb.VersionedDBServer, len(versionedDBs))
-	for i, semDB := range versionedDBs {
-		dbVersion := semDB.Version.String()
-		serverListener, err := grpcutils.NewListener()
-		if err != nil {
-			return err
-		}
-		serverAddr := serverListener.Addr().String()
-
-		go grpcutils.Serve(serverListener, vm.newDBServer(semDB.Database))
-		chainCtx.Log.Info("grpc: serving database",
-			zap.String("version", dbVersion),
-			zap.String("address", serverAddr),
-		)
-
-		versionedDBServers[i] = &vmpb.VersionedDBServer{
-			ServerAddr: serverAddr,
-			Version:    dbVersion,
-		}
+	// Initialize the database
+	dbServerListener, err := grpcutils.NewListener()
+	if err != nil {
+		return err
 	}
+	dbServerAddr := dbServerListener.Addr().String()
+
+	go grpcutils.Serve(dbServerListener, vm.newDBServer(db))
+	chainCtx.Log.Info("grpc: serving database",
+		zap.String("address", dbServerAddr),
+	)
 
 	vm.messenger = messenger.NewServer(toEngine)
 	vm.keystore = gkeystore.NewServer(chainCtx.Keystore)
-	vm.sharedMemory = gsharedmemory.NewServer(chainCtx.SharedMemory, dbManager.Current().Database)
+	vm.sharedMemory = gsharedmemory.NewServer(chainCtx.SharedMemory, db)
 	vm.bcLookup = galiasreader.NewServer(chainCtx.BCLookup)
 	vm.appSender = appsender.NewServer(appSender)
 	vm.validatorStateServer = gvalidators.NewServer(chainCtx.ValidatorState)
@@ -212,7 +194,7 @@ func (vm *VMClient) Initialize(
 		GenesisBytes: genesisBytes,
 		UpgradeBytes: upgradeBytes,
 		ConfigBytes:  configBytes,
-		DbServers:    versionedDBServers,
+		DbServerAddr: dbServerAddr,
 		ServerAddr:   serverAddr,
 	})
 	if err != nil {
@@ -389,36 +371,20 @@ func (vm *VMClient) CreateHandlers(ctx context.Context) (map[string]http.Handler
 	return handlers, nil
 }
 
-func (vm *VMClient) CreateStaticHandlers(ctx context.Context) (map[string]http.Handler, error) {
-	resp, err := vm.client.CreateStaticHandlers(ctx, &emptypb.Empty{})
-	if err != nil {
-		return nil, err
-	}
-
-	handlers := make(map[string]http.Handler, len(resp.Handlers))
-	for _, handler := range resp.Handlers {
-		clientConn, err := grpcutils.Dial(handler.ServerAddr)
-		if err != nil {
-			return nil, err
-		}
-
-		vm.conns = append(vm.conns, clientConn)
-		handlers[handler.Prefix] = ghttp.NewClient(httppb.NewHTTPClient(clientConn))
-	}
-	return handlers, nil
-}
-
 func (vm *VMClient) Connected(ctx context.Context, nodeID ids.NodeID, nodeVersion *version.Application) error {
 	_, err := vm.client.Connected(ctx, &vmpb.ConnectedRequest{
-		NodeId:  nodeID[:],
-		Version: nodeVersion.String(),
+		NodeId: nodeID.Bytes(),
+		Name:   nodeVersion.Name,
+		Major:  uint32(nodeVersion.Major),
+		Minor:  uint32(nodeVersion.Minor),
+		Patch:  uint32(nodeVersion.Patch),
 	})
 	return err
 }
 
 func (vm *VMClient) Disconnected(ctx context.Context, nodeID ids.NodeID) error {
 	_, err := vm.client.Disconnected(ctx, &vmpb.DisconnectedRequest{
-		NodeId: nodeID[:],
+		NodeId: nodeID.Bytes(),
 	})
 	return err
 }
@@ -555,14 +521,15 @@ func (vm *VMClient) CrossChainAppRequest(ctx context.Context, chainID ids.ID, re
 	return err
 }
 
-func (vm *VMClient) CrossChainAppRequestFailed(ctx context.Context, chainID ids.ID, requestID uint32) error {
-	_, err := vm.client.CrossChainAppRequestFailed(
-		ctx,
-		&vmpb.CrossChainAppRequestFailedMsg{
-			ChainId:   chainID[:],
-			RequestId: requestID,
-		},
-	)
+func (vm *VMClient) CrossChainAppRequestFailed(ctx context.Context, chainID ids.ID, requestID uint32, appErr *common.AppError) error {
+	msg := &vmpb.CrossChainAppRequestFailedMsg{
+		ChainId:      chainID[:],
+		RequestId:    requestID,
+		ErrorCode:    appErr.Code,
+		ErrorMessage: appErr.Message,
+	}
+
+	_, err := vm.client.CrossChainAppRequestFailed(ctx, msg)
 	return err
 }
 
@@ -582,7 +549,7 @@ func (vm *VMClient) AppRequest(ctx context.Context, nodeID ids.NodeID, requestID
 	_, err := vm.client.AppRequest(
 		ctx,
 		&vmpb.AppRequestMsg{
-			NodeId:    nodeID[:],
+			NodeId:    nodeID.Bytes(),
 			RequestId: requestID,
 			Request:   request,
 			Deadline:  grpcutils.TimestampFromTime(deadline),
@@ -595,7 +562,7 @@ func (vm *VMClient) AppResponse(ctx context.Context, nodeID ids.NodeID, requestI
 	_, err := vm.client.AppResponse(
 		ctx,
 		&vmpb.AppResponseMsg{
-			NodeId:    nodeID[:],
+			NodeId:    nodeID.Bytes(),
 			RequestId: requestID,
 			Response:  response,
 		},
@@ -603,14 +570,15 @@ func (vm *VMClient) AppResponse(ctx context.Context, nodeID ids.NodeID, requestI
 	return err
 }
 
-func (vm *VMClient) AppRequestFailed(ctx context.Context, nodeID ids.NodeID, requestID uint32) error {
-	_, err := vm.client.AppRequestFailed(
-		ctx,
-		&vmpb.AppRequestFailedMsg{
-			NodeId:    nodeID[:],
-			RequestId: requestID,
-		},
-	)
+func (vm *VMClient) AppRequestFailed(ctx context.Context, nodeID ids.NodeID, requestID uint32, appErr *common.AppError) error {
+	msg := &vmpb.AppRequestFailedMsg{
+		NodeId:       nodeID.Bytes(),
+		RequestId:    requestID,
+		ErrorCode:    appErr.Code,
+		ErrorMessage: appErr.Message,
+	}
+
+	_, err := vm.client.AppRequestFailed(ctx, msg)
 	return err
 }
 
@@ -618,7 +586,7 @@ func (vm *VMClient) AppGossip(ctx context.Context, nodeID ids.NodeID, msg []byte
 	_, err := vm.client.AppGossip(
 		ctx,
 		&vmpb.AppGossipMsg{
-			NodeId: nodeID[:],
+			NodeId: nodeID.Bytes(),
 			Msg:    msg,
 		},
 	)

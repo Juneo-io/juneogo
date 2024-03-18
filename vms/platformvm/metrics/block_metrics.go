@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package metrics
@@ -49,7 +49,7 @@ func newBlockMetric(
 ) prometheus.Counter {
 	blockMetric := prometheus.NewCounter(prometheus.CounterOpts{
 		Namespace: namespace,
-		Name:      fmt.Sprintf("%s_blks_accepted", blockName),
+		Name:      blockName + "_blks_accepted",
 		Help:      fmt.Sprintf("Number of %s blocks accepted", blockName),
 	})
 	errs.Add(registerer.Register(blockMetric))

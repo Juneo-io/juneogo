@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package p
@@ -7,12 +7,10 @@ import (
 	"fmt"
 	"time"
 
-	ginkgo "github.com/onsi/ginkgo/v2"
-
 	"github.com/stretchr/testify/require"
 
 	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/tests/e2e"
+	"github.com/ava-labs/avalanchego/tests/fixture/e2e"
 	"github.com/ava-labs/avalanchego/utils/constants"
 	"github.com/ava-labs/avalanchego/utils/units"
 	"github.com/ava-labs/avalanchego/vms/components/avax"
@@ -22,6 +20,8 @@ import (
 	"github.com/ava-labs/avalanchego/vms/platformvm/signer"
 	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
 	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
+
+	ginkgo "github.com/onsi/ginkgo/v2"
 )
 
 var _ = e2e.DescribePChain("[Permissionless Subnets]", func() {
@@ -32,7 +32,7 @@ var _ = e2e.DescribePChain("[Permissionless Subnets]", func() {
 			nodeURI := e2e.Env.GetRandomNodeURI()
 
 			keychain := e2e.Env.NewKeychain(1)
-			baseWallet := e2e.Env.NewWallet(keychain, nodeURI)
+			baseWallet := e2e.NewWallet(keychain, nodeURI)
 
 			pWallet := baseWallet.P()
 			xWallet := baseWallet.X()
@@ -134,14 +134,13 @@ var _ = e2e.DescribePChain("[Permissionless Subnets]", func() {
 				require.NoError(err)
 			})
 
-			validatorStartTime := time.Now().Add(time.Minute)
+			endTime := time.Now().Add(time.Minute)
 			ginkgo.By("add permissionless validator", func() {
 				_, err := pWallet.IssueAddPermissionlessValidatorTx(
 					&txs.SubnetValidator{
 						Validator: txs.Validator{
 							NodeID: validatorID,
-							Start:  uint64(validatorStartTime.Unix()),
-							End:    uint64(validatorStartTime.Add(5 * time.Second).Unix()),
+							End:    uint64(endTime.Unix()),
 							Wght:   25 * units.MegaAvax,
 						},
 						Subnet: subnetID,
@@ -156,14 +155,12 @@ var _ = e2e.DescribePChain("[Permissionless Subnets]", func() {
 				require.NoError(err)
 			})
 
-			delegatorStartTime := validatorStartTime
 			ginkgo.By("add permissionless delegator", func() {
 				_, err := pWallet.IssueAddPermissionlessDelegatorTx(
 					&txs.SubnetValidator{
 						Validator: txs.Validator{
 							NodeID: validatorID,
-							Start:  uint64(delegatorStartTime.Unix()),
-							End:    uint64(delegatorStartTime.Add(5 * time.Second).Unix()),
+							End:    uint64(endTime.Unix()),
 							Wght:   25 * units.MegaAvax,
 						},
 						Subnet: subnetID,

@@ -1,10 +1,11 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package txs
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 
@@ -125,13 +126,16 @@ func TestBaseTxSerialization(t *testing.T) {
 		Memo: []byte{0x00, 0x01, 0x02, 0x03},
 	}}}
 
-	parser, err := NewParser([]fxs.Fx{
-		&secp256k1fx.Fx{},
-	})
+	parser, err := NewParser(
+		time.Time{},
+		[]fxs.Fx{
+			&secp256k1fx.Fx{},
+		},
+	)
 	require.NoError(err)
 
-	require.NoError(parser.InitializeTx(tx))
-	require.Equal(tx.ID().String(), "zeqT8FTnRAxes7QQQYkaWhNkHavd9d6aCdH8TQu2Mx5KEydEz")
+	require.NoError(tx.Initialize(parser.Codec()))
+	require.Equal("zeqT8FTnRAxes7QQQYkaWhNkHavd9d6aCdH8TQu2Mx5KEydEz", tx.ID().String())
 
 	result := tx.Bytes()
 	require.Equal(expected, result)
@@ -193,7 +197,7 @@ func TestBaseTxSerialization(t *testing.T) {
 			{keys[0], keys[0]},
 		},
 	))
-	require.Equal(tx.ID().String(), "QnTUuie2qe6BKyYrC2jqd73bJ828QNhYnZbdA2HWsnVRPjBfV")
+	require.Equal("QnTUuie2qe6BKyYrC2jqd73bJ828QNhYnZbdA2HWsnVRPjBfV", tx.ID().String())
 
 	// there are two credentials
 	expected[len(expected)-1] = 0x02

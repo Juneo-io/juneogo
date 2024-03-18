@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package snowball
@@ -21,7 +21,7 @@ func TestFlat(t *testing.T) {
 		BetaVirtuous:    1,
 		BetaRogue:       2,
 	}
-	f := NewFlat(params, Red)
+	f := NewFlat(SnowballFactory, params, Red)
 	f.Add(Green)
 	f.Add(Blue)
 

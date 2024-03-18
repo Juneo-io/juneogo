@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package state
@@ -300,13 +300,13 @@ func (vtx *uniqueVertex) String() string {
 		len(txs),
 	))
 
-	parentFormat := fmt.Sprintf("\n    Parent[%s]: ID = %%s, Status = %%s",
+	parentFormat := fmt.Sprintf("\n    Parent[%s]: ID = %%s, Status = %%s", //nolint:perfsprint
 		formatting.IntFormat(len(parents)-1))
 	for i, parent := range parents {
 		sb.WriteString(fmt.Sprintf(parentFormat, i, parent.ID(), parent.Status()))
 	}
 
-	txFormat := fmt.Sprintf("\n    Transaction[%s]: ID = %%s, Status = %%s",
+	txFormat := fmt.Sprintf("\n    Transaction[%s]: ID = %%s, Status = %%s", //nolint:perfsprint
 		formatting.IntFormat(len(txs)-1))
 	for i, tx := range txs {
 		sb.WriteString(fmt.Sprintf(txFormat, i, tx.ID(), tx.Status()))

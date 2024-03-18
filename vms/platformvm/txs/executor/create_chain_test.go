@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package executor
@@ -25,11 +25,9 @@ import (
 // Ensure Execute fails when there are not enough control sigs
 func TestCreateChainTxInsufficientControlSigs(t *testing.T) {
 	require := require.New(t)
-	env := newEnvironment(t, true /*=postBanff*/, false /*=postCortina*/)
+	env := newEnvironment(t, banff)
 	env.ctx.Lock.Lock()
-	defer func() {
-		require.NoError(shutdownEnvironment(env))
-	}()
+	defer env.ctx.Lock.Unlock()
 
 	tx, err := env.txBuilder.NewCreateChainTx(
 		testSubnet1.ID(),
@@ -39,6 +37,7 @@ func TestCreateChainTxInsufficientControlSigs(t *testing.T) {
 		"chain name",
 		[]*secp256k1.PrivateKey{preFundedKeys[0], preFundedKeys[1]},
 		ids.ShortEmpty,
+		nil,
 	)
 	require.NoError(err)
 
@@ -60,11 +59,9 @@ func TestCreateChainTxInsufficientControlSigs(t *testing.T) {
 // Ensure Execute fails when an incorrect control signature is given
 func TestCreateChainTxWrongControlSig(t *testing.T) {
 	require := require.New(t)
-	env := newEnvironment(t, true /*=postBanff*/, false /*=postCortina*/)
+	env := newEnvironment(t, banff)
 	env.ctx.Lock.Lock()
-	defer func() {
-		require.NoError(shutdownEnvironment(env))
-	}()
+	defer env.ctx.Lock.Unlock()
 
 	tx, err := env.txBuilder.NewCreateChainTx(
 		testSubnet1.ID(),
@@ -74,12 +71,12 @@ func TestCreateChainTxWrongControlSig(t *testing.T) {
 		"chain name",
 		[]*secp256k1.PrivateKey{testSubnet1ControlKeys[0], testSubnet1ControlKeys[1]},
 		ids.ShortEmpty,
+		nil,
 	)
 	require.NoError(err)
 
 	// Generate new, random key to sign tx with
-	factory := secp256k1.Factory{}
-	key, err := factory.NewPrivateKey()
+	key, err := secp256k1.NewPrivateKey()
 	require.NoError(err)
 
 	// Replace a valid signature with one from another key
@@ -103,11 +100,9 @@ func TestCreateChainTxWrongControlSig(t *testing.T) {
 // its validator set doesn't exist
 func TestCreateChainTxNoSuchSubnet(t *testing.T) {
 	require := require.New(t)
-	env := newEnvironment(t, true /*=postBanff*/, false /*=postCortina*/)
+	env := newEnvironment(t, banff)
 	env.ctx.Lock.Lock()
-	defer func() {
-		require.NoError(shutdownEnvironment(env))
-	}()
+	defer env.ctx.Lock.Unlock()
 
 	tx, err := env.txBuilder.NewCreateChainTx(
 		testSubnet1.ID(),
@@ -117,6 +112,7 @@ func TestCreateChainTxNoSuchSubnet(t *testing.T) {
 		"chain name",
 		[]*secp256k1.PrivateKey{testSubnet1ControlKeys[0], testSubnet1ControlKeys[1]},
 		ids.ShortEmpty,
+		nil,
 	)
 	require.NoError(err)
 
@@ -137,11 +133,9 @@ func TestCreateChainTxNoSuchSubnet(t *testing.T) {
 // Ensure valid tx passes semanticVerify
 func TestCreateChainTxValid(t *testing.T) {
 	require := require.New(t)
-	env := newEnvironment(t, true /*=postBanff*/, false /*=postCortina*/)
+	env := newEnvironment(t, banff)
 	env.ctx.Lock.Lock()
-	defer func() {
-		require.NoError(shutdownEnvironment(env))
-	}()
+	defer env.ctx.Lock.Unlock()
 
 	tx, err := env.txBuilder.NewCreateChainTx(
 		testSubnet1.ID(),
@@ -151,6 +145,7 @@ func TestCreateChainTxValid(t *testing.T) {
 		"chain name",
 		[]*secp256k1.PrivateKey{testSubnet1ControlKeys[0], testSubnet1ControlKeys[1]},
 		ids.ShortEmpty,
+		nil,
 	)
 	require.NoError(err)
 
@@ -196,12 +191,9 @@ func TestCreateChainTxAP3FeeChange(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			require := require.New(t)
 
-			env := newEnvironment(t, true /*=postBanff*/, false /*=postCortina*/)
+			env := newEnvironment(t, banff)
 			env.config.ApricotPhase3Time = ap3Time
 
-			defer func() {
-				require.NoError(shutdownEnvironment(env))
-			}()
 			ins, outs, _, signers, err := env.utxosHandler.Spend(env.state, preFundedKeys, 0, test.fee, ids.ShortEmpty)
 			require.NoError(err)
 

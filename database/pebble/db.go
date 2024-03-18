@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package pebble
@@ -8,14 +8,11 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"slices"
 	"sync"
 
 	"github.com/cockroachdb/pebble"
-
 	"github.com/prometheus/client_golang/prometheus"
-
-	"golang.org/x/exp/slices"
-
 	"go.uber.org/zap"
 
 	"github.com/ava-labs/avalanchego/database"
@@ -24,9 +21,13 @@ import (
 	"github.com/ava-labs/avalanchego/utils/units"
 )
 
-// pebbleByteOverHead is the number of bytes of constant overhead that
-// should be added to a batch size per operation.
-const pebbleByteOverHead = 8
+const (
+	Name = "pebble"
+
+	// pebbleByteOverHead is the number of bytes of constant overhead that
+	// should be added to a batch size per operation.
+	pebbleByteOverHead = 8
+)
 
 var (
 	_ database.Database = (*Database)(nil)
@@ -73,10 +74,12 @@ type Config struct {
 }
 
 // TODO: Add metrics
-func New(file string, configBytes []byte, log logging.Logger, _ string, _ prometheus.Registerer) (*Database, error) {
-	var cfg Config
-	if err := json.Unmarshal(configBytes, &cfg); err != nil {
-		return nil, err
+func New(file string, configBytes []byte, log logging.Logger, _ string, _ prometheus.Registerer) (database.Database, error) {
+	cfg := DefaultConfig
+	if len(configBytes) > 0 {
+		if err := json.Unmarshal(configBytes, &cfg); err != nil {
+			return nil, err
+		}
 	}
 
 	opts := &pebble.Options{

@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 // Package state manages the meta-data required by consensus for an avalanche
@@ -90,7 +90,7 @@ func (s *Serializer) BuildStopVtx(
 		if err != nil {
 			return nil, err
 		}
-		height = math.Max(height, childHeight)
+		height = max(height, childHeight)
 	}
 
 	vtx, err := vertex.BuildStopVertex(

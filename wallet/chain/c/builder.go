@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package c
@@ -7,11 +7,7 @@ import (
 	"errors"
 	"math/big"
 
-	stdcontext "context"
-
 	"github.com/ava-labs/coreth/plugin/evm"
-
-	ethcommon "github.com/ethereum/go-ethereum/common"
 
 	"github.com/ava-labs/avalanchego/ids"
 	"github.com/ava-labs/avalanchego/utils"
@@ -20,6 +16,9 @@ import (
 	"github.com/ava-labs/avalanchego/vms/components/avax"
 	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
 	"github.com/ava-labs/avalanchego/wallet/subnet/primary/common"
+
+	stdcontext "context"
+	ethcommon "github.com/ethereum/go-ethereum/common"
 )
 
 const avaxConversionRateInt = 1_000_000_000
@@ -201,6 +200,7 @@ func (b *builder) NewImportTx(
 		importedInputs = append(importedInputs, &avax.TransferableInput{
 			UTXOID: utxo.UTXOID,
 			Asset:  utxo.Asset,
+			FxID:   secp256k1fx.ID,
 			In: &secp256k1fx.TransferInput{
 				Amt: amount,
 				Input: secp256k1fx.Input{
@@ -267,6 +267,7 @@ func (b *builder) NewExportTx(
 	for i, output := range outputs {
 		exportedOutputs[i] = &avax.TransferableOutput{
 			Asset: avax.Asset{ID: avaxAssetID},
+			FxID:  secp256k1fx.ID,
 			Out:   output,
 		}
 
@@ -360,7 +361,7 @@ func (b *builder) NewExportTx(
 			return nil, err
 		}
 
-		inputAmount := math.Min(amountToConsume, avaxBalance)
+		inputAmount := min(amountToConsume, avaxBalance)
 		inputs = append(inputs, evm.EVMInput{
 			Address: addr,
 			Amount:  inputAmount,
@@ -376,6 +377,14 @@ func (b *builder) NewExportTx(
 
 	utils.Sort(inputs)
 	tx.Ins = inputs
+
+	snowCtx, err := newSnowContext(b.backend)
+	if err != nil {
+		return nil, err
+	}
+	for _, out := range tx.ExportedOutputs {
+		out.InitCtx(snowCtx)
+	}
 	return tx, nil
 }
 

@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package snowball
@@ -9,7 +9,7 @@ import (
 	"github.com/ava-labs/avalanchego/ids"
 )
 
-var _ NnarySnowflake = (*nnarySnowflake)(nil)
+var _ Nnary = (*nnarySnowflake)(nil)
 
 func newNnarySnowflake(betaVirtuous, betaRogue int, choice ids.ID) nnarySnowflake {
 	return nnarySnowflake{

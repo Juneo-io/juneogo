@@ -1,15 +1,15 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
 	"github.com/ava-labs/avalanchego/indexer"
+	"github.com/ava-labs/avalanchego/version"
 	"github.com/ava-labs/avalanchego/wallet/subnet/primary"
 
 	platformvmblock "github.com/ava-labs/avalanchego/vms/platformvm/block"
@@ -20,7 +20,7 @@ import (
 // and prints the ID of the block and its transactions.
 func main() {
 	var (
-		uri       = fmt.Sprintf("%s/ext/index/P/block", primary.LocalAPIURI)
+		uri       = primary.LocalAPIURI + "/ext/index/P/block"
 		client    = indexer.NewClient(uri)
 		ctx       = context.Background()
 		nextIndex uint64
@@ -34,7 +34,7 @@ func main() {
 		}
 
 		platformvmBlockBytes := container.Bytes
-		proposerVMBlock, err := proposervmblock.Parse(container.Bytes)
+		proposerVMBlock, err := proposervmblock.Parse(container.Bytes, version.DefaultUpgradeTime)
 		if err == nil {
 			platformvmBlockBytes = proposerVMBlock.Block()
 		}

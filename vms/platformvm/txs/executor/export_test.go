@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package executor
@@ -15,11 +15,9 @@ import (
 )
 
 func TestNewExportTx(t *testing.T) {
-	env := newEnvironment(t, true /*=postBanff*/, false /*=postCortina*/)
+	env := newEnvironment(t, banff)
 	env.ctx.Lock.Lock()
-	defer func() {
-		require.NoError(t, shutdownEnvironment(env))
-	}()
+	defer env.ctx.Lock.Unlock()
 
 	type test struct {
 		description        string
@@ -33,13 +31,13 @@ func TestNewExportTx(t *testing.T) {
 	tests := []test{
 		{
 			description:        "P->X export",
-			destinationChainID: xChainID,
+			destinationChainID: env.ctx.XChainID,
 			sourceKeys:         []*secp256k1.PrivateKey{sourceKey},
 			timestamp:          defaultValidateStartTime,
 		},
 		{
 			description:        "P->C export",
-			destinationChainID: cChainID,
+			destinationChainID: env.ctx.CChainID,
 			sourceKeys:         []*secp256k1.PrivateKey{sourceKey},
 			timestamp:          env.config.ApricotPhase5Time,
 		},
@@ -56,22 +54,19 @@ func TestNewExportTx(t *testing.T) {
 				to,
 				tt.sourceKeys,
 				ids.ShortEmpty, // Change address
+				nil,
 			)
 			require.NoError(err)
 
-			fakedState, err := state.NewDiff(lastAcceptedID, env)
+			stateDiff, err := state.NewDiff(lastAcceptedID, env)
 			require.NoError(err)
 
-			fakedState.SetTimestamp(tt.timestamp)
+			stateDiff.SetTimestamp(tt.timestamp)
 
-			fakedParent := ids.GenerateTestID()
-			env.SetState(fakedParent, fakedState)
-
-			verifier := MempoolTxVerifier{
-				Backend:       &env.backend,
-				ParentID:      fakedParent,
-				StateVersions: env,
-				Tx:            tx,
+			verifier := StandardTxExecutor{
+				Backend: &env.backend,
+				State:   stateDiff,
+				Tx:      tx,
 			}
 			require.NoError(tx.Unsigned.Visit(&verifier))
 		})

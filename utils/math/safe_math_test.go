@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package math
@@ -11,29 +11,6 @@ import (
 )
 
 const maxUint64 uint64 = math.MaxUint64
-
-func TestMax(t *testing.T) {
-	require := require.New(t)
-
-	require.Equal(maxUint64, Max(0, maxUint64))
-	require.Equal(maxUint64, Max(maxUint64, 0))
-	require.Equal(1, Max(1, 0))
-	require.Equal(1, Max(0, 1))
-	require.Zero(Max(0, 0))
-	require.Equal(2, Max(2, 2))
-}
-
-func TestMin(t *testing.T) {
-	require := require.New(t)
-
-	require.Zero(Min(uint64(0), maxUint64))
-	require.Zero(Min(maxUint64, uint64(0)))
-	require.Zero(Min(1, 0))
-	require.Zero(Min(0, 1))
-	require.Zero(Min(0, 0))
-	require.Equal(2, Min(2, 2))
-	require.Equal(1, Min(1, 2))
-}
 
 func TestAdd64(t *testing.T) {
 	require := require.New(t)

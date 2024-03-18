@@ -1,10 +1,9 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package config
 
 import (
-	"context"
 	"crypto/tls"
 	"encoding/base64"
 	"encoding/json"
@@ -12,7 +11,6 @@ import (
 	"fmt"
 	"io/fs"
 	"math"
-	"net"
 	"os"
 	"path/filepath"
 	"strings"
@@ -24,8 +22,6 @@ import (
 	"github.com/ava-labs/avalanchego/chains"
 	"github.com/ava-labs/avalanchego/genesis"
 	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/ipcs"
-	"github.com/ava-labs/avalanchego/nat"
 	"github.com/ava-labs/avalanchego/network"
 	"github.com/ava-labs/avalanchego/network/dialer"
 	"github.com/ava-labs/avalanchego/network/throttling"
@@ -40,10 +36,8 @@ import (
 	"github.com/ava-labs/avalanchego/utils/compression"
 	"github.com/ava-labs/avalanchego/utils/constants"
 	"github.com/ava-labs/avalanchego/utils/crypto/bls"
-	"github.com/ava-labs/avalanchego/utils/dynamicip"
 	"github.com/ava-labs/avalanchego/utils/ips"
 	"github.com/ava-labs/avalanchego/utils/logging"
-	"github.com/ava-labs/avalanchego/utils/password"
 	"github.com/ava-labs/avalanchego/utils/perms"
 	"github.com/ava-labs/avalanchego/utils/profiler"
 	"github.com/ava-labs/avalanchego/utils/set"
@@ -58,25 +52,39 @@ const (
 	chainConfigFileName  = "config"
 	chainUpgradeFileName = "upgrade"
 	subnetConfigFileExt  = ".json"
-	ipResolutionTimeout  = 30 * time.Second
 
-	ipcDeprecationMsg      = "IPC API is deprecated"
-	keystoreDeprecationMsg = "keystore API is deprecated"
+	keystoreDeprecationMsg               = "keystore API is deprecated"
+	acceptedFrontierGossipDeprecationMsg = "push-based accepted frontier gossip is deprecated"
+	peerListPushGossipDeprecationMsg     = "push-based peer list gossip is deprecated"
 )
 
 var (
 	// Deprecated key --> deprecation message (i.e. which key replaces it)
 	// TODO: deprecate "BootstrapIDsKey" and "BootstrapIPsKey"
-	deprecatedKeys = map[string]string{
-		IpcAPIEnabledKey:      ipcDeprecationMsg,
-		IpcsChainIDsKey:       ipcDeprecationMsg,
-		IpcsPathKey:           ipcDeprecationMsg,
+	commitThresholdDeprecationMsg = fmt.Sprintf("use --%s instead", SnowCommitThresholdKey)
+	deprecatedKeys                = map[string]string{
 		KeystoreAPIEnabledKey: keystoreDeprecationMsg,
+
+		ConsensusGossipAcceptedFrontierValidatorSizeKey:    acceptedFrontierGossipDeprecationMsg,
+		ConsensusGossipAcceptedFrontierNonValidatorSizeKey: acceptedFrontierGossipDeprecationMsg,
+		ConsensusGossipAcceptedFrontierPeerSizeKey:         acceptedFrontierGossipDeprecationMsg,
+		ConsensusGossipOnAcceptValidatorSizeKey:            acceptedFrontierGossipDeprecationMsg,
+		ConsensusGossipOnAcceptNonValidatorSizeKey:         acceptedFrontierGossipDeprecationMsg,
+		ConsensusGossipOnAcceptPeerSizeKey:                 acceptedFrontierGossipDeprecationMsg,
+
+		NetworkPeerListValidatorGossipSizeKey:    peerListPushGossipDeprecationMsg,
+		NetworkPeerListNonValidatorGossipSizeKey: peerListPushGossipDeprecationMsg,
+		NetworkPeerListPeersGossipSizeKey:        peerListPushGossipDeprecationMsg,
+		NetworkPeerListGossipFreqKey:             peerListPushGossipDeprecationMsg,
+
+		SnowRogueCommitThresholdKey:    commitThresholdDeprecationMsg,
+		SnowVirtuousCommitThresholdKey: commitThresholdDeprecationMsg,
 	}
 
+	errConflictingACPOpinion                  = errors.New("supporting and objecting to the same ACP")
+	errConflictingImplicitACPOpinion          = errors.New("objecting to enabled ACP")
 	errSybilProtectionDisabledStakerWeights   = errors.New("sybil protection disabled weights must be positive")
 	errSybilProtectionDisabledOnPublicNetwork = errors.New("sybil protection disabled on public network")
-	errAuthPasswordTooWeak                    = errors.New("API auth password is not strong enough")
 	errInvalidUptimeRequirement               = errors.New("uptime requirement must be in the range [0, 1]")
 	errMinValidatorStakeAboveMax              = errors.New("minimum validator stake can't be greater than maximum validator stake")
 	errInvalidMinDelegationFee                = errors.New("min delegation fee must be in the range [0, MaxDelegationFee]")
@@ -100,21 +108,16 @@ var (
 	errCannotReadDirectory                    = errors.New("cannot read directory")
 	errUnmarshalling                          = errors.New("unmarshalling failed")
 	errFileDoesNotExist                       = errors.New("file does not exist")
+	errGzipDeprecatedMsg                      = errors.New("gzip compression is not supported, use zstd or no compression")
 )
 
 func getConsensusConfig(v *viper.Viper) snowball.Parameters {
 	p := snowball.Parameters{
-		K:               v.GetInt(SnowSampleSizeKey),
-		AlphaPreference: v.GetInt(SnowPreferenceQuorumSizeKey),
-		AlphaConfidence: v.GetInt(SnowConfidenceQuorumSizeKey),
-		// During the X-chain linearization we require BetaVirtuous and
-		// BetaRogue to be equal. Therefore we use the more conservative
-		// BetaRogue value for both BetaVirtuous and BetaRogue.
-		//
-		// TODO: After the X-chain linearization use the
-		// SnowVirtuousCommitThresholdKey as before.
-		BetaVirtuous:          v.GetInt(SnowRogueCommitThresholdKey),
-		BetaRogue:             v.GetInt(SnowRogueCommitThresholdKey),
+		K:                     v.GetInt(SnowSampleSizeKey),
+		AlphaPreference:       v.GetInt(SnowPreferenceQuorumSizeKey),
+		AlphaConfidence:       v.GetInt(SnowConfidenceQuorumSizeKey),
+		BetaVirtuous:          v.GetInt(SnowCommitThresholdKey),
+		BetaRogue:             v.GetInt(SnowCommitThresholdKey),
 		ConcurrentRepolls:     v.GetInt(SnowConcurrentRepollsKey),
 		OptimalProcessing:     v.GetInt(SnowOptimalProcessingKey),
 		MaxOutstandingItems:   v.GetInt(SnowMaxProcessingKey),
@@ -123,6 +126,10 @@ func getConsensusConfig(v *viper.Viper) snowball.Parameters {
 	if v.IsSet(SnowQuorumSizeKey) {
 		p.AlphaPreference = v.GetInt(SnowQuorumSizeKey)
 		p.AlphaConfidence = p.AlphaPreference
+	}
+	if v.IsSet(SnowRogueCommitThresholdKey) {
+		p.BetaVirtuous = v.GetInt(SnowRogueCommitThresholdKey)
+		p.BetaRogue = v.GetInt(SnowRogueCommitThresholdKey)
 	}
 	return p
 }
@@ -151,45 +158,6 @@ func getLoggingConfig(v *viper.Viper) (logging.Config, error) {
 	loggingConfig.Compress = v.GetBool(LogRotaterCompressEnabledKey)
 
 	return loggingConfig, err
-}
-
-func getAPIAuthConfig(v *viper.Viper) (node.APIAuthConfig, error) {
-	config := node.APIAuthConfig{
-		APIRequireAuthToken: v.GetBool(APIAuthRequiredKey),
-	}
-	if !config.APIRequireAuthToken {
-		return config, nil
-	}
-
-	if v.IsSet(APIAuthPasswordKey) {
-		config.APIAuthPassword = v.GetString(APIAuthPasswordKey)
-	} else {
-		passwordFilePath := v.GetString(APIAuthPasswordFileKey) // picks flag value or default
-		passwordBytes, err := os.ReadFile(passwordFilePath)
-		if err != nil {
-			return node.APIAuthConfig{}, fmt.Errorf("API auth password file %q failed to be read: %w", passwordFilePath, err)
-		}
-		config.APIAuthPassword = strings.TrimSpace(string(passwordBytes))
-	}
-
-	if !password.SufficientlyStrong(config.APIAuthPassword, password.OK) {
-		return node.APIAuthConfig{}, errAuthPasswordTooWeak
-	}
-	return config, nil
-}
-
-func getIPCConfig(v *viper.Viper) node.IPCConfig {
-	config := node.IPCConfig{
-		IPCAPIEnabled: v.GetBool(IpcAPIEnabledKey),
-		IPCPath:       ipcs.DefaultBaseURL,
-	}
-	if v.IsSet(IpcsChainIDsKey) {
-		config.IPCDefaultChainIDs = strings.Split(v.GetString(IpcsChainIDsKey), ",")
-	}
-	if v.IsSet(IpcsPathKey) {
-		config.IPCPath = GetExpandedArg(v, IpcsPathKey)
-	}
-	return config
 }
 
 func getHTTPConfig(v *viper.Viper) (node.HTTPConfig, error) {
@@ -228,7 +196,7 @@ func getHTTPConfig(v *viper.Viper) (node.HTTPConfig, error) {
 		}
 	}
 
-	config := node.HTTPConfig{
+	return node.HTTPConfig{
 		HTTPConfig: server.HTTPConfig{
 			ReadTimeout:       v.GetDuration(HTTPReadTimeoutKey),
 			ReadHeaderTimeout: v.GetDuration(HTTPReadHeaderTimeoutKey),
@@ -255,14 +223,7 @@ func getHTTPConfig(v *viper.Viper) (node.HTTPConfig, error) {
 		HTTPAllowedHosts:   v.GetStringSlice(HTTPAllowedHostsKey),
 		ShutdownTimeout:    v.GetDuration(HTTPShutdownTimeoutKey),
 		ShutdownWait:       v.GetDuration(HTTPShutdownWaitKey),
-	}
-
-	config.APIAuthConfig, err = getAPIAuthConfig(v)
-	if err != nil {
-		return node.HTTPConfig{}, err
-	}
-	config.IPCConfig = getIPCConfig(v)
-	return config, nil
+	}, nil
 }
 
 func getRouterHealthConfig(v *viper.Viper, halflife time.Duration) (router.HealthConfig, error) {
@@ -316,9 +277,6 @@ func getGossipConfig(v *viper.Viper) subnets.GossipConfig {
 		OnAcceptValidatorSize:            uint(v.GetUint32(ConsensusGossipOnAcceptValidatorSizeKey)),
 		OnAcceptNonValidatorSize:         uint(v.GetUint32(ConsensusGossipOnAcceptNonValidatorSizeKey)),
 		OnAcceptPeerSize:                 uint(v.GetUint32(ConsensusGossipOnAcceptPeerSizeKey)),
-		AppGossipValidatorSize:           uint(v.GetUint32(AppGossipValidatorSizeKey)),
-		AppGossipNonValidatorSize:        uint(v.GetUint32(AppGossipNonValidatorSizeKey)),
-		AppGossipPeerSize:                uint(v.GetUint32(AppGossipPeerSizeKey)),
 	}
 }
 
@@ -339,11 +297,40 @@ func getNetworkConfig(
 	if err != nil {
 		return network.Config{}, err
 	}
+	if compressionType == compression.TypeGzip {
+		return network.Config{}, errGzipDeprecatedMsg
+	}
 
 	allowPrivateIPs := !constants.ProductionNetworkIDs.Contains(networkID)
 	if v.IsSet(NetworkAllowPrivateIPsKey) {
 		allowPrivateIPs = v.GetBool(NetworkAllowPrivateIPsKey)
 	}
+
+	var supportedACPs set.Set[uint32]
+	for _, acp := range v.GetIntSlice(ACPSupportKey) {
+		if acp < 0 || acp > math.MaxInt32 {
+			return network.Config{}, fmt.Errorf("invalid ACP: %d", acp)
+		}
+		supportedACPs.Add(uint32(acp))
+	}
+
+	var objectedACPs set.Set[uint32]
+	for _, acp := range v.GetIntSlice(ACPObjectKey) {
+		if acp < 0 || acp > math.MaxInt32 {
+			return network.Config{}, fmt.Errorf("invalid ACP: %d", acp)
+		}
+		objectedACPs.Add(uint32(acp))
+	}
+	if supportedACPs.Overlaps(objectedACPs) {
+		return network.Config{}, errConflictingACPOpinion
+	}
+	if constants.ScheduledACPs.Overlaps(objectedACPs) {
+		return network.Config{}, errConflictingImplicitACPOpinion
+	}
+
+	// Because this node version has scheduled these ACPs, we should notify
+	// peers that we support these upgrades.
+	supportedACPs.Union(constants.ScheduledACPs)
 
 	config := network.Config{
 		ThrottlerConfig: network.ThrottlerConfig{
@@ -410,6 +397,8 @@ func getNetworkConfig(
 			PeerListNonValidatorGossipSize: v.GetUint32(NetworkPeerListNonValidatorGossipSizeKey),
 			PeerListPeersGossipSize:        v.GetUint32(NetworkPeerListPeersGossipSizeKey),
 			PeerListGossipFreq:             v.GetDuration(NetworkPeerListGossipFreqKey),
+			PeerListPullGossipFreq:         v.GetDuration(NetworkPeerListPullGossipFreqKey),
+			PeerListBloomResetFreq:         v.GetDuration(NetworkPeerListBloomResetFreqKey),
 		},
 
 		DelayConfig: network.DelayConfig{
@@ -423,6 +412,9 @@ func getNetworkConfig(
 		AllowPrivateIPs:              allowPrivateIPs,
 		UptimeMetricFreq:             v.GetDuration(UptimeMetricFreqKey),
 		MaximumInboundMessageTimeout: v.GetDuration(NetworkMaximumInboundTimeoutKey),
+
+		SupportedACPs: supportedACPs,
+		ObjectedACPs:  objectedACPs,
 
 		RequireValidatorToConnect: v.GetBool(NetworkRequireValidatorToConnectKey),
 		PeerReadBufferSize:        int(v.GetUint(NetworkPeerReadBufferSizeKey)),
@@ -442,6 +434,10 @@ func getNetworkConfig(
 		return network.Config{}, fmt.Errorf("%q must be >= 0", NetworkOutboundConnectionTimeoutKey)
 	case config.PeerListGossipFreq < 0:
 		return network.Config{}, fmt.Errorf("%s must be >= 0", NetworkPeerListGossipFreqKey)
+	case config.PeerListPullGossipFreq < 0:
+		return network.Config{}, fmt.Errorf("%s must be >= 0", NetworkPeerListPullGossipFreqKey)
+	case config.PeerListBloomResetFreq < 0:
+		return network.Config{}, fmt.Errorf("%s must be >= 0", NetworkPeerListBloomResetFreqKey)
 	case config.ThrottlerConfig.InboundMsgThrottlerConfig.CPUThrottlerConfig.MaxRecheckDelay < constants.MinInboundThrottlerMaxRecheckDelay:
 		return network.Config{}, fmt.Errorf("%s must be >= %d", InboundThrottlerCPUMaxRecheckDelayKey, constants.MinInboundThrottlerMaxRecheckDelay)
 	case config.ThrottlerConfig.InboundMsgThrottlerConfig.DiskThrottlerConfig.MaxRecheckDelay < constants.MinInboundThrottlerMaxRecheckDelay:
@@ -527,8 +523,6 @@ func getStateSyncConfig(v *viper.Viper) (node.StateSyncConfig, error) {
 
 func getBootstrapConfig(v *viper.Viper, networkID uint32) (node.BootstrapConfig, error) {
 	config := node.BootstrapConfig{
-		RetryBootstrap:                          v.GetBool(RetryBootstrapKey),
-		RetryBootstrapWarnFrequency:             v.GetInt(RetryBootstrapWarnFrequencyKey),
 		BootstrapBeaconConnectionTimeout:        v.GetDuration(BootstrapBeaconConnectionTimeoutKey),
 		BootstrapMaxTimeGetAncestors:            v.GetDuration(BootstrapMaxTimeGetAncestorsKey),
 		BootstrapAncestorsMaxContainersSent:     int(v.GetUint(BootstrapAncestorsMaxContainersSentKey)),
@@ -594,64 +588,19 @@ func getBootstrapConfig(v *viper.Viper, networkID uint32) (node.BootstrapConfig,
 }
 
 func getIPConfig(v *viper.Viper) (node.IPConfig, error) {
-	ipResolutionService := v.GetString(PublicIPResolutionServiceKey)
-	ipResolutionFreq := v.GetDuration(PublicIPResolutionFreqKey)
-	if ipResolutionFreq <= 0 {
+	ipConfig := node.IPConfig{
+		PublicIP:                  v.GetString(PublicIPKey),
+		PublicIPResolutionService: v.GetString(PublicIPResolutionServiceKey),
+		PublicIPResolutionFreq:    v.GetDuration(PublicIPResolutionFreqKey),
+		ListenHost:                v.GetString(StakingHostKey),
+		ListenPort:                uint16(v.GetUint(StakingPortKey)),
+	}
+	if ipConfig.PublicIPResolutionFreq <= 0 {
 		return node.IPConfig{}, fmt.Errorf("%q must be > 0", PublicIPResolutionFreqKey)
 	}
-
-	stakingPort := uint16(v.GetUint(StakingPortKey))
-	publicIP := v.GetString(PublicIPKey)
-	if publicIP != "" && ipResolutionService != "" {
+	if ipConfig.PublicIP != "" && ipConfig.PublicIPResolutionService != "" {
 		return node.IPConfig{}, fmt.Errorf("only one of --%s and --%s can be given", PublicIPKey, PublicIPResolutionServiceKey)
 	}
-
-	// Define default configuration
-	ipConfig := node.IPConfig{
-		IPUpdater:        dynamicip.NewNoUpdater(),
-		IPResolutionFreq: ipResolutionFreq,
-		Nat:              nat.NewNoRouter(),
-		ListenHost:       v.GetString(StakingHostKey),
-	}
-
-	if publicIP != "" {
-		// User specified a specific public IP to use.
-		ip := net.ParseIP(publicIP)
-		if ip == nil {
-			return node.IPConfig{}, fmt.Errorf("invalid IP Address %s", publicIP)
-		}
-		ipConfig.IPPort = ips.NewDynamicIPPort(ip, stakingPort)
-		return ipConfig, nil
-	}
-	if ipResolutionService != "" {
-		// User specified to use dynamic IP resolution.
-		resolver, err := dynamicip.NewResolver(ipResolutionService)
-		if err != nil {
-			return node.IPConfig{}, fmt.Errorf("couldn't create IP resolver: %w", err)
-		}
-
-		// Use that to resolve our public IP.
-		ctx, cancel := context.WithTimeout(context.Background(), ipResolutionTimeout)
-		defer cancel()
-		ip, err := resolver.Resolve(ctx)
-		if err != nil {
-			return node.IPConfig{}, fmt.Errorf("couldn't resolve public IP: %w", err)
-		}
-		ipConfig.IPPort = ips.NewDynamicIPPort(ip, stakingPort)
-		ipConfig.IPUpdater = dynamicip.NewUpdater(ipConfig.IPPort, resolver, ipResolutionFreq)
-		return ipConfig, nil
-	}
-
-	// User didn't specify a public IP to use, and they didn't specify a public IP resolution
-	// service to use. Try to resolve public IP with NAT traversal.
-	nat := nat.GetRouter()
-	ip, err := nat.ExternalIP()
-	if err != nil {
-		return node.IPConfig{}, fmt.Errorf("public IP / IP resolution service not given and failed to resolve IP with NAT: %w", err)
-	}
-	ipConfig.IPPort = ips.NewDynamicIPPort(ip, stakingPort)
-	ipConfig.Nat = nat
-	ipConfig.AttemptedNATTraversal = true
 	return ipConfig, nil
 }
 
@@ -948,7 +897,8 @@ func getDatabaseConfig(v *viper.Viper, networkID uint32) (node.DatabaseConfig, e
 	}
 
 	return node.DatabaseConfig{
-		Name: v.GetString(DBTypeKey),
+		Name:     v.GetString(DBTypeKey),
+		ReadOnly: v.GetBool(DBReadOnlyKey),
 		Path: filepath.Join(
 			GetExpandedArg(v, DBPathKey),
 			constants.NetworkName(networkID),
@@ -999,23 +949,6 @@ func getVMAliases(v *viper.Viper) (map[ids.ID][]string, error) {
 
 func getChainAliases(v *viper.Viper) (map[ids.ID][]string, error) {
 	return getAliases(v, "chain aliases", ChainAliasesContentKey, ChainAliasesFileKey)
-}
-
-func getVMAliaser(v *viper.Viper) (ids.Aliaser, error) {
-	vmAliases, err := getVMAliases(v)
-	if err != nil {
-		return nil, err
-	}
-
-	aliser := ids.NewAliaser()
-	for vmID, aliases := range vmAliases {
-		for _, alias := range aliases {
-			if err := aliser.Alias(vmID, alias); err != nil {
-				return nil, err
-			}
-		}
-	}
-	return aliser, nil
 }
 
 // getPathFromDirKey reads flag value from viper instance and then checks the folder existence
@@ -1341,9 +1274,9 @@ func GetNodeConfig(v *viper.Viper) (node.Config, error) {
 	}
 
 	// Gossiping
-	nodeConfig.AcceptedFrontierGossipFrequency = v.GetDuration(ConsensusAcceptedFrontierGossipFrequencyKey)
-	if nodeConfig.AcceptedFrontierGossipFrequency < 0 {
-		return node.Config{}, fmt.Errorf("%s must be >= 0", ConsensusAcceptedFrontierGossipFrequencyKey)
+	nodeConfig.FrontierPollFrequency = v.GetDuration(ConsensusFrontierPollFrequencyKey)
+	if nodeConfig.FrontierPollFrequency < 0 {
+		return node.Config{}, fmt.Errorf("%s must be >= 0", ConsensusFrontierPollFrequencyKey)
 	}
 
 	// App handling
@@ -1408,7 +1341,6 @@ func GetNodeConfig(v *viper.Viper) (node.Config, error) {
 	}
 
 	// Router
-	nodeConfig.ConsensusRouter = &router.ChainRouter{}
 	nodeConfig.RouterHealthConfig, err = getRouterHealthConfig(v, healthCheckAveragerHalflife)
 	if err != nil {
 		return node.Config{}, err
@@ -1492,7 +1424,7 @@ func GetNodeConfig(v *viper.Viper) (node.Config, error) {
 	}
 
 	// VM Aliases
-	nodeConfig.VMAliaser, err = getVMAliaser(v)
+	nodeConfig.VMAliases, err = getVMAliases(v)
 	if err != nil {
 		return node.Config{}, err
 	}

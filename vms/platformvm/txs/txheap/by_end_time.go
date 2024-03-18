@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package txheap
@@ -12,6 +12,12 @@ import (
 )
 
 var _ TimedHeap = (*byEndTime)(nil)
+
+type TimedHeap interface {
+	Heap
+
+	Timestamp() time.Time
+}
 
 type byEndTime struct {
 	txHeap

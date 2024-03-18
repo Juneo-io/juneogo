@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package math
@@ -13,8 +13,6 @@ import (
 )
 
 func TestAveragerHeap(t *testing.T) {
-	require := require.New(t)
-
 	n0 := ids.GenerateTestNodeID()
 	n1 := ids.GenerateTestNodeID()
 	n2 := ids.GenerateTestNodeID()
@@ -37,6 +35,8 @@ func TestAveragerHeap(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			require := require.New(t)
+
 			_, _, ok := test.h.Pop()
 			require.False(ok)
 

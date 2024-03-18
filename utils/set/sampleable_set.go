@@ -1,24 +1,21 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package set
 
 import (
 	"bytes"
-
-	stdjson "encoding/json"
-
-	"golang.org/x/exp/maps"
-	"golang.org/x/exp/slices"
+	"encoding/json"
+	"slices"
 
 	"github.com/ava-labs/avalanchego/utils"
-	"github.com/ava-labs/avalanchego/utils/json"
-	"github.com/ava-labs/avalanchego/utils/math"
 	"github.com/ava-labs/avalanchego/utils/sampler"
 	"github.com/ava-labs/avalanchego/utils/wrappers"
+
+	avajson "github.com/ava-labs/avalanchego/utils/json"
 )
 
-var _ stdjson.Marshaler = (*Set[int])(nil)
+var _ json.Marshaler = (*Set[int])(nil)
 
 // SampleableSet is a set of elements that supports sampling.
 type SampleableSet[T comparable] struct {
@@ -110,7 +107,7 @@ func (s *SampleableSet[T]) Remove(elements ...T) {
 
 // Clear empties this set
 func (s *SampleableSet[T]) Clear() {
-	maps.Clear(s.indices)
+	clear(s.indices)
 	for i := range s.elements {
 		s.elements[i] = utils.Zero[T]()
 	}
@@ -142,7 +139,7 @@ func (s SampleableSet[T]) Sample(numToSample int) []T {
 
 	uniform := sampler.NewUniform()
 	uniform.Initialize(uint64(len(s.elements)))
-	indices, _ := uniform.Sample(math.Min(len(s.elements), numToSample))
+	indices, _ := uniform.Sample(min(len(s.elements), numToSample))
 	elements := make([]T, len(indices))
 	for i, index := range indices {
 		elements[i] = s.elements[index]
@@ -152,11 +149,11 @@ func (s SampleableSet[T]) Sample(numToSample int) []T {
 
 func (s *SampleableSet[T]) UnmarshalJSON(b []byte) error {
 	str := string(b)
-	if str == json.Null {
+	if str == avajson.Null {
 		return nil
 	}
 	var elements []T
-	if err := stdjson.Unmarshal(b, &elements); err != nil {
+	if err := json.Unmarshal(b, &elements); err != nil {
 		return err
 	}
 	s.Clear()
@@ -170,13 +167,13 @@ func (s *SampleableSet[_]) MarshalJSON() ([]byte, error) {
 		err          error
 	)
 	for i, e := range s.elements {
-		elementBytes[i], err = stdjson.Marshal(e)
+		elementBytes[i], err = json.Marshal(e)
 		if err != nil {
 			return nil, err
 		}
 	}
 	// Sort for determinism
-	utils.SortBytes(elementBytes)
+	slices.SortFunc(elementBytes, bytes.Compare)
 
 	// Build the JSON
 	var (

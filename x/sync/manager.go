@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package sync
@@ -8,14 +8,16 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"slices"
 	"sync"
 
 	"go.uber.org/zap"
-	"golang.org/x/exp/slices"
+	"golang.org/x/exp/maps"
 
 	"github.com/ava-labs/avalanchego/ids"
 	"github.com/ava-labs/avalanchego/utils/logging"
 	"github.com/ava-labs/avalanchego/utils/maybe"
+	"github.com/ava-labs/avalanchego/utils/set"
 	"github.com/ava-labs/avalanchego/x/merkledb"
 
 	pb "github.com/ava-labs/avalanchego/proto/pb/sync"
@@ -102,9 +104,9 @@ type Manager struct {
 	cancelCtx context.CancelFunc
 
 	// Set to true when StartSyncing is called.
-	syncing      bool
-	closeOnce    sync.Once
-	branchFactor merkledb.BranchFactor
+	syncing   bool
+	closeOnce sync.Once
+	tokenSize int
 }
 
 type ManagerConfig struct {
@@ -136,7 +138,7 @@ func NewManager(config ManagerConfig) (*Manager, error) {
 		doneChan:        make(chan struct{}),
 		unprocessedWork: newWorkHeap(),
 		processedWork:   newWorkHeap(),
-		branchFactor:    config.BranchFactor,
+		tokenSize:       merkledb.BranchFactorToTokenSize[config.BranchFactor],
 	}
 	m.unprocessedWorkCond.L = &m.workLock
 
@@ -263,6 +265,18 @@ func (m *Manager) getAndApplyChangeProof(ctx context.Context, work *workItem) {
 		return
 	}
 
+	if targetRootID == ids.Empty {
+		// The trie is empty after this change.
+		// Delete all the key-value pairs in the range.
+		if err := m.config.DB.Clear(); err != nil {
+			m.setError(err)
+			return
+		}
+		work.start = maybe.Nothing[[]byte]()
+		m.completeWorkItem(ctx, work, maybe.Nothing[[]byte](), targetRootID, nil)
+		return
+	}
+
 	changeOrRangeProof, err := m.config.Client.GetChangeProof(
 		ctx,
 		&pb.SyncGetChangeProofRequest{
@@ -329,6 +343,17 @@ func (m *Manager) getAndApplyChangeProof(ctx context.Context, work *workItem) {
 // Assumes [m.workLock] is not held.
 func (m *Manager) getAndApplyRangeProof(ctx context.Context, work *workItem) {
 	targetRootID := m.getTargetRoot()
+
+	if targetRootID == ids.Empty {
+		if err := m.config.DB.Clear(); err != nil {
+			m.setError(err)
+			return
+		}
+		work.start = maybe.Nothing[[]byte]()
+		m.completeWorkItem(ctx, work, maybe.Nothing[[]byte](), targetRootID, nil)
+		return
+	}
+
 	proof, err := m.config.Client.GetRangeProof(ctx,
 		&pb.SyncGetRangeProofRequest{
 			RootHash: targetRootID[:],
@@ -404,7 +429,7 @@ func (m *Manager) findNextKey(
 	// and traversing them from the longest key to the shortest key.
 	// For each node in these proofs, compare if the children of that node exist
 	// or have the same ID in the other proof.
-	proofKeyPath := merkledb.ToKey(lastReceivedKey, m.branchFactor)
+	proofKeyPath := merkledb.ToKey(lastReceivedKey)
 
 	// If the received proof is an exclusion proof, the last node may be for a
 	// key that is after the [lastReceivedKey].
@@ -431,10 +456,32 @@ func (m *Manager) findNextKey(
 
 	nextKey := maybe.Nothing[[]byte]()
 
+	// Add sentinel node back into the localProofNodes, if it is missing.
+	// Required to ensure that a common node exists in both proofs
+	if len(localProofNodes) > 0 && localProofNodes[0].Key.Length() != 0 {
+		sentinel := merkledb.ProofNode{
+			Children: map[byte]ids.ID{
+				localProofNodes[0].Key.Token(0, m.tokenSize): ids.Empty,
+			},
+		}
+		localProofNodes = append([]merkledb.ProofNode{sentinel}, localProofNodes...)
+	}
+
+	// Add sentinel node back into the endProof, if it is missing.
+	// Required to ensure that a common node exists in both proofs
+	if len(endProof) > 0 && endProof[0].Key.Length() != 0 {
+		sentinel := merkledb.ProofNode{
+			Children: map[byte]ids.ID{
+				endProof[0].Key.Token(0, m.tokenSize): ids.Empty,
+			},
+		}
+		endProof = append([]merkledb.ProofNode{sentinel}, endProof...)
+	}
+
 	localProofNodeIndex := len(localProofNodes) - 1
 	receivedProofNodeIndex := len(endProof) - 1
 
-	// traverse the two proofs from the deepest nodes up to the root until a difference is found
+	// traverse the two proofs from the deepest nodes up to the sentinel node until a difference is found
 	for localProofNodeIndex >= 0 && receivedProofNodeIndex >= 0 && nextKey.IsNothing() {
 		localProofNode := localProofNodes[localProofNodeIndex]
 		receivedProofNode := endProof[receivedProofNodeIndex]
@@ -447,7 +494,7 @@ func (m *Manager) findNextKey(
 
 		// select the deepest proof node from the two proofs
 		switch {
-		case receivedProofNode.Key.TokensLength() > localProofNode.Key.TokensLength():
+		case receivedProofNode.Key.Length() > localProofNode.Key.Length():
 			// there was a branch node in the received proof that isn't in the local proof
 			// see if the received proof node has children not present in the local proof
 			deepestNode = &receivedProofNode
@@ -455,7 +502,7 @@ func (m *Manager) findNextKey(
 			// we have dealt with this received node, so move on to the next received node
 			receivedProofNodeIndex--
 
-		case localProofNode.Key.TokensLength() > receivedProofNode.Key.TokensLength():
+		case localProofNode.Key.Length() > receivedProofNode.Key.Length():
 			// there was a branch node in the local proof that isn't in the received proof
 			// see if the local proof node has children not present in the received proof
 			deepestNode = &localProofNode
@@ -482,20 +529,20 @@ func (m *Manager) findNextKey(
 		// If the deepest node has the same key as [proofKeyPath],
 		// then all of its children have keys greater than the proof key,
 		// so we can start at the 0 token.
-		startingChildToken := byte(0)
+		startingChildToken := 0
 
 		// If the deepest node has a key shorter than the key being proven,
 		// we can look at the next token index of the proof key to determine which of that
 		// node's children have keys larger than [proofKeyPath].
 		// Any child with a token greater than the [proofKeyPath]'s token at that
 		// index will have a larger key.
-		if deepestNode.Key.TokensLength() < proofKeyPath.TokensLength() {
-			startingChildToken = proofKeyPath.Token(deepestNode.Key.TokensLength()) + 1
+		if deepestNode.Key.Length() < proofKeyPath.Length() {
+			startingChildToken = int(proofKeyPath.Token(deepestNode.Key.Length(), m.tokenSize)) + 1
 		}
 
 		// determine if there are any differences in the children for the deepest unhandled node of the two proofs
-		if childIndex, hasDifference := findChildDifference(deepestNode, deepestNodeFromOtherProof, startingChildToken, m.branchFactor); hasDifference {
-			nextKey = maybe.Some(deepestNode.Key.Append(childIndex).Bytes())
+		if childIndex, hasDifference := findChildDifference(deepestNode, deepestNodeFromOtherProof, startingChildToken); hasDifference {
+			nextKey = maybe.Some(deepestNode.Key.Extend(merkledb.ToToken(childIndex, m.tokenSize)).Bytes())
 			break
 		}
 	}
@@ -794,12 +841,27 @@ func midPoint(startMaybe, endMaybe maybe.Maybe[[]byte]) maybe.Maybe[[]byte] {
 
 // findChildDifference returns the first child index that is different between node 1 and node 2 if one exists and
 // a bool indicating if any difference was found
-func findChildDifference(node1, node2 *merkledb.ProofNode, startIndex byte, branchFactor merkledb.BranchFactor) (byte, bool) {
+func findChildDifference(node1, node2 *merkledb.ProofNode, startIndex int) (byte, bool) {
+	// Children indices >= [startIndex] present in at least one of the nodes.
+	childIndices := set.Set[byte]{}
+	for _, node := range []*merkledb.ProofNode{node1, node2} {
+		if node == nil {
+			continue
+		}
+		for key := range node.Children {
+			if int(key) >= startIndex {
+				childIndices.Add(key)
+			}
+		}
+	}
+
+	sortedChildIndices := maps.Keys(childIndices)
+	slices.Sort(sortedChildIndices)
 	var (
 		child1, child2 ids.ID
 		ok1, ok2       bool
 	)
-	for childIndex := startIndex; merkledb.BranchFactor(childIndex) < branchFactor; childIndex++ {
+	for _, childIndex := range sortedChildIndices {
 		if node1 != nil {
 			child1, ok1 = node1.Children[childIndex]
 		}

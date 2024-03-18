@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package executor
@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
-
 	"go.uber.org/mock/gomock"
 
 	"github.com/ava-labs/avalanchego/database"
@@ -121,7 +120,7 @@ func TestGetTimestamp(t *testing.T) {
 	tests := []test{
 		{
 			name: "block is in map",
-			backendF: func(ctrl *gomock.Controller) *backend {
+			backendF: func(*gomock.Controller) *backend {
 				return &backend{
 					blkIDToState: map[ids.ID]*blockState{
 						blkID: {

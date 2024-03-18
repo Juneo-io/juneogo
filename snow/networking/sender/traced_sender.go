@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package sender
@@ -8,13 +8,13 @@ import (
 
 	"go.opentelemetry.io/otel/attribute"
 
-	oteltrace "go.opentelemetry.io/otel/trace"
-
 	"github.com/ava-labs/avalanchego/ids"
 	"github.com/ava-labs/avalanchego/snow"
 	"github.com/ava-labs/avalanchego/snow/engine/common"
 	"github.com/ava-labs/avalanchego/trace"
 	"github.com/ava-labs/avalanchego/utils/set"
+
+	oteltrace "go.opentelemetry.io/otel/trace"
 )
 
 var _ common.Sender = (*tracedSender)(nil)
@@ -214,6 +214,18 @@ func (s *tracedSender) SendCrossChainAppResponse(ctx context.Context, chainID id
 	return s.sender.SendCrossChainAppResponse(ctx, chainID, requestID, appResponseBytes)
 }
 
+func (s *tracedSender) SendCrossChainAppError(ctx context.Context, chainID ids.ID, requestID uint32, errorCode int32, errorMessage string) error {
+	ctx, span := s.tracer.Start(ctx, "tracedSender.SendCrossChainAppError", oteltrace.WithAttributes(
+		attribute.Stringer("chainID", chainID),
+		attribute.Int64("requestID", int64(requestID)),
+		attribute.Int64("errorCode", int64(errorCode)),
+		attribute.String("errorMessage", errorMessage),
+	))
+	defer span.End()
+
+	return s.sender.SendCrossChainAppError(ctx, chainID, requestID, errorCode, errorMessage)
+}
+
 func (s *tracedSender) SendAppRequest(ctx context.Context, nodeIDs set.Set[ids.NodeID], requestID uint32, appRequestBytes []byte) error {
 	ctx, span := s.tracer.Start(ctx, "tracedSender.SendAppRequest", oteltrace.WithAttributes(
 		attribute.Int64("requestID", int64(requestID)),
@@ -235,6 +247,18 @@ func (s *tracedSender) SendAppResponse(ctx context.Context, nodeID ids.NodeID, r
 	return s.sender.SendAppResponse(ctx, nodeID, requestID, appResponseBytes)
 }
 
+func (s *tracedSender) SendAppError(ctx context.Context, nodeID ids.NodeID, requestID uint32, errorCode int32, errorMessage string) error {
+	ctx, span := s.tracer.Start(ctx, "tracedSender.SendAppError", oteltrace.WithAttributes(
+		attribute.Stringer("nodeID", nodeID),
+		attribute.Int64("requestID", int64(requestID)),
+		attribute.Int64("errorCode", int64(errorCode)),
+		attribute.String("errorMessage", errorMessage),
+	))
+	defer span.End()
+
+	return s.sender.SendAppError(ctx, nodeID, requestID, errorCode, errorMessage)
+}
+
 func (s *tracedSender) SendAppGossipSpecific(ctx context.Context, nodeIDs set.Set[ids.NodeID], appGossipBytes []byte) error {
 	_, span := s.tracer.Start(ctx, "tracedSender.SendAppGossipSpecific", oteltrace.WithAttributes(
 		attribute.Int("gossipLen", len(appGossipBytes)),
@@ -244,13 +268,28 @@ func (s *tracedSender) SendAppGossipSpecific(ctx context.Context, nodeIDs set.Se
 	return s.sender.SendAppGossipSpecific(ctx, nodeIDs, appGossipBytes)
 }
 
-func (s *tracedSender) SendAppGossip(ctx context.Context, appGossipBytes []byte) error {
+func (s *tracedSender) SendAppGossip(
+	ctx context.Context,
+	appGossipBytes []byte,
+	numValidators int,
+	numNonValidators int,
+	numPeers int,
+) error {
 	_, span := s.tracer.Start(ctx, "tracedSender.SendAppGossip", oteltrace.WithAttributes(
 		attribute.Int("gossipLen", len(appGossipBytes)),
+		attribute.Int("numValidators", numValidators),
+		attribute.Int("numNonValidators", numNonValidators),
+		attribute.Int("numPeers", numPeers),
 	))
 	defer span.End()
 
-	return s.sender.SendAppGossip(ctx, appGossipBytes)
+	return s.sender.SendAppGossip(
+		ctx,
+		appGossipBytes,
+		numValidators,
+		numNonValidators,
+		numPeers,
+	)
 }
 
 func (s *tracedSender) SendGossip(ctx context.Context, container []byte) {

@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package timeout
@@ -163,7 +163,5 @@ func (m *manager) RegisterRequestToUnreachableValidator() {
 }
 
 func (m *manager) Stop() {
-	m.stopOnce.Do(func() {
-		m.tm.Stop()
-	})
+	m.stopOnce.Do(m.tm.Stop)
 }

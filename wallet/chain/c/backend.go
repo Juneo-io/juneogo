@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package c
@@ -9,16 +9,15 @@ import (
 	"math/big"
 	"sync"
 
-	stdcontext "context"
-
 	"github.com/ava-labs/coreth/plugin/evm"
-
-	ethcommon "github.com/ethereum/go-ethereum/common"
 
 	"github.com/ava-labs/avalanchego/database"
 	"github.com/ava-labs/avalanchego/utils/math"
 	"github.com/ava-labs/avalanchego/vms/components/avax"
 	"github.com/ava-labs/avalanchego/wallet/subnet/primary/common"
+
+	stdcontext "context"
+	ethcommon "github.com/ethereum/go-ethereum/common"
 )
 
 var (

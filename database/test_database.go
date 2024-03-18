@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package database
@@ -8,15 +8,12 @@ import (
 	"io"
 	"math"
 	"math/rand"
+	"slices"
 	"testing"
 
 	"github.com/stretchr/testify/require"
-
 	"go.uber.org/mock/gomock"
-
 	"golang.org/x/exp/maps"
-	"golang.org/x/exp/slices"
-
 	"golang.org/x/sync/errgroup"
 
 	"github.com/ava-labs/avalanchego/utils"
@@ -24,44 +21,44 @@ import (
 )
 
 // Tests is a list of all database tests
-var Tests = []func(t *testing.T, db Database){
-	TestSimpleKeyValue,
-	TestOverwriteKeyValue,
-	TestEmptyKey,
-	TestKeyEmptyValue,
-	TestSimpleKeyValueClosed,
-	TestNewBatchClosed,
-	TestBatchPut,
-	TestBatchDelete,
-	TestBatchReset,
-	TestBatchReuse,
-	TestBatchRewrite,
-	TestBatchReplay,
-	TestBatchReplayPropagateError,
-	TestBatchInner,
-	TestBatchLargeSize,
-	TestIteratorSnapshot,
-	TestIterator,
-	TestIteratorStart,
-	TestIteratorPrefix,
-	TestIteratorStartPrefix,
-	TestIteratorMemorySafety,
-	TestIteratorClosed,
-	TestIteratorError,
-	TestIteratorErrorAfterRelease,
-	TestCompactNoPanic,
-	TestMemorySafetyDatabase,
-	TestMemorySafetyBatch,
-	TestAtomicClear,
-	TestClear,
-	TestAtomicClearPrefix,
-	TestClearPrefix,
-	TestModifyValueAfterPut,
-	TestModifyValueAfterBatchPut,
-	TestModifyValueAfterBatchPutReplay,
-	TestConcurrentBatches,
-	TestManySmallConcurrentKVPairBatches,
-	TestPutGetEmpty,
+var Tests = map[string]func(t *testing.T, db Database){
+	"SimpleKeyValue":                   TestSimpleKeyValue,
+	"OverwriteKeyValue":                TestOverwriteKeyValue,
+	"EmptyKey":                         TestEmptyKey,
+	"KeyEmptyValue":                    TestKeyEmptyValue,
+	"SimpleKeyValueClosed":             TestSimpleKeyValueClosed,
+	"NewBatchClosed":                   TestNewBatchClosed,
+	"BatchPut":                         TestBatchPut,
+	"BatchDelete":                      TestBatchDelete,
+	"BatchReset":                       TestBatchReset,
+	"BatchReuse":                       TestBatchReuse,
+	"BatchRewrite":                     TestBatchRewrite,
+	"BatchReplay":                      TestBatchReplay,
+	"BatchReplayPropagateError":        TestBatchReplayPropagateError,
+	"BatchInner":                       TestBatchInner,
+	"BatchLargeSize":                   TestBatchLargeSize,
+	"IteratorSnapshot":                 TestIteratorSnapshot,
+	"Iterator":                         TestIterator,
+	"IteratorStart":                    TestIteratorStart,
+	"IteratorPrefix":                   TestIteratorPrefix,
+	"IteratorStartPrefix":              TestIteratorStartPrefix,
+	"IteratorMemorySafety":             TestIteratorMemorySafety,
+	"IteratorClosed":                   TestIteratorClosed,
+	"IteratorError":                    TestIteratorError,
+	"IteratorErrorAfterRelease":        TestIteratorErrorAfterRelease,
+	"CompactNoPanic":                   TestCompactNoPanic,
+	"MemorySafetyDatabase":             TestMemorySafetyDatabase,
+	"MemorySafetyBatch":                TestMemorySafetyBatch,
+	"AtomicClear":                      TestAtomicClear,
+	"Clear":                            TestClear,
+	"AtomicClearPrefix":                TestAtomicClearPrefix,
+	"ClearPrefix":                      TestClearPrefix,
+	"ModifyValueAfterPut":              TestModifyValueAfterPut,
+	"ModifyValueAfterBatchPut":         TestModifyValueAfterBatchPut,
+	"ModifyValueAfterBatchPutReplay":   TestModifyValueAfterBatchPutReplay,
+	"ConcurrentBatches":                TestConcurrentBatches,
+	"ManySmallConcurrentKVPairBatches": TestManySmallConcurrentKVPairBatches,
+	"PutGetEmpty":                      TestPutGetEmpty,
 }
 
 // TestSimpleKeyValue tests to make sure that simple Put + Get + Delete + Has
@@ -1266,7 +1263,74 @@ func FuzzNewIteratorWithPrefix(f *testing.F, db Database) {
 			require.Equal(expected[string(iter.Key())], val)
 			numIterElts++
 		}
-		require.Equal(len(expectedList), numIterElts)
+		require.Len(expectedList, numIterElts)
+
+		// Clear the database for the next fuzz iteration.
+		require.NoError(AtomicClear(db, db))
+	})
+}
+
+func FuzzNewIteratorWithStartAndPrefix(f *testing.F, db Database) {
+	const (
+		maxKeyLen   = 32
+		maxValueLen = 32
+	)
+
+	f.Fuzz(func(
+		t *testing.T,
+		randSeed int64,
+		start []byte,
+		prefix []byte,
+		numKeyValues uint,
+	) {
+		require := require.New(t)
+		r := rand.New(rand.NewSource(randSeed)) // #nosec G404
+
+		expected := map[string][]byte{}
+
+		// Put a bunch of key-values
+		for i := 0; i < int(numKeyValues); i++ {
+			key := make([]byte, r.Intn(maxKeyLen))
+			_, _ = r.Read(key) // #nosec G404
+
+			value := make([]byte, r.Intn(maxValueLen))
+			_, _ = r.Read(value) // #nosec G404
+
+			if len(value) == 0 {
+				// Consistently treat zero length values as nil
+				// so that we can compare [expected] and [got] with
+				// require.Equal, which treats nil and empty byte
+				// as being unequal, whereas the database treats
+				// them as being equal.
+				value = nil
+			}
+
+			if bytes.HasPrefix(key, prefix) && bytes.Compare(key, start) >= 0 {
+				expected[string(key)] = value
+			}
+
+			require.NoError(db.Put(key, value))
+		}
+
+		expectedList := maps.Keys(expected)
+		slices.Sort(expectedList)
+
+		iter := db.NewIteratorWithStartAndPrefix(start, prefix)
+		defer iter.Release()
+
+		// Assert the iterator returns the expected key-values.
+		numIterElts := 0
+		for iter.Next() {
+			val := iter.Value()
+			if len(val) == 0 {
+				val = nil
+			}
+			keyStr := string(iter.Key())
+			require.Equal(expectedList[numIterElts], keyStr)
+			require.Equal(expected[keyStr], val)
+			numIterElts++
+		}
+		require.Len(expectedList, numIterElts)
 
 		// Clear the database for the next fuzz iteration.
 		require.NoError(AtomicClear(db, db))

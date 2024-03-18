@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 // Implements X-chain transfer tests.
@@ -9,20 +9,20 @@ import (
 	"math/rand"
 	"time"
 
-	ginkgo "github.com/onsi/ginkgo/v2"
-
 	"github.com/stretchr/testify/require"
 
 	"github.com/ava-labs/avalanchego/ids"
 	"github.com/ava-labs/avalanchego/snow/choices"
 	"github.com/ava-labs/avalanchego/tests"
-	"github.com/ava-labs/avalanchego/tests/e2e"
+	"github.com/ava-labs/avalanchego/tests/fixture/e2e"
 	"github.com/ava-labs/avalanchego/utils/set"
 	"github.com/ava-labs/avalanchego/vms/avm"
 	"github.com/ava-labs/avalanchego/vms/components/avax"
 	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
 	"github.com/ava-labs/avalanchego/wallet/subnet/primary"
 	"github.com/ava-labs/avalanchego/wallet/subnet/primary/common"
+
+	ginkgo "github.com/onsi/ginkgo/v2"
 )
 
 const (
@@ -69,7 +69,7 @@ var _ = e2e.DescribeXChainSerial("[Virtuous Transfer Tx AVAX]", func() {
 
 			// Ensure the same set of 10 keys is used for all tests
 			// by retrieving them outside of runFunc.
-			testKeys := e2e.Env.AllocateFundedKeys(10)
+			testKeys := e2e.Env.AllocatePreFundedKeys(10)
 
 			runFunc := func(round int) {
 				tests.Outf("{{green}}\n\n\n\n\n\n---\n[ROUND #%02d]:{{/}}\n", round)
@@ -83,7 +83,7 @@ var _ = e2e.DescribeXChainSerial("[Virtuous Transfer Tx AVAX]", func() {
 				}
 
 				keychain := secp256k1fx.NewKeychain(testKeys...)
-				baseWallet := e2e.Env.NewWallet(keychain, e2e.Env.GetRandomNodeURI())
+				baseWallet := e2e.NewWallet(keychain, e2e.Env.GetRandomNodeURI())
 				avaxAssetID := baseWallet.X().AVAXAssetID()
 
 				wallets := make([]primary.Wallet, len(testKeys))
@@ -226,14 +226,14 @@ RECEIVER  NEW BALANCE (AFTER) : %21d AVAX
 					xc := avm.NewClient(u, "X")
 					status, err := xc.ConfirmTx(e2e.DefaultContext(), txID, 2*time.Second)
 					require.NoError(err)
-					require.Equal(status, choices.Accepted)
+					require.Equal(choices.Accepted, status)
 				}
 
 				for _, u := range rpcEps {
 					xc := avm.NewClient(u, "X")
 					status, err := xc.ConfirmTx(e2e.DefaultContext(), txID, 2*time.Second)
 					require.NoError(err)
-					require.Equal(status, choices.Accepted)
+					require.Equal(choices.Accepted, status)
 
 					mm, err := tests.GetNodeMetrics(u, allMetrics...)
 					require.NoError(err)

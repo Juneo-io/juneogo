@@ -1,11 +1,11 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package snowball
 
 import "fmt"
 
-var _ BinarySnowball = (*binarySnowball)(nil)
+var _ Binary = (*binarySnowball)(nil)
 
 func newBinarySnowball(beta, choice int) binarySnowball {
 	return binarySnowball{

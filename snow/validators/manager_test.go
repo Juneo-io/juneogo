@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package validators
@@ -216,30 +216,30 @@ func TestLen(t *testing.T) {
 	m := NewManager()
 	subnetID := ids.GenerateTestID()
 
-	len := m.Count(subnetID)
-	require.Zero(len)
+	count := m.Count(subnetID)
+	require.Zero(count)
 
 	nodeID0 := ids.GenerateTestNodeID()
 	require.NoError(m.AddStaker(subnetID, nodeID0, nil, ids.Empty, 1))
 
-	len = m.Count(subnetID)
-	require.Equal(1, len)
+	count = m.Count(subnetID)
+	require.Equal(1, count)
 
 	nodeID1 := ids.GenerateTestNodeID()
 	require.NoError(m.AddStaker(subnetID, nodeID1, nil, ids.Empty, 1))
 
-	len = m.Count(subnetID)
-	require.Equal(2, len)
+	count = m.Count(subnetID)
+	require.Equal(2, count)
 
 	require.NoError(m.RemoveWeight(subnetID, nodeID1, 1))
 
-	len = m.Count(subnetID)
-	require.Equal(1, len)
+	count = m.Count(subnetID)
+	require.Equal(1, count)
 
 	require.NoError(m.RemoveWeight(subnetID, nodeID0, 1))
 
-	len = m.Count(subnetID)
-	require.Zero(len)
+	count = m.Count(subnetID)
+	require.Zero(count)
 }
 
 func TestGetMap(t *testing.T) {
@@ -324,9 +324,9 @@ func TestGetMap(t *testing.T) {
 func TestWeight(t *testing.T) {
 	require := require.New(t)
 
-	vdr0 := ids.NodeID{1}
+	vdr0 := ids.BuildTestNodeID([]byte{1})
 	weight0 := uint64(93)
-	vdr1 := ids.NodeID{2}
+	vdr1 := ids.BuildTestNodeID([]byte{2})
 	weight1 := uint64(123)
 
 	m := NewManager()
@@ -398,12 +398,12 @@ func TestString(t *testing.T) {
 	require.NoError(m.AddStaker(subnetID0, nodeID1, nil, ids.Empty, math.MaxInt64-1))
 	require.NoError(m.AddStaker(subnetID1, nodeID1, nil, ids.Empty, 1))
 
-	expected := "Validator Manager: (Size = 2)\n" +
-		"    Subnet[TtF4d2QWbk5vzQGTEPrN48x6vwgAoAmKQ9cbp79inpQmcRKES]: Validator Set: (Size = 2, Weight = 9223372036854775807)\n" +
-		"        Validator[0]: NodeID-111111111111111111116DBWJs, 1\n" +
-		"        Validator[1]: NodeID-QLbz7JHiBTspS962RLKV8GndWFwdYhk6V, 9223372036854775806\n" +
-		"    Subnet[2mcwQKiD8VEspmMJpL1dc7okQQ5dDVAWeCBZ7FWBFAbxpv3t7w]: Validator Set: (Size = 1, Weight = 1)\n" +
-		"        Validator[0]: NodeID-QLbz7JHiBTspS962RLKV8GndWFwdYhk6V, 1"
+	expected := `Validator Manager: (Size = 2)
+    Subnet[TtF4d2QWbk5vzQGTEPrN48x6vwgAoAmKQ9cbp79inpQmcRKES]: Validator Set: (Size = 2, Weight = 9223372036854775807)
+        Validator[0]: NodeID-111111111111111111116DBWJs, 1
+        Validator[1]: NodeID-QLbz7JHiBTspS962RLKV8GndWFwdYhk6V, 9223372036854775806
+    Subnet[2mcwQKiD8VEspmMJpL1dc7okQQ5dDVAWeCBZ7FWBFAbxpv3t7w]: Validator Set: (Size = 1, Weight = 1)
+        Validator[0]: NodeID-QLbz7JHiBTspS962RLKV8GndWFwdYhk6V, 1`
 	result := m.String()
 	require.Equal(expected, result)
 }
@@ -411,7 +411,7 @@ func TestString(t *testing.T) {
 func TestAddCallback(t *testing.T) {
 	require := require.New(t)
 
-	nodeID0 := ids.NodeID{1}
+	nodeID0 := ids.BuildTestNodeID([]byte{1})
 	sk0, err := bls.NewSecretKey()
 	require.NoError(err)
 	pk0 := bls.PublicFromSecretKey(sk0)
@@ -442,7 +442,7 @@ func TestAddCallback(t *testing.T) {
 func TestAddWeightCallback(t *testing.T) {
 	require := require.New(t)
 
-	nodeID0 := ids.NodeID{1}
+	nodeID0 := ids.BuildTestNodeID([]byte{1})
 	txID0 := ids.GenerateTestID()
 	weight0 := uint64(1)
 	weight1 := uint64(93)
@@ -480,7 +480,7 @@ func TestAddWeightCallback(t *testing.T) {
 func TestRemoveWeightCallback(t *testing.T) {
 	require := require.New(t)
 
-	nodeID0 := ids.NodeID{1}
+	nodeID0 := ids.BuildTestNodeID([]byte{1})
 	txID0 := ids.GenerateTestID()
 	weight0 := uint64(93)
 	weight1 := uint64(92)
@@ -518,7 +518,7 @@ func TestRemoveWeightCallback(t *testing.T) {
 func TestValidatorRemovedCallback(t *testing.T) {
 	require := require.New(t)
 
-	nodeID0 := ids.NodeID{1}
+	nodeID0 := ids.BuildTestNodeID([]byte{1})
 	txID0 := ids.GenerateTestID()
 	weight0 := uint64(93)
 

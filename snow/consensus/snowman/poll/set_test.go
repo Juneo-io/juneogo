@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package poll
@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/prometheus/client_golang/prometheus"
-
 	"github.com/stretchr/testify/require"
 
 	"github.com/ava-labs/avalanchego/ids"
@@ -21,14 +20,14 @@ var (
 	blkID3 = ids.ID{3}
 	blkID4 = ids.ID{4}
 
-	vdr1 = ids.NodeID{1}
-	vdr2 = ids.NodeID{2}
-	vdr3 = ids.NodeID{3}
-	vdr4 = ids.NodeID{4}
-	vdr5 = ids.NodeID{5}
+	vdr1 = ids.BuildTestNodeID([]byte{0x01})
+	vdr2 = ids.BuildTestNodeID([]byte{0x02})
+	vdr3 = ids.BuildTestNodeID([]byte{0x03})
+	vdr4 = ids.BuildTestNodeID([]byte{0x04})
+	vdr5 = ids.BuildTestNodeID([]byte{0x05}) // k = 5
 )
 
-func TestNewSetErrorOnMetrics(t *testing.T) {
+func TestNewSetErrorOnPollsMetrics(t *testing.T) {
 	require := require.New(t)
 
 	factory := NewEarlyTermNoTraversalFactory(1, 1)
@@ -37,13 +36,29 @@ func TestNewSetErrorOnMetrics(t *testing.T) {
 	registerer := prometheus.NewRegistry()
 
 	require.NoError(registerer.Register(prometheus.NewCounter(prometheus.CounterOpts{
-		Name: "polls",
-	})))
-	require.NoError(registerer.Register(prometheus.NewCounter(prometheus.CounterOpts{
-		Name: "poll_duration",
+		Namespace: namespace,
+		Name:      "polls",
 	})))
 
-	require.NotNil(NewSet(factory, log, namespace, registerer))
+	_, err := NewSet(factory, log, namespace, registerer)
+	require.ErrorIs(err, errFailedPollsMetric)
+}
+
+func TestNewSetErrorOnPollDurationMetrics(t *testing.T) {
+	require := require.New(t)
+
+	factory := NewEarlyTermNoTraversalFactory(1, 1)
+	log := logging.NoLog{}
+	namespace := ""
+	registerer := prometheus.NewRegistry()
+
+	require.NoError(registerer.Register(prometheus.NewCounter(prometheus.CounterOpts{
+		Namespace: namespace,
+		Name:      "poll_duration_count",
+	})))
+
+	_, err := NewSet(factory, log, namespace, registerer)
+	require.ErrorIs(err, errFailedPollDurationMetrics)
 }
 
 func TestCreateAndFinishPollOutOfOrder_NewerFinishesFirst(t *testing.T) {
@@ -56,7 +71,8 @@ func TestCreateAndFinishPollOutOfOrder_NewerFinishesFirst(t *testing.T) {
 	log := logging.NoLog{}
 	namespace := ""
 	registerer := prometheus.NewRegistry()
-	s := NewSet(factory, log, namespace, registerer)
+	s, err := NewSet(factory, log, namespace, registerer)
+	require.NoError(err)
 
 	// create two polls for the two blocks
 	vdrBag := bag.Of(vdrs...)
@@ -64,7 +80,7 @@ func TestCreateAndFinishPollOutOfOrder_NewerFinishesFirst(t *testing.T) {
 
 	vdrBag = bag.Of(vdrs...)
 	require.True(s.Add(2, vdrBag))
-	require.Equal(s.Len(), 2)
+	require.Equal(2, s.Len())
 
 	// vote out of order
 	require.Empty(s.Vote(1, vdr1, blkID1))
@@ -92,7 +108,8 @@ func TestCreateAndFinishPollOutOfOrder_OlderFinishesFirst(t *testing.T) {
 	log := logging.NoLog{}
 	namespace := ""
 	registerer := prometheus.NewRegistry()
-	s := NewSet(factory, log, namespace, registerer)
+	s, err := NewSet(factory, log, namespace, registerer)
+	require.NoError(err)
 
 	// create two polls for the two blocks
 	vdrBag := bag.Of(vdrs...)
@@ -100,7 +117,7 @@ func TestCreateAndFinishPollOutOfOrder_OlderFinishesFirst(t *testing.T) {
 
 	vdrBag = bag.Of(vdrs...)
 	require.True(s.Add(2, vdrBag))
-	require.Equal(s.Len(), 2)
+	require.Equal(2, s.Len())
 
 	// vote out of order
 	require.Empty(s.Vote(1, vdr1, blkID1))
@@ -128,7 +145,8 @@ func TestCreateAndFinishPollOutOfOrder_UnfinishedPollsGaps(t *testing.T) {
 	log := logging.NoLog{}
 	namespace := ""
 	registerer := prometheus.NewRegistry()
-	s := NewSet(factory, log, namespace, registerer)
+	s, err := NewSet(factory, log, namespace, registerer)
+	require.NoError(err)
 
 	// create three polls for the two blocks
 	vdrBag := bag.Of(vdrs...)
@@ -139,7 +157,7 @@ func TestCreateAndFinishPollOutOfOrder_UnfinishedPollsGaps(t *testing.T) {
 
 	vdrBag = bag.Of(vdrs...)
 	require.True(s.Add(3, vdrBag))
-	require.Equal(s.Len(), 3)
+	require.Equal(3, s.Len())
 
 	// vote out of order
 	// 2 finishes first to create a gap of finished poll between two unfinished polls 1 and 3
@@ -172,7 +190,8 @@ func TestCreateAndFinishSuccessfulPoll(t *testing.T) {
 	log := logging.NoLog{}
 	namespace := ""
 	registerer := prometheus.NewRegistry()
-	s := NewSet(factory, log, namespace, registerer)
+	s, err := NewSet(factory, log, namespace, registerer)
+	require.NoError(err)
 
 	require.Zero(s.Len())
 
@@ -204,7 +223,8 @@ func TestCreateAndFinishFailedPoll(t *testing.T) {
 	log := logging.NoLog{}
 	namespace := ""
 	registerer := prometheus.NewRegistry()
-	s := NewSet(factory, log, namespace, registerer)
+	s, err := NewSet(factory, log, namespace, registerer)
+	require.NoError(err)
 
 	require.Zero(s.Len())
 
@@ -233,7 +253,8 @@ func TestSetString(t *testing.T) {
 	log := logging.NoLog{}
 	namespace := ""
 	registerer := prometheus.NewRegistry()
-	s := NewSet(factory, log, namespace, registerer)
+	s, err := NewSet(factory, log, namespace, registerer)
+	require.NoError(err)
 
 	expected := `current polls: (Size = 1)
     RequestID 0:

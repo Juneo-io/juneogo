@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package health
@@ -7,15 +7,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"maps"
+	"slices"
 	"sync"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
-
 	"go.uber.org/zap"
-
-	"golang.org/x/exp/maps"
-	"golang.org/x/exp/slices"
 
 	"github.com/ava-labs/avalanchego/utils"
 	"github.com/ava-labs/avalanchego/utils/logging"
@@ -167,7 +165,7 @@ func (w *worker) Results(tags ...string) (map[string]Result, bool) {
 
 func (w *worker) Start(ctx context.Context, freq time.Duration) {
 	w.startOnce.Do(func() {
-		detachedCtx := utils.Detach(ctx)
+		detachedCtx := context.WithoutCancel(ctx)
 		w.wg.Add(1)
 		go func() {
 			ticker := time.NewTicker(freq)

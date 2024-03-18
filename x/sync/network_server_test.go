@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package sync
@@ -10,9 +10,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
-
 	"go.uber.org/mock/gomock"
-
 	"google.golang.org/protobuf/proto"
 
 	"github.com/ava-labs/avalanchego/database"
@@ -93,6 +91,14 @@ func Test_Server_GetRangeProof(t *testing.T) {
 			},
 			expectedMaxResponseBytes: defaultRequestByteSizeLimit,
 		},
+		"empty proof": {
+			request: &pb.SyncGetRangeProofRequest{
+				RootHash:   ids.Empty[:],
+				KeyLimit:   defaultRequestKeyLimit,
+				BytesLimit: defaultRequestByteSizeLimit,
+			},
+			proofNil: true,
+		},
 	}
 
 	for name, test := range tests {
@@ -107,14 +113,14 @@ func Test_Server_GetRangeProof(t *testing.T) {
 				gomock.Any(), // requestID
 				gomock.Any(), // responseBytes
 			).DoAndReturn(
-				func(_ context.Context, _ ids.NodeID, requestID uint32, responseBytes []byte) error {
+				func(_ context.Context, _ ids.NodeID, _ uint32, responseBytes []byte) error {
 					// grab a copy of the proof so we can inspect it later
 					if !test.proofNil {
 						var proofProto pb.RangeProof
 						require.NoError(proto.Unmarshal(responseBytes, &proofProto))
 
 						var p merkledb.RangeProof
-						require.NoError(p.UnmarshalProto(&proofProto, merkledb.BranchFactor16))
+						require.NoError(p.UnmarshalProto(&proofProto))
 						proof = &p
 					}
 					return nil
@@ -252,7 +258,7 @@ func Test_Server_GetChangeProof(t *testing.T) {
 			request: &pb.SyncGetChangeProofRequest{
 				// This root doesn't exist so server has insufficient history
 				// to serve a change proof
-				StartRootHash: ids.Empty[:],
+				StartRootHash: fakeRootID[:],
 				EndRootHash:   endRoot[:],
 				KeyLimit:      defaultRequestKeyLimit,
 				BytesLimit:    defaultRequestByteSizeLimit,
@@ -263,9 +269,19 @@ func Test_Server_GetChangeProof(t *testing.T) {
 		"insufficient history for change proof or range proof": {
 			request: &pb.SyncGetChangeProofRequest{
 				// These roots don't exist so server has insufficient history
-				// to serve a change proof
+				// to serve a change proof or range proof
 				StartRootHash: ids.Empty[:],
 				EndRootHash:   fakeRootID[:],
+				KeyLimit:      defaultRequestKeyLimit,
+				BytesLimit:    defaultRequestByteSizeLimit,
+			},
+			expectedMaxResponseBytes: defaultRequestByteSizeLimit,
+			proofNil:                 true,
+		},
+		"empt proof": {
+			request: &pb.SyncGetChangeProofRequest{
+				StartRootHash: fakeRootID[:],
+				EndRootHash:   ids.Empty[:],
 				KeyLimit:      defaultRequestKeyLimit,
 				BytesLimit:    defaultRequestByteSizeLimit,
 			},
@@ -290,7 +306,7 @@ func Test_Server_GetChangeProof(t *testing.T) {
 				gomock.Any(), // requestID
 				gomock.Any(), // responseBytes
 			).DoAndReturn(
-				func(_ context.Context, _ ids.NodeID, requestID uint32, responseBytes []byte) error {
+				func(_ context.Context, _ ids.NodeID, _ uint32, responseBytes []byte) error {
 					if test.proofNil {
 						return nil
 					}

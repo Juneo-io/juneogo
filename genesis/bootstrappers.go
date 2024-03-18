@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package genesis
@@ -12,7 +12,6 @@ import (
 	"github.com/ava-labs/avalanchego/ids"
 	"github.com/ava-labs/avalanchego/utils/constants"
 	"github.com/ava-labs/avalanchego/utils/ips"
-	"github.com/ava-labs/avalanchego/utils/math"
 	"github.com/ava-labs/avalanchego/utils/sampler"
 )
 
@@ -36,11 +35,16 @@ type Bootstrapper struct {
 	IP ips.IPDesc `json:"ip"`
 }
 
+// GetBootstrappers returns all default bootstrappers for the provided network.
+func GetBootstrappers(networkID uint32) []Bootstrapper {
+	networkName := constants.NetworkIDToNetworkName[networkID]
+	return bootstrappersPerNetwork[networkName]
+}
+
 // SampleBootstrappers returns the some beacons this node should connect to
 func SampleBootstrappers(networkID uint32, count int) []Bootstrapper {
-	networkName := constants.NetworkIDToNetworkName[networkID]
-	bootstrappers := bootstrappersPerNetwork[networkName]
-	count = math.Min(count, len(bootstrappers))
+	bootstrappers := GetBootstrappers(networkID)
+	count = min(count, len(bootstrappers))
 
 	s := sampler.NewUniform()
 	s.Initialize(uint64(len(bootstrappers)))

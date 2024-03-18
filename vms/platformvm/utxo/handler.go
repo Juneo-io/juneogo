@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package utxo
@@ -229,7 +229,7 @@ func (h *handler) Spend(
 		remainingValue := in.Amount()
 
 		// Stake any value that should be staked
-		amountToStake := math.Min(
+		amountToStake := min(
 			amount-amountStaked, // Amount we still need to stake
 			remainingValue,      // Amount available to stake
 		)
@@ -320,7 +320,7 @@ func (h *handler) Spend(
 		remainingValue := in.Amount()
 
 		// Burn any value that should be burned
-		amountToBurn := math.Min(
+		amountToBurn := min(
 			fee-amountBurned, // Amount we still need to burn
 			remainingValue,   // Amount available to burn
 		)
@@ -328,7 +328,7 @@ func (h *handler) Spend(
 		remainingValue -= amountToBurn
 
 		// Stake any value that should be staked
-		amountToStake := math.Min(
+		amountToStake := min(
 			amount-amountStaked, // Amount we still need to stake
 			remainingValue,      // Amount available to stake
 		)
@@ -443,7 +443,7 @@ func (h *handler) VerifySpend(
 		if err != nil {
 			return fmt.Errorf(
 				"failed to read consumed UTXO %s due to: %w",
-				&input.UTXOID, //nolint:gosec
+				&input.UTXOID,
 				err,
 			)
 		}
@@ -557,7 +557,7 @@ func (h *handler) VerifySpendUTXOs(
 			return fmt.Errorf("expected fx.Owned but got %T", out)
 		}
 		owner := owned.Owners()
-		ownerBytes, err := txs.Codec.Marshal(txs.Version, owner)
+		ownerBytes, err := txs.Codec.Marshal(txs.CodecVersion, owner)
 		if err != nil {
 			return fmt.Errorf("couldn't marshal owner: %w", err)
 		}
@@ -606,7 +606,7 @@ func (h *handler) VerifySpendUTXOs(
 			return fmt.Errorf("expected fx.Owned but got %T", out)
 		}
 		owner := owned.Owners()
-		ownerBytes, err := txs.Codec.Marshal(txs.Version, owner)
+		ownerBytes, err := txs.Codec.Marshal(txs.CodecVersion, owner)
 		if err != nil {
 			return fmt.Errorf("couldn't marshal owner: %w", err)
 		}

@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package tracker
@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-
 	"go.uber.org/mock/gomock"
 
 	"github.com/ava-labs/avalanchego/ids"
@@ -46,10 +45,10 @@ func TestNewTargeter(t *testing.T) {
 func TestTarget(t *testing.T) {
 	ctrl := gomock.NewController(t)
 
-	vdr := ids.NodeID{1}
+	vdr := ids.BuildTestNodeID([]byte{1})
 	vdrWeight := uint64(1)
 	totalVdrWeight := uint64(10)
-	nonVdr := ids.NodeID{2}
+	nonVdr := ids.BuildTestNodeID([]byte{2})
 	vdrs := validators.NewManager()
 	require.NoError(t, vdrs.AddStaker(constants.PrimaryNetworkID, vdr, nil, ids.Empty, 1))
 	require.NoError(t, vdrs.AddStaker(constants.PrimaryNetworkID, ids.GenerateTestNodeID(), nil, ids.Empty, totalVdrWeight-vdrWeight))

@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package bag
@@ -111,5 +111,5 @@ func (b *UniqueBag[_]) String() string {
 
 // Removes all key --> bitset pairs.
 func (b *UniqueBag[_]) Clear() {
-	maps.Clear(*b)
+	clear(*b)
 }

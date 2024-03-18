@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package server
@@ -13,13 +13,9 @@ import (
 	"time"
 
 	"github.com/NYTimes/gziphandler"
-
 	"github.com/prometheus/client_golang/prometheus"
-
 	"github.com/rs/cors"
-
 	"go.uber.org/zap"
-
 	"golang.org/x/net/http2"
 
 	"github.com/ava-labs/avalanchego/api"
@@ -116,7 +112,6 @@ func New(
 	registerer prometheus.Registerer,
 	httpConfig HTTPConfig,
 	allowedHosts []string,
-	wrappers ...Wrapper,
 ) (Server, error) {
 	m, err := newMetrics(namespace, registerer)
 	if err != nil {
@@ -137,10 +132,6 @@ func New(
 			gzipHandler.ServeHTTP(w, r)
 		},
 	)
-
-	for _, wrapper := range wrappers {
-		handler = wrapper.WrapHandler(handler)
-	}
 
 	httpServer := &http.Server{
 		Handler:           handler,

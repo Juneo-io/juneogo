@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package c
@@ -6,21 +6,20 @@ package c
 import (
 	"math/big"
 
-	ginkgo "github.com/onsi/ginkgo/v2"
-
-	"github.com/stretchr/testify/require"
-
 	"github.com/ava-labs/coreth/core/types"
 	"github.com/ava-labs/coreth/plugin/evm"
+	"github.com/stretchr/testify/require"
 
 	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/tests/e2e"
+	"github.com/ava-labs/avalanchego/tests/fixture/e2e"
 	"github.com/ava-labs/avalanchego/utils/constants"
 	"github.com/ava-labs/avalanchego/utils/crypto/secp256k1"
 	"github.com/ava-labs/avalanchego/utils/set"
 	"github.com/ava-labs/avalanchego/utils/units"
 	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
 	"github.com/ava-labs/avalanchego/wallet/subnet/primary/common"
+
+	ginkgo "github.com/onsi/ginkgo/v2"
 )
 
 var _ = e2e.DescribeCChain("[Interchain Workflow]", func() {
@@ -34,13 +33,12 @@ var _ = e2e.DescribeCChain("[Interchain Workflow]", func() {
 		// the wallet to avoid having to verify that all nodes are at
 		// the same height before initializing the wallet.
 		nodeURI := e2e.Env.GetRandomNodeURI()
-		ethClient := e2e.Env.NewEthClient(nodeURI)
+		ethClient := e2e.NewEthClient(nodeURI)
 
 		ginkgo.By("allocating a pre-funded key to send from and a recipient key to deliver to")
-		senderKey := e2e.Env.AllocateFundedKey()
+		senderKey := e2e.Env.AllocatePreFundedKey()
 		senderEthAddress := evm.GetEthAddress(senderKey)
-		factory := secp256k1.Factory{}
-		recipientKey, err := factory.NewPrivateKey()
+		recipientKey, err := secp256k1.NewPrivateKey()
 		require.NoError(err)
 		recipientEthAddress := evm.GetEthAddress(recipientKey)
 
@@ -80,7 +78,7 @@ var _ = e2e.DescribeCChain("[Interchain Workflow]", func() {
 		// matches on-chain state.
 		ginkgo.By("initializing a keychain and associated wallet")
 		keychain := secp256k1fx.NewKeychain(senderKey, recipientKey)
-		baseWallet := e2e.Env.NewWallet(keychain, nodeURI)
+		baseWallet := e2e.NewWallet(keychain, nodeURI)
 		xWallet := baseWallet.X()
 		cWallet := baseWallet.C()
 		pWallet := baseWallet.P()

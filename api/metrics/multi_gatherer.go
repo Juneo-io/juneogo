@@ -1,18 +1,20 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package metrics
 
 import (
+	"cmp"
 	"errors"
 	"fmt"
+	"slices"
 	"sync"
 
 	"github.com/prometheus/client_golang/prometheus"
 
-	dto "github.com/prometheus/client_model/go"
+	"github.com/ava-labs/avalanchego/utils/metric"
 
-	"golang.org/x/exp/slices"
+	dto "github.com/prometheus/client_model/go"
 )
 
 var (
@@ -48,23 +50,19 @@ func (g *multiGatherer) Gather() ([]*dto.MetricFamily, error) {
 
 	var results []*dto.MetricFamily
 	for namespace, gatherer := range g.gatherers {
-		metrics, err := gatherer.Gather()
+		gatheredMetrics, err := gatherer.Gather()
 		if err != nil {
 			return nil, err
 		}
-		for _, metric := range metrics {
+		for _, gatheredMetric := range gatheredMetrics {
 			var name string
-			if metric.Name != nil {
-				if len(namespace) > 0 {
-					name = fmt.Sprintf("%s_%s", namespace, *metric.Name)
-				} else {
-					name = *metric.Name
-				}
+			if gatheredMetric.Name != nil {
+				name = metric.AppendNamespace(namespace, *gatheredMetric.Name)
 			} else {
 				name = namespace
 			}
-			metric.Name = &name
-			results = append(results, metric)
+			gatheredMetric.Name = &name
+			results = append(results, gatheredMetric)
 		}
 	}
 	// Because we overwrite every metric's name, we are guaranteed that there
@@ -91,7 +89,7 @@ func (g *multiGatherer) Register(namespace string, gatherer prometheus.Gatherer)
 }
 
 func sortMetrics(m []*dto.MetricFamily) {
-	slices.SortFunc(m, func(i, j *dto.MetricFamily) bool {
-		return *i.Name < *j.Name
+	slices.SortFunc(m, func(i, j *dto.MetricFamily) int {
+		return cmp.Compare(*i.Name, *j.Name)
 	})
 }

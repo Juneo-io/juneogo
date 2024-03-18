@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package snow
@@ -31,11 +31,11 @@ type ContextInitializable interface {
 // [ChainID] is the ID of the chain this context exists within.
 // [NodeID] is the ID of this node
 type Context struct {
-	NetworkID  uint32
-	SubnetID ids.ID
-	ChainID    ids.ID
-	NodeID     ids.NodeID
-	PublicKey  *bls.PublicKey
+	NetworkID uint32
+	SubnetID  ids.ID
+	ChainID   ids.ID
+	NodeID    ids.NodeID
+	PublicKey *bls.PublicKey
 
 	XChainID     ids.ID
 	CChainID     ids.ID
@@ -96,34 +96,4 @@ type ConsensusContext struct {
 
 	// True iff this chain is currently state-syncing
 	StateSyncing utils.Atomic[bool]
-}
-
-func DefaultContextTest() *Context {
-	sk, err := bls.NewSecretKey()
-	if err != nil {
-		panic(err)
-	}
-	pk := bls.PublicFromSecretKey(sk)
-	return &Context{
-		NetworkID:    0,
-		SubnetID:   ids.Empty,
-		ChainID:      ids.Empty,
-		NodeID:       ids.EmptyNodeID,
-		PublicKey:    pk,
-		Log:          logging.NoLog{},
-		BCLookup:     ids.NewAliaser(),
-		Metrics:      metrics.NewOptionalGatherer(),
-		ChainDataDir: "",
-	}
-}
-
-func DefaultConsensusContextTest() *ConsensusContext {
-	return &ConsensusContext{
-		Context:             DefaultContextTest(),
-		Registerer:          prometheus.NewRegistry(),
-		AvalancheRegisterer: prometheus.NewRegistry(),
-		BlockAcceptor:       noOpAcceptor{},
-		TxAcceptor:          noOpAcceptor{},
-		VertexAcceptor:      noOpAcceptor{},
-	}
 }

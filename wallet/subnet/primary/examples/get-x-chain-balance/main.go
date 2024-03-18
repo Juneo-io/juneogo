@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package main
@@ -12,6 +12,7 @@ import (
 	"github.com/ava-labs/avalanchego/utils/set"
 	"github.com/ava-labs/avalanchego/wallet/chain/x"
 	"github.com/ava-labs/avalanchego/wallet/subnet/primary"
+	"github.com/ava-labs/avalanchego/wallet/subnet/primary/common"
 )
 
 func main() {
@@ -36,7 +37,7 @@ func main() {
 
 	xChainID := state.XCTX.BlockchainID()
 
-	xUTXOs := primary.NewChainUTXOs(xChainID, state.UTXOs)
+	xUTXOs := common.NewChainUTXOs(xChainID, state.UTXOs)
 	xBackend := x.NewBackend(state.XCTX, xUTXOs)
 	xBuilder := x.NewBuilder(addresses, xBackend)
 

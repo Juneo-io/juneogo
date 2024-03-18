@@ -1,39 +1,43 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package snowball
 
 import (
-	"math/rand"
-
 	"github.com/ava-labs/avalanchego/ids"
 	"github.com/ava-labs/avalanchego/utils/bag"
 	"github.com/ava-labs/avalanchego/utils/sampler"
 )
 
-type newConsensusFunc func(params Parameters, choice ids.ID) Consensus
+type newConsensusFunc func(factory Factory, params Parameters, choice ids.ID) Consensus
 
 type Network struct {
 	params         Parameters
 	colors         []ids.ID
+	rngSource      sampler.Source
 	nodes, running []Consensus
+	factory        Factory
 }
 
-// Initialize sets the parameters for the network and adds [numColors] different
-// possible colors to the network configuration.
-func (n *Network) Initialize(params Parameters, numColors int) {
-	n.params = params
+// Create a new network with [numColors] different possible colors to finalize.
+func NewNetwork(factory Factory, params Parameters, numColors int, rngSource sampler.Source) *Network {
+	n := &Network{
+		params:    params,
+		rngSource: rngSource,
+		factory:   factory,
+	}
 	for i := 0; i < numColors; i++ {
 		n.colors = append(n.colors, ids.Empty.Prefix(uint64(i)))
 	}
+	return n
 }
 
 func (n *Network) AddNode(newConsensusFunc newConsensusFunc) Consensus {
-	s := sampler.NewUniform()
+	s := sampler.NewDeterministicUniform(n.rngSource)
 	s.Initialize(uint64(len(n.colors)))
 	indices, _ := s.Sample(len(n.colors))
 
-	consensus := newConsensusFunc(n.params, n.colors[int(indices[0])])
+	consensus := newConsensusFunc(n.factory, n.params, n.colors[int(indices[0])])
 	for _, index := range indices[1:] {
 		consensus.Add(n.colors[int(index)])
 	}
@@ -54,7 +58,7 @@ func (n *Network) AddNodeSpecificColor(
 	initialPreference int,
 	options []int,
 ) Consensus {
-	consensus := newConsensusFunc(n.params, n.colors[initialPreference])
+	consensus := newConsensusFunc(n.factory, n.params, n.colors[initialPreference])
 
 	for _, i := range options {
 		consensus.Add(n.colors[i])
@@ -78,15 +82,14 @@ func (n *Network) Finalized() bool {
 // performing an unbiased poll of the nodes in the network for that node.
 func (n *Network) Round() {
 	if len(n.running) > 0 {
-		runningInd := rand.Intn(len(n.running)) // #nosec G404
+		s := sampler.NewDeterministicUniform(n.rngSource)
+
+		s.Initialize(uint64(len(n.running)))
+		runningInd, _ := s.Next()
 		running := n.running[runningInd]
 
-		s := sampler.NewUniform()
 		s.Initialize(uint64(len(n.nodes)))
-		count := len(n.nodes)
-		if count > n.params.K {
-			count = n.params.K
-		}
+		count := min(n.params.K, len(n.nodes))
 		indices, _ := s.Sample(count)
 		sampledColors := bag.Bag[ids.ID]{}
 		for _, index := range indices {

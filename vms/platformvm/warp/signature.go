@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package warp
@@ -24,6 +24,8 @@ var (
 )
 
 type Signature interface {
+	fmt.Stringer
+
 	// NumSigners is the number of [bls.PublicKeys] that participated in the
 	// [Signature]. This is exposed because users of these signatures typically
 	// impose a verification fee that is a function of the number of
@@ -136,6 +138,10 @@ func (s *BitSetSignature) Verify(
 		return ErrInvalidSignature
 	}
 	return nil
+}
+
+func (s *BitSetSignature) String() string {
+	return fmt.Sprintf("BitSetSignature(Signers = %x, Signature = %x)", s.Signers, s.Signature)
 }
 
 // VerifyWeight returns [nil] if [sigWeight] is at least [quorumNum]/[quorumDen]

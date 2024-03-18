@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package subnets
@@ -22,9 +22,6 @@ type GossipConfig struct {
 	OnAcceptValidatorSize            uint `json:"gossipOnAcceptValidatorSize"            yaml:"gossipOnAcceptValidatorSize"`
 	OnAcceptNonValidatorSize         uint `json:"gossipOnAcceptNonValidatorSize"         yaml:"gossipOnAcceptNonValidatorSize"`
 	OnAcceptPeerSize                 uint `json:"gossipOnAcceptPeerSize"                 yaml:"gossipOnAcceptPeerSize"`
-	AppGossipValidatorSize           uint `json:"appGossipValidatorSize"                 yaml:"appGossipValidatorSize"`
-	AppGossipNonValidatorSize        uint `json:"appGossipNonValidatorSize"              yaml:"appGossipNonValidatorSize"`
-	AppGossipPeerSize                uint `json:"appGossipPeerSize"                      yaml:"appGossipPeerSize"`
 }
 
 type Config struct {

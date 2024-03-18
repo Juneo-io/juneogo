@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package executor
@@ -9,13 +9,12 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
-
 	"go.uber.org/mock/gomock"
 
 	"github.com/ava-labs/avalanchego/ids"
 	"github.com/ava-labs/avalanchego/utils/set"
 	"github.com/ava-labs/avalanchego/vms/avm/block"
-	"github.com/ava-labs/avalanchego/vms/avm/states"
+	"github.com/ava-labs/avalanchego/vms/avm/state"
 	"github.com/ava-labs/avalanchego/vms/avm/txs"
 	"github.com/ava-labs/avalanchego/vms/avm/txs/executor"
 )
@@ -31,7 +30,7 @@ func TestManagerGetStatelessBlock(t *testing.T) {
 	require := require.New(t)
 	ctrl := gomock.NewController(t)
 
-	state := states.NewMockState(ctrl)
+	state := state.NewMockState(ctrl)
 	m := &manager{
 		state:        state,
 		blkIDToState: map[ids.ID]*blockState{},
@@ -73,16 +72,16 @@ func TestManagerGetState(t *testing.T) {
 	require := require.New(t)
 	ctrl := gomock.NewController(t)
 
-	state := states.NewMockState(ctrl)
+	s := state.NewMockState(ctrl)
 	m := &manager{
-		state:        state,
+		state:        s,
 		blkIDToState: map[ids.ID]*blockState{},
 		lastAccepted: ids.GenerateTestID(),
 	}
 
 	// Case: Block is in memory
 	{
-		diff := states.NewMockDiff(ctrl)
+		diff := state.NewMockDiff(ctrl)
 		blkID := ids.GenerateTestID()
 		m.blkIDToState[blkID] = &blockState{
 			onAcceptState: diff,
@@ -97,14 +96,14 @@ func TestManagerGetState(t *testing.T) {
 		blkID := ids.GenerateTestID()
 		gotState, ok := m.GetState(blkID)
 		require.False(ok)
-		require.Equal(state, gotState)
+		require.Equal(s, gotState)
 	}
 
 	// Case: Block isn't in memory; block is last accepted
 	{
 		gotState, ok := m.GetState(m.lastAccepted)
 		require.True(ok)
-		require.Equal(state, gotState)
+		require.Equal(s, gotState)
 	}
 }
 
@@ -116,14 +115,13 @@ func TestManagerVerifyTx(t *testing.T) {
 		expectedErr error
 	}
 
-	inputID := ids.GenerateTestID()
 	tests := []test{
 		{
 			name: "not bootstrapped",
 			txF: func(*gomock.Controller) *txs.Tx {
 				return &txs.Tx{}
 			},
-			managerF: func(ctrl *gomock.Controller) *manager {
+			managerF: func(*gomock.Controller) *manager {
 				return &manager{
 					backend: &executor.Backend{},
 				}
@@ -161,11 +159,11 @@ func TestManagerVerifyTx(t *testing.T) {
 				}
 			},
 			managerF: func(ctrl *gomock.Controller) *manager {
-				preferred := ids.GenerateTestID()
+				lastAcceptedID := ids.GenerateTestID()
 
 				// These values don't matter for this test
-				state := states.NewMockState(ctrl)
-				state.EXPECT().GetLastAccepted().Return(preferred)
+				state := state.NewMockState(ctrl)
+				state.EXPECT().GetLastAccepted().Return(lastAcceptedID)
 				state.EXPECT().GetTimestamp().Return(time.Time{})
 
 				return &manager{
@@ -173,8 +171,7 @@ func TestManagerVerifyTx(t *testing.T) {
 						Bootstrapped: true,
 					},
 					state:        state,
-					lastAccepted: preferred,
-					preferred:    preferred,
+					lastAccepted: lastAcceptedID,
 				}
 			},
 			expectedErr: errTestSemanticVerifyFail,
@@ -194,11 +191,11 @@ func TestManagerVerifyTx(t *testing.T) {
 				}
 			},
 			managerF: func(ctrl *gomock.Controller) *manager {
-				preferred := ids.GenerateTestID()
+				lastAcceptedID := ids.GenerateTestID()
 
 				// These values don't matter for this test
-				state := states.NewMockState(ctrl)
-				state.EXPECT().GetLastAccepted().Return(preferred)
+				state := state.NewMockState(ctrl)
+				state.EXPECT().GetLastAccepted().Return(lastAcceptedID)
 				state.EXPECT().GetTimestamp().Return(time.Time{})
 
 				return &manager{
@@ -206,57 +203,10 @@ func TestManagerVerifyTx(t *testing.T) {
 						Bootstrapped: true,
 					},
 					state:        state,
-					lastAccepted: preferred,
-					preferred:    preferred,
+					lastAccepted: lastAcceptedID,
 				}
 			},
 			expectedErr: errTestExecutionFail,
-		},
-		{
-			name: "non-unique inputs",
-			txF: func(ctrl *gomock.Controller) *txs.Tx {
-				unsigned := txs.NewMockUnsignedTx(ctrl)
-				// Syntactic verification passes
-				unsigned.EXPECT().Visit(gomock.Any()).Return(nil)
-				// Semantic verification passes
-				unsigned.EXPECT().Visit(gomock.Any()).Return(nil)
-				// Execution passes
-				unsigned.EXPECT().Visit(gomock.Any()).DoAndReturn(func(e *executor.Executor) error {
-					e.Inputs.Add(inputID)
-					return nil
-				})
-				return &txs.Tx{
-					Unsigned: unsigned,
-				}
-			},
-			managerF: func(ctrl *gomock.Controller) *manager {
-				lastAcceptedID := ids.GenerateTestID()
-
-				preferredID := ids.GenerateTestID()
-				preferred := block.NewMockBlock(ctrl)
-				preferred.EXPECT().Parent().Return(lastAcceptedID).AnyTimes()
-
-				// These values don't matter for this test
-				diffState := states.NewMockDiff(ctrl)
-				diffState.EXPECT().GetLastAccepted().Return(preferredID)
-				diffState.EXPECT().GetTimestamp().Return(time.Time{})
-
-				return &manager{
-					backend: &executor.Backend{
-						Bootstrapped: true,
-					},
-					blkIDToState: map[ids.ID]*blockState{
-						preferredID: {
-							statelessBlock: preferred,
-							onAcceptState:  diffState,
-							importedInputs: set.Of(inputID),
-						},
-					},
-					lastAccepted: lastAcceptedID,
-					preferred:    preferredID,
-				}
-			},
-			expectedErr: ErrConflictingParentTxs,
 		},
 		{
 			name: "happy path",
@@ -273,11 +223,11 @@ func TestManagerVerifyTx(t *testing.T) {
 				}
 			},
 			managerF: func(ctrl *gomock.Controller) *manager {
-				preferred := ids.GenerateTestID()
+				lastAcceptedID := ids.GenerateTestID()
 
 				// These values don't matter for this test
-				state := states.NewMockState(ctrl)
-				state.EXPECT().GetLastAccepted().Return(preferred)
+				state := state.NewMockState(ctrl)
+				state.EXPECT().GetLastAccepted().Return(lastAcceptedID)
 				state.EXPECT().GetTimestamp().Return(time.Time{})
 
 				return &manager{
@@ -285,8 +235,7 @@ func TestManagerVerifyTx(t *testing.T) {
 						Bootstrapped: true,
 					},
 					state:        state,
-					lastAccepted: preferred,
-					preferred:    preferred,
+					lastAccepted: lastAcceptedID,
 				}
 			},
 			expectedErr: nil,

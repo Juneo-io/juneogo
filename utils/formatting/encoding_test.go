@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package formatting
@@ -39,7 +39,7 @@ func TestEncodingUnmarshalJSON(t *testing.T) {
 
 func TestEncodingString(t *testing.T) {
 	enc := Hex
-	require.Equal(t, enc.String(), "hex")
+	require.Equal(t, "hex", enc.String())
 }
 
 // Test encoding bytes to a string and decoding back to bytes

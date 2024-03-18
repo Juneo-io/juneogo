@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package metric
@@ -33,13 +33,13 @@ func NewAveragerWithErrs(namespace, name, desc string, reg prometheus.Registerer
 	a := averager{
 		count: prometheus.NewCounter(prometheus.CounterOpts{
 			Namespace: namespace,
-			Name:      fmt.Sprintf("%s_count", name),
-			Help:      fmt.Sprintf("Total # of observations of %s", desc),
+			Name:      name + "_count",
+			Help:      "Total # of observations of " + desc,
 		}),
 		sum: prometheus.NewGauge(prometheus.GaugeOpts{
 			Namespace: namespace,
-			Name:      fmt.Sprintf("%s_sum", name),
-			Help:      fmt.Sprintf("Sum of %s", desc),
+			Name:      name + "_sum",
+			Help:      "Sum of " + desc,
 		}),
 	}
 

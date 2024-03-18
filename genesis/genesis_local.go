@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package genesis
@@ -75,8 +75,7 @@ func init() {
 	vmrqBytes, err := cb58.Decode(VWEAKeyStr)
 	errs.Add(err)
 
-	factory := secp256k1.Factory{}
-	VMRQKey, err = factory.ToPrivateKey(vmrqBytes)
+	VMRQKey, err = secp256k1.ToPrivateKey(vmrqBytes)
 	errs.Add(err)
 
 	if errs.Err != nil {

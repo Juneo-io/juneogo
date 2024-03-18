@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package validators
@@ -10,14 +10,12 @@ import (
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
-
 	"github.com/stretchr/testify/require"
 
 	"github.com/ava-labs/avalanchego/database/leveldb"
 	"github.com/ava-labs/avalanchego/ids"
 	"github.com/ava-labs/avalanchego/snow"
 	"github.com/ava-labs/avalanchego/snow/validators"
-	"github.com/ava-labs/avalanchego/utils"
 	"github.com/ava-labs/avalanchego/utils/constants"
 	"github.com/ava-labs/avalanchego/utils/crypto/bls"
 	"github.com/ava-labs/avalanchego/utils/formatting"
@@ -66,8 +64,8 @@ func BenchmarkGetValidatorSet(b *testing.B) {
 	addr, err := address.FormatBech32(constants.UnitTestHRP, ids.GenerateTestShortID().Bytes())
 	require.NoError(err)
 
-	genesisValidators := []api.PermissionlessValidator{{
-		Staker: api.Staker{
+	genesisValidators := []api.GenesisPermissionlessValidator{{
+		GenesisValidator: api.GenesisValidator{
 			StartTime: json.Uint64(genesisTime.Unix()),
 			EndTime:   json.Uint64(genesisEndTime.Unix()),
 			NodeID:    ids.GenerateTestNodeID(),
@@ -129,7 +127,6 @@ func BenchmarkGetValidatorSet(b *testing.B) {
 			MintingPeriod:      365 * 24 * time.Hour,
 			SupplyCap:          720 * units.MegaAvax,
 		}),
-		new(utils.Atomic[bool]),
 	)
 	require.NoError(err)
 

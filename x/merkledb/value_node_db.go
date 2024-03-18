@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package merkledb
@@ -7,7 +7,6 @@ import (
 	"sync"
 
 	"github.com/ava-labs/avalanchego/cache"
-
 	"github.com/ava-labs/avalanchego/database"
 	"github.com/ava-labs/avalanchego/utils"
 )
@@ -27,8 +26,7 @@ type valueNodeDB struct {
 	nodeCache cache.Cacher[Key, *node]
 	metrics   merkleMetrics
 
-	closed       utils.Atomic[bool]
-	branchFactor BranchFactor
+	closed utils.Atomic[bool]
 }
 
 func newValueNodeDB(
@@ -36,14 +34,12 @@ func newValueNodeDB(
 	bufferPool *sync.Pool,
 	metrics merkleMetrics,
 	cacheSize int,
-	branchFactor BranchFactor,
 ) *valueNodeDB {
 	return &valueNodeDB{
-		metrics:      metrics,
-		baseDB:       db,
-		bufferPool:   bufferPool,
-		nodeCache:    cache.NewSizedLRU(cacheSize, cacheEntrySize),
-		branchFactor: branchFactor,
+		metrics:    metrics,
+		baseDB:     db,
+		bufferPool: bufferPool,
+		nodeCache:  cache.NewSizedLRU(cacheSize, cacheEntrySize),
 	}
 }
 
@@ -90,6 +86,11 @@ func (db *valueNodeDB) Get(key Key) (*node, error) {
 	}
 
 	return parseNode(key, nodeBytes)
+}
+
+func (db *valueNodeDB) Clear() error {
+	db.nodeCache.Flush()
+	return database.AtomicClearPrefix(db.baseDB, db.baseDB, valueNodePrefix)
 }
 
 // Batch of database operations
@@ -170,7 +171,7 @@ func (i *iterator) Next() bool {
 	i.db.metrics.DatabaseNodeRead()
 	key := i.nodeIter.Key()
 	key = key[valueNodePrefixLen:]
-	n, err := parseNode(ToKey(key, i.db.branchFactor), i.nodeIter.Value())
+	n, err := parseNode(ToKey(key), i.nodeIter.Value())
 	if err != nil {
 		i.err = err
 		return false

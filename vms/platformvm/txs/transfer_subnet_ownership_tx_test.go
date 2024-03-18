@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package txs
@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-
 	"go.uber.org/mock/gomock"
 
 	"github.com/ava-labs/avalanchego/ids"
@@ -103,7 +102,7 @@ func TestTransferSubnetOwnershipTxSerialization(t *testing.T) {
 	expectedUnsignedSimpleTransferSubnetOwnershipTxBytes := []byte{
 		// Codec version
 		0x00, 0x00,
-		// RemoveSubnetValidatorTx Type ID
+		// TransferSubnetOwnershipTx Type ID
 		0x00, 0x00, 0x00, 0x21,
 		// Mainnet network ID
 		0x00, 0x00, 0x00, 0x01,
@@ -164,7 +163,7 @@ func TestTransferSubnetOwnershipTxSerialization(t *testing.T) {
 		0x44, 0x55, 0x66, 0x77,
 	}
 	var unsignedSimpleTransferSubnetOwnershipTx UnsignedTx = simpleTransferSubnetOwnershipTx
-	unsignedSimpleTransferSubnetOwnershipTxBytes, err := Codec.Marshal(Version, &unsignedSimpleTransferSubnetOwnershipTx)
+	unsignedSimpleTransferSubnetOwnershipTxBytes, err := Codec.Marshal(CodecVersion, &unsignedSimpleTransferSubnetOwnershipTx)
 	require.NoError(err)
 	require.Equal(expectedUnsignedSimpleTransferSubnetOwnershipTxBytes, unsignedSimpleTransferSubnetOwnershipTxBytes)
 
@@ -276,7 +275,7 @@ func TestTransferSubnetOwnershipTxSerialization(t *testing.T) {
 	}
 	avax.SortTransferableOutputs(complexTransferSubnetOwnershipTx.Outs, Codec)
 	utils.Sort(complexTransferSubnetOwnershipTx.Ins)
-	require.NoError(simpleTransferSubnetOwnershipTx.SyntacticVerify(&snow.Context{
+	require.NoError(complexTransferSubnetOwnershipTx.SyntacticVerify(&snow.Context{
 		NetworkID:   1,
 		ChainID:     constants.PlatformChainID,
 		AVAXAssetID: avaxAssetID,
@@ -438,7 +437,7 @@ func TestTransferSubnetOwnershipTxSerialization(t *testing.T) {
 		0x44, 0x55, 0x66, 0x77,
 	}
 	var unsignedComplexTransferSubnetOwnershipTx UnsignedTx = complexTransferSubnetOwnershipTx
-	unsignedComplexTransferSubnetOwnershipTxBytes, err := Codec.Marshal(Version, &unsignedComplexTransferSubnetOwnershipTx)
+	unsignedComplexTransferSubnetOwnershipTxBytes, err := Codec.Marshal(CodecVersion, &unsignedComplexTransferSubnetOwnershipTx)
 	require.NoError(err)
 	require.Equal(expectedUnsignedComplexTransferSubnetOwnershipTxBytes, unsignedComplexTransferSubnetOwnershipTxBytes)
 

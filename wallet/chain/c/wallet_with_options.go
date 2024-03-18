@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package c
@@ -6,11 +6,11 @@ package c
 import (
 	"github.com/ava-labs/coreth/plugin/evm"
 
-	ethcommon "github.com/ethereum/go-ethereum/common"
-
 	"github.com/ava-labs/avalanchego/ids"
 	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
 	"github.com/ava-labs/avalanchego/wallet/subnet/primary/common"
+
+	ethcommon "github.com/ethereum/go-ethereum/common"
 )
 
 var _ Wallet = (*walletWithOptions)(nil)

@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package builder
@@ -22,11 +22,9 @@ import (
 func TestAtomicTxImports(t *testing.T) {
 	require := require.New(t)
 
-	env := newEnvironment(t)
+	env := newEnvironment(t, latestFork)
 	env.ctx.Lock.Lock()
-	defer func() {
-		require.NoError(shutdownEnvironment(env))
-	}()
+	defer env.ctx.Lock.Unlock()
 
 	utxoID := avax.UTXOID{
 		TxID:        ids.Empty.Prefix(1),
@@ -41,7 +39,7 @@ func TestAtomicTxImports(t *testing.T) {
 	peerSharedMemory := m.NewSharedMemory(env.ctx.XChainID)
 	utxo := &avax.UTXO{
 		UTXOID: utxoID,
-		Asset:  avax.Asset{ID: avaxAssetID},
+		Asset:  avax.Asset{ID: env.ctx.AVAXAssetID},
 		Out: &secp256k1fx.TransferOutput{
 			Amt: amount,
 			OutputOwners: secp256k1fx.OutputOwners{
@@ -50,7 +48,7 @@ func TestAtomicTxImports(t *testing.T) {
 			},
 		},
 	}
-	utxoBytes, err := txs.Codec.Marshal(txs.Version, utxo)
+	utxoBytes, err := txs.Codec.Marshal(txs.CodecVersion, utxo)
 	require.NoError(err)
 
 	inputID := utxo.InputID()
@@ -69,6 +67,7 @@ func TestAtomicTxImports(t *testing.T) {
 		recipientKey.PublicKey().Address(),
 		[]*secp256k1.PrivateKey{recipientKey},
 		ids.ShortEmpty, // change addr
+		nil,
 	)
 	require.NoError(err)
 
@@ -81,5 +80,5 @@ func TestAtomicTxImports(t *testing.T) {
 	_, txStatus, err := env.state.GetTx(tx.ID())
 	require.NoError(err)
 	// Ensure transaction is in the committed state
-	require.Equal(txStatus, status.Committed)
+	require.Equal(status.Committed, txStatus)
 }

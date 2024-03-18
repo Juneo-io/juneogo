@@ -1,9 +1,11 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package sampler
 
 import (
+	"cmp"
+
 	"github.com/ava-labs/avalanchego/utils"
 	"github.com/ava-labs/avalanchego/utils/math"
 )
@@ -19,8 +21,8 @@ type weightedArrayElement struct {
 }
 
 // Note that this sorts in order of decreasing weight.
-func (e weightedArrayElement) Less(other weightedArrayElement) bool {
-	return e.cumulativeWeight > other.cumulativeWeight
+func (e weightedArrayElement) Compare(other weightedArrayElement) int {
+	return cmp.Compare(other.cumulativeWeight, e.cumulativeWeight)
 }
 
 // Sampling is performed by executing a modified binary search over the provided

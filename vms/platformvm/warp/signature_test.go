@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package warp
@@ -10,7 +10,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-
 	"go.uber.org/mock/gomock"
 
 	"github.com/ava-labs/avalanchego/ids"
@@ -39,8 +38,8 @@ type testValidator struct {
 	vdr    *Validator
 }
 
-func (v *testValidator) Less(o *testValidator) bool {
-	return v.vdr.Less(o.vdr)
+func (v *testValidator) Compare(o *testValidator) int {
+	return v.vdr.Compare(o.vdr)
 }
 
 func newTestValidator() *testValidator {
@@ -56,7 +55,7 @@ func newTestValidator() *testValidator {
 		sk:     sk,
 		vdr: &Validator{
 			PublicKey:      pk,
-			PublicKeyBytes: pk.Serialize(),
+			PublicKeyBytes: bls.SerializePublicKey(pk),
 			Weight:         3,
 			NodeIDs:        []ids.NodeID{nodeID},
 		},

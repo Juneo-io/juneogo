@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package c
@@ -11,11 +11,11 @@ import (
 	"github.com/ava-labs/coreth/ethclient"
 	"github.com/ava-labs/coreth/plugin/evm"
 
-	ethcommon "github.com/ethereum/go-ethereum/common"
-
 	"github.com/ava-labs/avalanchego/ids"
 	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
 	"github.com/ava-labs/avalanchego/wallet/subnet/primary/common"
+
+	ethcommon "github.com/ethereum/go-ethereum/common"
 )
 
 var (
@@ -140,7 +140,7 @@ func (w *wallet) IssueUnsignedAtomicTx(
 ) (*evm.Tx, error) {
 	ops := common.NewOptions(options)
 	ctx := ops.Context()
-	tx, err := w.signer.SignUnsignedAtomic(ctx, utx)
+	tx, err := SignUnsignedAtomic(ctx, w.signer, utx)
 	if err != nil {
 		return nil, err
 	}

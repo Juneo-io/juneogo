@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package sync
@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"go.uber.org/zap"
-
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
@@ -21,7 +20,6 @@ import (
 	"github.com/ava-labs/avalanchego/utils/constants"
 	"github.com/ava-labs/avalanchego/utils/hashing"
 	"github.com/ava-labs/avalanchego/utils/logging"
-	"github.com/ava-labs/avalanchego/utils/math"
 	"github.com/ava-labs/avalanchego/utils/maybe"
 	"github.com/ava-labs/avalanchego/utils/units"
 	"github.com/ava-labs/avalanchego/x/merkledb"
@@ -39,7 +37,6 @@ const (
 	// TODO: refine this estimate. This is almost certainly a large overestimate.
 	estimatedMessageOverhead = 4 * units.KiB
 	maxByteSizeLimit         = constants.DefaultMaxMessageSize - estimatedMessageOverhead
-	endProofSizeBufferAmount = 2 * units.KiB
 )
 
 var (
@@ -179,8 +176,8 @@ func (s *NetworkServer) HandleChangeProofRequest(
 
 	// override limits if they exceed caps
 	var (
-		keyLimit   = math.Min(req.KeyLimit, maxKeyValuesLimit)
-		bytesLimit = math.Min(int(req.BytesLimit), maxByteSizeLimit)
+		keyLimit   = min(req.KeyLimit, maxKeyValuesLimit)
+		bytesLimit = min(int(req.BytesLimit), maxByteSizeLimit)
 		start      = maybeBytesToMaybe(req.StartKey)
 		end        = maybeBytesToMaybe(req.EndKey)
 	)
@@ -199,7 +196,14 @@ func (s *NetworkServer) HandleChangeProofRequest(
 		changeProof, err := s.db.GetChangeProof(ctx, startRoot, endRoot, start, end, int(keyLimit))
 		if err != nil {
 			if !errors.Is(err, merkledb.ErrInsufficientHistory) {
+				// We should only fail to get a change proof if we have insufficient history.
+				// Other errors are unexpected.
 				return err
+			}
+			if errors.Is(err, merkledb.ErrNoEndRoot) {
+				// [s.db] doesn't have [endRoot] in its history.
+				// We can't generate a change/range proof. Drop this request.
+				return nil
 			}
 
 			// [s.db] doesn't have sufficient history to generate change proof.
@@ -289,8 +293,8 @@ func (s *NetworkServer) HandleRangeProofRequest(
 	}
 
 	// override limits if they exceed caps
-	req.KeyLimit = math.Min(req.KeyLimit, maxKeyValuesLimit)
-	req.BytesLimit = math.Min(req.BytesLimit, maxByteSizeLimit)
+	req.KeyLimit = min(req.KeyLimit, maxKeyValuesLimit)
+	req.BytesLimit = min(req.BytesLimit, maxByteSizeLimit)
 
 	proofBytes, err := getRangeProof(
 		ctx,
@@ -391,6 +395,8 @@ func validateChangeProofRequest(req *pb.SyncGetChangeProofRequest) error {
 		return errInvalidStartRootHash
 	case len(req.EndRootHash) != hashing.HashLen:
 		return errInvalidEndRootHash
+	case bytes.Equal(req.EndRootHash, ids.Empty[:]):
+		return merkledb.ErrEmptyProof
 	case req.StartKey != nil && req.StartKey.IsNothing && len(req.StartKey.Value) > 0:
 		return errInvalidStartKey
 	case req.EndKey != nil && req.EndKey.IsNothing && len(req.EndKey.Value) > 0:
@@ -412,6 +418,8 @@ func validateRangeProofRequest(req *pb.SyncGetRangeProofRequest) error {
 		return errInvalidKeyLimit
 	case len(req.RootHash) != ids.IDLen:
 		return errInvalidRootHash
+	case bytes.Equal(req.RootHash, ids.Empty[:]):
+		return merkledb.ErrEmptyProof
 	case req.StartKey != nil && req.StartKey.IsNothing && len(req.StartKey.Value) > 0:
 		return errInvalidStartKey
 	case req.EndKey != nil && req.EndKey.IsNothing && len(req.EndKey.Value) > 0:

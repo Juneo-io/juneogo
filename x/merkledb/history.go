@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package merkledb
@@ -15,7 +15,10 @@ import (
 	"github.com/ava-labs/avalanchego/utils/set"
 )
 
-var ErrInsufficientHistory = errors.New("insufficient history to generate proof")
+var (
+	ErrInsufficientHistory = errors.New("insufficient history to generate proof")
+	ErrNoEndRoot           = fmt.Errorf("%w: end root not found", ErrInsufficientHistory)
+)
 
 // stores previous trie states
 type trieHistory struct {
@@ -32,8 +35,6 @@ type trieHistory struct {
 
 	// Each change is tagged with this monotonic increasing number.
 	nextInsertNumber uint64
-
-	toKey func([]byte) Key
 }
 
 // Tracks the beginning and ending state of a value.
@@ -51,26 +52,30 @@ type changeSummaryAndInsertNumber struct {
 	insertNumber uint64
 }
 
-// Tracks all of the node and value changes that resulted in the rootID.
+// Tracks all the node and value changes that resulted in the rootID.
 type changeSummary struct {
+	// The ID of the trie after these changes.
 	rootID ids.ID
-	nodes  map[Key]*change[*node]
-	values map[Key]*change[maybe.Maybe[[]byte]]
+	// The root before/after this change.
+	// Set in [calculateNodeIDs].
+	rootChange change[maybe.Maybe[*node]]
+	nodes      map[Key]*change[*node]
+	values     map[Key]*change[maybe.Maybe[[]byte]]
 }
 
 func newChangeSummary(estimatedSize int) *changeSummary {
 	return &changeSummary{
-		nodes:  make(map[Key]*change[*node], estimatedSize),
-		values: make(map[Key]*change[maybe.Maybe[[]byte]], estimatedSize),
+		nodes:      make(map[Key]*change[*node], estimatedSize),
+		values:     make(map[Key]*change[maybe.Maybe[[]byte]], estimatedSize),
+		rootChange: change[maybe.Maybe[*node]]{},
 	}
 }
 
-func newTrieHistory(maxHistoryLookback int, toKey func([]byte) Key) *trieHistory {
+func newTrieHistory(maxHistoryLookback int) *trieHistory {
 	return &trieHistory{
 		maxHistoryLen: maxHistoryLookback,
 		history:       buffer.NewUnboundedDeque[*changeSummaryAndInsertNumber](maxHistoryLookback),
 		lastChanges:   make(map[ids.ID]*changeSummaryAndInsertNumber),
-		toKey:         toKey,
 	}
 }
 
@@ -80,6 +85,8 @@ func newTrieHistory(maxHistoryLookback int, toKey func([]byte) Key) *trieHistory
 // If [end] is Nothing, there's no upper bound on the range.
 // Returns [ErrInsufficientHistory] if the history is insufficient
 // to generate the proof.
+// Returns [ErrNoEndRoot], which wraps [ErrInsufficientHistory], if
+// the [endRoot] isn't in the history.
 func (th *trieHistory) getValueChanges(
 	startRoot ids.ID,
 	endRoot ids.ID,
@@ -96,13 +103,9 @@ func (th *trieHistory) getValueChanges(
 	}
 
 	// [endRootChanges] is the last change in the history resulting in [endRoot].
-	// TODO when we update to minimum go version 1.20.X, make this return another
-	// wrapped error ErrNoEndRoot. In NetworkServer.HandleChangeProofRequest, if we return
-	// that error, we know we shouldn't try to generate a range proof since we
-	// lack the necessary history.
 	endRootChanges, ok := th.lastChanges[endRoot]
 	if !ok {
-		return nil, fmt.Errorf("%w: end root %s not found", ErrInsufficientHistory, endRoot)
+		return nil, fmt.Errorf("%w: %s", ErrNoEndRoot, endRoot)
 	}
 
 	// Confirm there's a change resulting in [startRoot] before
@@ -158,8 +161,8 @@ func (th *trieHistory) getValueChanges(
 		// in order to stay within the [maxLength] limit if necessary.
 		changedKeys = set.Set[Key]{}
 
-		startKey = maybe.Bind(start, th.toKey)
-		endKey   = maybe.Bind(end, th.toKey)
+		startKey = maybe.Bind(start, ToKey)
+		endKey   = maybe.Bind(end, ToKey)
 
 		// For each element in the history in the range between [startRoot]'s
 		// last appearance (exclusive) and [endRoot]'s last appearance (inclusive),
@@ -237,8 +240,8 @@ func (th *trieHistory) getChangesToGetToRoot(rootID ids.ID, start maybe.Maybe[[]
 	}
 
 	var (
-		startKey                     = maybe.Bind(start, th.toKey)
-		endKey                       = maybe.Bind(end, th.toKey)
+		startKey                     = maybe.Bind(start, ToKey)
+		endKey                       = maybe.Bind(end, ToKey)
 		combinedChanges              = newChangeSummary(defaultPreallocationSize)
 		mostRecentChangeInsertNumber = th.nextInsertNumber - 1
 		mostRecentChangeIndex        = th.history.Len() - 1
@@ -251,6 +254,13 @@ func (th *trieHistory) getChangesToGetToRoot(rootID ids.ID, start maybe.Maybe[[]
 	// Record each change in [combinedChanges].
 	for i := mostRecentChangeIndex; i > lastRootChangeIndex; i-- {
 		changes, _ := th.history.Index(i)
+
+		if i == mostRecentChangeIndex {
+			combinedChanges.rootChange.before = changes.rootChange.after
+		}
+		if i == lastRootChangeIndex+1 {
+			combinedChanges.rootChange.after = changes.rootChange.before
+		}
 
 		for key, changedNode := range changes.nodes {
 			combinedChanges.nodes[key] = &change[*node]{

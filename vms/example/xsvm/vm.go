@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package xsvm
@@ -9,11 +9,9 @@ import (
 	"net/http"
 
 	"github.com/gorilla/rpc/v2"
-
 	"go.uber.org/zap"
 
 	"github.com/ava-labs/avalanchego/database"
-	"github.com/ava-labs/avalanchego/database/manager"
 	"github.com/ava-labs/avalanchego/database/versiondb"
 	"github.com/ava-labs/avalanchego/ids"
 	"github.com/ava-labs/avalanchego/snow"
@@ -52,7 +50,7 @@ type VM struct {
 func (vm *VM) Initialize(
 	_ context.Context,
 	chainContext *snow.Context,
-	dbManager manager.Manager,
+	db database.Database,
 	genesisBytes []byte,
 	_ []byte,
 	_ []byte,
@@ -67,8 +65,7 @@ func (vm *VM) Initialize(
 	)
 
 	vm.chainContext = chainContext
-	vm.db = dbManager.Current().Database
-
+	vm.db = db
 	g, err := genesis.Parse(genesisBytes)
 	if err != nil {
 		return fmt.Errorf("failed to parse genesis bytes: %w", err)
@@ -112,10 +109,6 @@ func (vm *VM) Shutdown(context.Context) error {
 
 func (*VM) Version(context.Context) (string, error) {
 	return Version.String(), nil
-}
-
-func (*VM) CreateStaticHandlers(context.Context) (map[string]http.Handler, error) {
-	return nil, nil
 }
 
 func (vm *VM) CreateHandlers(context.Context) (map[string]http.Handler, error) {
