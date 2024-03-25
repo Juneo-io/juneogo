@@ -14,20 +14,20 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/message"
-	"github.com/ava-labs/avalanchego/proto/pb/p2p"
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/snow/engine/common"
-	"github.com/ava-labs/avalanchego/snow/networking/tracker"
-	"github.com/ava-labs/avalanchego/snow/snowtest"
-	"github.com/ava-labs/avalanchego/snow/validators"
-	"github.com/ava-labs/avalanchego/subnets"
-	"github.com/ava-labs/avalanchego/utils/math/meter"
-	"github.com/ava-labs/avalanchego/utils/resource"
-	"github.com/ava-labs/avalanchego/utils/set"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/message"
+	"github.com/Juneo-io/juneogo/proto/pb/p2p"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/snow/engine/common"
+	"github.com/Juneo-io/juneogo/snow/networking/tracker"
+	"github.com/Juneo-io/juneogo/snow/snowtest"
+	"github.com/Juneo-io/juneogo/snow/validators"
+	"github.com/Juneo-io/juneogo/supernets"
+	"github.com/Juneo-io/juneogo/utils/math/meter"
+	"github.com/Juneo-io/juneogo/utils/resource"
+	"github.com/Juneo-io/juneogo/utils/set"
 
-	commontracker "github.com/ava-labs/avalanchego/snow/engine/common/tracker"
+	commontracker "github.com/Juneo-io/juneogo/snow/engine/common/tracker"
 )
 
 const testThreadPoolSize = 2
@@ -44,7 +44,7 @@ func TestHandlerDropsTimedOutMessages(t *testing.T) {
 
 	vdrs := validators.NewManager()
 	vdr0 := ids.GenerateTestNodeID()
-	require.NoError(vdrs.AddStaker(ctx.SubnetID, vdr0, nil, ids.Empty, 1))
+	require.NoError(vdrs.AddStaker(ctx.SupernetID, vdr0, nil, ids.Empty, 1))
 
 	resourceTracker, err := tracker.NewResourceTracker(
 		prometheus.NewRegistry(),
@@ -60,8 +60,8 @@ func TestHandlerDropsTimedOutMessages(t *testing.T) {
 		time.Second,
 		testThreadPoolSize,
 		resourceTracker,
-		validators.UnhandledSubnetConnector,
-		subnets.New(ctx.NodeID, subnets.Config{}),
+		validators.UnhandledSupernetConnector,
+		supernets.New(ctx.NodeID, supernets.Config{}),
 		commontracker.NewPeers(),
 	)
 	require.NoError(err)
@@ -139,7 +139,7 @@ func TestHandlerClosesOnError(t *testing.T) {
 	ctx := snowtest.ConsensusContext(snowCtx)
 
 	vdrs := validators.NewManager()
-	require.NoError(vdrs.AddStaker(ctx.SubnetID, ids.GenerateTestNodeID(), nil, ids.Empty, 1))
+	require.NoError(vdrs.AddStaker(ctx.SupernetID, ids.GenerateTestNodeID(), nil, ids.Empty, 1))
 
 	resourceTracker, err := tracker.NewResourceTracker(
 		prometheus.NewRegistry(),
@@ -155,8 +155,8 @@ func TestHandlerClosesOnError(t *testing.T) {
 		time.Second,
 		testThreadPoolSize,
 		resourceTracker,
-		validators.UnhandledSubnetConnector,
-		subnets.New(ctx.NodeID, subnets.Config{}),
+		validators.UnhandledSupernetConnector,
+		supernets.New(ctx.NodeID, supernets.Config{}),
 		commontracker.NewPeers(),
 	)
 	require.NoError(err)
@@ -230,7 +230,7 @@ func TestHandlerDropsGossipDuringBootstrapping(t *testing.T) {
 	snowCtx := snowtest.Context(t, snowtest.CChainID)
 	ctx := snowtest.ConsensusContext(snowCtx)
 	vdrs := validators.NewManager()
-	require.NoError(vdrs.AddStaker(ctx.SubnetID, ids.GenerateTestNodeID(), nil, ids.Empty, 1))
+	require.NoError(vdrs.AddStaker(ctx.SupernetID, ids.GenerateTestNodeID(), nil, ids.Empty, 1))
 
 	resourceTracker, err := tracker.NewResourceTracker(
 		prometheus.NewRegistry(),
@@ -246,8 +246,8 @@ func TestHandlerDropsGossipDuringBootstrapping(t *testing.T) {
 		1,
 		testThreadPoolSize,
 		resourceTracker,
-		validators.UnhandledSubnetConnector,
-		subnets.New(ctx.NodeID, subnets.Config{}),
+		validators.UnhandledSupernetConnector,
+		supernets.New(ctx.NodeID, supernets.Config{}),
 		commontracker.NewPeers(),
 	)
 	require.NoError(err)
@@ -309,7 +309,7 @@ func TestHandlerDispatchInternal(t *testing.T) {
 	ctx := snowtest.ConsensusContext(snowCtx)
 	msgFromVMChan := make(chan common.Message)
 	vdrs := validators.NewManager()
-	require.NoError(vdrs.AddStaker(ctx.SubnetID, ids.GenerateTestNodeID(), nil, ids.Empty, 1))
+	require.NoError(vdrs.AddStaker(ctx.SupernetID, ids.GenerateTestNodeID(), nil, ids.Empty, 1))
 
 	resourceTracker, err := tracker.NewResourceTracker(
 		prometheus.NewRegistry(),
@@ -325,8 +325,8 @@ func TestHandlerDispatchInternal(t *testing.T) {
 		time.Second,
 		testThreadPoolSize,
 		resourceTracker,
-		validators.UnhandledSubnetConnector,
-		subnets.New(ctx.NodeID, subnets.Config{}),
+		validators.UnhandledSupernetConnector,
+		supernets.New(ctx.NodeID, supernets.Config{}),
 		commontracker.NewPeers(),
 	)
 	require.NoError(err)
@@ -372,13 +372,13 @@ func TestHandlerDispatchInternal(t *testing.T) {
 	wg.Wait()
 }
 
-func TestHandlerSubnetConnector(t *testing.T) {
+func TestHandlerSupernetConnector(t *testing.T) {
 	require := require.New(t)
 
 	snowCtx := snowtest.Context(t, snowtest.CChainID)
 	ctx := snowtest.ConsensusContext(snowCtx)
 	vdrs := validators.NewManager()
-	require.NoError(vdrs.AddStaker(ctx.SubnetID, ids.GenerateTestNodeID(), nil, ids.Empty, 1))
+	require.NoError(vdrs.AddStaker(ctx.SupernetID, ids.GenerateTestNodeID(), nil, ids.Empty, 1))
 
 	resourceTracker, err := tracker.NewResourceTracker(
 		prometheus.NewRegistry(),
@@ -388,10 +388,10 @@ func TestHandlerSubnetConnector(t *testing.T) {
 	)
 	require.NoError(err)
 	ctrl := gomock.NewController(t)
-	connector := validators.NewMockSubnetConnector(ctrl)
+	connector := validators.NewMockSupernetConnector(ctrl)
 
 	nodeID := ids.GenerateTestNodeID()
-	subnetID := ids.GenerateTestID()
+	supernetID := ids.GenerateTestID()
 
 	handler, err := New(
 		ctx,
@@ -401,7 +401,7 @@ func TestHandlerSubnetConnector(t *testing.T) {
 		testThreadPoolSize,
 		resourceTracker,
 		connector,
-		subnets.New(ctx.NodeID, subnets.Config{}),
+		supernets.New(ctx.NodeID, supernets.Config{}),
 		commontracker.NewPeers(),
 	)
 	require.NoError(err)
@@ -436,9 +436,9 @@ func TestHandlerSubnetConnector(t *testing.T) {
 
 	handler.Start(context.Background(), false)
 
-	// Handler should call subnet connector when ConnectedSubnet message is received
+	// Handler should call supernet connector when ConnectedSupernet message is received
 	var wg sync.WaitGroup
-	connector.EXPECT().ConnectedSubnet(gomock.Any(), nodeID, subnetID).Do(
+	connector.EXPECT().ConnectedSupernet(gomock.Any(), nodeID, supernetID).Do(
 		func(context.Context, ids.NodeID, ids.ID) {
 			wg.Done()
 		})
@@ -446,11 +446,11 @@ func TestHandlerSubnetConnector(t *testing.T) {
 	wg.Add(1)
 	defer wg.Wait()
 
-	subnetInboundMessage := Message{
-		InboundMessage: message.InternalConnectedSubnet(nodeID, subnetID),
+	supernetInboundMessage := Message{
+		InboundMessage: message.InternalConnectedSupernet(nodeID, supernetID),
 		EngineType:     p2p.EngineType_ENGINE_TYPE_UNSPECIFIED,
 	}
-	handler.Push(context.Background(), subnetInboundMessage)
+	handler.Push(context.Background(), supernetInboundMessage)
 }
 
 // Tests that messages are routed to the correct engine type
@@ -554,7 +554,7 @@ func TestDynamicEngineTypeDispatch(t *testing.T) {
 			snowCtx := snowtest.Context(t, snowtest.CChainID)
 			ctx := snowtest.ConsensusContext(snowCtx)
 			vdrs := validators.NewManager()
-			require.NoError(vdrs.AddStaker(ctx.SubnetID, ids.GenerateTestNodeID(), nil, ids.Empty, 1))
+			require.NoError(vdrs.AddStaker(ctx.SupernetID, ids.GenerateTestNodeID(), nil, ids.Empty, 1))
 
 			resourceTracker, err := tracker.NewResourceTracker(
 				prometheus.NewRegistry(),
@@ -570,8 +570,8 @@ func TestDynamicEngineTypeDispatch(t *testing.T) {
 				time.Second,
 				testThreadPoolSize,
 				resourceTracker,
-				validators.UnhandledSubnetConnector,
-				subnets.New(ids.EmptyNodeID, subnets.Config{}),
+				validators.UnhandledSupernetConnector,
+				supernets.New(ids.EmptyNodeID, supernets.Config{}),
 				commontracker.NewPeers(),
 			)
 			require.NoError(err)
@@ -643,7 +643,7 @@ func TestHandlerStartError(t *testing.T) {
 		testThreadPoolSize,
 		resourceTracker,
 		nil,
-		subnets.New(ctx.NodeID, subnets.Config{}),
+		supernets.New(ctx.NodeID, supernets.Config{}),
 		commontracker.NewPeers(),
 	)
 	require.NoError(err)

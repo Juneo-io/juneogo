@@ -6,7 +6,7 @@ package network
 import (
 	"time"
 
-	"github.com/ava-labs/avalanchego/utils/units"
+	"github.com/Juneo-io/juneogo/utils/units"
 )
 
 var DefaultConfig = Config{

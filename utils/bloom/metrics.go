@@ -6,7 +6,7 @@ package bloom
 import (
 	"github.com/prometheus/client_golang/prometheus"
 
-	"github.com/ava-labs/avalanchego/utils"
+	"github.com/Juneo-io/juneogo/utils"
 )
 
 // Metrics is a collection of commonly useful metrics when using a long-lived

@@ -9,19 +9,19 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils"
-	"github.com/ava-labs/avalanchego/utils/formatting"
-	"github.com/ava-labs/avalanchego/utils/formatting/address"
-	"github.com/ava-labs/avalanchego/utils/json"
-	"github.com/ava-labs/avalanchego/utils/math"
-	"github.com/ava-labs/avalanchego/vms/components/avax"
-	"github.com/ava-labs/avalanchego/vms/platformvm/genesis"
-	"github.com/ava-labs/avalanchego/vms/platformvm/signer"
-	"github.com/ava-labs/avalanchego/vms/platformvm/stakeable"
-	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
-	"github.com/ava-labs/avalanchego/vms/platformvm/txs/txheap"
-	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils"
+	"github.com/Juneo-io/juneogo/utils/formatting"
+	"github.com/Juneo-io/juneogo/utils/formatting/address"
+	"github.com/Juneo-io/juneogo/utils/json"
+	"github.com/Juneo-io/juneogo/utils/math"
+	"github.com/Juneo-io/juneogo/vms/components/avax"
+	"github.com/Juneo-io/juneogo/vms/platformvm/genesis"
+	"github.com/Juneo-io/juneogo/vms/platformvm/signer"
+	"github.com/Juneo-io/juneogo/vms/platformvm/stakeable"
+	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
+	"github.com/Juneo-io/juneogo/vms/platformvm/txs/txheap"
+	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
 )
 
 // Note that since an Avalanche network has exactly one Platform Chain,
@@ -162,13 +162,13 @@ type PrimaryDelegator struct {
 // [VMID] is the ID of the VM this chain runs.
 // [FxIDs] are the IDs of the Fxs the chain supports.
 // [Name] is a human-readable, non-unique name for the chain.
-// [SubnetID] is the ID of the subnet that validates the chain
+// [SupernetID] is the ID of the supernet that validates the chain
 type Chain struct {
 	GenesisData  string   `json:"genesisData"`
 	VMID         ids.ID   `json:"vmID"`
 	FxIDs        []ids.ID `json:"fxIDs"`
 	Name         string   `json:"name"`
-	SubnetID     ids.ID   `json:"subnetID"`
+	SupernetID     ids.ID   `json:"supernetID"`
 	ChainAssetID ids.ID   `json:"chainAssetID"`
 }
 
@@ -369,12 +369,12 @@ func (*StaticService) BuildGenesis(_ *http.Request, args *BuildGenesisArgs, repl
 				NetworkID:    uint32(args.NetworkID),
 				BlockchainID: ids.Empty,
 			}},
-			SubnetID:     chain.SubnetID,
+			SupernetID:     chain.SupernetID,
 			ChainName:    chain.Name,
 			VMID:         chain.VMID,
 			FxIDs:        chain.FxIDs,
 			GenesisData:  genesisBytes,
-			SubnetAuth:   &secp256k1fx.Input{},
+			SupernetAuth:   &secp256k1fx.Input{},
 			ChainAssetID: chain.ChainAssetID,
 		}}
 		if err := tx.Initialize(txs.GenesisCodec); err != nil {

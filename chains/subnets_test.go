@@ -8,38 +8,38 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/subnets"
-	"github.com/ava-labs/avalanchego/utils/constants"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/supernets"
+	"github.com/Juneo-io/juneogo/utils/constants"
 )
 
-func TestNewSubnets(t *testing.T) {
+func TestNewSupernets(t *testing.T) {
 	require := require.New(t)
-	config := map[ids.ID]subnets.Config{
+	config := map[ids.ID]supernets.Config{
 		constants.PrimaryNetworkID: {},
 	}
 
-	subnets, err := NewSubnets(ids.EmptyNodeID, config)
+	supernets, err := NewSupernets(ids.EmptyNodeID, config)
 	require.NoError(err)
 
-	subnet, ok := subnets.GetOrCreate(constants.PrimaryNetworkID)
+	supernet, ok := supernets.GetOrCreate(constants.PrimaryNetworkID)
 	require.False(ok)
-	require.Equal(config[constants.PrimaryNetworkID], subnet.Config())
+	require.Equal(config[constants.PrimaryNetworkID], supernet.Config())
 }
 
-func TestNewSubnetsNoPrimaryNetworkConfig(t *testing.T) {
+func TestNewSupernetsNoPrimaryNetworkConfig(t *testing.T) {
 	require := require.New(t)
-	config := map[ids.ID]subnets.Config{}
+	config := map[ids.ID]supernets.Config{}
 
-	_, err := NewSubnets(ids.EmptyNodeID, config)
+	_, err := NewSupernets(ids.EmptyNodeID, config)
 	require.ErrorIs(err, ErrNoPrimaryNetworkConfig)
 }
 
-func TestSubnetsGetOrCreate(t *testing.T) {
-	testSubnetID := ids.GenerateTestID()
+func TestSupernetsGetOrCreate(t *testing.T) {
+	testSupernetID := ids.GenerateTestID()
 
 	type args struct {
-		subnetID ids.ID
+		supernetID ids.ID
 		want     bool
 	}
 
@@ -48,30 +48,30 @@ func TestSubnetsGetOrCreate(t *testing.T) {
 		args []args
 	}{
 		{
-			name: "adding duplicate subnet is a noop",
+			name: "adding duplicate supernet is a noop",
 			args: []args{
 				{
-					subnetID: testSubnetID,
+					supernetID: testSupernetID,
 					want:     true,
 				},
 				{
-					subnetID: testSubnetID,
+					supernetID: testSupernetID,
 				},
 			},
 		},
 		{
-			name: "adding unique subnets succeeds",
+			name: "adding unique supernets succeeds",
 			args: []args{
 				{
-					subnetID: ids.GenerateTestID(),
+					supernetID: ids.GenerateTestID(),
 					want:     true,
 				},
 				{
-					subnetID: ids.GenerateTestID(),
+					supernetID: ids.GenerateTestID(),
 					want:     true,
 				},
 				{
-					subnetID: ids.GenerateTestID(),
+					supernetID: ids.GenerateTestID(),
 					want:     true,
 				},
 			},
@@ -81,50 +81,50 @@ func TestSubnetsGetOrCreate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			require := require.New(t)
-			config := map[ids.ID]subnets.Config{
+			config := map[ids.ID]supernets.Config{
 				constants.PrimaryNetworkID: {},
 			}
-			subnets, err := NewSubnets(ids.EmptyNodeID, config)
+			supernets, err := NewSupernets(ids.EmptyNodeID, config)
 			require.NoError(err)
 
 			for _, arg := range tt.args {
-				_, got := subnets.GetOrCreate(arg.subnetID)
+				_, got := supernets.GetOrCreate(arg.supernetID)
 				require.Equal(arg.want, got)
 			}
 		})
 	}
 }
 
-func TestSubnetConfigs(t *testing.T) {
-	testSubnetID := ids.GenerateTestID()
+func TestSupernetConfigs(t *testing.T) {
+	testSupernetID := ids.GenerateTestID()
 
 	tests := []struct {
 		name     string
-		config   map[ids.ID]subnets.Config
-		subnetID ids.ID
-		want     subnets.Config
+		config   map[ids.ID]supernets.Config
+		supernetID ids.ID
+		want     supernets.Config
 	}{
 		{
 			name: "default to primary network config",
-			config: map[ids.ID]subnets.Config{
+			config: map[ids.ID]supernets.Config{
 				constants.PrimaryNetworkID: {},
 			},
-			subnetID: testSubnetID,
-			want:     subnets.Config{},
+			supernetID: testSupernetID,
+			want:     supernets.Config{},
 		},
 		{
-			name: "use subnet config",
-			config: map[ids.ID]subnets.Config{
+			name: "use supernet config",
+			config: map[ids.ID]supernets.Config{
 				constants.PrimaryNetworkID: {},
-				testSubnetID: {
-					GossipConfig: subnets.GossipConfig{
+				testSupernetID: {
+					GossipConfig: supernets.GossipConfig{
 						AcceptedFrontierValidatorSize: 123456789,
 					},
 				},
 			},
-			subnetID: testSubnetID,
-			want: subnets.Config{
-				GossipConfig: subnets.GossipConfig{
+			supernetID: testSupernetID,
+			want: supernets.Config{
+				GossipConfig: supernets.GossipConfig{
 					AcceptedFrontierValidatorSize: 123456789,
 				},
 			},
@@ -135,39 +135,39 @@ func TestSubnetConfigs(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			require := require.New(t)
 
-			subnets, err := NewSubnets(ids.EmptyNodeID, tt.config)
+			supernets, err := NewSupernets(ids.EmptyNodeID, tt.config)
 			require.NoError(err)
 
-			subnet, ok := subnets.GetOrCreate(tt.subnetID)
+			supernet, ok := supernets.GetOrCreate(tt.supernetID)
 			require.True(ok)
 
-			require.Equal(tt.want, subnet.Config())
+			require.Equal(tt.want, supernet.Config())
 		})
 	}
 }
 
-func TestSubnetsBootstrapping(t *testing.T) {
+func TestSupernetsBootstrapping(t *testing.T) {
 	require := require.New(t)
 
-	config := map[ids.ID]subnets.Config{
+	config := map[ids.ID]supernets.Config{
 		constants.PrimaryNetworkID: {},
 	}
 
-	subnets, err := NewSubnets(ids.EmptyNodeID, config)
+	supernets, err := NewSupernets(ids.EmptyNodeID, config)
 	require.NoError(err)
 
-	subnetID := ids.GenerateTestID()
+	supernetID := ids.GenerateTestID()
 	chainID := ids.GenerateTestID()
 
-	subnet, ok := subnets.GetOrCreate(subnetID)
+	supernet, ok := supernets.GetOrCreate(supernetID)
 	require.True(ok)
 
 	// Start bootstrapping
-	subnet.AddChain(chainID)
-	bootstrapping := subnets.Bootstrapping()
-	require.Contains(bootstrapping, subnetID)
+	supernet.AddChain(chainID)
+	bootstrapping := supernets.Bootstrapping()
+	require.Contains(bootstrapping, supernetID)
 
 	// Finish bootstrapping
-	subnet.Bootstrapped(chainID)
-	require.Empty(subnets.Bootstrapping())
+	supernet.Bootstrapped(chainID)
+	require.Empty(supernets.Bootstrapping())
 }

@@ -9,12 +9,12 @@ import (
 
 	"google.golang.org/protobuf/types/known/emptypb"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils/maybe"
-	"github.com/ava-labs/avalanchego/x/merkledb"
-	"github.com/ava-labs/avalanchego/x/sync"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils/maybe"
+	"github.com/Juneo-io/juneogo/x/merkledb"
+	"github.com/Juneo-io/juneogo/x/sync"
 
-	pb "github.com/ava-labs/avalanchego/proto/pb/sync"
+	pb "github.com/Juneo-io/juneogo/proto/pb/sync"
 )
 
 var _ sync.DB = (*DBClient)(nil)

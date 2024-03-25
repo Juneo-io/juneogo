@@ -4,12 +4,12 @@
 package x
 
 import (
-	"github.com/ava-labs/avalanchego/api/info"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/logging"
-	"github.com/ava-labs/avalanchego/vms/avm"
+	"github.com/Juneo-io/juneogo/api/info"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/logging"
+	"github.com/Juneo-io/juneogo/vms/avm"
 
 	stdcontext "context"
 )
@@ -115,7 +115,7 @@ func newSnowContext(c Context) (*snow.Context, error) {
 	lookup := ids.NewAliaser()
 	return &snow.Context{
 		NetworkID:   c.NetworkID(),
-		SubnetID:    constants.PrimaryNetworkID,
+		SupernetID:    constants.PrimaryNetworkID,
 		ChainID:     chainID,
 		XChainID:    chainID,
 		AVAXAssetID: c.AVAXAssetID(),

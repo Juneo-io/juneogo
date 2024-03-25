@@ -6,9 +6,9 @@ package peer
 import (
 	"time"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils/json"
-	"github.com/ava-labs/avalanchego/utils/set"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils/json"
+	"github.com/Juneo-io/juneogo/utils/set"
 )
 
 type Info struct {
@@ -19,8 +19,8 @@ type Info struct {
 	LastSent              time.Time              `json:"lastSent"`
 	LastReceived          time.Time              `json:"lastReceived"`
 	ObservedUptime        json.Uint32            `json:"observedUptime"`
-	ObservedSubnetUptimes map[ids.ID]json.Uint32 `json:"observedSubnetUptimes"`
-	TrackedSubnets        set.Set[ids.ID]        `json:"trackedSubnets"`
+	ObservedSupernetUptimes map[ids.ID]json.Uint32 `json:"observedSupernetUptimes"`
+	TrackedSupernets        set.Set[ids.ID]        `json:"trackedSupernets"`
 	SupportedACPs         set.Set[uint32]        `json:"supportedACPs"`
 	ObjectedACPs          set.Set[uint32]        `json:"objectedACPs"`
 }

@@ -9,7 +9,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/ava-labs/avalanchego/database"
+	"github.com/Juneo-io/juneogo/database"
 )
 
 const (

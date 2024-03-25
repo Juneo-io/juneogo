@@ -15,10 +15,10 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/status"
 
-	"github.com/ava-labs/avalanchego/database/memdb"
-	"github.com/ava-labs/avalanchego/database/rpcdb"
+	"github.com/Juneo-io/juneogo/database/memdb"
+	"github.com/Juneo-io/juneogo/database/rpcdb"
 
-	pb "github.com/ava-labs/avalanchego/proto/pb/rpcdb"
+	pb "github.com/Juneo-io/juneogo/proto/pb/rpcdb"
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 )
 

@@ -9,17 +9,17 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/genesis"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow/validators"
-	"github.com/ava-labs/avalanchego/tests"
-	"github.com/ava-labs/avalanchego/tests/fixture/e2e"
-	"github.com/ava-labs/avalanchego/tests/fixture/tmpnet"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/crypto/secp256k1"
-	"github.com/ava-labs/avalanchego/vms/platformvm"
-	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
-	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
+	"github.com/Juneo-io/juneogo/genesis"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow/validators"
+	"github.com/Juneo-io/juneogo/tests"
+	"github.com/Juneo-io/juneogo/tests/fixture/e2e"
+	"github.com/Juneo-io/juneogo/tests/fixture/tmpnet"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/crypto/secp256k1"
+	"github.com/Juneo-io/juneogo/vms/platformvm"
+	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
+	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
 
 	ginkgo "github.com/onsi/ginkgo/v2"
 )
@@ -48,14 +48,14 @@ var _ = e2e.DescribePChain("[Validator Sets]", func() {
 
 			for i := 0; i < delegatorCount; i++ {
 				_, err = pWallet.IssueAddPermissionlessDelegatorTx(
-					&txs.SubnetValidator{
+					&txs.SupernetValidator{
 						Validator: txs.Validator{
 							NodeID: nodeURI.NodeID,
 							Start:  uint64(startTime.Unix()),
 							End:    uint64(endTime.Unix()),
 							Wght:   weight,
 						},
-						Subnet: constants.PrimaryNetworkID,
+						Supernet: constants.PrimaryNetworkID,
 					},
 					avaxAssetID,
 					&secp256k1fx.OutputOwners{

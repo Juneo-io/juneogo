@@ -13,9 +13,9 @@ import (
 	context "context"
 	reflect "reflect"
 
-	ids "github.com/ava-labs/avalanchego/ids"
-	snow "github.com/ava-labs/avalanchego/snow"
-	set "github.com/ava-labs/avalanchego/utils/set"
+	ids "github.com/Juneo-io/juneogo/ids"
+	snow "github.com/Juneo-io/juneogo/snow"
+	set "github.com/Juneo-io/juneogo/utils/set"
 	gomock "go.uber.org/mock/gomock"
 )
 

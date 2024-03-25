@@ -9,8 +9,8 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/thepudds/fzgen/fuzzer"
 
-	"github.com/ava-labs/avalanchego/database/memdb"
-	"github.com/ava-labs/avalanchego/ids"
+	"github.com/Juneo-io/juneogo/database/memdb"
+	"github.com/Juneo-io/juneogo/ids"
 )
 
 func FuzzMarshalDiffKey(f *testing.F) {
@@ -18,17 +18,17 @@ func FuzzMarshalDiffKey(f *testing.F) {
 		require := require.New(t)
 
 		var (
-			subnetID ids.ID
+			supernetID ids.ID
 			height   uint64
 			nodeID   ids.NodeID
 		)
 		fz := fuzzer.NewFuzzer(data)
-		fz.Fill(&subnetID, &height, &nodeID)
+		fz.Fill(&supernetID, &height, &nodeID)
 
-		key := marshalDiffKey(subnetID, height, nodeID)
-		parsedSubnetID, parsedHeight, parsedNodeID, err := unmarshalDiffKey(key)
+		key := marshalDiffKey(supernetID, height, nodeID)
+		parsedSupernetID, parsedHeight, parsedNodeID, err := unmarshalDiffKey(key)
 		require.NoError(err)
-		require.Equal(subnetID, parsedSubnetID)
+		require.Equal(supernetID, parsedSupernetID)
 		require.Equal(height, parsedHeight)
 		require.Equal(nodeID, parsedNodeID)
 	})
@@ -38,13 +38,13 @@ func FuzzUnmarshalDiffKey(f *testing.F) {
 	f.Fuzz(func(t *testing.T, key []byte) {
 		require := require.New(t)
 
-		subnetID, height, nodeID, err := unmarshalDiffKey(key)
+		supernetID, height, nodeID, err := unmarshalDiffKey(key)
 		if err != nil {
 			require.ErrorIs(err, errUnexpectedDiffKeyLength)
 			return
 		}
 
-		formattedKey := marshalDiffKey(subnetID, height, nodeID)
+		formattedKey := marshalDiffKey(supernetID, height, nodeID)
 		require.Equal(key, formattedKey)
 	})
 }
@@ -54,33 +54,33 @@ func TestDiffIteration(t *testing.T) {
 
 	db := memdb.New()
 
-	subnetID0 := ids.GenerateTestID()
-	subnetID1 := ids.GenerateTestID()
+	supernetID0 := ids.GenerateTestID()
+	supernetID1 := ids.GenerateTestID()
 
 	nodeID0 := ids.BuildTestNodeID([]byte{0x00})
 	nodeID1 := ids.BuildTestNodeID([]byte{0x01})
 
-	subnetID0Height0NodeID0 := marshalDiffKey(subnetID0, 0, nodeID0)
-	subnetID0Height1NodeID0 := marshalDiffKey(subnetID0, 1, nodeID0)
-	subnetID0Height1NodeID1 := marshalDiffKey(subnetID0, 1, nodeID1)
+	supernetID0Height0NodeID0 := marshalDiffKey(supernetID0, 0, nodeID0)
+	supernetID0Height1NodeID0 := marshalDiffKey(supernetID0, 1, nodeID0)
+	supernetID0Height1NodeID1 := marshalDiffKey(supernetID0, 1, nodeID1)
 
-	subnetID1Height0NodeID0 := marshalDiffKey(subnetID1, 0, nodeID0)
-	subnetID1Height1NodeID0 := marshalDiffKey(subnetID1, 1, nodeID0)
-	subnetID1Height1NodeID1 := marshalDiffKey(subnetID1, 1, nodeID1)
+	supernetID1Height0NodeID0 := marshalDiffKey(supernetID1, 0, nodeID0)
+	supernetID1Height1NodeID0 := marshalDiffKey(supernetID1, 1, nodeID0)
+	supernetID1Height1NodeID1 := marshalDiffKey(supernetID1, 1, nodeID1)
 
-	require.NoError(db.Put(subnetID0Height0NodeID0, nil))
-	require.NoError(db.Put(subnetID0Height1NodeID0, nil))
-	require.NoError(db.Put(subnetID0Height1NodeID1, nil))
-	require.NoError(db.Put(subnetID1Height0NodeID0, nil))
-	require.NoError(db.Put(subnetID1Height1NodeID0, nil))
-	require.NoError(db.Put(subnetID1Height1NodeID1, nil))
+	require.NoError(db.Put(supernetID0Height0NodeID0, nil))
+	require.NoError(db.Put(supernetID0Height1NodeID0, nil))
+	require.NoError(db.Put(supernetID0Height1NodeID1, nil))
+	require.NoError(db.Put(supernetID1Height0NodeID0, nil))
+	require.NoError(db.Put(supernetID1Height1NodeID0, nil))
+	require.NoError(db.Put(supernetID1Height1NodeID1, nil))
 
 	{
-		it := db.NewIteratorWithStartAndPrefix(marshalStartDiffKey(subnetID0, 0), subnetID0[:])
+		it := db.NewIteratorWithStartAndPrefix(marshalStartDiffKey(supernetID0, 0), supernetID0[:])
 		defer it.Release()
 
 		expectedKeys := [][]byte{
-			subnetID0Height0NodeID0,
+			supernetID0Height0NodeID0,
 		}
 		for _, expectedKey := range expectedKeys {
 			require.True(it.Next())
@@ -91,13 +91,13 @@ func TestDiffIteration(t *testing.T) {
 	}
 
 	{
-		it := db.NewIteratorWithStartAndPrefix(marshalStartDiffKey(subnetID0, 1), subnetID0[:])
+		it := db.NewIteratorWithStartAndPrefix(marshalStartDiffKey(supernetID0, 1), supernetID0[:])
 		defer it.Release()
 
 		expectedKeys := [][]byte{
-			subnetID0Height1NodeID0,
-			subnetID0Height1NodeID1,
-			subnetID0Height0NodeID0,
+			supernetID0Height1NodeID0,
+			supernetID0Height1NodeID1,
+			supernetID0Height0NodeID0,
 		}
 		for _, expectedKey := range expectedKeys {
 			require.True(it.Next())

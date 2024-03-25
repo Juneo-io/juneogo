@@ -4,9 +4,9 @@
 package bootstrapper
 
 import (
-	"github.com/ava-labs/avalanchego/utils/math"
-	"github.com/ava-labs/avalanchego/utils/sampler"
-	"github.com/ava-labs/avalanchego/utils/set"
+	"github.com/Juneo-io/juneogo/utils/math"
+	"github.com/Juneo-io/juneogo/utils/sampler"
+	"github.com/Juneo-io/juneogo/utils/set"
 )
 
 // Sample keys from [elements] uniformly by weight without replacement. The

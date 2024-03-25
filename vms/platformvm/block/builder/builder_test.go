@@ -12,21 +12,21 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow/consensus/snowman"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/crypto/bls"
-	"github.com/ava-labs/avalanchego/utils/crypto/secp256k1"
-	"github.com/ava-labs/avalanchego/utils/timer/mockable"
-	"github.com/ava-labs/avalanchego/utils/units"
-	"github.com/ava-labs/avalanchego/vms/platformvm/block"
-	"github.com/ava-labs/avalanchego/vms/platformvm/reward"
-	"github.com/ava-labs/avalanchego/vms/platformvm/signer"
-	"github.com/ava-labs/avalanchego/vms/platformvm/state"
-	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow/consensus/snowman"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/crypto/bls"
+	"github.com/Juneo-io/juneogo/utils/crypto/secp256k1"
+	"github.com/Juneo-io/juneogo/utils/timer/mockable"
+	"github.com/Juneo-io/juneogo/utils/units"
+	"github.com/Juneo-io/juneogo/vms/platformvm/block"
+	"github.com/Juneo-io/juneogo/vms/platformvm/reward"
+	"github.com/Juneo-io/juneogo/vms/platformvm/signer"
+	"github.com/Juneo-io/juneogo/vms/platformvm/state"
+	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
 
-	blockexecutor "github.com/ava-labs/avalanchego/vms/platformvm/block/executor"
-	txexecutor "github.com/ava-labs/avalanchego/vms/platformvm/txs/executor"
+	blockexecutor "github.com/Juneo-io/juneogo/vms/platformvm/block/executor"
+	txexecutor "github.com/Juneo-io/juneogo/vms/platformvm/txs/executor"
 )
 
 func TestBuildBlockBasic(t *testing.T) {
@@ -38,12 +38,12 @@ func TestBuildBlockBasic(t *testing.T) {
 
 	// Create a valid transaction
 	tx, err := env.txBuilder.NewCreateChainTx(
-		testSubnet1.ID(),
+		testSupernet1.ID(),
 		nil,
 		constants.AVMID,
 		nil,
 		"chain name",
-		[]*secp256k1.PrivateKey{testSubnet1ControlKeys[0], testSubnet1ControlKeys[1]},
+		[]*secp256k1.PrivateKey{testSupernet1ControlKeys[0], testSupernet1ControlKeys[1]},
 		ids.ShortEmpty,
 		nil,
 	)
@@ -233,12 +233,12 @@ func TestBuildBlockForceAdvanceTime(t *testing.T) {
 
 	// Create a valid transaction
 	tx, err := env.txBuilder.NewCreateChainTx(
-		testSubnet1.ID(),
+		testSupernet1.ID(),
 		nil,
 		constants.AVMID,
 		nil,
 		"chain name",
-		[]*secp256k1.PrivateKey{testSubnet1ControlKeys[0], testSubnet1ControlKeys[1]},
+		[]*secp256k1.PrivateKey{testSupernet1ControlKeys[0], testSupernet1ControlKeys[1]},
 		ids.ShortEmpty,
 		nil,
 	)
@@ -480,12 +480,12 @@ func TestPreviouslyDroppedTxsCannotBeReAddedToMempool(t *testing.T) {
 
 	// Create a valid transaction
 	tx, err := env.txBuilder.NewCreateChainTx(
-		testSubnet1.ID(),
+		testSupernet1.ID(),
 		nil,
 		constants.AVMID,
 		nil,
 		"chain name",
-		[]*secp256k1.PrivateKey{testSubnet1ControlKeys[0], testSubnet1ControlKeys[1]},
+		[]*secp256k1.PrivateKey{testSupernet1ControlKeys[0], testSupernet1ControlKeys[1]},
 		ids.ShortEmpty,
 		nil,
 	)
@@ -566,20 +566,20 @@ func TestGetNextStakerToReward(t *testing.T) {
 			},
 		},
 		{
-			name:      "expired subnet validator/delegator",
+			name:      "expired supernet validator/delegator",
 			timestamp: now,
 			stateF: func(ctrl *gomock.Controller) state.Chain {
 				currentStakerIter := state.NewMockStakerIterator(ctrl)
 
 				currentStakerIter.EXPECT().Next().Return(true)
 				currentStakerIter.EXPECT().Value().Return(&state.Staker{
-					Priority: txs.SubnetPermissionedValidatorCurrentPriority,
+					Priority: txs.SupernetPermissionedValidatorCurrentPriority,
 					EndTime:  now,
 				})
 				currentStakerIter.EXPECT().Next().Return(true)
 				currentStakerIter.EXPECT().Value().Return(&state.Staker{
 					TxID:     txID,
-					Priority: txs.SubnetPermissionlessDelegatorCurrentPriority,
+					Priority: txs.SupernetPermissionlessDelegatorCurrentPriority,
 					EndTime:  now,
 				})
 				currentStakerIter.EXPECT().Release()
@@ -593,14 +593,14 @@ func TestGetNextStakerToReward(t *testing.T) {
 			expectedShouldReward: true,
 		},
 		{
-			name:      "expired primary network validator after subnet expired subnet validator",
+			name:      "expired primary network validator after supernet expired supernet validator",
 			timestamp: now,
 			stateF: func(ctrl *gomock.Controller) state.Chain {
 				currentStakerIter := state.NewMockStakerIterator(ctrl)
 
 				currentStakerIter.EXPECT().Next().Return(true)
 				currentStakerIter.EXPECT().Value().Return(&state.Staker{
-					Priority: txs.SubnetPermissionedValidatorCurrentPriority,
+					Priority: txs.SupernetPermissionedValidatorCurrentPriority,
 					EndTime:  now,
 				})
 				currentStakerIter.EXPECT().Next().Return(true)
@@ -620,14 +620,14 @@ func TestGetNextStakerToReward(t *testing.T) {
 			expectedShouldReward: true,
 		},
 		{
-			name:      "expired primary network delegator after subnet expired subnet validator",
+			name:      "expired primary network delegator after supernet expired supernet validator",
 			timestamp: now,
 			stateF: func(ctrl *gomock.Controller) state.Chain {
 				currentStakerIter := state.NewMockStakerIterator(ctrl)
 
 				currentStakerIter.EXPECT().Next().Return(true)
 				currentStakerIter.EXPECT().Value().Return(&state.Staker{
-					Priority: txs.SubnetPermissionedValidatorCurrentPriority,
+					Priority: txs.SupernetPermissionedValidatorCurrentPriority,
 					EndTime:  now,
 				})
 				currentStakerIter.EXPECT().Next().Return(true)

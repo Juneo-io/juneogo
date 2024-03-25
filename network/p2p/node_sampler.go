@@ -6,7 +6,7 @@ package p2p
 import (
 	"context"
 
-	"github.com/ava-labs/avalanchego/ids"
+	"github.com/Juneo-io/juneogo/ids"
 )
 
 // NodeSampler samples nodes in network

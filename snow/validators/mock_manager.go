@@ -12,9 +12,9 @@ package validators
 import (
 	reflect "reflect"
 
-	ids "github.com/ava-labs/avalanchego/ids"
-	bls "github.com/ava-labs/avalanchego/utils/crypto/bls"
-	set "github.com/ava-labs/avalanchego/utils/set"
+	ids "github.com/Juneo-io/juneogo/ids"
+	bls "github.com/Juneo-io/juneogo/utils/crypto/bls"
+	set "github.com/Juneo-io/juneogo/utils/set"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -42,143 +42,143 @@ func (m *MockManager) EXPECT() *MockManagerMockRecorder {
 }
 
 // AddStaker mocks base method.
-func (m *MockManager) AddStaker(subnetID ids.ID, nodeID ids.NodeID, pk *bls.PublicKey, txID ids.ID, weight uint64) error {
+func (m *MockManager) AddStaker(supernetID ids.ID, nodeID ids.NodeID, pk *bls.PublicKey, txID ids.ID, weight uint64) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddStaker", subnetID, nodeID, pk, txID, weight)
+	ret := m.ctrl.Call(m, "AddStaker", supernetID, nodeID, pk, txID, weight)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AddStaker indicates an expected call of AddStaker.
-func (mr *MockManagerMockRecorder) AddStaker(subnetID, nodeID, pk, txID, weight any) *gomock.Call {
+func (mr *MockManagerMockRecorder) AddStaker(supernetID, nodeID, pk, txID, weight any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddStaker", reflect.TypeOf((*MockManager)(nil).AddStaker), subnetID, nodeID, pk, txID, weight)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddStaker", reflect.TypeOf((*MockManager)(nil).AddStaker), supernetID, nodeID, pk, txID, weight)
 }
 
 // AddWeight mocks base method.
-func (m *MockManager) AddWeight(subnetID ids.ID, nodeID ids.NodeID, weight uint64) error {
+func (m *MockManager) AddWeight(supernetID ids.ID, nodeID ids.NodeID, weight uint64) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddWeight", subnetID, nodeID, weight)
+	ret := m.ctrl.Call(m, "AddWeight", supernetID, nodeID, weight)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AddWeight indicates an expected call of AddWeight.
-func (mr *MockManagerMockRecorder) AddWeight(subnetID, nodeID, weight any) *gomock.Call {
+func (mr *MockManagerMockRecorder) AddWeight(supernetID, nodeID, weight any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddWeight", reflect.TypeOf((*MockManager)(nil).AddWeight), subnetID, nodeID, weight)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddWeight", reflect.TypeOf((*MockManager)(nil).AddWeight), supernetID, nodeID, weight)
 }
 
 // Count mocks base method.
-func (m *MockManager) Count(subnetID ids.ID) int {
+func (m *MockManager) Count(supernetID ids.ID) int {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Count", subnetID)
+	ret := m.ctrl.Call(m, "Count", supernetID)
 	ret0, _ := ret[0].(int)
 	return ret0
 }
 
 // Count indicates an expected call of Count.
-func (mr *MockManagerMockRecorder) Count(subnetID any) *gomock.Call {
+func (mr *MockManagerMockRecorder) Count(supernetID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Count", reflect.TypeOf((*MockManager)(nil).Count), subnetID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Count", reflect.TypeOf((*MockManager)(nil).Count), supernetID)
 }
 
 // GetMap mocks base method.
-func (m *MockManager) GetMap(subnetID ids.ID) map[ids.NodeID]*GetValidatorOutput {
+func (m *MockManager) GetMap(supernetID ids.ID) map[ids.NodeID]*GetValidatorOutput {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetMap", subnetID)
+	ret := m.ctrl.Call(m, "GetMap", supernetID)
 	ret0, _ := ret[0].(map[ids.NodeID]*GetValidatorOutput)
 	return ret0
 }
 
 // GetMap indicates an expected call of GetMap.
-func (mr *MockManagerMockRecorder) GetMap(subnetID any) *gomock.Call {
+func (mr *MockManagerMockRecorder) GetMap(supernetID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMap", reflect.TypeOf((*MockManager)(nil).GetMap), subnetID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMap", reflect.TypeOf((*MockManager)(nil).GetMap), supernetID)
 }
 
 // GetValidator mocks base method.
-func (m *MockManager) GetValidator(subnetID ids.ID, nodeID ids.NodeID) (*Validator, bool) {
+func (m *MockManager) GetValidator(supernetID ids.ID, nodeID ids.NodeID) (*Validator, bool) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetValidator", subnetID, nodeID)
+	ret := m.ctrl.Call(m, "GetValidator", supernetID, nodeID)
 	ret0, _ := ret[0].(*Validator)
 	ret1, _ := ret[1].(bool)
 	return ret0, ret1
 }
 
 // GetValidator indicates an expected call of GetValidator.
-func (mr *MockManagerMockRecorder) GetValidator(subnetID, nodeID any) *gomock.Call {
+func (mr *MockManagerMockRecorder) GetValidator(supernetID, nodeID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetValidator", reflect.TypeOf((*MockManager)(nil).GetValidator), subnetID, nodeID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetValidator", reflect.TypeOf((*MockManager)(nil).GetValidator), supernetID, nodeID)
 }
 
 // GetValidatorIDs mocks base method.
-func (m *MockManager) GetValidatorIDs(subnetID ids.ID) []ids.NodeID {
+func (m *MockManager) GetValidatorIDs(supernetID ids.ID) []ids.NodeID {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetValidatorIDs", subnetID)
+	ret := m.ctrl.Call(m, "GetValidatorIDs", supernetID)
 	ret0, _ := ret[0].([]ids.NodeID)
 	return ret0
 }
 
 // GetValidatorIDs indicates an expected call of GetValidatorIDs.
-func (mr *MockManagerMockRecorder) GetValidatorIDs(subnetID any) *gomock.Call {
+func (mr *MockManagerMockRecorder) GetValidatorIDs(supernetID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetValidatorIDs", reflect.TypeOf((*MockManager)(nil).GetValidatorIDs), subnetID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetValidatorIDs", reflect.TypeOf((*MockManager)(nil).GetValidatorIDs), supernetID)
 }
 
 // GetWeight mocks base method.
-func (m *MockManager) GetWeight(subnetID ids.ID, nodeID ids.NodeID) uint64 {
+func (m *MockManager) GetWeight(supernetID ids.ID, nodeID ids.NodeID) uint64 {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetWeight", subnetID, nodeID)
+	ret := m.ctrl.Call(m, "GetWeight", supernetID, nodeID)
 	ret0, _ := ret[0].(uint64)
 	return ret0
 }
 
 // GetWeight indicates an expected call of GetWeight.
-func (mr *MockManagerMockRecorder) GetWeight(subnetID, nodeID any) *gomock.Call {
+func (mr *MockManagerMockRecorder) GetWeight(supernetID, nodeID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWeight", reflect.TypeOf((*MockManager)(nil).GetWeight), subnetID, nodeID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWeight", reflect.TypeOf((*MockManager)(nil).GetWeight), supernetID, nodeID)
 }
 
 // RegisterCallbackListener mocks base method.
-func (m *MockManager) RegisterCallbackListener(subnetID ids.ID, listener SetCallbackListener) {
+func (m *MockManager) RegisterCallbackListener(supernetID ids.ID, listener SetCallbackListener) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "RegisterCallbackListener", subnetID, listener)
+	m.ctrl.Call(m, "RegisterCallbackListener", supernetID, listener)
 }
 
 // RegisterCallbackListener indicates an expected call of RegisterCallbackListener.
-func (mr *MockManagerMockRecorder) RegisterCallbackListener(subnetID, listener any) *gomock.Call {
+func (mr *MockManagerMockRecorder) RegisterCallbackListener(supernetID, listener any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterCallbackListener", reflect.TypeOf((*MockManager)(nil).RegisterCallbackListener), subnetID, listener)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterCallbackListener", reflect.TypeOf((*MockManager)(nil).RegisterCallbackListener), supernetID, listener)
 }
 
 // RemoveWeight mocks base method.
-func (m *MockManager) RemoveWeight(subnetID ids.ID, nodeID ids.NodeID, weight uint64) error {
+func (m *MockManager) RemoveWeight(supernetID ids.ID, nodeID ids.NodeID, weight uint64) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RemoveWeight", subnetID, nodeID, weight)
+	ret := m.ctrl.Call(m, "RemoveWeight", supernetID, nodeID, weight)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // RemoveWeight indicates an expected call of RemoveWeight.
-func (mr *MockManagerMockRecorder) RemoveWeight(subnetID, nodeID, weight any) *gomock.Call {
+func (mr *MockManagerMockRecorder) RemoveWeight(supernetID, nodeID, weight any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveWeight", reflect.TypeOf((*MockManager)(nil).RemoveWeight), subnetID, nodeID, weight)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveWeight", reflect.TypeOf((*MockManager)(nil).RemoveWeight), supernetID, nodeID, weight)
 }
 
 // Sample mocks base method.
-func (m *MockManager) Sample(subnetID ids.ID, size int) ([]ids.NodeID, error) {
+func (m *MockManager) Sample(supernetID ids.ID, size int) ([]ids.NodeID, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Sample", subnetID, size)
+	ret := m.ctrl.Call(m, "Sample", supernetID, size)
 	ret0, _ := ret[0].([]ids.NodeID)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Sample indicates an expected call of Sample.
-func (mr *MockManagerMockRecorder) Sample(subnetID, size any) *gomock.Call {
+func (mr *MockManagerMockRecorder) Sample(supernetID, size any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Sample", reflect.TypeOf((*MockManager)(nil).Sample), subnetID, size)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Sample", reflect.TypeOf((*MockManager)(nil).Sample), supernetID, size)
 }
 
 // String mocks base method.
@@ -196,31 +196,31 @@ func (mr *MockManagerMockRecorder) String() *gomock.Call {
 }
 
 // SubsetWeight mocks base method.
-func (m *MockManager) SubsetWeight(subnetID ids.ID, validatorIDs set.Set[ids.NodeID]) (uint64, error) {
+func (m *MockManager) SubsetWeight(supernetID ids.ID, validatorIDs set.Set[ids.NodeID]) (uint64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SubsetWeight", subnetID, validatorIDs)
+	ret := m.ctrl.Call(m, "SubsetWeight", supernetID, validatorIDs)
 	ret0, _ := ret[0].(uint64)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SubsetWeight indicates an expected call of SubsetWeight.
-func (mr *MockManagerMockRecorder) SubsetWeight(subnetID, validatorIDs any) *gomock.Call {
+func (mr *MockManagerMockRecorder) SubsetWeight(supernetID, validatorIDs any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SubsetWeight", reflect.TypeOf((*MockManager)(nil).SubsetWeight), subnetID, validatorIDs)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SubsetWeight", reflect.TypeOf((*MockManager)(nil).SubsetWeight), supernetID, validatorIDs)
 }
 
 // TotalWeight mocks base method.
-func (m *MockManager) TotalWeight(subnetID ids.ID) (uint64, error) {
+func (m *MockManager) TotalWeight(supernetID ids.ID) (uint64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TotalWeight", subnetID)
+	ret := m.ctrl.Call(m, "TotalWeight", supernetID)
 	ret0, _ := ret[0].(uint64)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // TotalWeight indicates an expected call of TotalWeight.
-func (mr *MockManagerMockRecorder) TotalWeight(subnetID any) *gomock.Call {
+func (mr *MockManagerMockRecorder) TotalWeight(supernetID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TotalWeight", reflect.TypeOf((*MockManager)(nil).TotalWeight), subnetID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TotalWeight", reflect.TypeOf((*MockManager)(nil).TotalWeight), supernetID)
 }

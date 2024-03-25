@@ -14,8 +14,8 @@ import (
 	"github.com/stretchr/testify/require"
 	"golang.org/x/exp/maps"
 
-	"github.com/ava-labs/avalanchego/database"
-	"github.com/ava-labs/avalanchego/utils/maybe"
+	"github.com/Juneo-io/juneogo/database"
+	"github.com/Juneo-io/juneogo/utils/maybe"
 )
 
 func Test_View_Iterator(t *testing.T) {

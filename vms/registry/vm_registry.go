@@ -6,8 +6,8 @@ package registry
 import (
 	"context"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/vms"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/vms"
 )
 
 var _ VMRegistry = (*vmRegistry)(nil)

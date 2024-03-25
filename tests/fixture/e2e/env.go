@@ -12,14 +12,14 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/api/info"
-	"github.com/ava-labs/avalanchego/config"
-	"github.com/ava-labs/avalanchego/tests"
-	"github.com/ava-labs/avalanchego/tests/fixture"
-	"github.com/ava-labs/avalanchego/tests/fixture/tmpnet"
-	"github.com/ava-labs/avalanchego/utils/crypto/secp256k1"
-	"github.com/ava-labs/avalanchego/utils/perms"
-	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
+	"github.com/Juneo-io/juneogo/api/info"
+	"github.com/Juneo-io/juneogo/config"
+	"github.com/Juneo-io/juneogo/tests"
+	"github.com/Juneo-io/juneogo/tests/fixture"
+	"github.com/Juneo-io/juneogo/tests/fixture/tmpnet"
+	"github.com/Juneo-io/juneogo/utils/crypto/secp256k1"
+	"github.com/Juneo-io/juneogo/utils/perms"
+	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
 
 	ginkgo "github.com/onsi/ginkgo/v2"
 )
@@ -67,32 +67,32 @@ func NewTestEnvironment(flagVars *FlagVars, desiredNetwork *tmpnet.Network) *Tes
 		require.NoError(err)
 		tests.Outf("{{yellow}}Using an existing network configured at %s{{/}}\n", network.Dir)
 
-		// Set the desired subnet configuration to ensure subsequent creation.
-		for _, subnet := range desiredNetwork.Subnets {
-			if existing := network.GetSubnet(subnet.Name); existing != nil {
+		// Set the desired supernet configuration to ensure subsequent creation.
+		for _, supernet := range desiredNetwork.Supernets {
+			if existing := network.GetSupernet(supernet.Name); existing != nil {
 				// Already present
 				continue
 			}
-			network.Subnets = append(network.Subnets, subnet)
+			network.Supernets = append(network.Supernets, supernet)
 		}
 	} else {
 		network = desiredNetwork
 		StartNetwork(network, DefaultNetworkDir, flagVars.AvalancheGoExecPath(), flagVars.PluginDir())
 	}
 
-	// A new network will always need subnet creation and an existing
-	// network will also need subnets to be created the first time it
+	// A new network will always need supernet creation and an existing
+	// network will also need supernets to be created the first time it
 	// is used.
-	require.NoError(network.CreateSubnets(DefaultContext(), ginkgo.GinkgoWriter))
+	require.NoError(network.CreateSupernets(DefaultContext(), ginkgo.GinkgoWriter))
 
 	// Wait for chains to have bootstrapped on all nodes
 	Eventually(func() bool {
-		for _, subnet := range network.Subnets {
-			for _, validatorID := range subnet.ValidatorIDs {
+		for _, supernet := range network.Supernets {
+			for _, validatorID := range supernet.ValidatorIDs {
 				uri, err := network.GetURIForNodeID(validatorID)
 				require.NoError(err)
 				infoClient := info.NewClient(uri)
-				for _, chain := range subnet.Chains {
+				for _, chain := range supernet.Chains {
 					isBootstrapped, err := infoClient.IsBootstrapped(DefaultContext(), chain.ChainID.String())
 					// Ignore errors since a chain id that is not yet known will result in a recoverable error.
 					if err != nil || !isBootstrapped {

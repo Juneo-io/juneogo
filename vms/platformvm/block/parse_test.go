@@ -9,12 +9,12 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/codec"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils/crypto/secp256k1"
-	"github.com/ava-labs/avalanchego/vms/components/avax"
-	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
-	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
+	"github.com/Juneo-io/juneogo/codec"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils/crypto/secp256k1"
+	"github.com/Juneo-io/juneogo/vms/components/avax"
+	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
+	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
 )
 
 var preFundedKeys = secp256k1.TestKeys()
@@ -362,12 +362,12 @@ func testDecisionTxs() ([]*txs.Tx, error) {
 				}},
 				Memo: []byte{1, 2, 3, 4, 5, 6, 7, 8},
 			}},
-			SubnetID:    ids.ID{'s', 'u', 'b', 'n', 'e', 't', 'I', 'D'},
+			SupernetID:    ids.ID{'s', 'u', 'b', 'n', 'e', 't', 'I', 'D'},
 			ChainName:   "a chain",
 			VMID:        ids.GenerateTestID(),
 			FxIDs:       []ids.ID{ids.GenerateTestID()},
 			GenesisData: []byte{'g', 'e', 'n', 'D', 'a', 't', 'a'},
-			SubnetAuth:  &secp256k1fx.Input{SigIndices: []uint32{1}},
+			SupernetAuth:  &secp256k1fx.Input{SigIndices: []uint32{1}},
 		}
 
 		signers := [][]*secp256k1.PrivateKey{{preFundedKeys[0]}}

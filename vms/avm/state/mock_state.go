@@ -14,12 +14,12 @@ import (
 	sync "sync"
 	time "time"
 
-	database "github.com/ava-labs/avalanchego/database"
-	ids "github.com/ava-labs/avalanchego/ids"
-	logging "github.com/ava-labs/avalanchego/utils/logging"
-	block "github.com/ava-labs/avalanchego/vms/avm/block"
-	txs "github.com/ava-labs/avalanchego/vms/avm/txs"
-	avax "github.com/ava-labs/avalanchego/vms/components/avax"
+	database "github.com/Juneo-io/juneogo/database"
+	ids "github.com/Juneo-io/juneogo/ids"
+	logging "github.com/Juneo-io/juneogo/utils/logging"
+	block "github.com/Juneo-io/juneogo/vms/avm/block"
+	txs "github.com/Juneo-io/juneogo/vms/avm/txs"
+	avax "github.com/Juneo-io/juneogo/vms/components/avax"
 	gomock "go.uber.org/mock/gomock"
 )
 

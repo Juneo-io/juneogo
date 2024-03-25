@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ava-labs/avalanchego/utils/perms"
+	"github.com/Juneo-io/juneogo/utils/perms"
 )
 
 // The Node type is defined in this file node_config.go

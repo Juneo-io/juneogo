@@ -8,8 +8,8 @@ import (
 	"slices"
 	"sync"
 
-	"github.com/ava-labs/avalanchego/database"
-	"github.com/ava-labs/avalanchego/utils/hashing"
+	"github.com/Juneo-io/juneogo/database"
+	"github.com/Juneo-io/juneogo/utils/hashing"
 )
 
 const (

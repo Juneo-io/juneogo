@@ -8,8 +8,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils"
 )
 
 var (
@@ -35,7 +35,7 @@ func NewLockedCalculator() LockedCalculator {
 	return &lockedCalculator{}
 }
 
-func (c *lockedCalculator) CalculateUptime(nodeID ids.NodeID, subnetID ids.ID) (time.Duration, time.Time, error) {
+func (c *lockedCalculator) CalculateUptime(nodeID ids.NodeID, supernetID ids.ID) (time.Duration, time.Time, error) {
 	c.lock.RLock()
 	defer c.lock.RUnlock()
 
@@ -46,10 +46,10 @@ func (c *lockedCalculator) CalculateUptime(nodeID ids.NodeID, subnetID ids.ID) (
 	c.calculatorLock.Lock()
 	defer c.calculatorLock.Unlock()
 
-	return c.c.CalculateUptime(nodeID, subnetID)
+	return c.c.CalculateUptime(nodeID, supernetID)
 }
 
-func (c *lockedCalculator) CalculateUptimePercent(nodeID ids.NodeID, subnetID ids.ID) (float64, error) {
+func (c *lockedCalculator) CalculateUptimePercent(nodeID ids.NodeID, supernetID ids.ID) (float64, error) {
 	c.lock.RLock()
 	defer c.lock.RUnlock()
 
@@ -60,10 +60,10 @@ func (c *lockedCalculator) CalculateUptimePercent(nodeID ids.NodeID, subnetID id
 	c.calculatorLock.Lock()
 	defer c.calculatorLock.Unlock()
 
-	return c.c.CalculateUptimePercent(nodeID, subnetID)
+	return c.c.CalculateUptimePercent(nodeID, supernetID)
 }
 
-func (c *lockedCalculator) CalculateUptimePercentFrom(nodeID ids.NodeID, subnetID ids.ID, startTime time.Time) (float64, error) {
+func (c *lockedCalculator) CalculateUptimePercentFrom(nodeID ids.NodeID, supernetID ids.ID, startTime time.Time) (float64, error) {
 	c.lock.RLock()
 	defer c.lock.RUnlock()
 
@@ -74,7 +74,7 @@ func (c *lockedCalculator) CalculateUptimePercentFrom(nodeID ids.NodeID, subnetI
 	c.calculatorLock.Lock()
 	defer c.calculatorLock.Unlock()
 
-	return c.c.CalculateUptimePercentFrom(nodeID, subnetID, startTime)
+	return c.c.CalculateUptimePercentFrom(nodeID, supernetID, startTime)
 }
 
 func (c *lockedCalculator) SetCalculator(isBootstrapped *utils.Atomic[bool], lock sync.Locker, newC Calculator) {

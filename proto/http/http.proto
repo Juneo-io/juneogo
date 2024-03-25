@@ -4,7 +4,7 @@ package http;
 
 import "google/protobuf/empty.proto";
 
-option go_package = "github.com/ava-labs/avalanchego/proto/pb/http";
+option go_package = "github.com/Juneo-io/juneogo/proto/pb/http";
 
 service HTTP {
   // Handle wraps http1 over http2 and provides support for websockets by implementing

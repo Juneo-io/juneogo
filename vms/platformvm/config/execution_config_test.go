@@ -9,7 +9,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/vms/platformvm/network"
+	"github.com/Juneo-io/juneogo/vms/platformvm/network"
 )
 
 func TestExecutionConfigUnmarshal(t *testing.T) {
@@ -62,7 +62,7 @@ func TestExecutionConfigUnmarshal(t *testing.T) {
 			},
 			"block-cache-size": 1,
 			"tx-cache-size": 2,
-			"transformed-subnet-tx-cache-size": 3,
+			"transformed-supernet-tx-cache-size": 3,
 			"reward-utxos-cache-size": 5,
 			"chain-cache-size": 6,
 			"chain-db-cache-size": 7,
@@ -94,7 +94,7 @@ func TestExecutionConfigUnmarshal(t *testing.T) {
 			},
 			BlockCacheSize:               1,
 			TxCacheSize:                  2,
-			TransformedSubnetTxCacheSize: 3,
+			TransformedSupernetTxCacheSize: 3,
 			RewardUTXOsCacheSize:         5,
 			ChainCacheSize:               6,
 			ChainDBCacheSize:             7,
@@ -120,7 +120,7 @@ func TestExecutionConfigUnmarshal(t *testing.T) {
 			},
 			"block-cache-size": 1,
 			"tx-cache-size": 2,
-			"transformed-subnet-tx-cache-size": 3,
+			"transformed-supernet-tx-cache-size": 3,
 			"reward-utxos-cache-size": 5,
 			"chain-cache-size": 6,
 			"chain-db-cache-size": 7,
@@ -151,7 +151,7 @@ func TestExecutionConfigUnmarshal(t *testing.T) {
 			},
 			BlockCacheSize:               1,
 			TxCacheSize:                  2,
-			TransformedSubnetTxCacheSize: 3,
+			TransformedSupernetTxCacheSize: 3,
 			RewardUTXOsCacheSize:         5,
 			ChainCacheSize:               6,
 			ChainDBCacheSize:             7,

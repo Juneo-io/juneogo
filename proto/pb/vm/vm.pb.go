@@ -241,7 +241,7 @@ type InitializeRequest struct {
 	unknownFields protoimpl.UnknownFields
 
 	NetworkId uint32 `protobuf:"varint,1,opt,name=network_id,json=networkId,proto3" json:"network_id,omitempty"`
-	SubnetId  []byte `protobuf:"bytes,2,opt,name=subnet_id,json=subnetId,proto3" json:"subnet_id,omitempty"`
+	SupernetId  []byte `protobuf:"bytes,2,opt,name=supernet_id,json=supernetId,proto3" json:"supernet_id,omitempty"`
 	ChainId   []byte `protobuf:"bytes,3,opt,name=chain_id,json=chainId,proto3" json:"chain_id,omitempty"`
 	NodeId    []byte `protobuf:"bytes,4,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
 	// public_key is the BLS public key that would correspond with any signatures
@@ -270,7 +270,7 @@ type InitializeRequest struct {
 >>>>>>> origin/upstream
 	// server_addr is the address of the gRPC server which serves
 	// the messenger, keystore, shared memory, blockchain alias,
-	// subnet alias, and appSender services
+	// supernet alias, and appSender services
 	ServerAddr string `protobuf:"bytes,15,opt,name=server_addr,json=serverAddr,proto3" json:"server_addr,omitempty"`
 }
 
@@ -313,9 +313,9 @@ func (x *InitializeRequest) GetNetworkId() uint32 {
 	return 0
 }
 
-func (x *InitializeRequest) GetSubnetId() []byte {
+func (x *InitializeRequest) GetSupernetId() []byte {
 	if x != nil {
-		return x.SubnetId
+		return x.SupernetId
 	}
 	return nil
 }

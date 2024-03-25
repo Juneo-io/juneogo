@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ava-labs/avalanchego/codec"
-	"github.com/ava-labs/avalanchego/utils/timer/mockable"
+	"github.com/Juneo-io/juneogo/codec"
+	"github.com/Juneo-io/juneogo/utils/timer/mockable"
 )
 
 func TestVectors(t *testing.T) {

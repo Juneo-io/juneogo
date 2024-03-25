@@ -11,15 +11,15 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"go.uber.org/zap"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/network/p2p"
-	"github.com/ava-labs/avalanchego/network/p2p/gossip"
-	"github.com/ava-labs/avalanchego/snow/engine/common"
-	"github.com/ava-labs/avalanchego/snow/validators"
-	"github.com/ava-labs/avalanchego/utils/logging"
-	"github.com/ava-labs/avalanchego/vms/components/message"
-	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
-	"github.com/ava-labs/avalanchego/vms/platformvm/txs/mempool"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/network/p2p"
+	"github.com/Juneo-io/juneogo/network/p2p/gossip"
+	"github.com/Juneo-io/juneogo/snow/engine/common"
+	"github.com/Juneo-io/juneogo/snow/validators"
+	"github.com/Juneo-io/juneogo/utils/logging"
+	"github.com/Juneo-io/juneogo/vms/components/message"
+	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
+	"github.com/Juneo-io/juneogo/vms/platformvm/txs/mempool"
 )
 
 const TxGossipHandlerID = 0
@@ -44,7 +44,7 @@ type Network struct {
 func New(
 	log logging.Logger,
 	nodeID ids.NodeID,
-	subnetID ids.ID,
+	supernetID ids.ID,
 	vdrs validators.State,
 	txVerifier TxVerifier,
 	mempool mempool.Mempool,
@@ -62,7 +62,7 @@ func New(
 	validators := p2p.NewValidators(
 		p2pNetwork.Peers,
 		log,
-		subnetID,
+		supernetID,
 		vdrs,
 		config.MaxValidatorSetStaleness,
 	)

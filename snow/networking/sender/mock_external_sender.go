@@ -12,10 +12,10 @@ package sender
 import (
 	reflect "reflect"
 
-	ids "github.com/ava-labs/avalanchego/ids"
-	message "github.com/ava-labs/avalanchego/message"
-	subnets "github.com/ava-labs/avalanchego/subnets"
-	set "github.com/ava-labs/avalanchego/utils/set"
+	ids "github.com/Juneo-io/juneogo/ids"
+	message "github.com/Juneo-io/juneogo/message"
+	supernets "github.com/Juneo-io/juneogo/supernets"
+	set "github.com/Juneo-io/juneogo/utils/set"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -43,29 +43,29 @@ func (m *MockExternalSender) EXPECT() *MockExternalSenderMockRecorder {
 }
 
 // Gossip mocks base method.
-func (m *MockExternalSender) Gossip(msg message.OutboundMessage, subnetID ids.ID, numValidatorsToSend, numNonValidatorsToSend, numPeersToSend int, allower subnets.Allower) set.Set[ids.NodeID] {
+func (m *MockExternalSender) Gossip(msg message.OutboundMessage, supernetID ids.ID, numValidatorsToSend, numNonValidatorsToSend, numPeersToSend int, allower supernets.Allower) set.Set[ids.NodeID] {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Gossip", msg, subnetID, numValidatorsToSend, numNonValidatorsToSend, numPeersToSend, allower)
+	ret := m.ctrl.Call(m, "Gossip", msg, supernetID, numValidatorsToSend, numNonValidatorsToSend, numPeersToSend, allower)
 	ret0, _ := ret[0].(set.Set[ids.NodeID])
 	return ret0
 }
 
 // Gossip indicates an expected call of Gossip.
-func (mr *MockExternalSenderMockRecorder) Gossip(msg, subnetID, numValidatorsToSend, numNonValidatorsToSend, numPeersToSend, allower any) *gomock.Call {
+func (mr *MockExternalSenderMockRecorder) Gossip(msg, supernetID, numValidatorsToSend, numNonValidatorsToSend, numPeersToSend, allower any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gossip", reflect.TypeOf((*MockExternalSender)(nil).Gossip), msg, subnetID, numValidatorsToSend, numNonValidatorsToSend, numPeersToSend, allower)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gossip", reflect.TypeOf((*MockExternalSender)(nil).Gossip), msg, supernetID, numValidatorsToSend, numNonValidatorsToSend, numPeersToSend, allower)
 }
 
 // Send mocks base method.
-func (m *MockExternalSender) Send(msg message.OutboundMessage, nodeIDs set.Set[ids.NodeID], subnetID ids.ID, allower subnets.Allower) set.Set[ids.NodeID] {
+func (m *MockExternalSender) Send(msg message.OutboundMessage, nodeIDs set.Set[ids.NodeID], supernetID ids.ID, allower supernets.Allower) set.Set[ids.NodeID] {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Send", msg, nodeIDs, subnetID, allower)
+	ret := m.ctrl.Call(m, "Send", msg, nodeIDs, supernetID, allower)
 	ret0, _ := ret[0].(set.Set[ids.NodeID])
 	return ret0
 }
 
 // Send indicates an expected call of Send.
-func (mr *MockExternalSenderMockRecorder) Send(msg, nodeIDs, subnetID, allower any) *gomock.Call {
+func (mr *MockExternalSenderMockRecorder) Send(msg, nodeIDs, supernetID, allower any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Send", reflect.TypeOf((*MockExternalSender)(nil).Send), msg, nodeIDs, subnetID, allower)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Send", reflect.TypeOf((*MockExternalSender)(nil).Send), msg, nodeIDs, supernetID, allower)
 }

@@ -6,12 +6,12 @@ package executor
 import (
 	"time"
 
-	"github.com/ava-labs/avalanchego/database"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/math"
-	"github.com/ava-labs/avalanchego/vms/platformvm/state"
-	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
+	"github.com/Juneo-io/juneogo/database"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/math"
+	"github.com/Juneo-io/juneogo/vms/platformvm/state"
+	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
 )
 
 type addValidatorRules struct {
@@ -27,9 +27,9 @@ type addValidatorRules struct {
 func getValidatorRules(
 	backend *Backend,
 	chainState state.Chain,
-	subnetID ids.ID,
+	supernetID ids.ID,
 ) (*addValidatorRules, error) {
-	if subnetID == constants.PrimaryNetworkID {
+	if supernetID == constants.PrimaryNetworkID {
 		return &addValidatorRules{
 			assetID:           backend.Ctx.AVAXAssetID,
 			minValidatorStake: backend.Config.MinValidatorStake,
@@ -41,19 +41,19 @@ func getValidatorRules(
 		}, nil
 	}
 
-	transformSubnet, err := GetTransformSubnetTx(chainState, subnetID)
+	transformSupernet, err := GetTransformSupernetTx(chainState, supernetID)
 	if err != nil {
 		return nil, err
 	}
 
 	return &addValidatorRules{
-		assetID:           transformSubnet.AssetID,
-		minValidatorStake: transformSubnet.MinValidatorStake,
-		maxValidatorStake: transformSubnet.MaxValidatorStake,
-		minStakeDuration:  time.Duration(transformSubnet.MinStakeDuration) * time.Second,
-		maxStakeDuration:  time.Duration(transformSubnet.MaxStakeDuration) * time.Second,
-		minDelegationFee:  transformSubnet.MinDelegationFee,
-		maxDelegationFee:  transformSubnet.MaxDelegationFee,
+		assetID:           transformSupernet.AssetID,
+		minValidatorStake: transformSupernet.MinValidatorStake,
+		maxValidatorStake: transformSupernet.MaxValidatorStake,
+		minStakeDuration:  time.Duration(transformSupernet.MinStakeDuration) * time.Second,
+		maxStakeDuration:  time.Duration(transformSupernet.MaxStakeDuration) * time.Second,
+		minDelegationFee:  transformSupernet.MinDelegationFee,
+		maxDelegationFee:  transformSupernet.MaxDelegationFee,
 	}, nil
 }
 
@@ -69,9 +69,9 @@ type addDelegatorRules struct {
 func getDelegatorRules(
 	backend *Backend,
 	chainState state.Chain,
-	subnetID ids.ID,
+	supernetID ids.ID,
 ) (*addDelegatorRules, error) {
-	if subnetID == constants.PrimaryNetworkID {
+	if supernetID == constants.PrimaryNetworkID {
 		return &addDelegatorRules{
 			assetID:                  backend.Ctx.AVAXAssetID,
 			minDelegatorStake:        backend.Config.MinDelegatorStake,
@@ -82,18 +82,18 @@ func getDelegatorRules(
 		}, nil
 	}
 
-	transformSubnet, err := GetTransformSubnetTx(chainState, subnetID)
+	transformSupernet, err := GetTransformSupernetTx(chainState, supernetID)
 	if err != nil {
 		return nil, err
 	}
 
 	return &addDelegatorRules{
-		assetID:                  transformSubnet.AssetID,
-		minDelegatorStake:        transformSubnet.MinDelegatorStake,
-		maxValidatorStake:        transformSubnet.MaxValidatorStake,
-		minStakeDuration:         time.Duration(transformSubnet.MinStakeDuration) * time.Second,
-		maxStakeDuration:         time.Duration(transformSubnet.MaxStakeDuration) * time.Second,
-		maxValidatorWeightFactor: transformSubnet.MaxValidatorWeightFactor,
+		assetID:                  transformSupernet.AssetID,
+		minDelegatorStake:        transformSupernet.MinDelegatorStake,
+		maxValidatorStake:        transformSupernet.MaxValidatorStake,
+		minStakeDuration:         time.Duration(transformSupernet.MinStakeDuration) * time.Second,
+		maxStakeDuration:         time.Duration(transformSupernet.MaxStakeDuration) * time.Second,
+		maxValidatorWeightFactor: transformSupernet.MaxValidatorWeightFactor,
 	}, nil
 }
 
@@ -133,17 +133,17 @@ func GetNextStakerChangeTime(state state.Chain) (time.Time, error) {
 
 // GetValidator returns information about the given validator, which may be a
 // current validator or pending validator.
-func GetValidator(state state.Chain, subnetID ids.ID, nodeID ids.NodeID) (*state.Staker, error) {
-	validator, err := state.GetCurrentValidator(subnetID, nodeID)
+func GetValidator(state state.Chain, supernetID ids.ID, nodeID ids.NodeID) (*state.Staker, error) {
+	validator, err := state.GetCurrentValidator(supernetID, nodeID)
 	if err == nil {
-		// This node is currently validating the subnet.
+		// This node is currently validating the supernet.
 		return validator, nil
 	}
 	if err != database.ErrNotFound {
 		// Unexpected error occurred.
 		return nil, err
 	}
-	return state.GetPendingValidator(subnetID, nodeID)
+	return state.GetPendingValidator(supernetID, nodeID)
 }
 
 // overDelegated returns true if [validator] will be overdelegated when adding [delegator].
@@ -181,7 +181,7 @@ func GetMaxWeight(
 	startTime time.Time,
 	endTime time.Time,
 ) (uint64, error) {
-	currentDelegatorIterator, err := chainState.GetCurrentDelegatorIterator(validator.SubnetID, validator.NodeID)
+	currentDelegatorIterator, err := chainState.GetCurrentDelegatorIterator(validator.SupernetID, validator.NodeID)
 	if err != nil {
 		return 0, err
 	}
@@ -204,11 +204,11 @@ func GetMaxWeight(
 	}
 	currentDelegatorIterator.Release()
 
-	currentDelegatorIterator, err = chainState.GetCurrentDelegatorIterator(validator.SubnetID, validator.NodeID)
+	currentDelegatorIterator, err = chainState.GetCurrentDelegatorIterator(validator.SupernetID, validator.NodeID)
 	if err != nil {
 		return 0, err
 	}
-	pendingDelegatorIterator, err := chainState.GetPendingDelegatorIterator(validator.SubnetID, validator.NodeID)
+	pendingDelegatorIterator, err := chainState.GetPendingDelegatorIterator(validator.SupernetID, validator.NodeID)
 	if err != nil {
 		currentDelegatorIterator.Release()
 		return 0, err
@@ -254,16 +254,16 @@ func GetMaxWeight(
 	return max(currentMax, currentWeight), nil
 }
 
-func GetTransformSubnetTx(chain state.Chain, subnetID ids.ID) (*txs.TransformSubnetTx, error) {
-	transformSubnetIntf, err := chain.GetSubnetTransformation(subnetID)
+func GetTransformSupernetTx(chain state.Chain, supernetID ids.ID) (*txs.TransformSupernetTx, error) {
+	transformSupernetIntf, err := chain.GetSupernetTransformation(supernetID)
 	if err != nil {
 		return nil, err
 	}
 
-	transformSubnet, ok := transformSubnetIntf.Unsigned.(*txs.TransformSubnetTx)
+	transformSupernet, ok := transformSupernetIntf.Unsigned.(*txs.TransformSupernetTx)
 	if !ok {
-		return nil, ErrIsNotTransformSubnetTx
+		return nil, ErrIsNotTransformSupernetTx
 	}
 
-	return transformSubnet, nil
+	return transformSupernet, nil
 }

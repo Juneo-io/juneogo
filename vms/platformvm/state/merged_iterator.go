@@ -3,7 +3,7 @@
 
 package state
 
-import "github.com/ava-labs/avalanchego/utils/heap"
+import "github.com/Juneo-io/juneogo/utils/heap"
 
 var _ StakerIterator = (*mergedIterator)(nil)
 

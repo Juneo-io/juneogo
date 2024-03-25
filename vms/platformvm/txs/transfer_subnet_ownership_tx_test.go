@@ -10,20 +10,20 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/utils"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/units"
-	"github.com/ava-labs/avalanchego/vms/components/avax"
-	"github.com/ava-labs/avalanchego/vms/components/verify"
-	"github.com/ava-labs/avalanchego/vms/platformvm/fx"
-	"github.com/ava-labs/avalanchego/vms/platformvm/stakeable"
-	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
-	"github.com/ava-labs/avalanchego/vms/types"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/utils"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/units"
+	"github.com/Juneo-io/juneogo/vms/components/avax"
+	"github.com/Juneo-io/juneogo/vms/components/verify"
+	"github.com/Juneo-io/juneogo/vms/platformvm/fx"
+	"github.com/Juneo-io/juneogo/vms/platformvm/stakeable"
+	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
+	"github.com/Juneo-io/juneogo/vms/types"
 )
 
-func TestTransferSubnetOwnershipTxSerialization(t *testing.T) {
+func TestTransferSupernetOwnershipTxSerialization(t *testing.T) {
 	require := require.New(t)
 
 	addr := ids.ShortID{
@@ -48,14 +48,14 @@ func TestTransferSubnetOwnershipTxSerialization(t *testing.T) {
 		0xff, 0xee, 0xdd, 0xcc, 0xbb, 0xaa, 0x99, 0x88,
 		0xff, 0xee, 0xdd, 0xcc, 0xbb, 0xaa, 0x99, 0x88,
 	}
-	subnetID := ids.ID{
+	supernetID := ids.ID{
 		0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
 		0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18,
 		0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28,
 		0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38,
 	}
 
-	simpleTransferSubnetOwnershipTx := &TransferSubnetOwnershipTx{
+	simpleTransferSupernetOwnershipTx := &TransferSupernetOwnershipTx{
 		BaseTx: BaseTx{
 			BaseTx: avax.BaseTx{
 				NetworkID:    constants.MainnetID,
@@ -81,8 +81,8 @@ func TestTransferSubnetOwnershipTxSerialization(t *testing.T) {
 				Memo: types.JSONByteSlice{},
 			},
 		},
-		Subnet: subnetID,
-		SubnetAuth: &secp256k1fx.Input{
+		Supernet: supernetID,
+		SupernetAuth: &secp256k1fx.Input{
 			SigIndices: []uint32{3},
 		},
 		Owner: &secp256k1fx.OutputOwners{
@@ -93,16 +93,16 @@ func TestTransferSubnetOwnershipTxSerialization(t *testing.T) {
 			},
 		},
 	}
-	require.NoError(simpleTransferSubnetOwnershipTx.SyntacticVerify(&snow.Context{
+	require.NoError(simpleTransferSupernetOwnershipTx.SyntacticVerify(&snow.Context{
 		NetworkID:   1,
 		ChainID:     constants.PlatformChainID,
 		AVAXAssetID: avaxAssetID,
 	}))
 
-	expectedUnsignedSimpleTransferSubnetOwnershipTxBytes := []byte{
+	expectedUnsignedSimpleTransferSupernetOwnershipTxBytes := []byte{
 		// Codec version
 		0x00, 0x00,
-		// TransferSubnetOwnershipTx Type ID
+		// TransferSupernetOwnershipTx Type ID
 		0x00, 0x00, 0x00, 0x21,
 		// Mainnet network ID
 		0x00, 0x00, 0x00, 0x01,
@@ -138,7 +138,7 @@ func TestTransferSubnetOwnershipTxSerialization(t *testing.T) {
 		0x00, 0x00, 0x00, 0x05,
 		// length of memo
 		0x00, 0x00, 0x00, 0x00,
-		// subnetID to modify
+		// supernetID to modify
 		0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
 		0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18,
 		0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28,
@@ -162,12 +162,12 @@ func TestTransferSubnetOwnershipTxSerialization(t *testing.T) {
 		0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb,
 		0x44, 0x55, 0x66, 0x77,
 	}
-	var unsignedSimpleTransferSubnetOwnershipTx UnsignedTx = simpleTransferSubnetOwnershipTx
-	unsignedSimpleTransferSubnetOwnershipTxBytes, err := Codec.Marshal(CodecVersion, &unsignedSimpleTransferSubnetOwnershipTx)
+	var unsignedSimpleTransferSupernetOwnershipTx UnsignedTx = simpleTransferSupernetOwnershipTx
+	unsignedSimpleTransferSupernetOwnershipTxBytes, err := Codec.Marshal(CodecVersion, &unsignedSimpleTransferSupernetOwnershipTx)
 	require.NoError(err)
-	require.Equal(expectedUnsignedSimpleTransferSubnetOwnershipTxBytes, unsignedSimpleTransferSubnetOwnershipTxBytes)
+	require.Equal(expectedUnsignedSimpleTransferSupernetOwnershipTxBytes, unsignedSimpleTransferSupernetOwnershipTxBytes)
 
-	complexTransferSubnetOwnershipTx := &TransferSubnetOwnershipTx{
+	complexTransferSupernetOwnershipTx := &TransferSupernetOwnershipTx{
 		BaseTx: BaseTx{
 			BaseTx: avax.BaseTx{
 				NetworkID:    constants.MainnetID,
@@ -261,8 +261,8 @@ func TestTransferSubnetOwnershipTxSerialization(t *testing.T) {
 				Memo: types.JSONByteSlice("😅\nwell that's\x01\x23\x45!"),
 			},
 		},
-		Subnet: subnetID,
-		SubnetAuth: &secp256k1fx.Input{
+		Supernet: supernetID,
+		SupernetAuth: &secp256k1fx.Input{
 			SigIndices: []uint32{},
 		},
 		Owner: &secp256k1fx.OutputOwners{
@@ -273,18 +273,18 @@ func TestTransferSubnetOwnershipTxSerialization(t *testing.T) {
 			},
 		},
 	}
-	avax.SortTransferableOutputs(complexTransferSubnetOwnershipTx.Outs, Codec)
-	utils.Sort(complexTransferSubnetOwnershipTx.Ins)
-	require.NoError(complexTransferSubnetOwnershipTx.SyntacticVerify(&snow.Context{
+	avax.SortTransferableOutputs(complexTransferSupernetOwnershipTx.Outs, Codec)
+	utils.Sort(complexTransferSupernetOwnershipTx.Ins)
+	require.NoError(complexTransferSupernetOwnershipTx.SyntacticVerify(&snow.Context{
 		NetworkID:   1,
 		ChainID:     constants.PlatformChainID,
 		AVAXAssetID: avaxAssetID,
 	}))
 
-	expectedUnsignedComplexTransferSubnetOwnershipTxBytes := []byte{
+	expectedUnsignedComplexTransferSupernetOwnershipTxBytes := []byte{
 		// Codec version
 		0x00, 0x00,
-		// TransferSubnetOwnershipTx Type ID
+		// TransferSupernetOwnershipTx Type ID
 		0x00, 0x00, 0x00, 0x21,
 		// Mainnet network ID
 		0x00, 0x00, 0x00, 0x01,
@@ -414,7 +414,7 @@ func TestTransferSubnetOwnershipTxSerialization(t *testing.T) {
 		0xf0, 0x9f, 0x98, 0x85, 0x0a, 0x77, 0x65, 0x6c,
 		0x6c, 0x20, 0x74, 0x68, 0x61, 0x74, 0x27, 0x73,
 		0x01, 0x23, 0x45, 0x21,
-		// subnetID to modify
+		// supernetID to modify
 		0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
 		0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18,
 		0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28,
@@ -436,22 +436,22 @@ func TestTransferSubnetOwnershipTxSerialization(t *testing.T) {
 		0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb,
 		0x44, 0x55, 0x66, 0x77,
 	}
-	var unsignedComplexTransferSubnetOwnershipTx UnsignedTx = complexTransferSubnetOwnershipTx
-	unsignedComplexTransferSubnetOwnershipTxBytes, err := Codec.Marshal(CodecVersion, &unsignedComplexTransferSubnetOwnershipTx)
+	var unsignedComplexTransferSupernetOwnershipTx UnsignedTx = complexTransferSupernetOwnershipTx
+	unsignedComplexTransferSupernetOwnershipTxBytes, err := Codec.Marshal(CodecVersion, &unsignedComplexTransferSupernetOwnershipTx)
 	require.NoError(err)
-	require.Equal(expectedUnsignedComplexTransferSubnetOwnershipTxBytes, unsignedComplexTransferSubnetOwnershipTxBytes)
+	require.Equal(expectedUnsignedComplexTransferSupernetOwnershipTxBytes, unsignedComplexTransferSupernetOwnershipTxBytes)
 
 	aliaser := ids.NewAliaser()
 	require.NoError(aliaser.Alias(constants.PlatformChainID, "P"))
 
-	unsignedComplexTransferSubnetOwnershipTx.InitCtx(&snow.Context{
+	unsignedComplexTransferSupernetOwnershipTx.InitCtx(&snow.Context{
 		NetworkID:   1,
 		ChainID:     constants.PlatformChainID,
 		AVAXAssetID: avaxAssetID,
 		BCLookup:    aliaser,
 	})
 
-	unsignedComplexTransferSubnetOwnershipTxJSONBytes, err := json.MarshalIndent(unsignedComplexTransferSubnetOwnershipTx, "", "\t")
+	unsignedComplexTransferSupernetOwnershipTxJSONBytes, err := json.MarshalIndent(unsignedComplexTransferSupernetOwnershipTx, "", "\t")
 	require.NoError(err)
 	require.Equal(`{
 	"networkID": 1,
@@ -527,8 +527,8 @@ func TestTransferSubnetOwnershipTxSerialization(t *testing.T) {
 		}
 	],
 	"memo": "0xf09f98850a77656c6c2074686174277301234521",
-	"subnetID": "SkB92YpWm4UpburLz9tEKZw2i67H3FF6YkjaU4BkFUDTG9Xm",
-	"subnetAuthorization": {
+	"supernetID": "SkB92YpWm4UpburLz9tEKZw2i67H3FF6YkjaU4BkFUDTG9Xm",
+	"supernetAuthorization": {
 		"signatureIndices": []
 	},
 	"newOwner": {
@@ -538,13 +538,13 @@ func TestTransferSubnetOwnershipTxSerialization(t *testing.T) {
 		"locktime": 876543210,
 		"threshold": 1
 	}
-}`, string(unsignedComplexTransferSubnetOwnershipTxJSONBytes))
+}`, string(unsignedComplexTransferSupernetOwnershipTxJSONBytes))
 }
 
-func TestTransferSubnetOwnershipTxSyntacticVerify(t *testing.T) {
+func TestTransferSupernetOwnershipTxSyntacticVerify(t *testing.T) {
 	type test struct {
 		name        string
-		txFunc      func(*gomock.Controller) *TransferSubnetOwnershipTx
+		txFunc      func(*gomock.Controller) *TransferSupernetOwnershipTx
 		expectedErr error
 	}
 
@@ -583,67 +583,67 @@ func TestTransferSubnetOwnershipTxSyntacticVerify(t *testing.T) {
 	tests := []test{
 		{
 			name: "nil tx",
-			txFunc: func(*gomock.Controller) *TransferSubnetOwnershipTx {
+			txFunc: func(*gomock.Controller) *TransferSupernetOwnershipTx {
 				return nil
 			},
 			expectedErr: ErrNilTx,
 		},
 		{
 			name: "already verified",
-			txFunc: func(*gomock.Controller) *TransferSubnetOwnershipTx {
-				return &TransferSubnetOwnershipTx{BaseTx: verifiedBaseTx}
+			txFunc: func(*gomock.Controller) *TransferSupernetOwnershipTx {
+				return &TransferSupernetOwnershipTx{BaseTx: verifiedBaseTx}
 			},
 			expectedErr: nil,
 		},
 		{
 			name: "invalid BaseTx",
-			txFunc: func(*gomock.Controller) *TransferSubnetOwnershipTx {
-				return &TransferSubnetOwnershipTx{
-					// Set subnetID so we don't error on that check.
-					Subnet: ids.GenerateTestID(),
+			txFunc: func(*gomock.Controller) *TransferSupernetOwnershipTx {
+				return &TransferSupernetOwnershipTx{
+					// Set supernetID so we don't error on that check.
+					Supernet: ids.GenerateTestID(),
 					BaseTx: invalidBaseTx,
 				}
 			},
 			expectedErr: avax.ErrWrongNetworkID,
 		},
 		{
-			name: "invalid subnetID",
-			txFunc: func(*gomock.Controller) *TransferSubnetOwnershipTx {
-				return &TransferSubnetOwnershipTx{
+			name: "invalid supernetID",
+			txFunc: func(*gomock.Controller) *TransferSupernetOwnershipTx {
+				return &TransferSupernetOwnershipTx{
 					BaseTx: validBaseTx,
-					Subnet: constants.PrimaryNetworkID,
+					Supernet: constants.PrimaryNetworkID,
 				}
 			},
-			expectedErr: ErrTransferPermissionlessSubnet,
+			expectedErr: ErrTransferPermissionlessSupernet,
 		},
 		{
-			name: "invalid subnetAuth",
-			txFunc: func(ctrl *gomock.Controller) *TransferSubnetOwnershipTx {
-				// This SubnetAuth fails verification.
-				invalidSubnetAuth := verify.NewMockVerifiable(ctrl)
-				invalidSubnetAuth.EXPECT().Verify().Return(errInvalidSubnetAuth)
-				return &TransferSubnetOwnershipTx{
-					// Set subnetID so we don't error on that check.
-					Subnet:     ids.GenerateTestID(),
+			name: "invalid supernetAuth",
+			txFunc: func(ctrl *gomock.Controller) *TransferSupernetOwnershipTx {
+				// This SupernetAuth fails verification.
+				invalidSupernetAuth := verify.NewMockVerifiable(ctrl)
+				invalidSupernetAuth.EXPECT().Verify().Return(errInvalidSupernetAuth)
+				return &TransferSupernetOwnershipTx{
+					// Set supernetID so we don't error on that check.
+					Supernet:     ids.GenerateTestID(),
 					BaseTx:     validBaseTx,
-					SubnetAuth: invalidSubnetAuth,
+					SupernetAuth: invalidSupernetAuth,
 				}
 			},
-			expectedErr: errInvalidSubnetAuth,
+			expectedErr: errInvalidSupernetAuth,
 		},
 		{
 			name: "passes verification",
-			txFunc: func(ctrl *gomock.Controller) *TransferSubnetOwnershipTx {
-				// This SubnetAuth passes verification.
-				validSubnetAuth := verify.NewMockVerifiable(ctrl)
-				validSubnetAuth.EXPECT().Verify().Return(nil)
+			txFunc: func(ctrl *gomock.Controller) *TransferSupernetOwnershipTx {
+				// This SupernetAuth passes verification.
+				validSupernetAuth := verify.NewMockVerifiable(ctrl)
+				validSupernetAuth.EXPECT().Verify().Return(nil)
 				mockOwner := fx.NewMockOwner(ctrl)
 				mockOwner.EXPECT().Verify().Return(nil)
-				return &TransferSubnetOwnershipTx{
-					// Set subnetID so we don't error on that check.
-					Subnet:     ids.GenerateTestID(),
+				return &TransferSupernetOwnershipTx{
+					// Set supernetID so we don't error on that check.
+					Supernet:     ids.GenerateTestID(),
 					BaseTx:     validBaseTx,
-					SubnetAuth: validSubnetAuth,
+					SupernetAuth: validSupernetAuth,
 					Owner:      mockOwner,
 				}
 			},

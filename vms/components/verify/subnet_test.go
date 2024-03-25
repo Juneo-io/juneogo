@@ -11,16 +11,16 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/snow/validators"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/snow/validators"
 )
 
 var errMissing = errors.New("missing")
 
-func TestSameSubnet(t *testing.T) {
-	subnetID0 := ids.GenerateTestID()
-	subnetID1 := ids.GenerateTestID()
+func TestSameSupernet(t *testing.T) {
+	supernetID0 := ids.GenerateTestID()
+	supernetID1 := ids.GenerateTestID()
 	chainID0 := ids.GenerateTestID()
 	chainID1 := ids.GenerateTestID()
 
@@ -35,7 +35,7 @@ func TestSameSubnet(t *testing.T) {
 			ctxF: func(ctrl *gomock.Controller) *snow.Context {
 				state := validators.NewMockState(ctrl)
 				return &snow.Context{
-					SubnetID:       subnetID0,
+					SupernetID:       supernetID0,
 					ChainID:        chainID0,
 					ValidatorState: state,
 				}
@@ -47,9 +47,9 @@ func TestSameSubnet(t *testing.T) {
 			name: "unknown chain",
 			ctxF: func(ctrl *gomock.Controller) *snow.Context {
 				state := validators.NewMockState(ctrl)
-				state.EXPECT().GetSubnetID(gomock.Any(), chainID1).Return(subnetID1, errMissing)
+				state.EXPECT().GetSupernetID(gomock.Any(), chainID1).Return(supernetID1, errMissing)
 				return &snow.Context{
-					SubnetID:       subnetID0,
+					SupernetID:       supernetID0,
 					ChainID:        chainID0,
 					ValidatorState: state,
 				}
@@ -58,26 +58,26 @@ func TestSameSubnet(t *testing.T) {
 			result:  errMissing,
 		},
 		{
-			name: "wrong subnet",
+			name: "wrong supernet",
 			ctxF: func(ctrl *gomock.Controller) *snow.Context {
 				state := validators.NewMockState(ctrl)
-				state.EXPECT().GetSubnetID(gomock.Any(), chainID1).Return(subnetID1, nil)
+				state.EXPECT().GetSupernetID(gomock.Any(), chainID1).Return(supernetID1, nil)
 				return &snow.Context{
-					SubnetID:       subnetID0,
+					SupernetID:       supernetID0,
 					ChainID:        chainID0,
 					ValidatorState: state,
 				}
 			},
 			chainID: chainID1,
-			result:  ErrMismatchedSubnetIDs,
+			result:  ErrMismatchedSupernetIDs,
 		},
 		{
-			name: "same subnet",
+			name: "same supernet",
 			ctxF: func(ctrl *gomock.Controller) *snow.Context {
 				state := validators.NewMockState(ctrl)
-				state.EXPECT().GetSubnetID(gomock.Any(), chainID1).Return(subnetID0, nil)
+				state.EXPECT().GetSupernetID(gomock.Any(), chainID1).Return(supernetID0, nil)
 				return &snow.Context{
-					SubnetID:       subnetID0,
+					SupernetID:       supernetID0,
 					ChainID:        chainID0,
 					ValidatorState: state,
 				}
@@ -91,7 +91,7 @@ func TestSameSubnet(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			ctx := test.ctxF(ctrl)
 
-			result := SameSubnet(context.Background(), ctx, test.chainID)
+			result := SameSupernet(context.Background(), ctx, test.chainID)
 			require.ErrorIs(t, result, test.result)
 		})
 	}

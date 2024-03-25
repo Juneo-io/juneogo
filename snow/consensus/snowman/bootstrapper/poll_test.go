@@ -3,7 +3,7 @@
 
 package bootstrapper
 
-import "github.com/ava-labs/avalanchego/ids"
+import "github.com/Juneo-io/juneogo/ids"
 
 var (
 	nodeID0 = ids.GenerateTestNodeID()

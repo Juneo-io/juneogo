@@ -12,8 +12,8 @@ package atomic
 import (
 	reflect "reflect"
 
-	database "github.com/ava-labs/avalanchego/database"
-	ids "github.com/ava-labs/avalanchego/ids"
+	database "github.com/Juneo-io/juneogo/database"
+	ids "github.com/Juneo-io/juneogo/ids"
 	gomock "go.uber.org/mock/gomock"
 )
 

@@ -10,10 +10,10 @@ import (
 
 	"golang.org/x/exp/maps"
 
-	"github.com/ava-labs/avalanchego/utils"
-	"github.com/ava-labs/avalanchego/utils/wrappers"
+	"github.com/Juneo-io/juneogo/utils"
+	"github.com/Juneo-io/juneogo/utils/wrappers"
 
-	avajson "github.com/ava-labs/avalanchego/utils/json"
+	avajson "github.com/Juneo-io/juneogo/utils/json"
 )
 
 // The minimum capacity of a set

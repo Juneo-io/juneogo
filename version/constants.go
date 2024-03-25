@@ -9,8 +9,8 @@ import (
 
 	_ "embed"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils/constants"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils/constants"
 )
 
 const (
@@ -118,12 +118,12 @@ var (
 		// The mainnet stop vertex is well known. It can be verified on any
 		// fully synced node by looking at the parentID of the genesis block.
 		//
-		// Ref: https://subnets.avax.network/x-chain/block/0
+		// Ref: https://supernets.avax.network/x-chain/block/0
 		constants.MainnetID: ids.FromStringOrPanic("jrGWDh5Po9FMj54depyunNixpia5PN4aAYxfmNzU8n752Rjga"),
 		// The fuji stop vertex is well known. It can be verified on any fully
 		// synced node by looking at the parentID of the genesis block.
 		//
-		// Ref: https://subnets-test.avax.network/x-chain/block/0
+		// Ref: https://supernets-test.avax.network/x-chain/block/0
 		constants.FujiID: ids.FromStringOrPanic("2D1cmbiG36BqQMRyHt4kFhWarmatA1ighSpND3FeFgz3vFVtCZ"),
 	}
 

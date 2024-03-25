@@ -3,7 +3,7 @@
 
 package chains
 
-import "github.com/ava-labs/avalanchego/ids"
+import "github.com/Juneo-io/juneogo/ids"
 
 // TestManager implements Manager but does nothing. Always returns nil error.
 // To be used only in tests
@@ -41,7 +41,7 @@ func (testManager) StartChainCreator(ChainParameters) error {
 	return nil
 }
 
-func (testManager) SubnetID(ids.ID) (ids.ID, error) {
+func (testManager) SupernetID(ids.ID) (ids.ID, error) {
 	return ids.ID{}, nil
 }
 

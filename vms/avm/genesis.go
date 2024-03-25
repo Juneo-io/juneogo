@@ -6,8 +6,8 @@ package avm
 import (
 	"cmp"
 
-	"github.com/ava-labs/avalanchego/utils"
-	"github.com/ava-labs/avalanchego/vms/avm/txs"
+	"github.com/Juneo-io/juneogo/utils"
+	"github.com/Juneo-io/juneogo/vms/avm/txs"
 )
 
 var _ utils.Sortable[*GenesisAsset] = (*GenesisAsset)(nil)

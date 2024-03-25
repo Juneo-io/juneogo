@@ -8,11 +8,11 @@ import (
 	"log"
 	"time"
 
-	"github.com/ava-labs/avalanchego/indexer"
-	"github.com/ava-labs/avalanchego/version"
-	"github.com/ava-labs/avalanchego/vms/proposervm/block"
-	"github.com/ava-labs/avalanchego/wallet/chain/x"
-	"github.com/ava-labs/avalanchego/wallet/subnet/primary"
+	"github.com/Juneo-io/juneogo/indexer"
+	"github.com/Juneo-io/juneogo/version"
+	"github.com/Juneo-io/juneogo/vms/proposervm/block"
+	"github.com/Juneo-io/juneogo/wallet/chain/x"
+	"github.com/Juneo-io/juneogo/wallet/supernet/primary"
 )
 
 // This example program continuously polls for the next X-Chain block
