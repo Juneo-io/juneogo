@@ -203,8 +203,8 @@ type ManagerConfig struct {
 	CriticalChains            set.Set[ids.ID] // Chains that can't exit gracefully
 	TimeoutManager            timeout.Manager // Manages request timeouts when sending messages to other validators
 	Health                    health.Registerer
-	SupernetConfigs             map[ids.ID]supernets.Config // ID -> SupernetConfig
-	ChainConfigs              map[string]ChainConfig    // alias -> ChainConfig
+	SupernetConfigs           map[ids.ID]supernets.Config // ID -> SupernetConfig
+	ChainConfigs              map[string]ChainConfig      // alias -> ChainConfig
 	// ShutdownNodeFunc allows the chain manager to issue a request to shutdown the node
 	ShutdownNodeFunc func(exitCode int)
 	MeterVMEnabled   bool // Should each VM be wrapped with a MeterVM
@@ -449,11 +449,11 @@ func (m *manager) buildChain(chainParams ChainParameters, sb supernets.Supernet)
 
 	ctx := &snow.ConsensusContext{
 		Context: &snow.Context{
-			NetworkID: m.NetworkID,
-			SupernetID:  chainParams.SupernetID,
-			ChainID:   chainParams.ID,
-			NodeID:    m.NodeID,
-			PublicKey: bls.PublicFromSecretKey(m.StakingBLSKey),
+			NetworkID:  m.NetworkID,
+			SupernetID: chainParams.SupernetID,
+			ChainID:    chainParams.ID,
+			NodeID:     m.NodeID,
+			PublicKey:  bls.PublicFromSecretKey(m.StakingBLSKey),
 
 			XChainID:     m.XChainID,
 			CChainID:     m.CChainID,
@@ -911,7 +911,6 @@ func (m *manager) createAvalancheChain(
 		TxBlocked:                      txBlocker,
 		Manager:                        vtxManager,
 		VM:                             linearizableVM,
-		LinearizeOnStartup:             true,
 	}
 
 	avalancheBootstrapper, err := avbootstrap.New(
@@ -1012,7 +1011,7 @@ func (m *manager) createSnowmanChain(
 	}
 
 	var (
-		bootstrapFunc   func()
+		bootstrapFunc     func()
 		supernetConnector = validators.UnhandledSupernetConnector
 	)
 	// If [m.validatorState] is nil then we are creating the P-Chain. Since the

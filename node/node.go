@@ -866,6 +866,7 @@ func (n *Node) initChains(genesisBytes []byte) error {
 		SupernetID:    constants.PrimaryNetworkID,
 		GenesisData:   genesisBytes, // Specifies other chains to create
 		VMID:          constants.PlatformVMID,
+		ChainAssetID:  n.Config.AvaxAssetID,
 		CustomBeacons: n.bootstrappers,
 	}
 

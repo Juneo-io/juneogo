@@ -458,7 +458,7 @@ func (v *verifier) processStandardTxs(txs []*txs.Tx, state state.Diff, parentID 
 		funcs          = make([]func(), 0, len(txs))
 		atomicRequests = make(map[ids.ID]*atomic.Requests)
 	)
-	feePoolValue := onAcceptState.GetFeePoolValue()
+	feePoolValue := state.GetFeePoolValue()
 	for _, tx := range txs {
 		txExecutor := executor.StandardTxExecutor{
 			Backend: v.txExecutorBackend,
@@ -479,13 +479,7 @@ func (v *verifier) processStandardTxs(txs []*txs.Tx, state state.Diff, parentID 
 
 		newFeePoolValue, err := math.Add64(feePoolValue, tx.Unsigned.ConsumedValue(v.ctx.AVAXAssetID))
 		if err != nil {
-			return err
-		}
-		feePoolValue = newFeePoolValue
-
-		newFeePoolValue, err := math.Add64(feePoolValue, tx.Unsigned.ConsumedValue(v.ctx.AVAXAssetID))
-		if err != nil {
-			return err
+			return nil, nil, nil, err
 		}
 		feePoolValue = newFeePoolValue
 
@@ -507,7 +501,7 @@ func (v *verifier) processStandardTxs(txs []*txs.Tx, state state.Diff, parentID 
 		}
 	}
 
-	onAcceptState.SetFeePoolValue(feePoolValue)
+	state.SetFeePoolValue(feePoolValue)
 
 	if err := v.verifyUniqueInputs(parentID, inputs); err != nil {
 		return nil, nil, nil, err

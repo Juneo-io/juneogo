@@ -520,7 +520,7 @@ type GetFeePoolValueArgs struct{}
 
 // GetFeePoolValueReply defines the GetFeePoolValue replies returned from the API
 type GetFeePoolValueReply struct {
-	FeePoolValue json.Uint64 `json:"feePoolValue"`
+	FeePoolValue avajson.Uint64 `json:"feePoolValue"`
 }
 
 // GetAssetDescription creates an empty account with the name passed in
@@ -531,7 +531,7 @@ func (s *Service) GetFeePoolValue(_ *http.Request, args *GetFeePoolValueArgs, re
 	)
 
 	feePoolValue := s.vm.state.GetFeePoolValue()
-	reply.FeePoolValue = json.Uint64(feePoolValue)
+	reply.FeePoolValue = avajson.Uint64(feePoolValue)
 
 	return nil
 }

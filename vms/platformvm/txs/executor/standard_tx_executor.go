@@ -14,6 +14,7 @@ import (
 	"github.com/Juneo-io/juneogo/chains/atomic"
 	"github.com/Juneo-io/juneogo/ids"
 	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/math"
 	"github.com/Juneo-io/juneogo/utils/set"
 	"github.com/Juneo-io/juneogo/vms/components/avax"
 	"github.com/Juneo-io/juneogo/vms/components/verify"
@@ -607,6 +608,11 @@ func (e *StandardTxExecutor) putStaker(stakerTx txs.Staker) error {
 				return err
 			}
 
+			rewardPoolSupply, err := e.State.GetRewardPoolSupply(supernetID)
+			if err != nil {
+				return err
+			}
+
 			rewards, err := GetRewardsCalculator(e.Backend, e.State, supernetID)
 			if err != nil {
 				return err
@@ -615,11 +621,43 @@ func (e *StandardTxExecutor) putStaker(stakerTx txs.Staker) error {
 			// Post-Durango, stakers are immediately added to the current staker
 			// set. Their [StartTime] is the current chain time.
 			stakeDuration := stakerTx.EndTime().Sub(chainTime)
-			potentialReward = rewards.Calculate(
-				stakeDuration,
-				stakerTx.Weight(),
-				currentSupply,
-			)
+
+			if supernetID == constants.PrimaryNetworkID {
+				potentialReward = rewards.CalculatePrimary(
+					stakeDuration,
+					chainTime,
+					stakerTx.Weight(),
+				)
+			} else {
+				potentialReward = rewards.Calculate(
+					stakeDuration,
+					chainTime,
+					stakerTx.Weight(),
+					rewardPoolSupply,
+				)
+			}
+
+			// Reward value above reward pool supply.
+			extraValue := uint64(0)
+			if supernetID == constants.PrimaryNetworkID {
+				if potentialReward > rewardPoolSupply {
+					extraValue = potentialReward - rewardPoolSupply
+				}
+				if extraValue > 0 {
+					// Extra value will be minted update supply accordingly.
+					currentSupply, err = math.Add64(currentSupply, extraValue)
+					if err != nil {
+						return err
+					}
+				}
+			}
+
+			rewardPoolSupply, err = math.Sub(rewardPoolSupply, potentialReward-extraValue)
+			if err != nil {
+				return err
+			}
+
+			e.State.SetRewardPoolSupply(supernetID, rewardPoolSupply)
 
 			e.State.SetCurrentSupply(supernetID, currentSupply+potentialReward)
 		}

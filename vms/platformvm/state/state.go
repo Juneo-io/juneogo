@@ -57,7 +57,7 @@ var (
 	_ State = (*state)(nil)
 
 	errValidatorSetAlreadyPopulated = errors.New("validator set already populated")
-	errIsNotSupernet                  = errors.New("is not a supernet")
+	errIsNotSupernet                = errors.New("is not a supernet")
 
 	BlockIDPrefix                       = []byte("blockID")
 	BlockPrefix                         = []byte("block")
@@ -66,8 +66,8 @@ var (
 	PendingPrefix                       = []byte("pending")
 	ValidatorPrefix                     = []byte("validator")
 	DelegatorPrefix                     = []byte("delegator")
-	SupernetValidatorPrefix               = []byte("supernetValidator")
-	SupernetDelegatorPrefix               = []byte("supernetDelegator")
+	SupernetValidatorPrefix             = []byte("supernetValidator")
+	SupernetDelegatorPrefix             = []byte("supernetDelegator")
 	NestedValidatorWeightDiffsPrefix    = []byte("validatorDiffs")
 	NestedValidatorPublicKeyDiffsPrefix = []byte("publicKeyDiffs")
 	FlatValidatorWeightDiffsPrefix      = []byte("flatValidatorDiffs")
@@ -75,9 +75,9 @@ var (
 	TxPrefix                            = []byte("tx")
 	RewardUTXOsPrefix                   = []byte("rewardUTXOs")
 	UTXOPrefix                          = []byte("utxo")
-	SupernetPrefix                        = []byte("supernet")
-	SupernetOwnerPrefix                   = []byte("supernetOwner")
-	TransformedSupernetPrefix             = []byte("transformedSupernet")
+	SupernetPrefix                      = []byte("supernet")
+	SupernetOwnerPrefix                 = []byte("supernetOwner")
+	TransformedSupernetPrefix           = []byte("transformedSupernet")
 	SupplyPrefix                        = []byte("supply")
 	rewardsSupplyPrefix                 = []byte("rewardsSupply")
 	ChainPrefix                         = []byte("chain")
@@ -317,21 +317,21 @@ type state struct {
 	blockCache  cache.Cacher[ids.ID, block.Block] // cache of blockID -> Block. If the entry is nil, it is not in the database
 	blockDB     database.Database
 
-	validatorsDB                 database.Database
-	currentValidatorsDB          database.Database
-	currentValidatorBaseDB       database.Database
-	currentValidatorList         linkeddb.LinkedDB
-	currentDelegatorBaseDB       database.Database
-	currentDelegatorList         linkeddb.LinkedDB
+	validatorsDB                   database.Database
+	currentValidatorsDB            database.Database
+	currentValidatorBaseDB         database.Database
+	currentValidatorList           linkeddb.LinkedDB
+	currentDelegatorBaseDB         database.Database
+	currentDelegatorList           linkeddb.LinkedDB
 	currentSupernetValidatorBaseDB database.Database
 	currentSupernetValidatorList   linkeddb.LinkedDB
 	currentSupernetDelegatorBaseDB database.Database
 	currentSupernetDelegatorList   linkeddb.LinkedDB
-	pendingValidatorsDB          database.Database
-	pendingValidatorBaseDB       database.Database
-	pendingValidatorList         linkeddb.LinkedDB
-	pendingDelegatorBaseDB       database.Database
-	pendingDelegatorList         linkeddb.LinkedDB
+	pendingValidatorsDB            database.Database
+	pendingValidatorBaseDB         database.Database
+	pendingValidatorList           linkeddb.LinkedDB
+	pendingDelegatorBaseDB         database.Database
+	pendingDelegatorList           linkeddb.LinkedDB
 	pendingSupernetValidatorBaseDB database.Database
 	pendingSupernetValidatorList   linkeddb.LinkedDB
 	pendingSupernetDelegatorBaseDB database.Database
@@ -424,7 +424,7 @@ func (v *ValidatorWeightDiff) Add(negative bool, amount uint64) error {
 }
 
 type heightWithSupernet struct {
-	Height   uint64 `serialize:"true"`
+	Height     uint64 `serialize:"true"`
 	SupernetID ids.ID `serialize:"true"`
 }
 
@@ -677,19 +677,19 @@ func newState(
 		currentValidatorList:            linkeddb.NewDefault(currentValidatorBaseDB),
 		currentDelegatorBaseDB:          currentDelegatorBaseDB,
 		currentDelegatorList:            linkeddb.NewDefault(currentDelegatorBaseDB),
-		currentSupernetValidatorBaseDB:    currentSupernetValidatorBaseDB,
-		currentSupernetValidatorList:      linkeddb.NewDefault(currentSupernetValidatorBaseDB),
-		currentSupernetDelegatorBaseDB:    currentSupernetDelegatorBaseDB,
-		currentSupernetDelegatorList:      linkeddb.NewDefault(currentSupernetDelegatorBaseDB),
+		currentSupernetValidatorBaseDB:  currentSupernetValidatorBaseDB,
+		currentSupernetValidatorList:    linkeddb.NewDefault(currentSupernetValidatorBaseDB),
+		currentSupernetDelegatorBaseDB:  currentSupernetDelegatorBaseDB,
+		currentSupernetDelegatorList:    linkeddb.NewDefault(currentSupernetDelegatorBaseDB),
 		pendingValidatorsDB:             pendingValidatorsDB,
 		pendingValidatorBaseDB:          pendingValidatorBaseDB,
 		pendingValidatorList:            linkeddb.NewDefault(pendingValidatorBaseDB),
 		pendingDelegatorBaseDB:          pendingDelegatorBaseDB,
 		pendingDelegatorList:            linkeddb.NewDefault(pendingDelegatorBaseDB),
-		pendingSupernetValidatorBaseDB:    pendingSupernetValidatorBaseDB,
-		pendingSupernetValidatorList:      linkeddb.NewDefault(pendingSupernetValidatorBaseDB),
-		pendingSupernetDelegatorBaseDB:    pendingSupernetDelegatorBaseDB,
-		pendingSupernetDelegatorList:      linkeddb.NewDefault(pendingSupernetDelegatorBaseDB),
+		pendingSupernetValidatorBaseDB:  pendingSupernetValidatorBaseDB,
+		pendingSupernetValidatorList:    linkeddb.NewDefault(pendingSupernetValidatorBaseDB),
+		pendingSupernetDelegatorBaseDB:  pendingSupernetDelegatorBaseDB,
+		pendingSupernetDelegatorList:    linkeddb.NewDefault(pendingSupernetDelegatorBaseDB),
 		nestedValidatorWeightDiffsDB:    nestedValidatorWeightDiffsDB,
 		nestedValidatorPublicKeyDiffsDB: nestedValidatorPublicKeyDiffsDB,
 		flatValidatorWeightDiffsDB:      flatValidatorWeightDiffsDB,
@@ -1274,7 +1274,7 @@ func (s *state) ApplyValidatorWeightDiffs(
 		}
 
 		prefixStruct := heightWithSupernet{
-			Height:   height,
+			Height:     height,
 			SupernetID: supernetID,
 		}
 		prefixBytes, err := block.GenesisCodec.Marshal(block.CodecVersion, prefixStruct)
@@ -1421,8 +1421,9 @@ func (s *state) syncGenesis(genesisBlk block.Block, genesis *genesis.Genesis) er
 			return fmt.Errorf("expected a scheduled staker but got %T", vdrTx.Unsigned)
 		}
 
-		stakeAmount := tx.Validator.Wght
-		stakeDuration := tx.Validator.Duration()
+		stakeAmount := validatorTx.Weight()
+		startTime := validatorTx.StartTime()
+		stakeDuration := validatorTx.EndTime().Sub(startTime)
 
 		potentialReward := s.rewards.CalculatePrimary(
 			stakeDuration,
@@ -1851,7 +1852,7 @@ func (s *state) write(updateValidators bool, height uint64) error {
 		codecVersion = CodecVersion0
 	}
 
-	return utils.Err(
+	errs := utils.Err(
 		s.writeBlocks(),
 		s.writeCurrentStakers(updateValidators, height, codecVersion),
 		s.writePendingStakers(),
@@ -1873,8 +1874,8 @@ func (s *state) write(updateValidators bool, height uint64) error {
 	} else {
 		metadataErr = s.writeMetadata()
 	}
-	errs.Add(metadataErr)
-	return errs.Err
+	utils.Err(errs, metadataErr)
+	return errs
 }
 
 func (s *state) Close() error {
@@ -2108,7 +2109,7 @@ func (s *state) writeCurrentStakers(updateValidators bool, height uint64, codecV
 		}
 
 		prefixStruct := heightWithSupernet{
-			Height:   height,
+			Height:     height,
 			SupernetID: supernetID,
 		}
 		prefixBytes, err := block.GenesisCodec.Marshal(block.CodecVersion, prefixStruct)
@@ -2771,11 +2772,11 @@ func (s *state) PruneAndIndex(lock sync.Locker, log logging.Logger) error {
 }
 
 func (s *state) forceWriteMetadata() error {
-	if err := database.PutTimestamp(s.singletonDB, timestampKey, s.timestamp); err != nil {
+	if err := database.PutTimestamp(s.singletonDB, TimestampKey, s.timestamp); err != nil {
 		return fmt.Errorf("failed to force write timestamp: %w", err)
 	}
 	s.persistedTimestamp = s.timestamp
-	if err := database.PutUInt64(s.singletonDB, currentSupplyKey, s.currentSupply); err != nil {
+	if err := database.PutUInt64(s.singletonDB, CurrentSupplyKey, s.currentSupply); err != nil {
 		return fmt.Errorf("failed to force write current supply: %w", err)
 	}
 	s.persistedCurrentSupply = s.currentSupply
@@ -2787,7 +2788,7 @@ func (s *state) forceWriteMetadata() error {
 		return fmt.Errorf("failed to write fee pool value: %w", err)
 	}
 	s.persistedFeePoolValue = s.feePoolValue
-	if err := database.PutID(s.singletonDB, lastAcceptedKey, s.lastAccepted); err != nil {
+	if err := database.PutID(s.singletonDB, LastAcceptedKey, s.lastAccepted); err != nil {
 		return fmt.Errorf("failed to force write last accepted: %w", err)
 	}
 	s.persistedLastAccepted = s.lastAccepted

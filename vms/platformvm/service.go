@@ -58,12 +58,12 @@ const (
 )
 
 var (
-	errMissingDecisionBlock       = errors.New("should have a decision block within the past two blocks")
+	errMissingDecisionBlock         = errors.New("should have a decision block within the past two blocks")
 	errPrimaryNetworkIsNotASupernet = errors.New("the primary network isn't a supernet")
-	errNoAddresses                = errors.New("no addresses provided")
-	errMissingBlockchainID        = errors.New("argument 'blockchainID' not given")
-	errStartAfterEndTime          = errors.New("start time must be before end time")
-	errStartTimeInThePast         = errors.New("start time in the past")
+	errNoAddresses                  = errors.New("no addresses provided")
+	errMissingBlockchainID          = errors.New("argument 'blockchainID' not given")
+	errStartAfterEndTime            = errors.New("start time must be before end time")
+	errStartTimeInThePast           = errors.New("start time in the past")
 )
 
 // Service defines the API calls that can be made to the platform chain
@@ -1101,7 +1101,7 @@ type GetRewardPoolSupplyArgs struct {
 
 // GetRewardPoolSupplyReply are the results from calling GetRewardPoolSupply
 type GetRewardPoolSupplyReply struct {
-	RewardPoolSupply json.Uint64 `json:"rewardPoolSupply"`
+	RewardPoolSupply avajson.Uint64 `json:"rewardPoolSupply"`
 }
 
 // GetRewardPoolSupply returns an upper bound on the supply of AVAX in the system
@@ -1112,20 +1112,20 @@ func (s *Service) GetRewardPoolSupply(_ *http.Request, args *GetRewardPoolSupply
 	)
 
 	rewardPoolSupply, err := s.vm.state.GetRewardPoolSupply(args.SupernetID)
-	reply.RewardPoolSupply = json.Uint64(rewardPoolSupply)
+	reply.RewardPoolSupply = avajson.Uint64(rewardPoolSupply)
 	return err
 }
 
 // GetFeePoolValueReply are the results from calling GetFeePoolValue
 type GetFeePoolValueReply struct {
-	FeePoolValue json.Uint64 `json:"feePoolValue"`
+	FeePoolValue avajson.Uint64 `json:"feePoolValue"`
 }
 
 // GetFeePoolValue returns the current value in the fee pool
 func (s *Service) GetFeePoolValue(_ *http.Request, _ *struct{}, reply *GetFeePoolValueReply) error {
 	s.vm.ctx.Log.Debug("Platform: GetFeePoolValue called")
 
-	reply.FeePoolValue = json.Uint64(s.vm.state.GetFeePoolValue())
+	reply.FeePoolValue = avajson.Uint64(s.vm.state.GetFeePoolValue())
 	return nil
 }
 
@@ -1411,7 +1411,7 @@ func (s *Service) GetBlockchains(_ *http.Request, _ *struct{}, response *GetBloc
 			response.Blockchains = append(response.Blockchains, APIBlockchain{
 				ID:           chainID,
 				Name:         chain.ChainName,
-				SupernetID:     supernetID,
+				SupernetID:   supernetID,
 				VMID:         chain.VMID,
 				ChainAssetID: chain.ChainAssetID,
 			})
@@ -1431,7 +1431,7 @@ func (s *Service) GetBlockchains(_ *http.Request, _ *struct{}, response *GetBloc
 		response.Blockchains = append(response.Blockchains, APIBlockchain{
 			ID:           chainID,
 			Name:         chain.ChainName,
-			SupernetID:     constants.PrimaryNetworkID,
+			SupernetID:   constants.PrimaryNetworkID,
 			VMID:         chain.VMID,
 			ChainAssetID: chain.ChainAssetID,
 		})
@@ -1754,10 +1754,10 @@ func (s *Service) GetTotalStake(_ *http.Request, args *GetTotalStakeArgs, reply 
 
 // GetMaxStakeAmountArgs is the request for calling GetMaxStakeAmount.
 type GetMaxStakeAmountArgs struct {
-	SupernetID  ids.ID         `json:"supernetID"`
-	NodeID    ids.NodeID     `json:"nodeID"`
-	StartTime avajson.Uint64 `json:"startTime"`
-	EndTime   avajson.Uint64 `json:"endTime"`
+	SupernetID ids.ID         `json:"supernetID"`
+	NodeID     ids.NodeID     `json:"nodeID"`
+	StartTime  avajson.Uint64 `json:"startTime"`
+	EndTime    avajson.Uint64 `json:"endTime"`
 }
 
 // GetMaxStakeAmountReply is the response from calling GetMaxStakeAmount.
@@ -1874,7 +1874,7 @@ func (s *Service) GetTimestamp(_ *http.Request, _ *struct{}, reply *GetTimestamp
 
 // GetValidatorsAtArgs is the response from GetValidatorsAt
 type GetValidatorsAtArgs struct {
-	Height   avajson.Uint64 `json:"height"`
+	Height     avajson.Uint64 `json:"height"`
 	SupernetID ids.ID         `json:"supernetID"`
 }
 

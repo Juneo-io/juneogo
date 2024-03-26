@@ -9,7 +9,7 @@ import (
 	"sync"
 )
 
-const LegacyAppName = "avalanche"
+const LegacyAppName = "juneo"
 
 var (
 	errDifferentMajor = errors.New("different major version")
