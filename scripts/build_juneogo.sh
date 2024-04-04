@@ -35,7 +35,7 @@ go mod download
 # Changes to the minimum golang version must also be replicated in
 # README.md
 # go.mod
-go_version_minimum="1.19"
+go_version_minimum="1.21"
 
 go_version() {
     go version | sed -nE -e 's/[^0-9.]+([0-9.]+).+/\1/p'

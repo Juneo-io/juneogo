@@ -22,7 +22,7 @@ const _ = grpc.SupportPackageIsVersion7
 const (
 	ValidatorState_GetMinimumHeight_FullMethodName = "/validatorstate.ValidatorState/GetMinimumHeight"
 	ValidatorState_GetCurrentHeight_FullMethodName = "/validatorstate.ValidatorState/GetCurrentHeight"
-	ValidatorState_GetSupernetID_FullMethodName      = "/validatorstate.ValidatorState/GetSupernetID"
+	ValidatorState_GetSupernetID_FullMethodName    = "/validatorstate.ValidatorState/GetSupernetID"
 	ValidatorState_GetValidatorSet_FullMethodName  = "/validatorstate.ValidatorState/GetValidatorSet"
 )
 
