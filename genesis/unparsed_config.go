@@ -103,6 +103,8 @@ type UnparsedConfig struct {
 	MBTC1ChainGenesis string `json:"MBTC1ChainGenesis"`
 	DOGE1ChainGenesis string `json:"DOGE1ChainGenesis"`
 	LTC1ChainGenesis  string `json:"LTC1ChainGenesis"`
+	BCH1ChainGenesis  string `json:"BCH1ChainGenesis"`
+	LINK1ChainGenesis string `json:"LINK1ChainGenesis"`
 
 	Message string `json:"message"`
 }
@@ -127,6 +129,8 @@ func (uc UnparsedConfig) Parse() (Config, error) {
 		MBTC1ChainGenesis:          uc.MBTC1ChainGenesis,
 		DOGE1ChainGenesis:          uc.DOGE1ChainGenesis,
 		LTC1ChainGenesis:           uc.LTC1ChainGenesis,
+		BCH1ChainGenesis:           uc.BCH1ChainGenesis,
+		LINK1ChainGenesis:          uc.LINK1ChainGenesis,
 		Message:                    uc.Message,
 	}
 	for i, ua := range uc.Allocations {

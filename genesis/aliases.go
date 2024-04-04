@@ -116,6 +116,18 @@ func Aliases(genesisBytes []byte) (map[string][]string, map[ids.ID][]string, err
 				path.Join(constants.ChainAliasPrefix, "LTC1"),
 			}
 			chainAliases[chainID] = []string{"LTC1"}
+		case "BCH1-Chain":
+			apiAliases[endpoint] = []string{
+				"BCH1",
+				path.Join(constants.ChainAliasPrefix, "BCH1"),
+			}
+			chainAliases[chainID] = []string{"BCH1"}
+		case "LINK1-Chain":
+			apiAliases[endpoint] = []string{
+				"LINK1",
+				path.Join(constants.ChainAliasPrefix, "LINK1"),
+			}
+			chainAliases[chainID] = []string{"LINK1"}
 		}
 	}
 	return apiAliases, chainAliases, nil

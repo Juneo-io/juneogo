@@ -203,6 +203,12 @@ func validateConfig(networkID uint32, config *Config, stakingCfg *StakingConfig)
 	if len(config.LTC1ChainGenesis) == 0 {
 		return errNoEVMChainGenesis
 	}
+	if len(config.BCH1ChainGenesis) == 0 {
+		return errNoEVMChainGenesis
+	}
+	if len(config.LINK1ChainGenesis) == 0 {
+		return errNoEVMChainGenesis
+	}
 
 	return nil
 }
@@ -302,7 +308,7 @@ func FromConfig(config *Config) ([]byte, ids.ID, error) {
 	amount := uint64(0)
 	assetsCount := int(0)
 
-	var june, usdt1, usd1, dai1, eur1, sgd1, gld1, mbtc1, doge1, ltc1 avm.AssetDefinition
+	var june, usdt1, usd1, dai1, eur1, sgd1, gld1, mbtc1, doge1, ltc1, bch1, link1 avm.AssetDefinition
 
 	// Specify the genesis state of the JVM
 	avmArgs := avm.BuildGenesisArgs{
@@ -361,6 +367,8 @@ func FromConfig(config *Config) ([]byte, ids.ID, error) {
 		mbtc1 = createFixedAsset("Mili Bitcoin", "mBTC1", 9, zeroAddress)
 		doge1 = createFixedAsset("Dogecoin", "DOGE1", 9, zeroAddress)
 		ltc1 = createFixedAsset("Litecoin", "LTC1", 9, zeroAddress)
+		bch1 = createFixedAsset("Bitcoin Cash", "BCH1", 9, zeroAddress)
+		link1 = createFixedAsset("Chainlink", "LINK1", 9, zeroAddress)
 
 		avmArgs.GenesisData = map[string]avm.AssetDefinition{
 			june.Symbol:  june,
@@ -373,6 +381,8 @@ func FromConfig(config *Config) ([]byte, ids.ID, error) {
 			mbtc1.Symbol: mbtc1,
 			doge1.Symbol: doge1,
 			ltc1.Symbol:  ltc1,
+			bch1.Symbol:  bch1,
+			link1.Symbol: link1,
 		}
 		assetsCount = len(avmArgs.GenesisData)
 	}
@@ -535,10 +545,18 @@ func FromConfig(config *Config) ([]byte, ids.ID, error) {
 	if err != nil {
 		return nil, ids.Empty, fmt.Errorf("couldn't encode message: %w", err)
 	}
+	bch1GenesisStr, err := formatting.Encode(defaultEncoding, []byte(config.BCH1ChainGenesis))
+	if err != nil {
+		return nil, ids.Empty, fmt.Errorf("couldn't encode message: %w", err)
+	}
+	link1GenesisStr, err := formatting.Encode(defaultEncoding, []byte(config.LINK1ChainGenesis))
+	if err != nil {
+		return nil, ids.Empty, fmt.Errorf("couldn't encode message: %w", err)
+	}
 	platformvmArgs.Chains = []api.Chain{
 		{
 			GenesisData: avmReply.Bytes,
-			SupernetID:    constants.PrimaryNetworkID,
+			SupernetID:  constants.PrimaryNetworkID,
 			VMID:        constants.AVMID,
 			FxIDs: []ids.ID{
 				secp256k1fx.ID,
@@ -550,73 +568,87 @@ func FromConfig(config *Config) ([]byte, ids.ID, error) {
 		},
 		{
 			GenesisData:  juneGenesisStr,
-			SupernetID:     constants.PrimaryNetworkID,
+			SupernetID:   constants.PrimaryNetworkID,
 			VMID:         constants.EVMID,
 			Name:         "JUNE-Chain",
 			ChainAssetID: assetsIDs[june.Symbol],
 		},
 		{
 			GenesisData:  usdt1GenesisStr,
-			SupernetID:     constants.PrimaryNetworkID,
+			SupernetID:   constants.PrimaryNetworkID,
 			VMID:         constants.EVMID,
 			Name:         "USDT1-Chain",
 			ChainAssetID: assetsIDs[usdt1.Symbol],
 		},
 		{
 			GenesisData:  usd1GenesisStr,
-			SupernetID:     constants.PrimaryNetworkID,
+			SupernetID:   constants.PrimaryNetworkID,
 			VMID:         constants.EVMID,
 			Name:         "USD1-Chain",
 			ChainAssetID: assetsIDs[usd1.Symbol],
 		},
 		{
 			GenesisData:  dai1GenesisStr,
-			SupernetID:     constants.PrimaryNetworkID,
+			SupernetID:   constants.PrimaryNetworkID,
 			VMID:         constants.EVMID,
 			Name:         "DAI1-Chain",
 			ChainAssetID: assetsIDs[dai1.Symbol],
 		},
 		{
 			GenesisData:  eur1GenesisStr,
-			SupernetID:     constants.PrimaryNetworkID,
+			SupernetID:   constants.PrimaryNetworkID,
 			VMID:         constants.EVMID,
 			Name:         "EUR1-Chain",
 			ChainAssetID: assetsIDs[eur1.Symbol],
 		},
 		{
 			GenesisData:  sgd1GenesisStr,
-			SupernetID:     constants.PrimaryNetworkID,
+			SupernetID:   constants.PrimaryNetworkID,
 			VMID:         constants.EVMID,
 			Name:         "SGD1-Chain",
 			ChainAssetID: assetsIDs[sgd1.Symbol],
 		},
 		{
 			GenesisData:  gld1GenesisStr,
-			SupernetID:     constants.PrimaryNetworkID,
+			SupernetID:   constants.PrimaryNetworkID,
 			VMID:         constants.EVMID,
 			Name:         "GLD1-Chain",
 			ChainAssetID: assetsIDs[gld1.Symbol],
 		},
 		{
 			GenesisData:  mbtc1GenesisStr,
-			SupernetID:     constants.PrimaryNetworkID,
+			SupernetID:   constants.PrimaryNetworkID,
 			VMID:         constants.EVMID,
 			Name:         "mBTC1-Chain",
 			ChainAssetID: assetsIDs[mbtc1.Symbol],
 		},
 		{
 			GenesisData:  doge1GenesisStr,
-			SupernetID:     constants.PrimaryNetworkID,
+			SupernetID:   constants.PrimaryNetworkID,
 			VMID:         constants.EVMID,
 			Name:         "DOGE1-Chain",
 			ChainAssetID: assetsIDs[doge1.Symbol],
 		},
 		{
 			GenesisData:  ltc1GenesisStr,
-			SupernetID:     constants.PrimaryNetworkID,
+			SupernetID:   constants.PrimaryNetworkID,
 			VMID:         constants.EVMID,
 			Name:         "LTC1-Chain",
 			ChainAssetID: assetsIDs[ltc1.Symbol],
+		},
+		{
+			GenesisData:  bch1GenesisStr,
+			SupernetID:   constants.PrimaryNetworkID,
+			VMID:         constants.EVMID,
+			Name:         "BCH1-Chain",
+			ChainAssetID: assetsIDs[bch1.Symbol],
+		},
+		{
+			GenesisData:  link1GenesisStr,
+			SupernetID:   constants.PrimaryNetworkID,
+			VMID:         constants.EVMID,
+			Name:         "LINK1-Chain",
+			ChainAssetID: assetsIDs[link1.Symbol],
 		},
 	}
 
