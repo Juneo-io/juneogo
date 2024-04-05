@@ -125,16 +125,12 @@ var (
 		constants.TestnetID: time.Date(2023, time.April, 6, 15, 0, 0, 0, time.UTC),
 	}
 	CortinaXChainStopVertexID = map[uint32]ids.ID{
-		// The mainnet stop vertex is well known. It can be verified on any
-		// fully synced node by looking at the parentID of the genesis block.
-		//
-		// Ref: https://supernets.avax.network/x-chain/block/0
 		constants.MainnetID: ids.FromStringOrPanic("jrGWDh5Po9FMj54depyunNixpia5PN4aAYxfmNzU8n752Rjga"),
-		constants.TestnetID: ids.FromStringOrPanic("2oMvTs9hsTW4vuyudA1S6jhUHHHAxQvUoQ7cSamN7f838C6axG"),
+		constants.TestnetID: ids.FromStringOrPanic("qXsVYV9eBiZFUSYdCw5MALrebD92LJcvvZHCvCEHCorJHyaPL"),
 	}
 
 	DurangoTimes = map[uint32]time.Time{
-		constants.MainnetID: time.Date(2030, time.March, 6, 16, 0, 0, 0, time.UTC),
+		constants.MainnetID: time.Date(2024, time.March, 6, 16, 0, 0, 0, time.UTC),
 		constants.TestnetID: time.Date(2024, time.March, 27, 16, 0, 0, 0, time.UTC),
 	}
 )

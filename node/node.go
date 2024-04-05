@@ -80,9 +80,9 @@ import (
 	"github.com/Juneo-io/juneogo/vms/registry"
 	"github.com/Juneo-io/juneogo/vms/rpcchainvm/runtime"
 
+	coreth "github.com/Juneo-io/jeth/plugin/evm"
 	avmconfig "github.com/Juneo-io/juneogo/vms/avm/config"
 	platformconfig "github.com/Juneo-io/juneogo/vms/platformvm/config"
-	coreth "github.com/ava-labs/coreth/plugin/evm"
 )
 
 const (
