@@ -46,9 +46,11 @@ var (
 				MaxStakePeriod:         socotraMaxStakeDuration,
 				StakePeriodRewardShare: 2_0000,  // 2%
 				StartRewardShare:       21_5000, // 21.5%
-				StartRewardTime:        uint64(time.Date(2023, time.April, 1, 0, 0, 0, 0, time.UTC).Unix()),
+				StartRewardTime:        uint64(time.Date(2024, time.April, 1, 0, 0, 0, 0, time.UTC).Unix()),
+				DiminishingRewardShare: 19_5000, // 19.5%
+				DiminishingRewardTime:  uint64(time.Date(2028, time.April, 1, 0, 0, 0, 0, time.UTC).Unix()),
 				TargetRewardShare:      6_7000, // 6.7%
-				TargetRewardTime:       uint64(time.Date(2028, time.April, 1, 0, 0, 0, 0, time.UTC).Unix()),
+				TargetRewardTime:       uint64(time.Date(2029, time.April, 1, 0, 0, 0, 0, time.UTC).Unix()),
 			},
 		},
 	}

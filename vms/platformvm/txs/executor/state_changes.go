@@ -183,7 +183,7 @@ func AdvanceTimeTo(
 		}
 		changes.SetRewardPoolSupply(stakerToRemove.SupernetID, rewardPoolSupply)
 
-		changes.SetCurrentSupply(stakerToRemove.SupernetID, supply+potentialReward)
+		changes.SetCurrentSupply(stakerToRemove.SupernetID, supply)
 
 		switch stakerToRemove.Priority {
 		case txs.PrimaryNetworkValidatorPendingPriority, txs.SupernetPermissionlessValidatorPendingPriority:
@@ -256,5 +256,8 @@ func GetRewardsCalculator(
 		StartRewardTime:        transformSupernet.StartRewardTime,
 		TargetRewardShare:      transformSupernet.TargetRewardShare,
 		TargetRewardTime:       transformSupernet.TargetRewardTime,
+		// Primary only values
+		DiminishingRewardShare: uint64(0),
+		DiminishingRewardTime:  uint64(0),
 	}), nil
 }

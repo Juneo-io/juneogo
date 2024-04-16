@@ -23,6 +23,8 @@ type calculator struct {
 	stakePeriodRewardShare uint64
 	startRewardShare       uint64
 	startRewardTime        uint64
+	diminishingRewardShare uint64
+	diminishingRewardTime  uint64
 	targetRewardShare      uint64
 	targetRewardTime       uint64
 }
@@ -34,15 +36,12 @@ func NewCalculator(c Config) Calculator {
 		stakePeriodRewardShare: c.StakePeriodRewardShare,
 		startRewardShare:       c.StartRewardShare,
 		startRewardTime:        c.StartRewardTime,
+		diminishingRewardShare: c.DiminishingRewardShare,
+		diminishingRewardTime:  c.DiminishingRewardTime,
 		targetRewardShare:      c.TargetRewardShare,
 		targetRewardTime:       c.TargetRewardTime,
 	}
 }
-
-var (
-	DiminishingRewardTime  = uint64(time.Date(2027, time.December, 18, 0, 0, 0, 0, time.UTC).Unix())
-	DiminishingRewardShare = uint64(19_5000)
-)
 
 func (c *calculator) Calculate(stakedDuration time.Duration, currentTime time.Time, stakeAmount uint64, rewardPoolSupply uint64) uint64 {
 	boundsPercentage := getRemainingTimeBoundsPercentage(c.startRewardTime, c.targetRewardTime, uint64(currentTime.Unix()))
@@ -91,18 +90,18 @@ func (c *calculator) getCurrentPrimaryReward(currentTime uint64) *big.Int {
 	if currentTime >= c.targetRewardTime {
 		return new(big.Int).SetUint64(c.targetRewardShare)
 	}
-	if currentTime >= DiminishingRewardTime {
+	if currentTime >= c.diminishingRewardTime {
 		return getReward(
 			c.targetRewardShare,
-			DiminishingRewardShare,
-			getRemainingTimeBoundsPercentage(DiminishingRewardTime, c.targetRewardTime, currentTime),
+			c.diminishingRewardShare,
+			getRemainingTimeBoundsPercentage(c.diminishingRewardTime, c.targetRewardTime, currentTime),
 		)
 	}
 	if currentTime >= c.startRewardTime {
 		return getReward(
-			DiminishingRewardShare,
+			c.diminishingRewardShare,
 			c.startRewardShare,
-			getRemainingTimeBoundsPercentage(c.startRewardTime, DiminishingRewardTime, currentTime),
+			getRemainingTimeBoundsPercentage(c.startRewardTime, c.diminishingRewardTime, currentTime),
 		)
 	}
 	// Start period or before

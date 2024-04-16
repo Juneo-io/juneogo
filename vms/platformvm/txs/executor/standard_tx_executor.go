@@ -659,7 +659,7 @@ func (e *StandardTxExecutor) putStaker(stakerTx txs.Staker) error {
 
 			e.State.SetRewardPoolSupply(supernetID, rewardPoolSupply)
 
-			e.State.SetCurrentSupply(supernetID, currentSupply+potentialReward)
+			e.State.SetCurrentSupply(supernetID, currentSupply)
 		}
 
 		staker, err = state.NewCurrentStaker(txID, stakerTx, chainTime, potentialReward)

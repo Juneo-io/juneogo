@@ -34,14 +34,26 @@ type Config struct {
 	// - Must be > 0
 	// - Must be <= [TargetRewardTime]
 	StartRewardTime uint64 `serialize:"true" json:"startRewardTime"`
-	// TargetRewardShare is the target final share of rewards given to validators.
+	// DiminishingRewardShare is the share of rewards given to validators at the start of diminishing year.
+	// Used only for calculation on Primary.
 	// Restrictions:
 	// - Must be > 0
 	// - Must be <= [StartRewardShare]
+	DiminishingRewardShare uint64 `serialize:"true" json:"diminishingRewardShare"`
+	// DiminishingRewardTime is the target timestamp that will be used to calculate
+	// the remaining percentage of rewards given to validators.
+	// Used only for calculation on Primary.
+	// Restrictions:
+	// - Must be >= [StartRewardTime]
+	DiminishingRewardTime uint64 `serialize:"true" json:"diminishingRewardTime"`
+	// TargetRewardShare is the target final share of rewards given to validators.
+	// Restrictions:
+	// - Must be > 0
+	// - Must be <= [DiminishingRewardShare]
 	TargetRewardShare uint64 `serialize:"true" json:"targetRewardShare"`
 	// TargetRewardTime is the target timestamp that will be used to calculate
 	// the remaining percentage of rewards given to validators.
 	// Restrictions:
-	// - Must be >= [StartRewardTime]
+	// - Must be >= [DiminishingRewardTime]
 	TargetRewardTime uint64 `serialize:"true" json:"targetRewardTime"`
 }

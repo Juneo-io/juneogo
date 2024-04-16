@@ -40,13 +40,13 @@ var (
 		TxFeeConfig: TxFeeConfig{
 			TxFee:                         10 * units.MilliAvax,
 			CreateAssetTxFee:              100 * units.MilliAvax,
-			CreateSupernetTxFee:             100 * units.MilliAvax,
-			TransformSupernetTxFee:          10 * units.Avax,
+			CreateSupernetTxFee:           100 * units.MilliAvax,
+			TransformSupernetTxFee:        10 * units.Avax,
 			CreateBlockchainTxFee:         100 * units.MilliAvax,
 			AddPrimaryNetworkValidatorFee: 0,
 			AddPrimaryNetworkDelegatorFee: 0,
-			AddSupernetValidatorFee:         100 * units.MilliAvax,
-			AddSupernetDelegatorFee:         100 * units.MilliAvax,
+			AddSupernetValidatorFee:       100 * units.MilliAvax,
+			AddSupernetDelegatorFee:       100 * units.MilliAvax,
 		},
 		StakingConfig: StakingConfig{
 			UptimeRequirement: .8, // 80%
@@ -63,7 +63,9 @@ var (
 				StakePeriodRewardShare: 2_0000,                                                             // 2%
 				StartRewardShare:       21_5000,                                                            // 21.5%
 				StartRewardTime:        uint64(time.Date(2023, time.June, 1, 0, 0, 0, 0, time.UTC).Unix()), // 1st June 2023
-				TargetRewardShare:      6_7000,                                                             // 6.7%
+				DiminishingRewardTime:  uint64(time.Date(2027, time.June, 21, 0, 0, 0, 0, time.UTC).Unix()),
+				DiminishingRewardShare: uint64(19_5000),
+				TargetRewardShare:      6_7000, // 6.7%
 				TargetRewardTime:       uint64(time.Date(2028, time.June, 21, 0, 0, 0, 0, time.UTC).Unix()),
 			},
 		},
