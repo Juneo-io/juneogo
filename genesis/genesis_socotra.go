@@ -49,7 +49,7 @@ var (
 				StartRewardTime:        uint64(time.Date(2024, time.April, 1, 0, 0, 0, 0, time.UTC).Unix()),
 				DiminishingRewardShare: 19_0000, // 19%
 				DiminishingRewardTime:  uint64(time.Date(2029, time.April, 1, 0, 0, 0, 0, time.UTC).Unix()),
-				TargetRewardShare:      6_8000, // 6.8%
+				TargetRewardShare:      6_6000, // 6.6%
 				TargetRewardTime:       uint64(time.Date(2030, time.April, 1, 0, 0, 0, 0, time.UTC).Unix()),
 			},
 		},
