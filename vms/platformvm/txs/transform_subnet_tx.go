@@ -23,9 +23,12 @@ var (
 	errInitialRewardPoolSupplyZero    = errors.New("initial reward pool supply must be non-0")
 	errStartRewardShareTooLarge       = fmt.Errorf("start reward share must be less than or equal to %d", reward.PercentDenominator)
 	errStartRewardTimeZero            = errors.New("start reward time must be non-0")
-	errStartRewardTimeTooLarge        = fmt.Errorf("start reward time must be less than or equal to target reward time")
+	errStartRewardTimeTooLarge        = fmt.Errorf("start reward time must be less than or equal to diminishing reward time")
+	errDiminishingRewardShareZero     = errors.New("diminishing reward share must be non-0")
+	errDiminishingRewardShareTooLarge = fmt.Errorf("diminishing reward share must be less than or equal to start reward share")
+	errDiminishingRewardTimeTooLarge  = fmt.Errorf("diminishing reward time must be less than or equal to target reward time")
 	errTargetRewardShareZero          = errors.New("target reward share must be non-0")
-	errTargetRewardShareTooLarge      = fmt.Errorf("target reward share must be less than or equal to start reward share")
+	errTargetRewardShareTooLarge      = fmt.Errorf("target reward share must be less than or equal to diminishing reward share")
 	errMinValidatorStakeZero          = errors.New("min validator stake must be non-0")
 	errMinValidatorStakeAboveMax      = errors.New("min validator stake must be less than or equal to max validator stake")
 	errMinStakeDurationZero           = errors.New("min stake duration must be non-0")
@@ -68,15 +71,25 @@ type TransformSupernetTx struct {
 	// - Must be > 0
 	// - Must be <= [TargetRewardTime]
 	StartRewardTime uint64 `serialize:"true" json:"startRewardTime"`
-	// TargetRewardShare is the target final share of rewards given to validators.
+	// DiminishingRewardShare is the share of rewards given to validators at the start of diminishing year.
 	// Restrictions:
 	// - Must be > 0
 	// - Must be <= [StartRewardShare]
+	DiminishingRewardShare uint64 `serialize:"true" json:"diminishingRewardShare"`
+	// DiminishingRewardTime is the target timestamp that will be used to calculate
+	// the remaining percentage of rewards given to validators.
+	// Restrictions:
+	// - Must be >= [StartRewardTime]
+	DiminishingRewardTime uint64 `serialize:"true" json:"diminishingRewardTime"`
+	// TargetRewardShare is the target final share of rewards given to validators.
+	// Restrictions:
+	// - Must be > 0
+	// - Must be <= [DiminishingRewardShare]
 	TargetRewardShare uint64 `serialize:"true" json:"targetRewardShare"`
 	// TargetRewardTime is the target timestamp that will be used to calculate
 	// the remaining percentage of rewards given to validators.
 	// Restrictions:
-	// - Must be >= [StartRewardTime]
+	// - Must be >= [DiminishingRewardTime]
 	TargetRewardTime uint64 `serialize:"true" json:"targetRewardTime"`
 	// MinValidatorStake is the minimum amount of funds required to become a
 	// validator.
@@ -153,11 +166,17 @@ func (tx *TransformSupernetTx) SyntacticVerify(ctx *snow.Context) error {
 		return errStartRewardShareTooLarge
 	case tx.StartRewardTime == 0:
 		return errStartRewardTimeZero
-	case tx.StartRewardTime > tx.TargetRewardTime:
+	case tx.StartRewardTime > tx.DiminishingRewardTime:
 		return errStartRewardTimeTooLarge
+	case tx.DiminishingRewardShare == 0:
+		return errDiminishingRewardShareZero
+	case tx.DiminishingRewardShare > tx.StartRewardShare:
+		return errDiminishingRewardShareTooLarge
+	case tx.DiminishingRewardTime > tx.TargetRewardTime:
+		return errDiminishingRewardTimeTooLarge
 	case tx.TargetRewardShare == 0:
 		return errTargetRewardShareZero
-	case tx.TargetRewardShare > tx.StartRewardShare:
+	case tx.TargetRewardShare > tx.DiminishingRewardShare:
 		return errTargetRewardShareTooLarge
 	case tx.MinValidatorStake == 0:
 		return errMinValidatorStakeZero

@@ -254,10 +254,9 @@ func GetRewardsCalculator(
 		StakePeriodRewardShare: transformSupernet.StakePeriodRewardShare,
 		StartRewardShare:       transformSupernet.StartRewardShare,
 		StartRewardTime:        transformSupernet.StartRewardTime,
+		DiminishingRewardShare: transformSupernet.DiminishingRewardShare,
+		DiminishingRewardTime:  transformSupernet.DiminishingRewardTime,
 		TargetRewardShare:      transformSupernet.TargetRewardShare,
 		TargetRewardTime:       transformSupernet.TargetRewardTime,
-		// Primary only values
-		DiminishingRewardShare: uint64(0),
-		DiminishingRewardTime:  uint64(0),
 	}), nil
 }
