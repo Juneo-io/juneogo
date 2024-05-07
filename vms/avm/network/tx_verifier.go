@@ -6,7 +6,7 @@ package network
 import (
 	"sync"
 
-	"github.com/Juneo-io/juneogo/vms/avm/txs"
+	"github.com/ava-labs/avalanchego/vms/avm/txs"
 )
 
 var _ TxVerifier = (*LockedTxVerifier)(nil)

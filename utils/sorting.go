@@ -8,7 +8,7 @@ import (
 	"cmp"
 	"slices"
 
-	"github.com/Juneo-io/juneogo/utils/hashing"
+	"github.com/ava-labs/avalanchego/utils/hashing"
 )
 
 // TODO can we handle sorting where the Compare function relies on a codec?

@@ -6,8 +6,8 @@ package uptime
 import (
 	"time"
 
-	"github.com/Juneo-io/juneogo/database"
-	"github.com/Juneo-io/juneogo/ids"
+	"github.com/ava-labs/avalanchego/database"
+	"github.com/ava-labs/avalanchego/ids"
 )
 
 var _ State = (*TestState)(nil)
@@ -30,29 +30,29 @@ func NewTestState() *TestState {
 	}
 }
 
-func (s *TestState) AddNode(nodeID ids.NodeID, supernetID ids.ID, startTime time.Time) {
-	supernetUptimes, ok := s.nodes[nodeID]
+func (s *TestState) AddNode(nodeID ids.NodeID, subnetID ids.ID, startTime time.Time) {
+	subnetUptimes, ok := s.nodes[nodeID]
 	if !ok {
-		supernetUptimes = make(map[ids.ID]*uptime)
-		s.nodes[nodeID] = supernetUptimes
+		subnetUptimes = make(map[ids.ID]*uptime)
+		s.nodes[nodeID] = subnetUptimes
 	}
 	st := time.Unix(startTime.Unix(), 0)
-	supernetUptimes[supernetID] = &uptime{
+	subnetUptimes[subnetID] = &uptime{
 		lastUpdated: st,
 		startTime:   st,
 	}
 }
 
-func (s *TestState) GetUptime(nodeID ids.NodeID, supernetID ids.ID) (time.Duration, time.Time, error) {
-	up, exists := s.nodes[nodeID][supernetID]
+func (s *TestState) GetUptime(nodeID ids.NodeID, subnetID ids.ID) (time.Duration, time.Time, error) {
+	up, exists := s.nodes[nodeID][subnetID]
 	if !exists {
 		return 0, time.Time{}, database.ErrNotFound
 	}
 	return up.upDuration, up.lastUpdated, s.dbReadError
 }
 
-func (s *TestState) SetUptime(nodeID ids.NodeID, supernetID ids.ID, upDuration time.Duration, lastUpdated time.Time) error {
-	up, exists := s.nodes[nodeID][supernetID]
+func (s *TestState) SetUptime(nodeID ids.NodeID, subnetID ids.ID, upDuration time.Duration, lastUpdated time.Time) error {
+	up, exists := s.nodes[nodeID][subnetID]
 	if !exists {
 		return database.ErrNotFound
 	}
@@ -61,8 +61,8 @@ func (s *TestState) SetUptime(nodeID ids.NodeID, supernetID ids.ID, upDuration t
 	return s.dbWriteError
 }
 
-func (s *TestState) GetStartTime(nodeID ids.NodeID, supernetID ids.ID) (time.Time, error) {
-	up, exists := s.nodes[nodeID][supernetID]
+func (s *TestState) GetStartTime(nodeID ids.NodeID, subnetID ids.ID) (time.Time, error) {
+	up, exists := s.nodes[nodeID][subnetID]
 	if !exists {
 		return time.Time{}, database.ErrNotFound
 	}

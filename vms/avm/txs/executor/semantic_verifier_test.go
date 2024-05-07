@@ -11,23 +11,23 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
-	"github.com/Juneo-io/juneogo/chains/atomic"
-	"github.com/Juneo-io/juneogo/database"
-	"github.com/Juneo-io/juneogo/database/memdb"
-	"github.com/Juneo-io/juneogo/database/prefixdb"
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/snow/snowtest"
-	"github.com/Juneo-io/juneogo/snow/validators"
-	"github.com/Juneo-io/juneogo/utils/constants"
-	"github.com/Juneo-io/juneogo/utils/crypto/secp256k1"
-	"github.com/Juneo-io/juneogo/utils/logging"
-	"github.com/Juneo-io/juneogo/utils/timer/mockable"
-	"github.com/Juneo-io/juneogo/vms/avm/fxs"
-	"github.com/Juneo-io/juneogo/vms/avm/state"
-	"github.com/Juneo-io/juneogo/vms/avm/txs"
-	"github.com/Juneo-io/juneogo/vms/components/avax"
-	"github.com/Juneo-io/juneogo/vms/components/verify"
-	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
+	"github.com/ava-labs/avalanchego/chains/atomic"
+	"github.com/ava-labs/avalanchego/database"
+	"github.com/ava-labs/avalanchego/database/memdb"
+	"github.com/ava-labs/avalanchego/database/prefixdb"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/snow/snowtest"
+	"github.com/ava-labs/avalanchego/snow/validators"
+	"github.com/ava-labs/avalanchego/utils/constants"
+	"github.com/ava-labs/avalanchego/utils/crypto/secp256k1"
+	"github.com/ava-labs/avalanchego/utils/logging"
+	"github.com/ava-labs/avalanchego/utils/timer/mockable"
+	"github.com/ava-labs/avalanchego/vms/avm/fxs"
+	"github.com/ava-labs/avalanchego/vms/avm/state"
+	"github.com/ava-labs/avalanchego/vms/avm/txs"
+	"github.com/ava-labs/avalanchego/vms/components/avax"
+	"github.com/ava-labs/avalanchego/vms/components/verify"
+	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
 )
 
 func TestSemanticVerifierBaseTx(t *testing.T) {
@@ -750,14 +750,14 @@ func TestSemanticVerifierExportTx(t *testing.T) {
 	}
 }
 
-func TestSemanticVerifierExportTxDifferentSupernet(t *testing.T) {
+func TestSemanticVerifierExportTxDifferentSubnet(t *testing.T) {
 	require := require.New(t)
 	ctrl := gomock.NewController(t)
 
 	ctx := snowtest.Context(t, snowtest.XChainID)
 
 	validatorState := validators.NewMockState(ctrl)
-	validatorState.EXPECT().GetSupernetID(gomock.Any(), ctx.CChainID).AnyTimes().Return(ids.GenerateTestID(), nil)
+	validatorState.EXPECT().GetSubnetID(gomock.Any(), ctx.CChainID).AnyTimes().Return(ids.GenerateTestID(), nil)
 	ctx.ValidatorState = validatorState
 
 	typeToFxIndex := make(map[reflect.Type]int)
@@ -868,7 +868,7 @@ func TestSemanticVerifierExportTxDifferentSupernet(t *testing.T) {
 		State:   state,
 		Tx:      tx,
 	})
-	require.ErrorIs(err, verify.ErrMismatchedSupernetIDs)
+	require.ErrorIs(err, verify.ErrMismatchedSubnetIDs)
 }
 
 func TestSemanticVerifierImportTx(t *testing.T) {

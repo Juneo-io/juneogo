@@ -8,8 +8,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/Juneo-io/juneogo/vms/example/xsvm"
-	"github.com/Juneo-io/juneogo/vms/rpcchainvm"
+	"github.com/ava-labs/avalanchego/vms/example/xsvm"
+	"github.com/ava-labs/avalanchego/vms/rpcchainvm"
 )
 
 func Command() *cobra.Command {

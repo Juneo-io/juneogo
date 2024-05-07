@@ -6,12 +6,12 @@ package p
 import (
 	"time"
 
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/vms/components/avax"
-	"github.com/Juneo-io/juneogo/vms/platformvm/signer"
-	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
-	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
-	"github.com/Juneo-io/juneogo/wallet/supernet/primary/common"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/vms/components/avax"
+	"github.com/ava-labs/avalanchego/vms/platformvm/signer"
+	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
+	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
+	"github.com/ava-labs/avalanchego/wallet/subnet/primary/common"
 )
 
 var _ Builder = (*builderWithOptions)(nil)
@@ -67,24 +67,24 @@ func (b *builderWithOptions) NewAddValidatorTx(
 	)
 }
 
-func (b *builderWithOptions) NewAddSupernetValidatorTx(
-	vdr *txs.SupernetValidator,
+func (b *builderWithOptions) NewAddSubnetValidatorTx(
+	vdr *txs.SubnetValidator,
 	options ...common.Option,
-) (*txs.AddSupernetValidatorTx, error) {
-	return b.Builder.NewAddSupernetValidatorTx(
+) (*txs.AddSubnetValidatorTx, error) {
+	return b.Builder.NewAddSubnetValidatorTx(
 		vdr,
 		common.UnionOptions(b.options, options)...,
 	)
 }
 
-func (b *builderWithOptions) RemoveSupernetValidatorTx(
+func (b *builderWithOptions) RemoveSubnetValidatorTx(
 	nodeID ids.NodeID,
-	supernetID ids.ID,
+	subnetID ids.ID,
 	options ...common.Option,
-) (*txs.RemoveSupernetValidatorTx, error) {
-	return b.Builder.NewRemoveSupernetValidatorTx(
+) (*txs.RemoveSubnetValidatorTx, error) {
+	return b.Builder.NewRemoveSubnetValidatorTx(
 		nodeID,
-		supernetID,
+		subnetID,
 		common.UnionOptions(b.options, options)...,
 	)
 }
@@ -102,7 +102,7 @@ func (b *builderWithOptions) NewAddDelegatorTx(
 }
 
 func (b *builderWithOptions) NewCreateChainTx(
-	supernetID ids.ID,
+	subnetID ids.ID,
 	genesis []byte,
 	vmID ids.ID,
 	fxIDs []ids.ID,
@@ -110,7 +110,7 @@ func (b *builderWithOptions) NewCreateChainTx(
 	options ...common.Option,
 ) (*txs.CreateChainTx, error) {
 	return b.Builder.NewCreateChainTx(
-		supernetID,
+		subnetID,
 		genesis,
 		vmID,
 		fxIDs,
@@ -119,23 +119,23 @@ func (b *builderWithOptions) NewCreateChainTx(
 	)
 }
 
-func (b *builderWithOptions) NewCreateSupernetTx(
+func (b *builderWithOptions) NewCreateSubnetTx(
 	owner *secp256k1fx.OutputOwners,
 	options ...common.Option,
-) (*txs.CreateSupernetTx, error) {
-	return b.Builder.NewCreateSupernetTx(
+) (*txs.CreateSubnetTx, error) {
+	return b.Builder.NewCreateSubnetTx(
 		owner,
 		common.UnionOptions(b.options, options)...,
 	)
 }
 
-func (b *builderWithOptions) NewTransferSupernetOwnershipTx(
-	supernetID ids.ID,
+func (b *builderWithOptions) NewTransferSubnetOwnershipTx(
+	subnetID ids.ID,
 	owner *secp256k1fx.OutputOwners,
 	options ...common.Option,
-) (*txs.TransferSupernetOwnershipTx, error) {
-	return b.Builder.NewTransferSupernetOwnershipTx(
-		supernetID,
+) (*txs.TransferSubnetOwnershipTx, error) {
+	return b.Builder.NewTransferSubnetOwnershipTx(
+		subnetID,
 		owner,
 		common.UnionOptions(b.options, options)...,
 	)
@@ -165,8 +165,8 @@ func (b *builderWithOptions) NewExportTx(
 	)
 }
 
-func (b *builderWithOptions) NewTransformSupernetTx(
-	supernetID ids.ID,
+func (b *builderWithOptions) NewTransformSubnetTx(
+	subnetID ids.ID,
 	assetID ids.ID,
 	initialSupply uint64,
 	maxSupply uint64,
@@ -181,9 +181,9 @@ func (b *builderWithOptions) NewTransformSupernetTx(
 	maxValidatorWeightFactor byte,
 	uptimeRequirement uint32,
 	options ...common.Option,
-) (*txs.TransformSupernetTx, error) {
-	return b.Builder.NewTransformSupernetTx(
-		supernetID,
+) (*txs.TransformSubnetTx, error) {
+	return b.Builder.NewTransformSubnetTx(
+		subnetID,
 		assetID,
 		initialSupply,
 		maxSupply,
@@ -202,7 +202,7 @@ func (b *builderWithOptions) NewTransformSupernetTx(
 }
 
 func (b *builderWithOptions) NewAddPermissionlessValidatorTx(
-	vdr *txs.SupernetValidator,
+	vdr *txs.SubnetValidator,
 	signer signer.Signer,
 	assetID ids.ID,
 	validationRewardsOwner *secp256k1fx.OutputOwners,
@@ -222,7 +222,7 @@ func (b *builderWithOptions) NewAddPermissionlessValidatorTx(
 }
 
 func (b *builderWithOptions) NewAddPermissionlessDelegatorTx(
-	vdr *txs.SupernetValidator,
+	vdr *txs.SubnetValidator,
 	assetID ids.ID,
 	rewardsOwner *secp256k1fx.OutputOwners,
 	options ...common.Option,

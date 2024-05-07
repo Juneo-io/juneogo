@@ -8,12 +8,12 @@ import (
 	"log"
 	"time"
 
-	"github.com/Juneo-io/juneogo/utils/constants"
-	"github.com/Juneo-io/juneogo/utils/formatting/address"
-	"github.com/Juneo-io/juneogo/utils/set"
-	"github.com/Juneo-io/juneogo/wallet/chain/p"
-	"github.com/Juneo-io/juneogo/wallet/supernet/primary"
-	"github.com/Juneo-io/juneogo/wallet/supernet/primary/common"
+	"github.com/ava-labs/avalanchego/utils/constants"
+	"github.com/ava-labs/avalanchego/utils/formatting/address"
+	"github.com/ava-labs/avalanchego/utils/set"
+	"github.com/ava-labs/avalanchego/wallet/chain/p"
+	"github.com/ava-labs/avalanchego/wallet/subnet/primary"
+	"github.com/ava-labs/avalanchego/wallet/subnet/primary/common"
 )
 
 func main() {

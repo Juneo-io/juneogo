@@ -8,9 +8,9 @@ import (
 	"context"
 	"time"
 
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/snow/choices"
-	"github.com/Juneo-io/juneogo/utils"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/snow/choices"
+	"github.com/ava-labs/avalanchego/utils"
 )
 
 var (

@@ -14,14 +14,14 @@ import (
 	reflect "reflect"
 	time "time"
 
-	ids "github.com/Juneo-io/juneogo/ids"
-	message "github.com/Juneo-io/juneogo/message"
-	p2p "github.com/Juneo-io/juneogo/proto/pb/p2p"
-	handler "github.com/Juneo-io/juneogo/snow/networking/handler"
-	timeout "github.com/Juneo-io/juneogo/snow/networking/timeout"
-	logging "github.com/Juneo-io/juneogo/utils/logging"
-	set "github.com/Juneo-io/juneogo/utils/set"
-	version "github.com/Juneo-io/juneogo/version"
+	ids "github.com/ava-labs/avalanchego/ids"
+	message "github.com/ava-labs/avalanchego/message"
+	p2p "github.com/ava-labs/avalanchego/proto/pb/p2p"
+	handler "github.com/ava-labs/avalanchego/snow/networking/handler"
+	timeout "github.com/ava-labs/avalanchego/snow/networking/timeout"
+	logging "github.com/ava-labs/avalanchego/utils/logging"
+	set "github.com/ava-labs/avalanchego/utils/set"
+	version "github.com/ava-labs/avalanchego/version"
 	prometheus "github.com/prometheus/client_golang/prometheus"
 	gomock "go.uber.org/mock/gomock"
 )
@@ -74,15 +74,15 @@ func (mr *MockRouterMockRecorder) Benched(chainID, validatorID any) *gomock.Call
 }
 
 // Connected mocks base method.
-func (m *MockRouter) Connected(nodeID ids.NodeID, nodeVersion *version.Application, supernetID ids.ID) {
+func (m *MockRouter) Connected(nodeID ids.NodeID, nodeVersion *version.Application, subnetID ids.ID) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Connected", nodeID, nodeVersion, supernetID)
+	m.ctrl.Call(m, "Connected", nodeID, nodeVersion, subnetID)
 }
 
 // Connected indicates an expected call of Connected.
-func (mr *MockRouterMockRecorder) Connected(nodeID, nodeVersion, supernetID any) *gomock.Call {
+func (mr *MockRouterMockRecorder) Connected(nodeID, nodeVersion, subnetID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Connected", reflect.TypeOf((*MockRouter)(nil).Connected), nodeID, nodeVersion, supernetID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Connected", reflect.TypeOf((*MockRouter)(nil).Connected), nodeID, nodeVersion, subnetID)
 }
 
 // Disconnected mocks base method.
@@ -125,17 +125,17 @@ func (mr *MockRouterMockRecorder) HealthCheck(arg0 any) *gomock.Call {
 }
 
 // Initialize mocks base method.
-func (m *MockRouter) Initialize(nodeID ids.NodeID, log logging.Logger, timeouts timeout.Manager, shutdownTimeout time.Duration, criticalChains set.Set[ids.ID], sybilProtectionEnabled bool, trackedSupernets set.Set[ids.ID], onFatal func(int), healthConfig HealthConfig, metricsNamespace string, metricsRegisterer prometheus.Registerer) error {
+func (m *MockRouter) Initialize(nodeID ids.NodeID, log logging.Logger, timeouts timeout.Manager, shutdownTimeout time.Duration, criticalChains set.Set[ids.ID], sybilProtectionEnabled bool, trackedSubnets set.Set[ids.ID], onFatal func(int), healthConfig HealthConfig, metricsNamespace string, metricsRegisterer prometheus.Registerer) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Initialize", nodeID, log, timeouts, shutdownTimeout, criticalChains, sybilProtectionEnabled, trackedSupernets, onFatal, healthConfig, metricsNamespace, metricsRegisterer)
+	ret := m.ctrl.Call(m, "Initialize", nodeID, log, timeouts, shutdownTimeout, criticalChains, sybilProtectionEnabled, trackedSubnets, onFatal, healthConfig, metricsNamespace, metricsRegisterer)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Initialize indicates an expected call of Initialize.
-func (mr *MockRouterMockRecorder) Initialize(nodeID, log, timeouts, shutdownTimeout, criticalChains, sybilProtectionEnabled, trackedSupernets, onFatal, healthConfig, metricsNamespace, metricsRegisterer any) *gomock.Call {
+func (mr *MockRouterMockRecorder) Initialize(nodeID, log, timeouts, shutdownTimeout, criticalChains, sybilProtectionEnabled, trackedSubnets, onFatal, healthConfig, metricsNamespace, metricsRegisterer any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Initialize", reflect.TypeOf((*MockRouter)(nil).Initialize), nodeID, log, timeouts, shutdownTimeout, criticalChains, sybilProtectionEnabled, trackedSupernets, onFatal, healthConfig, metricsNamespace, metricsRegisterer)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Initialize", reflect.TypeOf((*MockRouter)(nil).Initialize), nodeID, log, timeouts, shutdownTimeout, criticalChains, sybilProtectionEnabled, trackedSubnets, onFatal, healthConfig, metricsNamespace, metricsRegisterer)
 }
 
 // RegisterRequest mocks base method.

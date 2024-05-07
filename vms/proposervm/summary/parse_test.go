@@ -8,7 +8,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/Juneo-io/juneogo/codec"
+	"github.com/ava-labs/avalanchego/codec"
 )
 
 func TestParse(t *testing.T) {

@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package sdk;
 
-option go_package = "github.com/Juneo-io/juneogo/proto/pb/sdk";
+option go_package = "github.com/ava-labs/avalanchego/proto/pb/sdk";
 
 message PullGossipRequest {
   // TODO: Remove reservation after v1.11.x activates.

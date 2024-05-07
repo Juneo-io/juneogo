@@ -7,17 +7,17 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/snow"
-	"github.com/Juneo-io/juneogo/utils/constants"
-	"github.com/Juneo-io/juneogo/utils/crypto/bls"
-	"github.com/Juneo-io/juneogo/utils/math"
-	"github.com/Juneo-io/juneogo/vms/components/avax"
-	"github.com/Juneo-io/juneogo/vms/components/verify"
-	"github.com/Juneo-io/juneogo/vms/platformvm/fx"
-	"github.com/Juneo-io/juneogo/vms/platformvm/reward"
-	"github.com/Juneo-io/juneogo/vms/platformvm/signer"
-	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/snow"
+	"github.com/ava-labs/avalanchego/utils/constants"
+	"github.com/ava-labs/avalanchego/utils/crypto/bls"
+	"github.com/ava-labs/avalanchego/utils/math"
+	"github.com/ava-labs/avalanchego/vms/components/avax"
+	"github.com/ava-labs/avalanchego/vms/components/verify"
+	"github.com/ava-labs/avalanchego/vms/platformvm/fx"
+	"github.com/ava-labs/avalanchego/vms/platformvm/reward"
+	"github.com/ava-labs/avalanchego/vms/platformvm/signer"
+	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
 )
 
 var (
@@ -37,10 +37,10 @@ type AddPermissionlessValidatorTx struct {
 	BaseTx `serialize:"true"`
 	// Describes the validator
 	Validator `serialize:"true" json:"validator"`
-	// ID of the supernet this validator is validating
-	Supernet ids.ID `serialize:"true" json:"supernetID"`
-	// If the [Supernet] is the primary network, [Signer] is the BLS key for this
-	// validator. If the [Supernet] is not the primary network, this value is the
+	// ID of the subnet this validator is validating
+	Subnet ids.ID `serialize:"true" json:"subnetID"`
+	// If the [Subnet] is the primary network, [Signer] is the BLS key for this
+	// validator. If the [Subnet] is not the primary network, this value is the
 	// empty signer
 	// Note: We do not enforce that the BLS key is unique across all validators.
 	//       This means that validators can share a key if they so choose.
@@ -85,8 +85,8 @@ func (tx *AddPermissionlessValidatorTx) ConsumedValue(assetID ids.ID) uint64 {
 	return value
 }
 
-func (tx *AddPermissionlessValidatorTx) SupernetID() ids.ID {
-	return tx.Supernet
+func (tx *AddPermissionlessValidatorTx) SubnetID() ids.ID {
+	return tx.Subnet
 }
 
 func (tx *AddPermissionlessValidatorTx) NodeID() ids.NodeID {
@@ -102,17 +102,17 @@ func (tx *AddPermissionlessValidatorTx) PublicKey() (*bls.PublicKey, bool, error
 }
 
 func (tx *AddPermissionlessValidatorTx) PendingPriority() Priority {
-	if tx.Supernet == constants.PrimaryNetworkID {
+	if tx.Subnet == constants.PrimaryNetworkID {
 		return PrimaryNetworkValidatorPendingPriority
 	}
-	return SupernetPermissionlessValidatorPendingPriority
+	return SubnetPermissionlessValidatorPendingPriority
 }
 
 func (tx *AddPermissionlessValidatorTx) CurrentPriority() Priority {
-	if tx.Supernet == constants.PrimaryNetworkID {
+	if tx.Subnet == constants.PrimaryNetworkID {
 		return PrimaryNetworkValidatorCurrentPriority
 	}
-	return SupernetPermissionlessValidatorCurrentPriority
+	return SubnetPermissionlessValidatorCurrentPriority
 }
 
 func (tx *AddPermissionlessValidatorTx) Stake() []*avax.TransferableOutput {
@@ -154,7 +154,7 @@ func (tx *AddPermissionlessValidatorTx) SyntacticVerify(ctx *snow.Context) error
 	}
 
 	hasKey := tx.Signer.Key() != nil
-	isPrimaryNetwork := tx.Supernet == constants.PrimaryNetworkID
+	isPrimaryNetwork := tx.Subnet == constants.PrimaryNetworkID
 	if hasKey != isPrimaryNetwork {
 		return fmt.Errorf(
 			"%w: hasKey=%v != isPrimaryNetwork=%v",

@@ -9,10 +9,10 @@ import (
 	"net"
 	"time"
 
-	"github.com/Juneo-io/juneogo/message"
-	"github.com/Juneo-io/juneogo/snow/networking/router"
-	"github.com/Juneo-io/juneogo/utils/constants"
-	"github.com/Juneo-io/juneogo/utils/ips"
+	"github.com/ava-labs/avalanchego/message"
+	"github.com/ava-labs/avalanchego/snow/networking/router"
+	"github.com/ava-labs/avalanchego/utils/constants"
+	"github.com/ava-labs/avalanchego/utils/ips"
 )
 
 func ExampleStartTestPeer() {

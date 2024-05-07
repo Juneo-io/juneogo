@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package sharedmemory;
 
-option go_package = "github.com/Juneo-io/juneogo/proto/pb/sharedmemory";
+option go_package = "github.com/ava-labs/avalanchego/proto/pb/sharedmemory";
 
 service SharedMemory {
   rpc Get(GetRequest) returns (GetResponse);

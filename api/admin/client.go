@@ -6,12 +6,12 @@ package admin
 import (
 	"context"
 
-	"github.com/Juneo-io/juneogo/api"
-	"github.com/Juneo-io/juneogo/database/rpcdb"
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/utils/formatting"
-	"github.com/Juneo-io/juneogo/utils/logging"
-	"github.com/Juneo-io/juneogo/utils/rpc"
+	"github.com/ava-labs/avalanchego/api"
+	"github.com/ava-labs/avalanchego/database/rpcdb"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/utils/formatting"
+	"github.com/ava-labs/avalanchego/utils/logging"
+	"github.com/ava-labs/avalanchego/utils/rpc"
 )
 
 var _ Client = (*client)(nil)

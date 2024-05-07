@@ -6,8 +6,8 @@ package validators
 import (
 	"context"
 
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/snow/validators"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/snow/validators"
 )
 
 var TestManager Manager = testManager{}
@@ -22,7 +22,7 @@ func (testManager) GetCurrentHeight(context.Context) (uint64, error) {
 	return 0, nil
 }
 
-func (testManager) GetSupernetID(context.Context, ids.ID) (ids.ID, error) {
+func (testManager) GetSubnetID(context.Context, ids.ID) (ids.ID, error) {
 	return ids.Empty, nil
 }
 

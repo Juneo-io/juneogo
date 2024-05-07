@@ -4,28 +4,28 @@
 package txs
 
 import (
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/utils/constants"
 )
 
-// SupernetValidator validates a supernet on the Avalanche network.
-type SupernetValidator struct {
+// SubnetValidator validates a subnet on the Avalanche network.
+type SubnetValidator struct {
 	Validator `serialize:"true"`
 
-	// ID of the supernet this validator is validating
-	Supernet ids.ID `serialize:"true" json:"supernetID"`
+	// ID of the subnet this validator is validating
+	Subnet ids.ID `serialize:"true" json:"subnetID"`
 }
 
-// SupernetID is the ID of the supernet this validator is validating
-func (v *SupernetValidator) SupernetID() ids.ID {
-	return v.Supernet
+// SubnetID is the ID of the subnet this validator is validating
+func (v *SubnetValidator) SubnetID() ids.ID {
+	return v.Subnet
 }
 
 // Verify this validator is valid
-func (v *SupernetValidator) Verify() error {
-	switch v.Supernet {
+func (v *SubnetValidator) Verify() error {
+	switch v.Subnet {
 	case constants.PrimaryNetworkID:
-		return errBadSupernetID
+		return errBadSubnetID
 	default:
 		return v.Validator.Verify()
 	}

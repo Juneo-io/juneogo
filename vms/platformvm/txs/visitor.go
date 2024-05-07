@@ -6,18 +6,18 @@ package txs
 // Allow vm to execute custom logic against the underlying transaction types.
 type Visitor interface {
 	AddValidatorTx(*AddValidatorTx) error
-	AddSupernetValidatorTx(*AddSupernetValidatorTx) error
+	AddSubnetValidatorTx(*AddSubnetValidatorTx) error
 	AddDelegatorTx(*AddDelegatorTx) error
 	CreateChainTx(*CreateChainTx) error
-	CreateSupernetTx(*CreateSupernetTx) error
+	CreateSubnetTx(*CreateSubnetTx) error
 	ImportTx(*ImportTx) error
 	ExportTx(*ExportTx) error
 	AdvanceTimeTx(*AdvanceTimeTx) error
 	RewardValidatorTx(*RewardValidatorTx) error
-	RemoveSupernetValidatorTx(*RemoveSupernetValidatorTx) error
-	TransformSupernetTx(*TransformSupernetTx) error
+	RemoveSubnetValidatorTx(*RemoveSubnetValidatorTx) error
+	TransformSubnetTx(*TransformSubnetTx) error
 	AddPermissionlessValidatorTx(*AddPermissionlessValidatorTx) error
 	AddPermissionlessDelegatorTx(*AddPermissionlessDelegatorTx) error
-	TransferSupernetOwnershipTx(*TransferSupernetOwnershipTx) error
+	TransferSubnetOwnershipTx(*TransferSubnetOwnershipTx) error
 	BaseTx(*BaseTx) error
 }

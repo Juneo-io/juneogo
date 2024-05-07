@@ -13,7 +13,7 @@ import (
 	"github.com/gorilla/websocket"
 	"go.uber.org/zap"
 
-	"github.com/Juneo-io/juneogo/pubsub/bloom"
+	"github.com/ava-labs/avalanchego/pubsub/bloom"
 )
 
 var (

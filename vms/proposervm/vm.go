@@ -12,29 +12,29 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"go.uber.org/zap"
 
-	"github.com/Juneo-io/juneogo/api/metrics"
-	"github.com/Juneo-io/juneogo/cache"
-	"github.com/Juneo-io/juneogo/cache/metercacher"
-	"github.com/Juneo-io/juneogo/database"
-	"github.com/Juneo-io/juneogo/database/prefixdb"
-	"github.com/Juneo-io/juneogo/database/versiondb"
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/snow"
-	"github.com/Juneo-io/juneogo/snow/choices"
-	"github.com/Juneo-io/juneogo/snow/consensus/snowman"
-	"github.com/Juneo-io/juneogo/snow/engine/common"
-	"github.com/Juneo-io/juneogo/snow/engine/snowman/block"
-	"github.com/Juneo-io/juneogo/utils/constants"
-	"github.com/Juneo-io/juneogo/utils/math"
-	"github.com/Juneo-io/juneogo/utils/timer/mockable"
-	"github.com/Juneo-io/juneogo/utils/units"
-	"github.com/Juneo-io/juneogo/vms/proposervm/indexer"
-	"github.com/Juneo-io/juneogo/vms/proposervm/proposer"
-	"github.com/Juneo-io/juneogo/vms/proposervm/scheduler"
-	"github.com/Juneo-io/juneogo/vms/proposervm/state"
-	"github.com/Juneo-io/juneogo/vms/proposervm/tree"
+	"github.com/ava-labs/avalanchego/api/metrics"
+	"github.com/ava-labs/avalanchego/cache"
+	"github.com/ava-labs/avalanchego/cache/metercacher"
+	"github.com/ava-labs/avalanchego/database"
+	"github.com/ava-labs/avalanchego/database/prefixdb"
+	"github.com/ava-labs/avalanchego/database/versiondb"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/snow"
+	"github.com/ava-labs/avalanchego/snow/choices"
+	"github.com/ava-labs/avalanchego/snow/consensus/snowman"
+	"github.com/ava-labs/avalanchego/snow/engine/common"
+	"github.com/ava-labs/avalanchego/snow/engine/snowman/block"
+	"github.com/ava-labs/avalanchego/utils/constants"
+	"github.com/ava-labs/avalanchego/utils/math"
+	"github.com/ava-labs/avalanchego/utils/timer/mockable"
+	"github.com/ava-labs/avalanchego/utils/units"
+	"github.com/ava-labs/avalanchego/vms/proposervm/indexer"
+	"github.com/ava-labs/avalanchego/vms/proposervm/proposer"
+	"github.com/ava-labs/avalanchego/vms/proposervm/scheduler"
+	"github.com/ava-labs/avalanchego/vms/proposervm/state"
+	"github.com/ava-labs/avalanchego/vms/proposervm/tree"
 
-	statelessblock "github.com/Juneo-io/juneogo/vms/proposervm/block"
+	statelessblock "github.com/ava-labs/avalanchego/vms/proposervm/block"
 )
 
 const (
@@ -162,7 +162,7 @@ func (vm *VM) Initialize(
 		return err
 	}
 	vm.State = baseState
-	vm.Windower = proposer.New(chainCtx.ValidatorState, chainCtx.SupernetID, chainCtx.ChainID)
+	vm.Windower = proposer.New(chainCtx.ValidatorState, chainCtx.SubnetID, chainCtx.ChainID)
 	vm.Tree = tree.New()
 	innerBlkCache, err := metercacher.New(
 		"inner_block_cache",
@@ -377,7 +377,7 @@ func (vm *VM) getPreDurangoSlotTime(
 	// avoid fast runs of blocks there is an additional minimum delay that
 	// validators can specify. This delay may be an issue for high performance,
 	// custom VMs. Until the P-chain is modified to target a specific block
-	// time, ProposerMinBlockDelay can be configured in the supernet config.
+	// time, ProposerMinBlockDelay can be configured in the subnet config.
 	delay = max(delay, vm.MinBlkDelay)
 	return parentTimestamp.Add(delay), nil
 }
@@ -401,7 +401,7 @@ func (vm *VM) getPostDurangoSlotTime(
 	// avoid fast runs of blocks there is an additional minimum delay that
 	// validators can specify. This delay may be an issue for high performance,
 	// custom VMs. Until the P-chain is modified to target a specific block
-	// time, ProposerMinBlockDelay can be configured in the supernet config.
+	// time, ProposerMinBlockDelay can be configured in the subnet config.
 	switch {
 	case err == nil:
 		delay = max(delay, vm.MinBlkDelay)

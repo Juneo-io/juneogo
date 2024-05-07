@@ -6,10 +6,10 @@ package avax
 import (
 	"fmt"
 
-	"github.com/Juneo-io/juneogo/chains/atomic"
-	"github.com/Juneo-io/juneogo/codec"
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/utils/set"
+	"github.com/ava-labs/avalanchego/chains/atomic"
+	"github.com/ava-labs/avalanchego/codec"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/utils/set"
 )
 
 var _ AtomicUTXOManager = (*atomicUTXOManager)(nil)

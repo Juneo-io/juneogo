@@ -13,9 +13,9 @@ import (
 	reflect "reflect"
 	time "time"
 
-	ids "github.com/Juneo-io/juneogo/ids"
-	p2p "github.com/Juneo-io/juneogo/proto/pb/p2p"
-	ips "github.com/Juneo-io/juneogo/utils/ips"
+	ids "github.com/ava-labs/avalanchego/ids"
+	p2p "github.com/ava-labs/avalanchego/proto/pb/p2p"
+	ips "github.com/ava-labs/avalanchego/utils/ips"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -313,7 +313,7 @@ func (mr *MockOutboundMsgBuilderMockRecorder) PeerList(arg0, arg1 any) *gomock.C
 }
 
 // Ping mocks base method.
-func (m *MockOutboundMsgBuilder) Ping(arg0 uint32, arg1 []*p2p.SupernetUptime) (OutboundMessage, error) {
+func (m *MockOutboundMsgBuilder) Ping(arg0 uint32, arg1 []*p2p.SubnetUptime) (OutboundMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Ping", arg0, arg1)
 	ret0, _ := ret[0].(OutboundMessage)
@@ -328,7 +328,7 @@ func (mr *MockOutboundMsgBuilderMockRecorder) Ping(arg0, arg1 any) *gomock.Call 
 }
 
 // Pong mocks base method.
-func (m *MockOutboundMsgBuilder) Pong(arg0 uint32, arg1 []*p2p.SupernetUptime) (OutboundMessage, error) {
+func (m *MockOutboundMsgBuilder) Pong(arg0 uint32, arg1 []*p2p.SubnetUptime) (OutboundMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Pong", arg0, arg1)
 	ret0, _ := ret[0].(OutboundMessage)

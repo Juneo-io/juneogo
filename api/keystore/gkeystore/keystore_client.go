@@ -6,14 +6,14 @@ package gkeystore
 import (
 	"context"
 
-	"github.com/Juneo-io/juneogo/api/keystore"
-	"github.com/Juneo-io/juneogo/database"
-	"github.com/Juneo-io/juneogo/database/encdb"
-	"github.com/Juneo-io/juneogo/database/rpcdb"
-	"github.com/Juneo-io/juneogo/vms/rpcchainvm/grpcutils"
+	"github.com/ava-labs/avalanchego/api/keystore"
+	"github.com/ava-labs/avalanchego/database"
+	"github.com/ava-labs/avalanchego/database/encdb"
+	"github.com/ava-labs/avalanchego/database/rpcdb"
+	"github.com/ava-labs/avalanchego/vms/rpcchainvm/grpcutils"
 
-	keystorepb "github.com/Juneo-io/juneogo/proto/pb/keystore"
-	rpcdbpb "github.com/Juneo-io/juneogo/proto/pb/rpcdb"
+	keystorepb "github.com/ava-labs/avalanchego/proto/pb/keystore"
+	rpcdbpb "github.com/ava-labs/avalanchego/proto/pb/rpcdb"
 )
 
 var _ keystore.BlockchainKeystore = (*Client)(nil)

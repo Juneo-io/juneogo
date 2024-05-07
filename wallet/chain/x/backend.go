@@ -4,8 +4,8 @@
 package x
 
 import (
-	"github.com/Juneo-io/juneogo/vms/avm/txs"
-	"github.com/Juneo-io/juneogo/wallet/supernet/primary/common"
+	"github.com/ava-labs/avalanchego/vms/avm/txs"
+	"github.com/ava-labs/avalanchego/wallet/subnet/primary/common"
 
 	stdcontext "context"
 )

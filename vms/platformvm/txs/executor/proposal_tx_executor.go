@@ -8,14 +8,14 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Juneo-io/juneogo/database"
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/utils/math"
-	"github.com/Juneo-io/juneogo/vms/components/avax"
-	"github.com/Juneo-io/juneogo/vms/components/verify"
-	"github.com/Juneo-io/juneogo/vms/platformvm/reward"
-	"github.com/Juneo-io/juneogo/vms/platformvm/state"
-	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
+	"github.com/ava-labs/avalanchego/database"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/utils/math"
+	"github.com/ava-labs/avalanchego/vms/components/avax"
+	"github.com/ava-labs/avalanchego/vms/components/verify"
+	"github.com/ava-labs/avalanchego/vms/platformvm/reward"
+	"github.com/ava-labs/avalanchego/vms/platformvm/state"
+	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
 )
 
 const (
@@ -62,7 +62,7 @@ func (*ProposalTxExecutor) CreateChainTx(*txs.CreateChainTx) error {
 	return ErrWrongTxType
 }
 
-func (*ProposalTxExecutor) CreateSupernetTx(*txs.CreateSupernetTx) error {
+func (*ProposalTxExecutor) CreateSubnetTx(*txs.CreateSubnetTx) error {
 	return ErrWrongTxType
 }
 
@@ -74,11 +74,11 @@ func (*ProposalTxExecutor) ExportTx(*txs.ExportTx) error {
 	return ErrWrongTxType
 }
 
-func (*ProposalTxExecutor) RemoveSupernetValidatorTx(*txs.RemoveSupernetValidatorTx) error {
+func (*ProposalTxExecutor) RemoveSubnetValidatorTx(*txs.RemoveSubnetValidatorTx) error {
 	return ErrWrongTxType
 }
 
-func (*ProposalTxExecutor) TransformSupernetTx(*txs.TransformSupernetTx) error {
+func (*ProposalTxExecutor) TransformSubnetTx(*txs.TransformSubnetTx) error {
 	return ErrWrongTxType
 }
 
@@ -90,7 +90,7 @@ func (*ProposalTxExecutor) AddPermissionlessDelegatorTx(*txs.AddPermissionlessDe
 	return ErrWrongTxType
 }
 
-func (*ProposalTxExecutor) TransferSupernetOwnershipTx(*txs.TransferSupernetOwnershipTx) error {
+func (*ProposalTxExecutor) TransferSubnetOwnershipTx(*txs.TransferSubnetOwnershipTx) error {
 	return ErrWrongTxType
 }
 
@@ -145,9 +145,9 @@ func (e *ProposalTxExecutor) AddValidatorTx(tx *txs.AddValidatorTx) error {
 	return nil
 }
 
-func (e *ProposalTxExecutor) AddSupernetValidatorTx(tx *txs.AddSupernetValidatorTx) error {
-	// AddSupernetValidatorTx is a proposal transaction until the Banff fork
-	// activation. Following the activation, AddSupernetValidatorTxs must be
+func (e *ProposalTxExecutor) AddSubnetValidatorTx(tx *txs.AddSubnetValidatorTx) error {
+	// AddSubnetValidatorTx is a proposal transaction until the Banff fork
+	// activation. Following the activation, AddSubnetValidatorTxs must be
 	// issued into StandardBlocks.
 	currentTimestamp := e.OnCommitState.GetTimestamp()
 	if e.Config.IsBanffActivated(currentTimestamp) {
@@ -159,7 +159,7 @@ func (e *ProposalTxExecutor) AddSupernetValidatorTx(tx *txs.AddSupernetValidator
 		)
 	}
 
-	if err := verifyAddSupernetValidatorTx(
+	if err := verifyAddSubnetValidatorTx(
 		e.Backend,
 		e.OnCommitState,
 		e.Tx,
@@ -362,12 +362,12 @@ func (e *ProposalTxExecutor) RewardValidatorTx(tx *txs.RewardValidatorTx) error 
 	}
 
 	// If the reward is aborted, then the reward pool supply should be increased.
-	rewardPoolSupply, err := e.OnAbortState.GetRewardPoolSupply(stakerToReward.SupernetID)
+	rewardPoolSupply, err := e.OnAbortState.GetRewardPoolSupply(stakerToReward.SubnetID)
 	if err != nil {
 		return err
 	}
 	newRewardsSupply, err := math.Add64(rewardPoolSupply, stakerToReward.PotentialReward)
-	e.OnAbortState.SetRewardPoolSupply(stakerToReward.SupernetID, newRewardsSupply)
+	e.OnAbortState.SetRewardPoolSupply(stakerToReward.SubnetID, newRewardsSupply)
 	return nil
 }
 
@@ -426,7 +426,7 @@ func (e *ProposalTxExecutor) rewardValidatorTx(uValidatorTx txs.ValidatorTx, val
 
 	// Provide the accrued delegatee rewards from successful delegations here.
 	delegateeReward, err := e.OnCommitState.GetDelegateeReward(
-		validator.SupernetID,
+		validator.SubnetID,
 		validator.NodeID,
 	)
 	if err != nil {
@@ -499,7 +499,7 @@ func (e *ProposalTxExecutor) rewardDelegatorTx(uDelegatorTx txs.DelegatorTx, del
 
 	// We're (possibly) rewarding a delegator, so we need to fetch
 	// the validator they are delegated to.
-	validator, err := e.OnCommitState.GetCurrentValidator(delegator.SupernetID, delegator.NodeID)
+	validator, err := e.OnCommitState.GetCurrentValidator(delegator.SubnetID, delegator.NodeID)
 	if err != nil {
 		return fmt.Errorf("failed to get whether %s is a validator: %w", delegator.NodeID, err)
 	}
@@ -512,7 +512,7 @@ func (e *ProposalTxExecutor) rewardDelegatorTx(uDelegatorTx txs.DelegatorTx, del
 	// Invariant: Delegators must only be able to reference validator
 	//            transactions that implement [txs.ValidatorTx]. All
 	//            validator transactions implement this interface except the
-	//            AddSupernetValidatorTx.
+	//            AddSubnetValidatorTx.
 	vdrTx, ok := vdrTxIntf.Unsigned.(txs.ValidatorTx)
 	if !ok {
 		return ErrWrongTxType
@@ -557,7 +557,7 @@ func (e *ProposalTxExecutor) rewardDelegatorTx(uDelegatorTx txs.DelegatorTx, del
 	// Reward the delegatee here
 	if e.Config.IsCortinaActivated(validator.StartTime) {
 		previousDelegateeReward, err := e.OnCommitState.GetDelegateeReward(
-			validator.SupernetID,
+			validator.SubnetID,
 			validator.NodeID,
 		)
 		if err != nil {
@@ -572,7 +572,7 @@ func (e *ProposalTxExecutor) rewardDelegatorTx(uDelegatorTx txs.DelegatorTx, del
 		// For any validators starting after [CortinaTime], we defer rewarding the
 		// [reward] until their staking period is over.
 		err = e.OnCommitState.SetDelegateeReward(
-			validator.SupernetID,
+			validator.SubnetID,
 			validator.NodeID,
 			newDelegateeReward,
 		)

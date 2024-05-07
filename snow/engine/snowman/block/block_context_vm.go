@@ -6,7 +6,7 @@ package block
 import (
 	"context"
 
-	"github.com/Juneo-io/juneogo/snow/consensus/snowman"
+	"github.com/ava-labs/avalanchego/snow/consensus/snowman"
 )
 
 // Context defines the block context that will be optionally provided by the

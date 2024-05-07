@@ -6,8 +6,8 @@ package merkledb
 import (
 	"sync"
 
-	"github.com/Juneo-io/juneogo/cache"
-	"github.com/Juneo-io/juneogo/database"
+	"github.com/ava-labs/avalanchego/cache"
+	"github.com/ava-labs/avalanchego/database"
 )
 
 const defaultBufferLength = 256

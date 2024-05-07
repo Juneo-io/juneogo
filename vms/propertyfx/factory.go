@@ -4,8 +4,8 @@
 package propertyfx
 
 import (
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/vms/fx"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/vms/fx"
 )
 
 const Name = "propertyfx"

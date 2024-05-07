@@ -9,10 +9,10 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/utils/set"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/utils/set"
 
-	safemath "github.com/Juneo-io/juneogo/utils/math"
+	safemath "github.com/ava-labs/avalanchego/utils/math"
 )
 
 func TestSample(t *testing.T) {

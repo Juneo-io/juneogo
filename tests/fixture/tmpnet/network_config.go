@@ -10,9 +10,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/Juneo-io/juneogo/genesis"
-	"github.com/Juneo-io/juneogo/utils/crypto/secp256k1"
-	"github.com/Juneo-io/juneogo/utils/perms"
+	"github.com/ava-labs/avalanchego/genesis"
+	"github.com/ava-labs/avalanchego/utils/crypto/secp256k1"
+	"github.com/ava-labs/avalanchego/utils/perms"
 )
 
 // The Network type is defined in this file (reading/writing configuration) and network.go
@@ -28,7 +28,7 @@ func (n *Network) Read() error {
 	if err := n.readNodes(); err != nil {
 		return err
 	}
-	return n.readSupernets()
+	return n.readSubnets()
 }
 
 // Write network configuration to disk.
@@ -222,15 +222,15 @@ func (n *Network) writeEnvFile() error {
 	return nil
 }
 
-func (n *Network) getSupernetDir() string {
-	return filepath.Join(n.Dir, defaultSupernetDirName)
+func (n *Network) getSubnetDir() string {
+	return filepath.Join(n.Dir, defaultSubnetDirName)
 }
 
-func (n *Network) readSupernets() error {
-	supernets, err := readSupernets(n.getSupernetDir())
+func (n *Network) readSubnets() error {
+	subnets, err := readSubnets(n.getSubnetDir())
 	if err != nil {
 		return err
 	}
-	n.Supernets = supernets
+	n.Subnets = subnets
 	return nil
 }

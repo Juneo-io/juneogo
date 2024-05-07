@@ -11,23 +11,23 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/stretchr/testify/require"
 
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/proto/pb/p2p"
-	"github.com/Juneo-io/juneogo/snow"
-	"github.com/Juneo-io/juneogo/snow/consensus/snowball"
-	"github.com/Juneo-io/juneogo/snow/engine/common"
-	"github.com/Juneo-io/juneogo/snow/networking/tracker"
-	"github.com/Juneo-io/juneogo/snow/snowtest"
-	"github.com/Juneo-io/juneogo/snow/validators"
-	"github.com/Juneo-io/juneogo/supernets"
-	"github.com/Juneo-io/juneogo/utils/math/meter"
-	"github.com/Juneo-io/juneogo/utils/resource"
-	"github.com/Juneo-io/juneogo/utils/set"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/proto/pb/p2p"
+	"github.com/ava-labs/avalanchego/snow"
+	"github.com/ava-labs/avalanchego/snow/consensus/snowball"
+	"github.com/ava-labs/avalanchego/snow/engine/common"
+	"github.com/ava-labs/avalanchego/snow/networking/tracker"
+	"github.com/ava-labs/avalanchego/snow/snowtest"
+	"github.com/ava-labs/avalanchego/snow/validators"
+	"github.com/ava-labs/avalanchego/subnets"
+	"github.com/ava-labs/avalanchego/utils/math/meter"
+	"github.com/ava-labs/avalanchego/utils/resource"
+	"github.com/ava-labs/avalanchego/utils/set"
 
-	commontracker "github.com/Juneo-io/juneogo/snow/engine/common/tracker"
+	commontracker "github.com/ava-labs/avalanchego/snow/engine/common/tracker"
 )
 
-func TestHealthCheckSupernet(t *testing.T) {
+func TestHealthCheckSubnet(t *testing.T) {
 	tests := map[string]struct {
 		consensusParams snowball.Parameters
 	}{
@@ -61,11 +61,11 @@ func TestHealthCheckSupernet(t *testing.T) {
 			require.NoError(err)
 
 			peerTracker := commontracker.NewPeers()
-			vdrs.RegisterCallbackListener(ctx.SupernetID, peerTracker)
+			vdrs.RegisterCallbackListener(ctx.SubnetID, peerTracker)
 
-			sb := supernets.New(
+			sb := subnets.New(
 				ctx.NodeID,
-				supernets.Config{
+				subnets.Config{
 					ConsensusParameters: test.consensusParams,
 				},
 			)
@@ -76,7 +76,7 @@ func TestHealthCheckSupernet(t *testing.T) {
 				time.Second,
 				testThreadPoolSize,
 				resourceTracker,
-				validators.UnhandledSupernetConnector,
+				validators.UnhandledSubnetConnector,
 				sb,
 				peerTracker,
 			)
@@ -119,7 +119,7 @@ func TestHealthCheckSupernet(t *testing.T) {
 				vdrID := ids.GenerateTestNodeID()
 				vdrIDs.Add(vdrID)
 
-				require.NoError(vdrs.AddStaker(ctx.SupernetID, vdrID, nil, ids.Empty, 100))
+				require.NoError(vdrs.AddStaker(ctx.SubnetID, vdrID, nil, ids.Empty, 100))
 			}
 
 			for index, nodeID := range vdrIDs.List() {

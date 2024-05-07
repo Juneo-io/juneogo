@@ -13,8 +13,8 @@ import (
 	context "context"
 	reflect "reflect"
 
-	sync "github.com/Juneo-io/juneogo/proto/pb/sync"
-	merkledb "github.com/Juneo-io/juneogo/x/merkledb"
+	sync "github.com/ava-labs/avalanchego/proto/pb/sync"
+	merkledb "github.com/ava-labs/avalanchego/x/merkledb"
 	gomock "go.uber.org/mock/gomock"
 )
 

@@ -12,12 +12,12 @@ package executor
 import (
 	reflect "reflect"
 
-	ids "github.com/Juneo-io/juneogo/ids"
-	snowman "github.com/Juneo-io/juneogo/snow/consensus/snowman"
-	set "github.com/Juneo-io/juneogo/utils/set"
-	block "github.com/Juneo-io/juneogo/vms/platformvm/block"
-	state "github.com/Juneo-io/juneogo/vms/platformvm/state"
-	txs "github.com/Juneo-io/juneogo/vms/platformvm/txs"
+	ids "github.com/ava-labs/avalanchego/ids"
+	snowman "github.com/ava-labs/avalanchego/snow/consensus/snowman"
+	set "github.com/ava-labs/avalanchego/utils/set"
+	block "github.com/ava-labs/avalanchego/vms/platformvm/block"
+	state "github.com/ava-labs/avalanchego/vms/platformvm/state"
+	txs "github.com/ava-labs/avalanchego/vms/platformvm/txs"
 	gomock "go.uber.org/mock/gomock"
 )
 

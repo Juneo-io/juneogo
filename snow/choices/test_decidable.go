@@ -7,7 +7,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Juneo-io/juneogo/ids"
+	"github.com/ava-labs/avalanchego/ids"
 )
 
 var _ Decidable = (*TestDecidable)(nil)

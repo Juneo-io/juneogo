@@ -9,25 +9,25 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/tests/fixture/e2e"
-	"github.com/Juneo-io/juneogo/utils/constants"
-	"github.com/Juneo-io/juneogo/utils/units"
-	"github.com/Juneo-io/juneogo/vms/components/avax"
-	"github.com/Juneo-io/juneogo/vms/components/verify"
-	"github.com/Juneo-io/juneogo/vms/platformvm"
-	"github.com/Juneo-io/juneogo/vms/platformvm/reward"
-	"github.com/Juneo-io/juneogo/vms/platformvm/signer"
-	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
-	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/tests/fixture/e2e"
+	"github.com/ava-labs/avalanchego/utils/constants"
+	"github.com/ava-labs/avalanchego/utils/units"
+	"github.com/ava-labs/avalanchego/vms/components/avax"
+	"github.com/ava-labs/avalanchego/vms/components/verify"
+	"github.com/ava-labs/avalanchego/vms/platformvm"
+	"github.com/ava-labs/avalanchego/vms/platformvm/reward"
+	"github.com/ava-labs/avalanchego/vms/platformvm/signer"
+	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
+	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
 
 	ginkgo "github.com/onsi/ginkgo/v2"
 )
 
-var _ = e2e.DescribePChain("[Permissionless Supernets]", func() {
+var _ = e2e.DescribePChain("[Permissionless Subnets]", func() {
 	require := require.New(ginkgo.GinkgoT())
 
-	ginkgo.It("supernets operations",
+	ginkgo.It("subnets operations",
 		func() {
 			nodeURI := e2e.Env.GetRandomNodeURI()
 
@@ -53,21 +53,21 @@ var _ = e2e.DescribePChain("[Permissionless Supernets]", func() {
 				},
 			}
 
-			var supernetID ids.ID
-			ginkgo.By("create a permissioned supernet", func() {
-				supernetTx, err := pWallet.IssueCreateSupernetTx(
+			var subnetID ids.ID
+			ginkgo.By("create a permissioned subnet", func() {
+				subnetTx, err := pWallet.IssueCreateSubnetTx(
 					owner,
 					e2e.WithDefaultContext(),
 				)
 
-				supernetID = supernetTx.ID()
+				subnetID = subnetTx.ID()
 				require.NoError(err)
-				require.NotEqual(supernetID, constants.PrimaryNetworkID)
+				require.NotEqual(subnetID, constants.PrimaryNetworkID)
 			})
 
-			var supernetAssetID ids.ID
-			ginkgo.By("create a custom asset for the permissionless supernet", func() {
-				supernetAssetTx, err := xWallet.IssueCreateAssetTx(
+			var subnetAssetID ids.ID
+			ginkgo.By("create a custom asset for the permissionless subnet", func() {
+				subnetAssetTx, err := xWallet.IssueCreateAssetTx(
 					"RnM",
 					"RNM",
 					9,
@@ -82,16 +82,16 @@ var _ = e2e.DescribePChain("[Permissionless Supernets]", func() {
 					e2e.WithDefaultContext(),
 				)
 				require.NoError(err)
-				supernetAssetID = supernetAssetTx.ID()
+				subnetAssetID = subnetAssetTx.ID()
 			})
 
-			ginkgo.By(fmt.Sprintf("Send 100 MegaAvax of asset %s to the P-chain", supernetAssetID), func() {
+			ginkgo.By(fmt.Sprintf("Send 100 MegaAvax of asset %s to the P-chain", subnetAssetID), func() {
 				_, err := xWallet.IssueExportTx(
 					constants.PlatformChainID,
 					[]*avax.TransferableOutput{
 						{
 							Asset: avax.Asset{
-								ID: supernetAssetID,
+								ID: subnetAssetID,
 							},
 							Out: &secp256k1fx.TransferOutput{
 								Amt:          100 * units.MegaAvax,
@@ -104,7 +104,7 @@ var _ = e2e.DescribePChain("[Permissionless Supernets]", func() {
 				require.NoError(err)
 			})
 
-			ginkgo.By(fmt.Sprintf("Import the 100 MegaAvax of asset %s from the X-chain into the P-chain", supernetAssetID), func() {
+			ginkgo.By(fmt.Sprintf("Import the 100 MegaAvax of asset %s from the X-chain into the P-chain", subnetAssetID), func() {
 				_, err := pWallet.IssueImportTx(
 					xChainID,
 					owner,
@@ -113,10 +113,10 @@ var _ = e2e.DescribePChain("[Permissionless Supernets]", func() {
 				require.NoError(err)
 			})
 
-			ginkgo.By("make supernet permissionless", func() {
-				_, err := pWallet.IssueTransformSupernetTx(
-					supernetID,
-					supernetAssetID,
+			ginkgo.By("make subnet permissionless", func() {
+				_, err := pWallet.IssueTransformSubnetTx(
+					subnetID,
+					subnetAssetID,
 					50*units.MegaAvax,
 					100*units.MegaAvax,
 					reward.PercentDenominator,
@@ -137,16 +137,16 @@ var _ = e2e.DescribePChain("[Permissionless Supernets]", func() {
 			endTime := time.Now().Add(time.Minute)
 			ginkgo.By("add permissionless validator", func() {
 				_, err := pWallet.IssueAddPermissionlessValidatorTx(
-					&txs.SupernetValidator{
+					&txs.SubnetValidator{
 						Validator: txs.Validator{
 							NodeID: validatorID,
 							End:    uint64(endTime.Unix()),
 							Wght:   25 * units.MegaAvax,
 						},
-						Supernet: supernetID,
+						Subnet: subnetID,
 					},
 					&signer.Empty{},
-					supernetAssetID,
+					subnetAssetID,
 					&secp256k1fx.OutputOwners{},
 					&secp256k1fx.OutputOwners{},
 					reward.PercentDenominator,
@@ -157,15 +157,15 @@ var _ = e2e.DescribePChain("[Permissionless Supernets]", func() {
 
 			ginkgo.By("add permissionless delegator", func() {
 				_, err := pWallet.IssueAddPermissionlessDelegatorTx(
-					&txs.SupernetValidator{
+					&txs.SubnetValidator{
 						Validator: txs.Validator{
 							NodeID: validatorID,
 							End:    uint64(endTime.Unix()),
 							Wght:   25 * units.MegaAvax,
 						},
-						Supernet: supernetID,
+						Subnet: subnetID,
 					},
-					supernetAssetID,
+					subnetAssetID,
 					&secp256k1fx.OutputOwners{},
 					e2e.WithDefaultContext(),
 				)

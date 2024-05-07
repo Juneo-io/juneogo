@@ -13,8 +13,8 @@ import (
 
 	_ "embed"
 
-	"github.com/Juneo-io/juneogo/utils"
-	"github.com/Juneo-io/juneogo/utils/units"
+	"github.com/ava-labs/avalanchego/utils"
+	"github.com/ava-labs/avalanchego/utils/units"
 )
 
 const maxMessageSize = 2 * units.MiB // Max message size. Can't import due to cycle.

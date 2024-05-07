@@ -6,7 +6,7 @@
 
 package ulimit
 
-import "github.com/Juneo-io/juneogo/utils/logging"
+import "github.com/ava-labs/avalanchego/utils/logging"
 
 const DefaultFDLimit = 16384
 

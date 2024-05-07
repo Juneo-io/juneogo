@@ -10,10 +10,10 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/network/p2p"
-	"github.com/Juneo-io/juneogo/utils/bloom"
-	"github.com/Juneo-io/juneogo/utils/logging"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/network/p2p"
+	"github.com/ava-labs/avalanchego/utils/bloom"
+	"github.com/ava-labs/avalanchego/utils/logging"
 )
 
 var _ p2p.Handler = (*Handler[*testTx])(nil)

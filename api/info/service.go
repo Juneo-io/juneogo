@@ -11,23 +11,23 @@ import (
 	"github.com/gorilla/rpc/v2"
 	"go.uber.org/zap"
 
-	"github.com/Juneo-io/juneogo/chains"
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/network"
-	"github.com/Juneo-io/juneogo/network/peer"
-	"github.com/Juneo-io/juneogo/snow/networking/benchlist"
-	"github.com/Juneo-io/juneogo/snow/validators"
-	"github.com/Juneo-io/juneogo/utils/constants"
-	"github.com/Juneo-io/juneogo/utils/ips"
-	"github.com/Juneo-io/juneogo/utils/json"
-	"github.com/Juneo-io/juneogo/utils/logging"
-	"github.com/Juneo-io/juneogo/utils/set"
-	"github.com/Juneo-io/juneogo/version"
-	"github.com/Juneo-io/juneogo/vms"
-	"github.com/Juneo-io/juneogo/vms/nftfx"
-	"github.com/Juneo-io/juneogo/vms/platformvm/signer"
-	"github.com/Juneo-io/juneogo/vms/propertyfx"
-	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
+	"github.com/ava-labs/avalanchego/chains"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/network"
+	"github.com/ava-labs/avalanchego/network/peer"
+	"github.com/ava-labs/avalanchego/snow/networking/benchlist"
+	"github.com/ava-labs/avalanchego/snow/validators"
+	"github.com/ava-labs/avalanchego/utils/constants"
+	"github.com/ava-labs/avalanchego/utils/ips"
+	"github.com/ava-labs/avalanchego/utils/json"
+	"github.com/ava-labs/avalanchego/utils/logging"
+	"github.com/ava-labs/avalanchego/utils/set"
+	"github.com/ava-labs/avalanchego/version"
+	"github.com/ava-labs/avalanchego/vms"
+	"github.com/ava-labs/avalanchego/vms/nftfx"
+	"github.com/ava-labs/avalanchego/vms/platformvm/signer"
+	"github.com/ava-labs/avalanchego/vms/propertyfx"
+	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
 )
 
 var errNoChainProvided = errors.New("argument 'chain' not given")
@@ -51,13 +51,13 @@ type Parameters struct {
 	NetworkID                     uint32
 	TxFee                         uint64
 	CreateAssetTxFee              uint64
-	CreateSupernetTxFee             uint64
-	TransformSupernetTxFee          uint64
+	CreateSubnetTxFee             uint64
+	TransformSubnetTxFee          uint64
 	CreateBlockchainTxFee         uint64
 	AddPrimaryNetworkValidatorFee uint64
 	AddPrimaryNetworkDelegatorFee uint64
-	AddSupernetValidatorFee         uint64
-	AddSupernetDelegatorFee         uint64
+	AddSubnetValidatorFee         uint64
+	AddSubnetDelegatorFee         uint64
 	VMManager                     vms.Manager
 }
 
@@ -308,7 +308,7 @@ type UptimeResponse struct {
 
 type UptimeRequest struct {
 	// if omitted, defaults to primary network
-	SupernetID ids.ID `json:"supernetID"`
+	SubnetID ids.ID `json:"subnetID"`
 }
 
 func (i *Info) Uptime(_ *http.Request, args *UptimeRequest, reply *UptimeResponse) error {
@@ -317,7 +317,7 @@ func (i *Info) Uptime(_ *http.Request, args *UptimeRequest, reply *UptimeRespons
 		zap.String("method", "uptime"),
 	)
 
-	result, err := i.networking.NodeUptime(args.SupernetID)
+	result, err := i.networking.NodeUptime(args.SubnetID)
 	if err != nil {
 		return fmt.Errorf("couldn't get node uptime: %w", err)
 	}
@@ -387,13 +387,13 @@ func (i *Info) Acps(_ *http.Request, _ *struct{}, reply *ACPsReply) error {
 type GetTxFeeResponse struct {
 	TxFee                         json.Uint64 `json:"txFee"`
 	CreateAssetTxFee              json.Uint64 `json:"createAssetTxFee"`
-	CreateSupernetTxFee             json.Uint64 `json:"createSupernetTxFee"`
-	TransformSupernetTxFee          json.Uint64 `json:"transformSupernetTxFee"`
+	CreateSubnetTxFee             json.Uint64 `json:"createSubnetTxFee"`
+	TransformSubnetTxFee          json.Uint64 `json:"transformSubnetTxFee"`
 	CreateBlockchainTxFee         json.Uint64 `json:"createBlockchainTxFee"`
 	AddPrimaryNetworkValidatorFee json.Uint64 `json:"addPrimaryNetworkValidatorFee"`
 	AddPrimaryNetworkDelegatorFee json.Uint64 `json:"addPrimaryNetworkDelegatorFee"`
-	AddSupernetValidatorFee         json.Uint64 `json:"addSupernetValidatorFee"`
-	AddSupernetDelegatorFee         json.Uint64 `json:"addSupernetDelegatorFee"`
+	AddSubnetValidatorFee         json.Uint64 `json:"addSubnetValidatorFee"`
+	AddSubnetDelegatorFee         json.Uint64 `json:"addSubnetDelegatorFee"`
 }
 
 // GetTxFee returns the transaction fee in nAVAX.
@@ -405,13 +405,13 @@ func (i *Info) GetTxFee(_ *http.Request, _ *struct{}, reply *GetTxFeeResponse) e
 
 	reply.TxFee = json.Uint64(i.TxFee)
 	reply.CreateAssetTxFee = json.Uint64(i.CreateAssetTxFee)
-	reply.CreateSupernetTxFee = json.Uint64(i.CreateSupernetTxFee)
-	reply.TransformSupernetTxFee = json.Uint64(i.TransformSupernetTxFee)
+	reply.CreateSubnetTxFee = json.Uint64(i.CreateSubnetTxFee)
+	reply.TransformSubnetTxFee = json.Uint64(i.TransformSubnetTxFee)
 	reply.CreateBlockchainTxFee = json.Uint64(i.CreateBlockchainTxFee)
 	reply.AddPrimaryNetworkValidatorFee = json.Uint64(i.AddPrimaryNetworkValidatorFee)
 	reply.AddPrimaryNetworkDelegatorFee = json.Uint64(i.AddPrimaryNetworkDelegatorFee)
-	reply.AddSupernetValidatorFee = json.Uint64(i.AddSupernetValidatorFee)
-	reply.AddSupernetDelegatorFee = json.Uint64(i.AddSupernetDelegatorFee)
+	reply.AddSubnetValidatorFee = json.Uint64(i.AddSubnetValidatorFee)
+	reply.AddSubnetDelegatorFee = json.Uint64(i.AddSubnetDelegatorFee)
 	return nil
 }
 

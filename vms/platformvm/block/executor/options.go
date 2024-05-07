@@ -9,15 +9,15 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/Juneo-io/juneogo/snow/consensus/snowman"
-	"github.com/Juneo-io/juneogo/snow/uptime"
-	"github.com/Juneo-io/juneogo/utils/constants"
-	"github.com/Juneo-io/juneogo/utils/logging"
-	"github.com/Juneo-io/juneogo/vms/platformvm/block"
-	"github.com/Juneo-io/juneogo/vms/platformvm/reward"
-	"github.com/Juneo-io/juneogo/vms/platformvm/state"
-	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
-	"github.com/Juneo-io/juneogo/vms/platformvm/txs/executor"
+	"github.com/ava-labs/avalanchego/snow/consensus/snowman"
+	"github.com/ava-labs/avalanchego/snow/uptime"
+	"github.com/ava-labs/avalanchego/utils/constants"
+	"github.com/ava-labs/avalanchego/utils/logging"
+	"github.com/ava-labs/avalanchego/vms/platformvm/block"
+	"github.com/ava-labs/avalanchego/vms/platformvm/reward"
+	"github.com/ava-labs/avalanchego/vms/platformvm/state"
+	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
+	"github.com/ava-labs/avalanchego/vms/platformvm/txs/executor"
 )
 
 var (
@@ -27,7 +27,7 @@ var (
 	errFailedFetchingStakerTx             = errors.New("failed fetching staker transaction")
 	errUnexpectedStakerTxType             = errors.New("unexpected staker transaction type")
 	errFailedFetchingPrimaryStaker        = errors.New("failed fetching primary staker")
-	errFailedFetchingSupernetTransformation = errors.New("failed fetching supernet transformation")
+	errFailedFetchingSubnetTransformation = errors.New("failed fetching subnet transformation")
 	errFailedCalculatingUptime            = errors.New("failed calculating uptime")
 )
 
@@ -166,16 +166,16 @@ func (o *options) prefersCommit(tx *txs.Tx) (bool, error) {
 	}
 
 	expectedUptimePercentage := o.primaryUptimePercentage
-	if supernetID := staker.SupernetID(); supernetID != constants.PrimaryNetworkID {
-		transformSupernet, err := executor.GetTransformSupernetTx(o.state, supernetID)
+	if subnetID := staker.SubnetID(); subnetID != constants.PrimaryNetworkID {
+		transformSubnet, err := executor.GetTransformSubnetTx(o.state, subnetID)
 		if err != nil {
-			return false, fmt.Errorf("%w: %w", errFailedFetchingSupernetTransformation, err)
+			return false, fmt.Errorf("%w: %w", errFailedFetchingSubnetTransformation, err)
 		}
 
-		expectedUptimePercentage = float64(transformSupernet.UptimeRequirement) / reward.PercentDenominator
+		expectedUptimePercentage = float64(transformSubnet.UptimeRequirement) / reward.PercentDenominator
 	}
 
-	// TODO: calculate supernet uptimes
+	// TODO: calculate subnet uptimes
 	uptime, err := o.uptimes.CalculateUptimePercentFrom(
 		nodeID,
 		constants.PrimaryNetworkID,

@@ -6,10 +6,10 @@ package payload
 import (
 	"time"
 
-	"github.com/Juneo-io/juneogo/codec"
-	"github.com/Juneo-io/juneogo/codec/linearcodec"
-	"github.com/Juneo-io/juneogo/utils"
-	"github.com/Juneo-io/juneogo/utils/units"
+	"github.com/ava-labs/avalanchego/codec"
+	"github.com/ava-labs/avalanchego/codec/linearcodec"
+	"github.com/ava-labs/avalanchego/utils"
+	"github.com/ava-labs/avalanchego/utils/units"
 )
 
 const (

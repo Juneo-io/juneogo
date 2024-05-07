@@ -6,7 +6,7 @@ package buffer
 import (
 	"sync"
 
-	"github.com/Juneo-io/juneogo/utils"
+	"github.com/ava-labs/avalanchego/utils"
 )
 
 var _ BlockingDeque[int] = (*unboundedBlockingDeque[int])(nil)

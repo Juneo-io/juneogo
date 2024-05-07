@@ -10,7 +10,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/Juneo-io/juneogo/snow/consensus/avalanche"
+	"github.com/ava-labs/avalanchego/snow/consensus/avalanche"
 )
 
 var (

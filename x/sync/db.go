@@ -3,7 +3,7 @@
 
 package sync
 
-import "github.com/Juneo-io/juneogo/x/merkledb"
+import "github.com/ava-labs/avalanchego/x/merkledb"
 
 type DB interface {
 	merkledb.Clearer

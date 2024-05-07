@@ -8,8 +8,8 @@ import (
 
 	_ "embed"
 
-	"github.com/Juneo-io/juneogo/utils/units"
-	"github.com/Juneo-io/juneogo/vms/platformvm/reward"
+	"github.com/ava-labs/avalanchego/utils/units"
+	"github.com/ava-labs/avalanchego/vms/platformvm/reward"
 )
 
 var (
@@ -24,13 +24,13 @@ var (
 		TxFeeConfig: TxFeeConfig{
 			TxFee:                         10 * units.MilliAvax,
 			CreateAssetTxFee:              100 * units.MilliAvax,
-			CreateSupernetTxFee:           100 * units.MilliAvax,
-			TransformSupernetTxFee:        10 * units.Avax,
+			CreateSubnetTxFee:           100 * units.MilliAvax,
+			TransformSubnetTxFee:        10 * units.Avax,
 			CreateBlockchainTxFee:         100 * units.MilliAvax,
 			AddPrimaryNetworkValidatorFee: 0,
 			AddPrimaryNetworkDelegatorFee: 0,
-			AddSupernetValidatorFee:       100 * units.MilliAvax,
-			AddSupernetDelegatorFee:       100 * units.MilliAvax,
+			AddSubnetValidatorFee:       100 * units.MilliAvax,
+			AddSubnetDelegatorFee:       100 * units.MilliAvax,
 		},
 		StakingConfig: StakingConfig{
 			UptimeRequirement: .8, // 80%

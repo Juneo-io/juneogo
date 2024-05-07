@@ -11,7 +11,7 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"github.com/Juneo-io/juneogo/utils/set"
+	"github.com/ava-labs/avalanchego/utils/set"
 )
 
 var (

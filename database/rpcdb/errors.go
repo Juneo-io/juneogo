@@ -4,9 +4,9 @@
 package rpcdb
 
 import (
-	"github.com/Juneo-io/juneogo/database"
+	"github.com/ava-labs/avalanchego/database"
 
-	rpcdbpb "github.com/Juneo-io/juneogo/proto/pb/rpcdb"
+	rpcdbpb "github.com/ava-labs/avalanchego/proto/pb/rpcdb"
 )
 
 var (

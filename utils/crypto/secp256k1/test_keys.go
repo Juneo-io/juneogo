@@ -3,7 +3,7 @@
 
 package secp256k1
 
-import "github.com/Juneo-io/juneogo/utils/cb58"
+import "github.com/ava-labs/avalanchego/utils/cb58"
 
 func TestKeys() []*PrivateKey {
 	var (

@@ -8,12 +8,12 @@ import (
 	"log"
 	"time"
 
-	"github.com/Juneo-io/juneogo/indexer"
-	"github.com/Juneo-io/juneogo/version"
-	"github.com/Juneo-io/juneogo/wallet/supernet/primary"
+	"github.com/ava-labs/avalanchego/indexer"
+	"github.com/ava-labs/avalanchego/version"
+	"github.com/ava-labs/avalanchego/wallet/subnet/primary"
 
-	platformvmblock "github.com/Juneo-io/juneogo/vms/platformvm/block"
-	proposervmblock "github.com/Juneo-io/juneogo/vms/proposervm/block"
+	platformvmblock "github.com/ava-labs/avalanchego/vms/platformvm/block"
+	proposervmblock "github.com/ava-labs/avalanchego/vms/proposervm/block"
 )
 
 // This example program continuously polls for the next P-Chain block

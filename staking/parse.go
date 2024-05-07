@@ -16,7 +16,7 @@ import (
 
 	"golang.org/x/crypto/cryptobyte"
 
-	"github.com/Juneo-io/juneogo/utils/units"
+	"github.com/ava-labs/avalanchego/utils/units"
 
 	cryptobyte_asn1 "golang.org/x/crypto/cryptobyte/asn1"
 )

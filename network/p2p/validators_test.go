@@ -13,10 +13,10 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/snow/engine/common"
-	"github.com/Juneo-io/juneogo/snow/validators"
-	"github.com/Juneo-io/juneogo/utils/logging"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/snow/engine/common"
+	"github.com/ava-labs/avalanchego/snow/validators"
+	"github.com/ava-labs/avalanchego/utils/logging"
 )
 
 func TestValidatorsSample(t *testing.T) {
@@ -152,7 +152,7 @@ func TestValidatorsSample(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			require := require.New(t)
-			supernetID := ids.GenerateTestID()
+			subnetID := ids.GenerateTestID()
 			ctrl := gomock.NewController(t)
 			mockValidators := validators.NewMockState(ctrl)
 
@@ -172,7 +172,7 @@ func TestValidatorsSample(t *testing.T) {
 
 				calls = append(calls,
 					mockValidators.EXPECT().
-						GetValidatorSet(gomock.Any(), gomock.Any(), supernetID).
+						GetValidatorSet(gomock.Any(), gomock.Any(), subnetID).
 						Return(validatorSet, call.getValidatorSetErr))
 			}
 			gomock.InOrder(calls...)
@@ -184,7 +184,7 @@ func TestValidatorsSample(t *testing.T) {
 			require.NoError(network.Connected(ctx, nodeID1, nil))
 			require.NoError(network.Connected(ctx, nodeID2, nil))
 
-			v := NewValidators(network.Peers, network.log, supernetID, mockValidators, tt.maxStaleness)
+			v := NewValidators(network.Peers, network.log, subnetID, mockValidators, tt.maxStaleness)
 			for _, call := range tt.calls {
 				v.lastUpdated = call.time
 				sampled := v.Sample(ctx, call.limit)

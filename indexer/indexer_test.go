@@ -13,16 +13,16 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
-	"github.com/Juneo-io/juneogo/api/server"
-	"github.com/Juneo-io/juneogo/database/memdb"
-	"github.com/Juneo-io/juneogo/database/versiondb"
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/snow"
-	"github.com/Juneo-io/juneogo/snow/engine/avalanche/vertex"
-	"github.com/Juneo-io/juneogo/snow/engine/snowman/block"
-	"github.com/Juneo-io/juneogo/snow/snowtest"
-	"github.com/Juneo-io/juneogo/utils"
-	"github.com/Juneo-io/juneogo/utils/logging"
+	"github.com/ava-labs/avalanchego/api/server"
+	"github.com/ava-labs/avalanchego/database/memdb"
+	"github.com/ava-labs/avalanchego/database/versiondb"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/snow"
+	"github.com/ava-labs/avalanchego/snow/engine/avalanche/vertex"
+	"github.com/ava-labs/avalanchego/snow/engine/snowman/block"
+	"github.com/ava-labs/avalanchego/snow/snowtest"
+	"github.com/ava-labs/avalanchego/utils"
+	"github.com/ava-labs/avalanchego/utils/logging"
 )
 
 var (
@@ -499,10 +499,10 @@ func TestIgnoreNonDefaultChains(t *testing.T) {
 	require.IsType(&indexer{}, idxrIntf)
 	idxr := idxrIntf.(*indexer)
 
-	// Create chain1Ctx for a random supernet + chain.
+	// Create chain1Ctx for a random subnet + chain.
 	chain1Ctx := snowtest.ConsensusContext(&snow.Context{
 		ChainID:  ids.GenerateTestID(),
-		SupernetID: ids.GenerateTestID(),
+		SubnetID: ids.GenerateTestID(),
 	})
 
 	// RegisterChain should return without adding an index for this chain

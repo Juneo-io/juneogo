@@ -4,9 +4,9 @@
 package pubsub
 
 import (
-	"github.com/Juneo-io/juneogo/api"
-	"github.com/Juneo-io/juneogo/utils/formatting/address"
-	"github.com/Juneo-io/juneogo/utils/json"
+	"github.com/ava-labs/avalanchego/api"
+	"github.com/ava-labs/avalanchego/utils/formatting/address"
+	"github.com/ava-labs/avalanchego/utils/json"
 )
 
 // NewBloom command for a new bloom filter

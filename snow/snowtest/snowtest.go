@@ -11,13 +11,13 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/stretchr/testify/require"
 
-	"github.com/Juneo-io/juneogo/api/metrics"
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/snow"
-	"github.com/Juneo-io/juneogo/snow/validators"
-	"github.com/Juneo-io/juneogo/utils/constants"
-	"github.com/Juneo-io/juneogo/utils/crypto/bls"
-	"github.com/Juneo-io/juneogo/utils/logging"
+	"github.com/ava-labs/avalanchego/api/metrics"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/snow"
+	"github.com/ava-labs/avalanchego/snow/validators"
+	"github.com/ava-labs/avalanchego/utils/constants"
+	"github.com/ava-labs/avalanchego/utils/crypto/bls"
+	"github.com/ava-labs/avalanchego/utils/logging"
 )
 
 var (
@@ -64,8 +64,8 @@ func Context(tb testing.TB, chainID ids.ID) *snow.Context {
 	require.NoError(aliaser.Alias(CChainID, CChainID.String()))
 
 	validatorState := &validators.TestState{
-		GetSupernetIDF: func(_ context.Context, chainID ids.ID) (ids.ID, error) {
-			supernetID, ok := map[ids.ID]ids.ID{
+		GetSubnetIDF: func(_ context.Context, chainID ids.ID) (ids.ID, error) {
+			subnetID, ok := map[ids.ID]ids.ID{
 				constants.PlatformChainID: constants.PrimaryNetworkID,
 				XChainID:                  constants.PrimaryNetworkID,
 				CChainID:                  constants.PrimaryNetworkID,
@@ -73,13 +73,13 @@ func Context(tb testing.TB, chainID ids.ID) *snow.Context {
 			if !ok {
 				return ids.Empty, errMissing
 			}
-			return supernetID, nil
+			return subnetID, nil
 		},
 	}
 
 	return &snow.Context{
 		NetworkID: constants.UnitTestID,
-		SupernetID:  constants.PrimaryNetworkID,
+		SubnetID:  constants.PrimaryNetworkID,
 		ChainID:   chainID,
 		NodeID:    ids.EmptyNodeID,
 		PublicKey: publicKey,

@@ -11,10 +11,10 @@ import (
 
 	"golang.org/x/exp/maps"
 
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/utils"
-	"github.com/Juneo-io/juneogo/utils/crypto/bls"
-	"github.com/Juneo-io/juneogo/utils/set"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/utils"
+	"github.com/ava-labs/avalanchego/utils/crypto/bls"
+	"github.com/ava-labs/avalanchego/utils/set"
 )
 
 var (
@@ -30,18 +30,18 @@ type SetCallbackListener interface {
 	OnValidatorWeightChanged(nodeID ids.NodeID, oldWeight, newWeight uint64)
 }
 
-// Manager holds the validator set of each supernet
+// Manager holds the validator set of each subnet
 type Manager interface {
 	fmt.Stringer
 
-	// Add a new staker to the supernet.
+	// Add a new staker to the subnet.
 	// Returns an error if:
 	// - [weight] is 0
 	// - [nodeID] is already in the validator set
 	// If an error is returned, the set will be unmodified.
-	AddStaker(supernetID ids.ID, nodeID ids.NodeID, pk *bls.PublicKey, txID ids.ID, weight uint64) error
+	AddStaker(subnetID ids.ID, nodeID ids.NodeID, pk *bls.PublicKey, txID ids.ID, weight uint64) error
 
-	// AddWeight to an existing staker to the supernet.
+	// AddWeight to an existing staker to the subnet.
 	// Returns an error if:
 	// - [weight] is 0
 	// - [nodeID] is not already in the validator set
@@ -49,66 +49,66 @@ type Manager interface {
 	// AddWeight can result in a total weight that overflows uint64.
 	// In this case no error will be returned for this call.
 	// However, the next TotalWeight call will return an error.
-	AddWeight(supernetID ids.ID, nodeID ids.NodeID, weight uint64) error
+	AddWeight(subnetID ids.ID, nodeID ids.NodeID, weight uint64) error
 
-	// GetWeight retrieves the validator weight from the supernet.
-	GetWeight(supernetID ids.ID, nodeID ids.NodeID) uint64
+	// GetWeight retrieves the validator weight from the subnet.
+	GetWeight(subnetID ids.ID, nodeID ids.NodeID) uint64
 
-	// GetValidator returns the validator tied to the specified ID in supernet.
+	// GetValidator returns the validator tied to the specified ID in subnet.
 	// If the validator doesn't exist, returns false.
-	GetValidator(supernetID ids.ID, nodeID ids.NodeID) (*Validator, bool)
+	GetValidator(subnetID ids.ID, nodeID ids.NodeID) (*Validator, bool)
 
-	// GetValidatoIDs returns the validator IDs in the supernet.
-	GetValidatorIDs(supernetID ids.ID) []ids.NodeID
+	// GetValidatoIDs returns the validator IDs in the subnet.
+	GetValidatorIDs(subnetID ids.ID) []ids.NodeID
 
-	// SubsetWeight returns the sum of the weights of the validators in the supernet.
+	// SubsetWeight returns the sum of the weights of the validators in the subnet.
 	// Returns err if subset weight overflows uint64.
-	SubsetWeight(supernetID ids.ID, validatorIDs set.Set[ids.NodeID]) (uint64, error)
+	SubsetWeight(subnetID ids.ID, validatorIDs set.Set[ids.NodeID]) (uint64, error)
 
-	// RemoveWeight from a staker in the supernet. If the staker's weight becomes 0, the staker
-	// will be removed from the supernet set.
+	// RemoveWeight from a staker in the subnet. If the staker's weight becomes 0, the staker
+	// will be removed from the subnet set.
 	// Returns an error if:
 	// - [weight] is 0
-	// - [nodeID] is not already in the supernet set
+	// - [nodeID] is not already in the subnet set
 	// - the weight of the validator would become negative
 	// If an error is returned, the set will be unmodified.
-	RemoveWeight(supernetID ids.ID, nodeID ids.NodeID, weight uint64) error
+	RemoveWeight(subnetID ids.ID, nodeID ids.NodeID, weight uint64) error
 
-	// Count returns the number of validators currently in the supernet.
-	Count(supernetID ids.ID) int
+	// Count returns the number of validators currently in the subnet.
+	Count(subnetID ids.ID) int
 
-	// TotalWeight returns the cumulative weight of all validators in the supernet.
+	// TotalWeight returns the cumulative weight of all validators in the subnet.
 	// Returns err if total weight overflows uint64.
-	TotalWeight(supernetID ids.ID) (uint64, error)
+	TotalWeight(subnetID ids.ID) (uint64, error)
 
-	// Sample returns a collection of validatorIDs in the supernet, potentially with duplicates.
+	// Sample returns a collection of validatorIDs in the subnet, potentially with duplicates.
 	// If sampling the requested size isn't possible, an error will be returned.
-	Sample(supernetID ids.ID, size int) ([]ids.NodeID, error)
+	Sample(subnetID ids.ID, size int) ([]ids.NodeID, error)
 
-	// Map of the validators in this supernet
-	GetMap(supernetID ids.ID) map[ids.NodeID]*GetValidatorOutput
+	// Map of the validators in this subnet
+	GetMap(subnetID ids.ID) map[ids.NodeID]*GetValidatorOutput
 
 	// When a validator's weight changes, or a validator is added/removed,
 	// this listener is called.
-	RegisterCallbackListener(supernetID ids.ID, listener SetCallbackListener)
+	RegisterCallbackListener(subnetID ids.ID, listener SetCallbackListener)
 }
 
 // NewManager returns a new, empty manager
 func NewManager() Manager {
 	return &manager{
-		supernetToVdrs: make(map[ids.ID]*vdrSet),
+		subnetToVdrs: make(map[ids.ID]*vdrSet),
 	}
 }
 
 type manager struct {
 	lock sync.RWMutex
 
-	// Key: Supernet ID
-	// Value: The validators that validate the supernet
-	supernetToVdrs map[ids.ID]*vdrSet
+	// Key: Subnet ID
+	// Value: The validators that validate the subnet
+	subnetToVdrs map[ids.ID]*vdrSet
 }
 
-func (m *manager) AddStaker(supernetID ids.ID, nodeID ids.NodeID, pk *bls.PublicKey, txID ids.ID, weight uint64) error {
+func (m *manager) AddStaker(subnetID ids.ID, nodeID ids.NodeID, pk *bls.PublicKey, txID ids.ID, weight uint64) error {
 	if weight == 0 {
 		return ErrZeroWeight
 	}
@@ -116,31 +116,31 @@ func (m *manager) AddStaker(supernetID ids.ID, nodeID ids.NodeID, pk *bls.Public
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
-	set, exists := m.supernetToVdrs[supernetID]
+	set, exists := m.subnetToVdrs[subnetID]
 	if !exists {
 		set = newSet()
-		m.supernetToVdrs[supernetID] = set
+		m.subnetToVdrs[subnetID] = set
 	}
 
 	return set.Add(nodeID, pk, txID, weight)
 }
 
-func (m *manager) AddWeight(supernetID ids.ID, nodeID ids.NodeID, weight uint64) error {
+func (m *manager) AddWeight(subnetID ids.ID, nodeID ids.NodeID, weight uint64) error {
 	if weight == 0 {
 		return ErrZeroWeight
 	}
 
 	// We do not need to grab a write lock here because we never modify the
-	// supernetToVdrs map. However, we must hold the read lock during the entirity
+	// subnetToVdrs map. However, we must hold the read lock during the entirity
 	// of this function to ensure that errors are returned consistently.
 	//
 	// Consider the case that:
-	//	AddStaker(supernetID, nodeID, 1)
+	//	AddStaker(subnetID, nodeID, 1)
 	//	go func() {
-	//		AddWeight(supernetID, nodeID, 1)
+	//		AddWeight(subnetID, nodeID, 1)
 	//	}
 	//	go func() {
-	//		RemoveWeight(supernetID, nodeID, 1)
+	//		RemoveWeight(subnetID, nodeID, 1)
 	//	}
 	//
 	// In this case, after both goroutines have finished, either AddWeight
@@ -150,7 +150,7 @@ func (m *manager) AddWeight(supernetID ids.ID, nodeID ids.NodeID, weight uint64)
 	m.lock.RLock()
 	defer m.lock.RUnlock()
 
-	set, exists := m.supernetToVdrs[supernetID]
+	set, exists := m.subnetToVdrs[subnetID]
 	if !exists {
 		return errMissingValidator
 	}
@@ -158,9 +158,9 @@ func (m *manager) AddWeight(supernetID ids.ID, nodeID ids.NodeID, weight uint64)
 	return set.AddWeight(nodeID, weight)
 }
 
-func (m *manager) GetWeight(supernetID ids.ID, nodeID ids.NodeID) uint64 {
+func (m *manager) GetWeight(subnetID ids.ID, nodeID ids.NodeID) uint64 {
 	m.lock.RLock()
-	set, exists := m.supernetToVdrs[supernetID]
+	set, exists := m.subnetToVdrs[subnetID]
 	m.lock.RUnlock()
 	if !exists {
 		return 0
@@ -169,9 +169,9 @@ func (m *manager) GetWeight(supernetID ids.ID, nodeID ids.NodeID) uint64 {
 	return set.GetWeight(nodeID)
 }
 
-func (m *manager) GetValidator(supernetID ids.ID, nodeID ids.NodeID) (*Validator, bool) {
+func (m *manager) GetValidator(subnetID ids.ID, nodeID ids.NodeID) (*Validator, bool) {
 	m.lock.RLock()
-	set, exists := m.supernetToVdrs[supernetID]
+	set, exists := m.subnetToVdrs[subnetID]
 	m.lock.RUnlock()
 	if !exists {
 		return nil, false
@@ -180,9 +180,9 @@ func (m *manager) GetValidator(supernetID ids.ID, nodeID ids.NodeID) (*Validator
 	return set.Get(nodeID)
 }
 
-func (m *manager) SubsetWeight(supernetID ids.ID, validatorIDs set.Set[ids.NodeID]) (uint64, error) {
+func (m *manager) SubsetWeight(subnetID ids.ID, validatorIDs set.Set[ids.NodeID]) (uint64, error) {
 	m.lock.RLock()
-	set, exists := m.supernetToVdrs[supernetID]
+	set, exists := m.subnetToVdrs[subnetID]
 	m.lock.RUnlock()
 	if !exists {
 		return 0, nil
@@ -191,7 +191,7 @@ func (m *manager) SubsetWeight(supernetID ids.ID, validatorIDs set.Set[ids.NodeI
 	return set.SubsetWeight(validatorIDs)
 }
 
-func (m *manager) RemoveWeight(supernetID ids.ID, nodeID ids.NodeID, weight uint64) error {
+func (m *manager) RemoveWeight(subnetID ids.ID, nodeID ids.NodeID, weight uint64) error {
 	if weight == 0 {
 		return ErrZeroWeight
 	}
@@ -199,7 +199,7 @@ func (m *manager) RemoveWeight(supernetID ids.ID, nodeID ids.NodeID, weight uint
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
-	set, exists := m.supernetToVdrs[supernetID]
+	set, exists := m.subnetToVdrs[subnetID]
 	if !exists {
 		return errMissingValidator
 	}
@@ -207,18 +207,18 @@ func (m *manager) RemoveWeight(supernetID ids.ID, nodeID ids.NodeID, weight uint
 	if err := set.RemoveWeight(nodeID, weight); err != nil {
 		return err
 	}
-	// If this was the last validator in the supernet and no callback listeners
-	// are registered, remove the supernet
+	// If this was the last validator in the subnet and no callback listeners
+	// are registered, remove the subnet
 	if set.Len() == 0 && !set.HasCallbackRegistered() {
-		delete(m.supernetToVdrs, supernetID)
+		delete(m.subnetToVdrs, subnetID)
 	}
 
 	return nil
 }
 
-func (m *manager) Count(supernetID ids.ID) int {
+func (m *manager) Count(subnetID ids.ID) int {
 	m.lock.RLock()
-	set, exists := m.supernetToVdrs[supernetID]
+	set, exists := m.subnetToVdrs[subnetID]
 	m.lock.RUnlock()
 	if !exists {
 		return 0
@@ -227,9 +227,9 @@ func (m *manager) Count(supernetID ids.ID) int {
 	return set.Len()
 }
 
-func (m *manager) TotalWeight(supernetID ids.ID) (uint64, error) {
+func (m *manager) TotalWeight(subnetID ids.ID) (uint64, error) {
 	m.lock.RLock()
-	set, exists := m.supernetToVdrs[supernetID]
+	set, exists := m.subnetToVdrs[subnetID]
 	m.lock.RUnlock()
 	if !exists {
 		return 0, nil
@@ -238,13 +238,13 @@ func (m *manager) TotalWeight(supernetID ids.ID) (uint64, error) {
 	return set.TotalWeight()
 }
 
-func (m *manager) Sample(supernetID ids.ID, size int) ([]ids.NodeID, error) {
+func (m *manager) Sample(subnetID ids.ID, size int) ([]ids.NodeID, error) {
 	if size == 0 {
 		return nil, nil
 	}
 
 	m.lock.RLock()
-	set, exists := m.supernetToVdrs[supernetID]
+	set, exists := m.subnetToVdrs[subnetID]
 	m.lock.RUnlock()
 	if !exists {
 		return nil, ErrMissingValidators
@@ -253,9 +253,9 @@ func (m *manager) Sample(supernetID ids.ID, size int) ([]ids.NodeID, error) {
 	return set.Sample(size)
 }
 
-func (m *manager) GetMap(supernetID ids.ID) map[ids.NodeID]*GetValidatorOutput {
+func (m *manager) GetMap(subnetID ids.ID) map[ids.NodeID]*GetValidatorOutput {
 	m.lock.RLock()
-	set, exists := m.supernetToVdrs[supernetID]
+	set, exists := m.subnetToVdrs[subnetID]
 	m.lock.RUnlock()
 	if !exists {
 		return make(map[ids.NodeID]*GetValidatorOutput)
@@ -264,14 +264,14 @@ func (m *manager) GetMap(supernetID ids.ID) map[ids.NodeID]*GetValidatorOutput {
 	return set.Map()
 }
 
-func (m *manager) RegisterCallbackListener(supernetID ids.ID, listener SetCallbackListener) {
+func (m *manager) RegisterCallbackListener(subnetID ids.ID, listener SetCallbackListener) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
-	set, exists := m.supernetToVdrs[supernetID]
+	set, exists := m.subnetToVdrs[subnetID]
 	if !exists {
 		set = newSet()
-		m.supernetToVdrs[supernetID] = set
+		m.subnetToVdrs[subnetID] = set
 	}
 
 	set.RegisterCallbackListener(listener)
@@ -281,19 +281,19 @@ func (m *manager) String() string {
 	m.lock.RLock()
 	defer m.lock.RUnlock()
 
-	supernets := maps.Keys(m.supernetToVdrs)
-	utils.Sort(supernets)
+	subnets := maps.Keys(m.subnetToVdrs)
+	utils.Sort(subnets)
 
 	sb := strings.Builder{}
 
 	sb.WriteString(fmt.Sprintf("Validator Manager: (Size = %d)",
-		len(supernets),
+		len(subnets),
 	))
-	for _, supernetID := range supernets {
-		vdrs := m.supernetToVdrs[supernetID]
+	for _, subnetID := range subnets {
+		vdrs := m.subnetToVdrs[subnetID]
 		sb.WriteString(fmt.Sprintf(
-			"\n    Supernet[%s]: %s",
-			supernetID,
+			"\n    Subnet[%s]: %s",
+			subnetID,
 			vdrs.PrefixedString("    "),
 		))
 	}
@@ -301,9 +301,9 @@ func (m *manager) String() string {
 	return sb.String()
 }
 
-func (m *manager) GetValidatorIDs(supernetID ids.ID) []ids.NodeID {
+func (m *manager) GetValidatorIDs(subnetID ids.ID) []ids.NodeID {
 	m.lock.RLock()
-	vdrs, exist := m.supernetToVdrs[supernetID]
+	vdrs, exist := m.subnetToVdrs[subnetID]
 	m.lock.RUnlock()
 	if !exist {
 		return nil

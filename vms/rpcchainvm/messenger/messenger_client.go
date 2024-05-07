@@ -6,9 +6,9 @@ package messenger
 import (
 	"context"
 
-	"github.com/Juneo-io/juneogo/snow/engine/common"
+	"github.com/ava-labs/avalanchego/snow/engine/common"
 
-	messengerpb "github.com/Juneo-io/juneogo/proto/pb/messenger"
+	messengerpb "github.com/ava-labs/avalanchego/proto/pb/messenger"
 )
 
 // Client is an implementation of a messenger channel that talks over RPC.

@@ -3,7 +3,7 @@
 
 package state
 
-import "github.com/Juneo-io/juneogo/ids"
+import "github.com/ava-labs/avalanchego/ids"
 
 type Versions interface {
 	// GetState returns the state of the chain after [blkID] has been accepted.

@@ -6,7 +6,7 @@ package snow
 import (
 	"errors"
 
-	"github.com/Juneo-io/juneogo/proto/pb/p2p"
+	"github.com/ava-labs/avalanchego/proto/pb/p2p"
 )
 
 const (

@@ -8,16 +8,16 @@ import (
 	"crypto/tls"
 	"time"
 
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/network/dialer"
-	"github.com/Juneo-io/juneogo/network/throttling"
-	"github.com/Juneo-io/juneogo/snow/networking/tracker"
-	"github.com/Juneo-io/juneogo/snow/uptime"
-	"github.com/Juneo-io/juneogo/snow/validators"
-	"github.com/Juneo-io/juneogo/utils/compression"
-	"github.com/Juneo-io/juneogo/utils/crypto/bls"
-	"github.com/Juneo-io/juneogo/utils/ips"
-	"github.com/Juneo-io/juneogo/utils/set"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/network/dialer"
+	"github.com/ava-labs/avalanchego/network/throttling"
+	"github.com/ava-labs/avalanchego/snow/networking/tracker"
+	"github.com/ava-labs/avalanchego/snow/uptime"
+	"github.com/ava-labs/avalanchego/snow/validators"
+	"github.com/ava-labs/avalanchego/utils/compression"
+	"github.com/ava-labs/avalanchego/utils/crypto/bls"
+	"github.com/ava-labs/avalanchego/utils/ips"
+	"github.com/ava-labs/avalanchego/utils/set"
 )
 
 // HealthConfig describes parameters for network layer health checks.
@@ -146,8 +146,8 @@ type Config struct {
 	// BLSKey is this node's BLS key that is used to sign IPs.
 	BLSKey *bls.SecretKey `json:"-"`
 
-	// TrackedSupernets of the node.
-	TrackedSupernets set.Set[ids.ID]    `json:"-"`
+	// TrackedSubnets of the node.
+	TrackedSubnets set.Set[ids.ID]    `json:"-"`
 	Beacons        validators.Manager `json:"-"`
 
 	// Validators are the current validators in the Avalanche network

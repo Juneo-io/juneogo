@@ -9,17 +9,17 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/utils/constants"
-	"github.com/Juneo-io/juneogo/vms/components/avax"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/utils/constants"
+	"github.com/ava-labs/avalanchego/vms/components/avax"
 )
 
 func NewDeterministicChainUTXOs(require *require.Assertions, utxoSets map[ids.ID][]*avax.UTXO) *DeterministicChainUTXOs {
 	globalUTXOs := NewUTXOs()
-	for supernetID, utxos := range utxoSets {
+	for subnetID, utxos := range utxoSets {
 		for _, utxo := range utxos {
 			require.NoError(
-				globalUTXOs.AddUTXO(context.Background(), supernetID, constants.PlatformChainID, utxo),
+				globalUTXOs.AddUTXO(context.Background(), subnetID, constants.PlatformChainID, utxo),
 			)
 		}
 	}

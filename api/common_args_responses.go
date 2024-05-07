@@ -6,10 +6,10 @@ package api
 import (
 	"encoding/json"
 
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/utils/formatting"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/utils/formatting"
 
-	avajson "github.com/Juneo-io/juneogo/utils/json"
+	avajson "github.com/ava-labs/avalanchego/utils/json"
 )
 
 // This file contains structs used in arguments and responses in services

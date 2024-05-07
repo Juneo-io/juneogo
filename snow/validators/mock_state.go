@@ -13,7 +13,7 @@ import (
 	context "context"
 	reflect "reflect"
 
-	ids "github.com/Juneo-io/juneogo/ids"
+	ids "github.com/ava-labs/avalanchego/ids"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -70,19 +70,19 @@ func (mr *MockStateMockRecorder) GetMinimumHeight(arg0 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMinimumHeight", reflect.TypeOf((*MockState)(nil).GetMinimumHeight), arg0)
 }
 
-// GetSupernetID mocks base method.
-func (m *MockState) GetSupernetID(arg0 context.Context, arg1 ids.ID) (ids.ID, error) {
+// GetSubnetID mocks base method.
+func (m *MockState) GetSubnetID(arg0 context.Context, arg1 ids.ID) (ids.ID, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetSupernetID", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetSubnetID", arg0, arg1)
 	ret0, _ := ret[0].(ids.ID)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetSupernetID indicates an expected call of GetSupernetID.
-func (mr *MockStateMockRecorder) GetSupernetID(arg0, arg1 any) *gomock.Call {
+// GetSubnetID indicates an expected call of GetSubnetID.
+func (mr *MockStateMockRecorder) GetSubnetID(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSupernetID", reflect.TypeOf((*MockState)(nil).GetSupernetID), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSubnetID", reflect.TypeOf((*MockState)(nil).GetSubnetID), arg0, arg1)
 }
 
 // GetValidatorSet mocks base method.

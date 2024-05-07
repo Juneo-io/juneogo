@@ -9,8 +9,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/Juneo-io/juneogo/database"
-	"github.com/Juneo-io/juneogo/database/memdb"
+	"github.com/ava-labs/avalanchego/database"
+	"github.com/ava-labs/avalanchego/database/memdb"
 )
 
 var (

@@ -115,7 +115,7 @@ func (x *GetCurrentHeightResponse) GetHeight() uint64 {
 	return 0
 }
 
-type GetSupernetIDRequest struct {
+type GetSubnetIDRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -123,8 +123,8 @@ type GetSupernetIDRequest struct {
 	ChainId []byte `protobuf:"bytes,1,opt,name=chain_id,json=chainId,proto3" json:"chain_id,omitempty"`
 }
 
-func (x *GetSupernetIDRequest) Reset() {
-	*x = GetSupernetIDRequest{}
+func (x *GetSubnetIDRequest) Reset() {
+	*x = GetSubnetIDRequest{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_validatorstate_validator_state_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -132,13 +132,13 @@ func (x *GetSupernetIDRequest) Reset() {
 	}
 }
 
-func (x *GetSupernetIDRequest) String() string {
+func (x *GetSubnetIDRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*GetSupernetIDRequest) ProtoMessage() {}
+func (*GetSubnetIDRequest) ProtoMessage() {}
 
-func (x *GetSupernetIDRequest) ProtoReflect() protoreflect.Message {
+func (x *GetSubnetIDRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_validatorstate_validator_state_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -150,28 +150,28 @@ func (x *GetSupernetIDRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use GetSupernetIDRequest.ProtoReflect.Descriptor instead.
-func (*GetSupernetIDRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use GetSubnetIDRequest.ProtoReflect.Descriptor instead.
+func (*GetSubnetIDRequest) Descriptor() ([]byte, []int) {
 	return file_validatorstate_validator_state_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *GetSupernetIDRequest) GetChainId() []byte {
+func (x *GetSubnetIDRequest) GetChainId() []byte {
 	if x != nil {
 		return x.ChainId
 	}
 	return nil
 }
 
-type GetSupernetIDResponse struct {
+type GetSubnetIDResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	SupernetId []byte `protobuf:"bytes,1,opt,name=supernet_id,json=supernetId,proto3" json:"supernet_id,omitempty"`
+	SubnetId []byte `protobuf:"bytes,1,opt,name=subnet_id,json=subnetId,proto3" json:"subnet_id,omitempty"`
 }
 
-func (x *GetSupernetIDResponse) Reset() {
-	*x = GetSupernetIDResponse{}
+func (x *GetSubnetIDResponse) Reset() {
+	*x = GetSubnetIDResponse{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_validatorstate_validator_state_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -179,13 +179,13 @@ func (x *GetSupernetIDResponse) Reset() {
 	}
 }
 
-func (x *GetSupernetIDResponse) String() string {
+func (x *GetSubnetIDResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*GetSupernetIDResponse) ProtoMessage() {}
+func (*GetSubnetIDResponse) ProtoMessage() {}
 
-func (x *GetSupernetIDResponse) ProtoReflect() protoreflect.Message {
+func (x *GetSubnetIDResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_validatorstate_validator_state_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -197,14 +197,14 @@ func (x *GetSupernetIDResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use GetSupernetIDResponse.ProtoReflect.Descriptor instead.
-func (*GetSupernetIDResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use GetSubnetIDResponse.ProtoReflect.Descriptor instead.
+func (*GetSubnetIDResponse) Descriptor() ([]byte, []int) {
 	return file_validatorstate_validator_state_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *GetSupernetIDResponse) GetSupernetId() []byte {
+func (x *GetSubnetIDResponse) GetSubnetId() []byte {
 	if x != nil {
-		return x.SupernetId
+		return x.SubnetId
 	}
 	return nil
 }
@@ -215,7 +215,7 @@ type GetValidatorSetRequest struct {
 	unknownFields protoimpl.UnknownFields
 
 	Height     uint64 `protobuf:"varint,1,opt,name=height,proto3" json:"height,omitempty"`
-	SupernetId []byte `protobuf:"bytes,2,opt,name=supernet_id,json=supernetId,proto3" json:"supernet_id,omitempty"`
+	SubnetId []byte `protobuf:"bytes,2,opt,name=subnet_id,json=subnetId,proto3" json:"subnet_id,omitempty"`
 }
 
 func (x *GetValidatorSetRequest) Reset() {
@@ -257,9 +257,9 @@ func (x *GetValidatorSetRequest) GetHeight() uint64 {
 	return 0
 }
 
-func (x *GetValidatorSetRequest) GetSupernetId() []byte {
+func (x *GetValidatorSetRequest) GetSubnetId() []byte {
 	if x != nil {
-		return x.SupernetId
+		return x.SubnetId
 	}
 	return nil
 }
@@ -458,8 +458,8 @@ var file_validatorstate_validator_state_proto_msgTypes = make([]protoimpl.Messag
 var file_validatorstate_validator_state_proto_goTypes = []interface{}{
 	(*GetMinimumHeightResponse)(nil), // 0: validatorstate.GetMinimumHeightResponse
 	(*GetCurrentHeightResponse)(nil), // 1: validatorstate.GetCurrentHeightResponse
-	(*GetSupernetIDRequest)(nil),     // 2: validatorstate.GetSupernetIDRequest
-	(*GetSupernetIDResponse)(nil),    // 3: validatorstate.GetSupernetIDResponse
+	(*GetSubnetIDRequest)(nil),     // 2: validatorstate.GetSubnetIDRequest
+	(*GetSubnetIDResponse)(nil),    // 3: validatorstate.GetSubnetIDResponse
 	(*GetValidatorSetRequest)(nil),   // 4: validatorstate.GetValidatorSetRequest
 	(*Validator)(nil),                // 5: validatorstate.Validator
 	(*GetValidatorSetResponse)(nil),  // 6: validatorstate.GetValidatorSetResponse
@@ -469,11 +469,11 @@ var file_validatorstate_validator_state_proto_depIdxs = []int32{
 	5, // 0: validatorstate.GetValidatorSetResponse.validators:type_name -> validatorstate.Validator
 	7, // 1: validatorstate.ValidatorState.GetMinimumHeight:input_type -> google.protobuf.Empty
 	7, // 2: validatorstate.ValidatorState.GetCurrentHeight:input_type -> google.protobuf.Empty
-	2, // 3: validatorstate.ValidatorState.GetSupernetID:input_type -> validatorstate.GetSupernetIDRequest
+	2, // 3: validatorstate.ValidatorState.GetSubnetID:input_type -> validatorstate.GetSubnetIDRequest
 	4, // 4: validatorstate.ValidatorState.GetValidatorSet:input_type -> validatorstate.GetValidatorSetRequest
 	0, // 5: validatorstate.ValidatorState.GetMinimumHeight:output_type -> validatorstate.GetMinimumHeightResponse
 	1, // 6: validatorstate.ValidatorState.GetCurrentHeight:output_type -> validatorstate.GetCurrentHeightResponse
-	3, // 7: validatorstate.ValidatorState.GetSupernetID:output_type -> validatorstate.GetSupernetIDResponse
+	3, // 7: validatorstate.ValidatorState.GetSubnetID:output_type -> validatorstate.GetSubnetIDResponse
 	6, // 8: validatorstate.ValidatorState.GetValidatorSet:output_type -> validatorstate.GetValidatorSetResponse
 	5, // [5:9] is the sub-list for method output_type
 	1, // [1:5] is the sub-list for method input_type
@@ -513,7 +513,7 @@ func file_validatorstate_validator_state_proto_init() {
 			}
 		}
 		file_validatorstate_validator_state_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetSupernetIDRequest); i {
+			switch v := v.(*GetSubnetIDRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -525,7 +525,7 @@ func file_validatorstate_validator_state_proto_init() {
 			}
 		}
 		file_validatorstate_validator_state_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetSupernetIDResponse); i {
+			switch v := v.(*GetSubnetIDResponse); i {
 			case 0:
 				return &v.state
 			case 1:

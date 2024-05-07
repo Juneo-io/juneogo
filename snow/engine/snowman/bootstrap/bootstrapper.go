@@ -13,18 +13,18 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/proto/pb/p2p"
-	"github.com/Juneo-io/juneogo/snow"
-	"github.com/Juneo-io/juneogo/snow/choices"
-	"github.com/Juneo-io/juneogo/snow/consensus/snowman"
-	"github.com/Juneo-io/juneogo/snow/consensus/snowman/bootstrapper"
-	"github.com/Juneo-io/juneogo/snow/engine/common"
-	"github.com/Juneo-io/juneogo/snow/engine/snowman/block"
-	"github.com/Juneo-io/juneogo/utils/bimap"
-	"github.com/Juneo-io/juneogo/utils/set"
-	"github.com/Juneo-io/juneogo/utils/timer"
-	"github.com/Juneo-io/juneogo/version"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/proto/pb/p2p"
+	"github.com/ava-labs/avalanchego/snow"
+	"github.com/ava-labs/avalanchego/snow/choices"
+	"github.com/ava-labs/avalanchego/snow/consensus/snowman"
+	"github.com/ava-labs/avalanchego/snow/consensus/snowman/bootstrapper"
+	"github.com/ava-labs/avalanchego/snow/engine/common"
+	"github.com/ava-labs/avalanchego/snow/engine/snowman/block"
+	"github.com/ava-labs/avalanchego/utils/bimap"
+	"github.com/ava-labs/avalanchego/utils/set"
+	"github.com/ava-labs/avalanchego/utils/timer"
+	"github.com/ava-labs/avalanchego/version"
 )
 
 const (
@@ -201,7 +201,7 @@ func (b *Bootstrapper) Connected(ctx context.Context, nodeID ids.NodeID, nodeVer
 		return err
 	}
 	// Ensure fetchFrom reflects proper validator list
-	if _, ok := b.Beacons.GetValidator(b.Ctx.SupernetID, nodeID); ok {
+	if _, ok := b.Beacons.GetValidator(b.Ctx.SubnetID, nodeID); ok {
 		b.fetchFrom.Add(nodeID)
 	}
 
@@ -233,7 +233,7 @@ func (b *Bootstrapper) tryStartBootstrapping(ctx context.Context) error {
 }
 
 func (b *Bootstrapper) startBootstrapping(ctx context.Context) error {
-	currentBeacons := b.Beacons.GetMap(b.Ctx.SupernetID)
+	currentBeacons := b.Beacons.GetMap(b.Ctx.SubnetID)
 	nodeWeights := make(map[ids.NodeID]uint64, len(currentBeacons))
 	for nodeID, beacon := range currentBeacons {
 		nodeWeights[nodeID] = beacon.Weight
@@ -300,7 +300,7 @@ func (b *Bootstrapper) sendBootstrappingMessagesOrFinish(ctx context.Context) er
 	if numAccepted == 0 {
 		b.Ctx.Log.Debug("restarting bootstrap",
 			zap.String("reason", "no blocks accepted"),
-			zap.Int("numBeacons", b.Beacons.Count(b.Ctx.SupernetID)),
+			zap.Int("numBeacons", b.Beacons.Count(b.Ctx.SubnetID)),
 		)
 		// Invariant: These functions are mutualy recursive. However, when
 		// [startBootstrapping] calls [sendMessagesOrFinish], it is guaranteed
@@ -744,16 +744,16 @@ func (b *Bootstrapper) tryStartExecuting(ctx context.Context) error {
 		b.bootstrappedOnce.Do(b.Bootstrapped)
 	}
 
-	// Notify the supernet that this chain is synced
+	// Notify the subnet that this chain is synced
 	b.Config.BootstrapTracker.Bootstrapped(b.Ctx.ChainID)
 
-	// If the supernet hasn't finished bootstrapping, this chain should remain
+	// If the subnet hasn't finished bootstrapping, this chain should remain
 	// syncing.
 	if !b.Config.BootstrapTracker.IsBootstrapped() {
 		if !b.restarted {
-			b.Ctx.Log.Info("waiting for the remaining chains in this supernet to finish syncing")
+			b.Ctx.Log.Info("waiting for the remaining chains in this subnet to finish syncing")
 		} else {
-			b.Ctx.Log.Debug("waiting for the remaining chains in this supernet to finish syncing")
+			b.Ctx.Log.Debug("waiting for the remaining chains in this subnet to finish syncing")
 		}
 		// Restart bootstrapping after [bootstrappingDelay] to keep up to date
 		// on the latest tip.

@@ -9,7 +9,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 
-	"github.com/Juneo-io/juneogo/utils/wrappers"
+	"github.com/ava-labs/avalanchego/utils/wrappers"
 )
 
 var ErrFailedRegistering = errors.New("failed registering metric")

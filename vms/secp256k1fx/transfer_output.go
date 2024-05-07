@@ -7,7 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/Juneo-io/juneogo/vms/components/verify"
+	"github.com/ava-labs/avalanchego/vms/components/verify"
 )
 
 var (

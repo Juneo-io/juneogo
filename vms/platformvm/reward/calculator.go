@@ -7,7 +7,7 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/Juneo-io/juneogo/utils/math"
+	"github.com/ava-labs/avalanchego/utils/math"
 )
 
 var _ Calculator = (*calculator)(nil)

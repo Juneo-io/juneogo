@@ -12,7 +12,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 
-	"github.com/Juneo-io/juneogo/utils/metric"
+	"github.com/ava-labs/avalanchego/utils/metric"
 
 	dto "github.com/prometheus/client_model/go"
 )

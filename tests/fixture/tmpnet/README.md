@@ -34,7 +34,7 @@ the following non-test files:
 | node.go           | Node        | Orchestrates and configures nodes              |
 | node_config.go    | Node        | Reads and writes node configuration            |
 | node_process.go   | NodeProcess | Orchestrates node processes                    |
-| supernet.go         | Supernet      | Orchestrates supernets                           |
+| subnet.go         | Subnet      | Orchestrates subnets                           |
 | utils.go          |             | Defines shared utility functions               |
 
 ## Usage
@@ -79,9 +79,9 @@ network := &tmpnet.Network{                   // Configure non-default values fo
     DefaultFlags: tmpnet.FlagsMap{
         config.LogLevelKey: "INFO",           // Change one of the network's defaults
     },
-    Supernets: []*tmpnet.Supernet{                // Supernets to create on the new network once it is running
+    Subnets: []*tmpnet.Subnet{                // Subnets to create on the new network once it is running
         {
-            Name: "xsvm-a",                   // User-defined name used to reference supernet in code and on disk
+            Name: "xsvm-a",                   // User-defined name used to reference subnet in code and on disk
             Chains: []*tmpnet.Chain{
                 {
                     VMName: "xsvm",           // Name of the VM the chain will run, will be used to derive the name of the VM binary
@@ -150,9 +150,9 @@ HOME
             ├── config.json                              // Common configuration (including defaults and pre-funded keys)
             ├── genesis.json                             // Genesis for all nodes
             ├── network.env                              // Sets network dir env var to simplify network usage
-            └── supernets                                  // Parent directory for supernet definitions
-                ├─ supernet-a.json                         // Configuration for supernet-a and its chain(s)
-                └─ supernet-b.json                         // Configuration for supernet-b and its chain(s)
+            └── subnets                                  // Parent directory for subnet definitions
+                ├─ subnet-a.json                         // Configuration for subnet-a and its chain(s)
+                └─ subnet-b.json                         // Configuration for subnet-b and its chain(s)
 ```
 
 ### Common networking configuration
@@ -178,7 +178,7 @@ The chain configuration for a temporary network is stored at
 by all nodes in the network. The C-Chain config will be generated with
 reasonable defaults if not supplied. X-Chain and P-Chain will use
 implicit defaults. The configuration for custom chains can be provided
-with supernet configuration and will be writen to the appropriate path.
+with subnet configuration and will be writen to the appropriate path.
 
 Each node in the network can override network-level chain
 configuration by setting `--chain-config-dir` to an explicit value and

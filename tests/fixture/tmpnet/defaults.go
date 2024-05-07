@@ -6,8 +6,8 @@ package tmpnet
 import (
 	"time"
 
-	"github.com/Juneo-io/juneogo/config"
-	"github.com/Juneo-io/juneogo/vms/platformvm/txs/executor"
+	"github.com/ava-labs/avalanchego/config"
+	"github.com/ava-labs/avalanchego/vms/platformvm/txs/executor"
 )
 
 const (

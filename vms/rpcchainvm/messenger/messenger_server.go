@@ -7,9 +7,9 @@ import (
 	"context"
 	"errors"
 
-	"github.com/Juneo-io/juneogo/snow/engine/common"
+	"github.com/ava-labs/avalanchego/snow/engine/common"
 
-	messengerpb "github.com/Juneo-io/juneogo/proto/pb/messenger"
+	messengerpb "github.com/ava-labs/avalanchego/proto/pb/messenger"
 )
 
 var (

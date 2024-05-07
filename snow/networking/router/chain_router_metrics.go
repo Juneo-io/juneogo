@@ -6,7 +6,7 @@ package router
 import (
 	"github.com/prometheus/client_golang/prometheus"
 
-	"github.com/Juneo-io/juneogo/utils"
+	"github.com/ava-labs/avalanchego/utils"
 )
 
 // routerMetrics about router messages

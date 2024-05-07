@@ -4,8 +4,8 @@
 package validators
 
 import (
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/utils/crypto/bls"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/utils/crypto/bls"
 )
 
 // Validator is a struct that contains the base values representing a validator

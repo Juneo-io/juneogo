@@ -6,14 +6,14 @@ package p
 import (
 	"sync"
 
-	"github.com/Juneo-io/juneogo/database"
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/utils/constants"
-	"github.com/Juneo-io/juneogo/utils/set"
-	"github.com/Juneo-io/juneogo/vms/components/avax"
-	"github.com/Juneo-io/juneogo/vms/platformvm/fx"
-	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
-	"github.com/Juneo-io/juneogo/wallet/supernet/primary/common"
+	"github.com/ava-labs/avalanchego/database"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/utils/constants"
+	"github.com/ava-labs/avalanchego/utils/set"
+	"github.com/ava-labs/avalanchego/vms/components/avax"
+	"github.com/ava-labs/avalanchego/vms/platformvm/fx"
+	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
+	"github.com/ava-labs/avalanchego/wallet/subnet/primary/common"
 
 	stdcontext "context"
 )
@@ -33,30 +33,30 @@ type backend struct {
 	Context
 	common.ChainUTXOs
 
-	supernetOwnerLock sync.RWMutex
-	supernetOwner     map[ids.ID]fx.Owner // supernetID -> owner
+	subnetOwnerLock sync.RWMutex
+	subnetOwner     map[ids.ID]fx.Owner // subnetID -> owner
 }
 
-func NewBackend(ctx Context, utxos common.ChainUTXOs, supernetTxs map[ids.ID]*txs.Tx) Backend {
-	supernetOwner := make(map[ids.ID]fx.Owner)
-	for txID, tx := range supernetTxs { // first get owners from the CreateSupernetTx
-		createSupernetTx, ok := tx.Unsigned.(*txs.CreateSupernetTx)
+func NewBackend(ctx Context, utxos common.ChainUTXOs, subnetTxs map[ids.ID]*txs.Tx) Backend {
+	subnetOwner := make(map[ids.ID]fx.Owner)
+	for txID, tx := range subnetTxs { // first get owners from the CreateSubnetTx
+		createSubnetTx, ok := tx.Unsigned.(*txs.CreateSubnetTx)
 		if !ok {
 			continue
 		}
-		supernetOwner[txID] = createSupernetTx.Owner
+		subnetOwner[txID] = createSubnetTx.Owner
 	}
-	for _, tx := range supernetTxs { // then check for TransferSupernetOwnershipTx
-		transferSupernetOwnershipTx, ok := tx.Unsigned.(*txs.TransferSupernetOwnershipTx)
+	for _, tx := range subnetTxs { // then check for TransferSubnetOwnershipTx
+		transferSubnetOwnershipTx, ok := tx.Unsigned.(*txs.TransferSubnetOwnershipTx)
 		if !ok {
 			continue
 		}
-		supernetOwner[transferSupernetOwnershipTx.Supernet] = transferSupernetOwnershipTx.Owner
+		subnetOwner[transferSubnetOwnershipTx.Subnet] = transferSubnetOwnershipTx.Owner
 	}
 	return &backend{
 		Context:     ctx,
 		ChainUTXOs:  utxos,
-		supernetOwner: supernetOwner,
+		subnetOwner: subnetOwner,
 	}
 }
 
@@ -93,20 +93,20 @@ func (b *backend) removeUTXOs(ctx stdcontext.Context, sourceChain ids.ID, utxoID
 	return nil
 }
 
-func (b *backend) GetSupernetOwner(_ stdcontext.Context, supernetID ids.ID) (fx.Owner, error) {
-	b.supernetOwnerLock.RLock()
-	defer b.supernetOwnerLock.RUnlock()
+func (b *backend) GetSubnetOwner(_ stdcontext.Context, subnetID ids.ID) (fx.Owner, error) {
+	b.subnetOwnerLock.RLock()
+	defer b.subnetOwnerLock.RUnlock()
 
-	owner, exists := b.supernetOwner[supernetID]
+	owner, exists := b.subnetOwner[subnetID]
 	if !exists {
 		return nil, database.ErrNotFound
 	}
 	return owner, nil
 }
 
-func (b *backend) setSupernetOwner(supernetID ids.ID, owner fx.Owner) {
-	b.supernetOwnerLock.Lock()
-	defer b.supernetOwnerLock.Unlock()
+func (b *backend) setSubnetOwner(subnetID ids.ID, owner fx.Owner) {
+	b.subnetOwnerLock.Lock()
+	defer b.subnetOwnerLock.Unlock()
 
-	b.supernetOwner[supernetID] = owner
+	b.subnetOwner[subnetID] = owner
 }

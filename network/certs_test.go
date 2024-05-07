@@ -13,10 +13,10 @@ import (
 
 	_ "embed"
 
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/network/peer"
-	"github.com/Juneo-io/juneogo/staking"
-	"github.com/Juneo-io/juneogo/utils/ips"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/network/peer"
+	"github.com/ava-labs/avalanchego/staking"
+	"github.com/ava-labs/avalanchego/utils/ips"
 )
 
 var (

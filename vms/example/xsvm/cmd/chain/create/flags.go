@@ -8,15 +8,15 @@ import (
 
 	"github.com/spf13/pflag"
 
-	"github.com/Juneo-io/juneogo/genesis"
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/utils/crypto/secp256k1"
-	"github.com/Juneo-io/juneogo/wallet/supernet/primary"
+	"github.com/ava-labs/avalanchego/genesis"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/utils/crypto/secp256k1"
+	"github.com/ava-labs/avalanchego/wallet/subnet/primary"
 )
 
 const (
 	URIKey        = "uri"
-	SupernetIDKey   = "supernet-id"
+	SubnetIDKey   = "subnet-id"
 	AddressKey    = "address"
 	BalanceKey    = "balance"
 	NameKey       = "name"
@@ -25,7 +25,7 @@ const (
 
 func AddFlags(flags *pflag.FlagSet) {
 	flags.String(URIKey, primary.LocalAPIURI, "API URI to use to issue the chain creation transaction")
-	flags.String(SupernetIDKey, "", "Supernet to create the chain under")
+	flags.String(SubnetIDKey, "", "Subnet to create the chain under")
 	flags.String(AddressKey, genesis.EWOQKey.Address().String(), "Address to fund in the genesis")
 	flags.Uint64(BalanceKey, math.MaxUint64, "Amount to provide the funded address in the genesis")
 	flags.String(NameKey, "xs", "Name of the chain to create")
@@ -34,7 +34,7 @@ func AddFlags(flags *pflag.FlagSet) {
 
 type Config struct {
 	URI        string
-	SupernetID   ids.ID
+	SubnetID   ids.ID
 	Address    ids.ShortID
 	Balance    uint64
 	Name       string
@@ -55,12 +55,12 @@ func ParseFlags(flags *pflag.FlagSet, args []string) (*Config, error) {
 		return nil, err
 	}
 
-	supernetIDStr, err := flags.GetString(SupernetIDKey)
+	subnetIDStr, err := flags.GetString(SubnetIDKey)
 	if err != nil {
 		return nil, err
 	}
 
-	supernetID, err := ids.FromString(supernetIDStr)
+	subnetID, err := ids.FromString(subnetIDStr)
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +98,7 @@ func ParseFlags(flags *pflag.FlagSet, args []string) (*Config, error) {
 
 	return &Config{
 		URI:        uri,
-		SupernetID:   supernetID,
+		SubnetID:   subnetID,
 		Address:    addr,
 		Balance:    balance,
 		Name:       name,

@@ -6,12 +6,12 @@ package syncer
 import (
 	"fmt"
 
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/snow"
-	"github.com/Juneo-io/juneogo/snow/engine/common"
-	"github.com/Juneo-io/juneogo/snow/engine/common/tracker"
-	"github.com/Juneo-io/juneogo/snow/engine/snowman/block"
-	"github.com/Juneo-io/juneogo/snow/validators"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/snow"
+	"github.com/ava-labs/avalanchego/snow/engine/common"
+	"github.com/ava-labs/avalanchego/snow/engine/common/tracker"
+	"github.com/ava-labs/avalanchego/snow/engine/snowman/block"
+	"github.com/ava-labs/avalanchego/snow/validators"
 )
 
 type Config struct {
@@ -58,13 +58,13 @@ func NewConfig(
 		stateSyncBeacons = validators.NewManager()
 		for _, peerID := range stateSyncerIDs {
 			// Invariant: We never use the TxID or BLS keys populated here.
-			if err := stateSyncBeacons.AddStaker(ctx.SupernetID, peerID, nil, ids.Empty, 1); err != nil {
+			if err := stateSyncBeacons.AddStaker(ctx.SubnetID, peerID, nil, ids.Empty, 1); err != nil {
 				return Config{}, err
 			}
 		}
-		stateSyncingWeight, err := stateSyncBeacons.TotalWeight(ctx.SupernetID)
+		stateSyncingWeight, err := stateSyncBeacons.TotalWeight(ctx.SubnetID)
 		if err != nil {
-			return Config{}, fmt.Errorf("failed to calculate total weight of state sync beacons for supernet %s: %w", ctx.SupernetID, err)
+			return Config{}, fmt.Errorf("failed to calculate total weight of state sync beacons for subnet %s: %w", ctx.SubnetID, err)
 		}
 		sampleK = int(min(uint64(sampleK), stateSyncingWeight))
 		alpha = stateSyncingWeight/2 + 1 // must be > 50%

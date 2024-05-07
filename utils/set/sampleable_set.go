@@ -8,11 +8,11 @@ import (
 	"encoding/json"
 	"slices"
 
-	"github.com/Juneo-io/juneogo/utils"
-	"github.com/Juneo-io/juneogo/utils/sampler"
-	"github.com/Juneo-io/juneogo/utils/wrappers"
+	"github.com/ava-labs/avalanchego/utils"
+	"github.com/ava-labs/avalanchego/utils/sampler"
+	"github.com/ava-labs/avalanchego/utils/wrappers"
 
-	avajson "github.com/Juneo-io/juneogo/utils/json"
+	avajson "github.com/ava-labs/avalanchego/utils/json"
 )
 
 var _ json.Marshaler = (*Set[int])(nil)

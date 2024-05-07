@@ -28,27 +28,27 @@ func TestPriorityIsCurrent(t *testing.T) {
 			expected: false,
 		},
 		{
-			priority: SupernetPermissionlessValidatorPendingPriority,
+			priority: SubnetPermissionlessValidatorPendingPriority,
 			expected: false,
 		},
 		{
-			priority: SupernetPermissionlessDelegatorPendingPriority,
+			priority: SubnetPermissionlessDelegatorPendingPriority,
 			expected: false,
 		},
 		{
-			priority: SupernetPermissionedValidatorPendingPriority,
+			priority: SubnetPermissionedValidatorPendingPriority,
 			expected: false,
 		},
 		{
-			priority: SupernetPermissionedValidatorCurrentPriority,
+			priority: SubnetPermissionedValidatorCurrentPriority,
 			expected: true,
 		},
 		{
-			priority: SupernetPermissionlessDelegatorCurrentPriority,
+			priority: SubnetPermissionlessDelegatorCurrentPriority,
 			expected: true,
 		},
 		{
-			priority: SupernetPermissionlessValidatorCurrentPriority,
+			priority: SubnetPermissionlessValidatorCurrentPriority,
 			expected: true,
 		},
 		{
@@ -85,27 +85,27 @@ func TestPriorityIsPending(t *testing.T) {
 			expected: true,
 		},
 		{
-			priority: SupernetPermissionlessValidatorPendingPriority,
+			priority: SubnetPermissionlessValidatorPendingPriority,
 			expected: true,
 		},
 		{
-			priority: SupernetPermissionlessDelegatorPendingPriority,
+			priority: SubnetPermissionlessDelegatorPendingPriority,
 			expected: true,
 		},
 		{
-			priority: SupernetPermissionedValidatorPendingPriority,
+			priority: SubnetPermissionedValidatorPendingPriority,
 			expected: true,
 		},
 		{
-			priority: SupernetPermissionedValidatorCurrentPriority,
+			priority: SubnetPermissionedValidatorCurrentPriority,
 			expected: false,
 		},
 		{
-			priority: SupernetPermissionlessDelegatorCurrentPriority,
+			priority: SubnetPermissionlessDelegatorCurrentPriority,
 			expected: false,
 		},
 		{
-			priority: SupernetPermissionlessValidatorCurrentPriority,
+			priority: SubnetPermissionlessValidatorCurrentPriority,
 			expected: false,
 		},
 		{
@@ -142,27 +142,27 @@ func TestPriorityIsValidator(t *testing.T) {
 			expected: false,
 		},
 		{
-			priority: SupernetPermissionlessValidatorPendingPriority,
+			priority: SubnetPermissionlessValidatorPendingPriority,
 			expected: true,
 		},
 		{
-			priority: SupernetPermissionlessDelegatorPendingPriority,
+			priority: SubnetPermissionlessDelegatorPendingPriority,
 			expected: false,
 		},
 		{
-			priority: SupernetPermissionedValidatorPendingPriority,
+			priority: SubnetPermissionedValidatorPendingPriority,
 			expected: true,
 		},
 		{
-			priority: SupernetPermissionedValidatorCurrentPriority,
+			priority: SubnetPermissionedValidatorCurrentPriority,
 			expected: true,
 		},
 		{
-			priority: SupernetPermissionlessDelegatorCurrentPriority,
+			priority: SubnetPermissionlessDelegatorCurrentPriority,
 			expected: false,
 		},
 		{
-			priority: SupernetPermissionlessValidatorCurrentPriority,
+			priority: SubnetPermissionlessValidatorCurrentPriority,
 			expected: true,
 		},
 		{
@@ -199,27 +199,27 @@ func TestPriorityIsPermissionedValidator(t *testing.T) {
 			expected: false,
 		},
 		{
-			priority: SupernetPermissionlessValidatorPendingPriority,
+			priority: SubnetPermissionlessValidatorPendingPriority,
 			expected: false,
 		},
 		{
-			priority: SupernetPermissionlessDelegatorPendingPriority,
+			priority: SubnetPermissionlessDelegatorPendingPriority,
 			expected: false,
 		},
 		{
-			priority: SupernetPermissionedValidatorPendingPriority,
+			priority: SubnetPermissionedValidatorPendingPriority,
 			expected: true,
 		},
 		{
-			priority: SupernetPermissionedValidatorCurrentPriority,
+			priority: SubnetPermissionedValidatorCurrentPriority,
 			expected: true,
 		},
 		{
-			priority: SupernetPermissionlessDelegatorCurrentPriority,
+			priority: SubnetPermissionlessDelegatorCurrentPriority,
 			expected: false,
 		},
 		{
-			priority: SupernetPermissionlessValidatorCurrentPriority,
+			priority: SubnetPermissionlessValidatorCurrentPriority,
 			expected: false,
 		},
 		{
@@ -256,27 +256,27 @@ func TestPriorityIsDelegator(t *testing.T) {
 			expected: true,
 		},
 		{
-			priority: SupernetPermissionlessValidatorPendingPriority,
+			priority: SubnetPermissionlessValidatorPendingPriority,
 			expected: false,
 		},
 		{
-			priority: SupernetPermissionlessDelegatorPendingPriority,
+			priority: SubnetPermissionlessDelegatorPendingPriority,
 			expected: true,
 		},
 		{
-			priority: SupernetPermissionedValidatorPendingPriority,
+			priority: SubnetPermissionedValidatorPendingPriority,
 			expected: false,
 		},
 		{
-			priority: SupernetPermissionedValidatorCurrentPriority,
+			priority: SubnetPermissionedValidatorCurrentPriority,
 			expected: false,
 		},
 		{
-			priority: SupernetPermissionlessDelegatorCurrentPriority,
+			priority: SubnetPermissionlessDelegatorCurrentPriority,
 			expected: true,
 		},
 		{
-			priority: SupernetPermissionlessValidatorCurrentPriority,
+			priority: SubnetPermissionlessValidatorCurrentPriority,
 			expected: false,
 		},
 		{
@@ -313,27 +313,27 @@ func TestPriorityIsCurrentValidator(t *testing.T) {
 			expected: false,
 		},
 		{
-			priority: SupernetPermissionlessValidatorPendingPriority,
+			priority: SubnetPermissionlessValidatorPendingPriority,
 			expected: false,
 		},
 		{
-			priority: SupernetPermissionlessDelegatorPendingPriority,
+			priority: SubnetPermissionlessDelegatorPendingPriority,
 			expected: false,
 		},
 		{
-			priority: SupernetPermissionedValidatorPendingPriority,
+			priority: SubnetPermissionedValidatorPendingPriority,
 			expected: false,
 		},
 		{
-			priority: SupernetPermissionedValidatorCurrentPriority,
+			priority: SubnetPermissionedValidatorCurrentPriority,
 			expected: true,
 		},
 		{
-			priority: SupernetPermissionlessDelegatorCurrentPriority,
+			priority: SubnetPermissionlessDelegatorCurrentPriority,
 			expected: false,
 		},
 		{
-			priority: SupernetPermissionlessValidatorCurrentPriority,
+			priority: SubnetPermissionlessValidatorCurrentPriority,
 			expected: true,
 		},
 		{
@@ -370,27 +370,27 @@ func TestPriorityIsCurrentDelegator(t *testing.T) {
 			expected: false,
 		},
 		{
-			priority: SupernetPermissionlessValidatorPendingPriority,
+			priority: SubnetPermissionlessValidatorPendingPriority,
 			expected: false,
 		},
 		{
-			priority: SupernetPermissionlessDelegatorPendingPriority,
+			priority: SubnetPermissionlessDelegatorPendingPriority,
 			expected: false,
 		},
 		{
-			priority: SupernetPermissionedValidatorPendingPriority,
+			priority: SubnetPermissionedValidatorPendingPriority,
 			expected: false,
 		},
 		{
-			priority: SupernetPermissionedValidatorCurrentPriority,
+			priority: SubnetPermissionedValidatorCurrentPriority,
 			expected: false,
 		},
 		{
-			priority: SupernetPermissionlessDelegatorCurrentPriority,
+			priority: SubnetPermissionlessDelegatorCurrentPriority,
 			expected: true,
 		},
 		{
-			priority: SupernetPermissionlessValidatorCurrentPriority,
+			priority: SubnetPermissionlessValidatorCurrentPriority,
 			expected: false,
 		},
 		{
@@ -427,27 +427,27 @@ func TestPriorityIsPendingValidator(t *testing.T) {
 			expected: false,
 		},
 		{
-			priority: SupernetPermissionlessValidatorPendingPriority,
+			priority: SubnetPermissionlessValidatorPendingPriority,
 			expected: true,
 		},
 		{
-			priority: SupernetPermissionlessDelegatorPendingPriority,
+			priority: SubnetPermissionlessDelegatorPendingPriority,
 			expected: false,
 		},
 		{
-			priority: SupernetPermissionedValidatorPendingPriority,
+			priority: SubnetPermissionedValidatorPendingPriority,
 			expected: true,
 		},
 		{
-			priority: SupernetPermissionedValidatorCurrentPriority,
+			priority: SubnetPermissionedValidatorCurrentPriority,
 			expected: false,
 		},
 		{
-			priority: SupernetPermissionlessDelegatorCurrentPriority,
+			priority: SubnetPermissionlessDelegatorCurrentPriority,
 			expected: false,
 		},
 		{
-			priority: SupernetPermissionlessValidatorCurrentPriority,
+			priority: SubnetPermissionlessValidatorCurrentPriority,
 			expected: false,
 		},
 		{
@@ -484,27 +484,27 @@ func TestPriorityIsPendingDelegator(t *testing.T) {
 			expected: true,
 		},
 		{
-			priority: SupernetPermissionlessValidatorPendingPriority,
+			priority: SubnetPermissionlessValidatorPendingPriority,
 			expected: false,
 		},
 		{
-			priority: SupernetPermissionlessDelegatorPendingPriority,
+			priority: SubnetPermissionlessDelegatorPendingPriority,
 			expected: true,
 		},
 		{
-			priority: SupernetPermissionedValidatorPendingPriority,
+			priority: SubnetPermissionedValidatorPendingPriority,
 			expected: false,
 		},
 		{
-			priority: SupernetPermissionedValidatorCurrentPriority,
+			priority: SubnetPermissionedValidatorCurrentPriority,
 			expected: false,
 		},
 		{
-			priority: SupernetPermissionlessDelegatorCurrentPriority,
+			priority: SubnetPermissionlessDelegatorCurrentPriority,
 			expected: false,
 		},
 		{
-			priority: SupernetPermissionlessValidatorCurrentPriority,
+			priority: SubnetPermissionlessValidatorCurrentPriority,
 			expected: false,
 		},
 		{

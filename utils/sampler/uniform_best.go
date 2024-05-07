@@ -7,7 +7,7 @@ import (
 	"math"
 	"time"
 
-	"github.com/Juneo-io/juneogo/utils/timer/mockable"
+	"github.com/ava-labs/avalanchego/utils/timer/mockable"
 )
 
 var _ Uniform = (*uniformBest)(nil)

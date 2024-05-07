@@ -3,7 +3,7 @@
 
 package genesis
 
-import "github.com/Juneo-io/juneogo/vms/platformvm/block"
+import "github.com/ava-labs/avalanchego/vms/platformvm/block"
 
 const CodecVersion = block.CodecVersion
 

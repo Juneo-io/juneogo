@@ -12,25 +12,25 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/stretchr/testify/require"
 
-	"github.com/Juneo-io/juneogo/database/leveldb"
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/snow"
-	"github.com/Juneo-io/juneogo/snow/validators"
-	"github.com/Juneo-io/juneogo/utils/constants"
-	"github.com/Juneo-io/juneogo/utils/crypto/bls"
-	"github.com/Juneo-io/juneogo/utils/formatting"
-	"github.com/Juneo-io/juneogo/utils/formatting/address"
-	"github.com/Juneo-io/juneogo/utils/json"
-	"github.com/Juneo-io/juneogo/utils/logging"
-	"github.com/Juneo-io/juneogo/utils/timer/mockable"
-	"github.com/Juneo-io/juneogo/utils/units"
-	"github.com/Juneo-io/juneogo/vms/platformvm/api"
-	"github.com/Juneo-io/juneogo/vms/platformvm/block"
-	"github.com/Juneo-io/juneogo/vms/platformvm/config"
-	"github.com/Juneo-io/juneogo/vms/platformvm/metrics"
-	"github.com/Juneo-io/juneogo/vms/platformvm/reward"
-	"github.com/Juneo-io/juneogo/vms/platformvm/state"
-	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
+	"github.com/ava-labs/avalanchego/database/leveldb"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/snow"
+	"github.com/ava-labs/avalanchego/snow/validators"
+	"github.com/ava-labs/avalanchego/utils/constants"
+	"github.com/ava-labs/avalanchego/utils/crypto/bls"
+	"github.com/ava-labs/avalanchego/utils/formatting"
+	"github.com/ava-labs/avalanchego/utils/formatting/address"
+	"github.com/ava-labs/avalanchego/utils/json"
+	"github.com/ava-labs/avalanchego/utils/logging"
+	"github.com/ava-labs/avalanchego/utils/timer/mockable"
+	"github.com/ava-labs/avalanchego/utils/units"
+	"github.com/ava-labs/avalanchego/vms/platformvm/api"
+	"github.com/ava-labs/avalanchego/vms/platformvm/block"
+	"github.com/ava-labs/avalanchego/vms/platformvm/config"
+	"github.com/ava-labs/avalanchego/vms/platformvm/metrics"
+	"github.com/ava-labs/avalanchego/vms/platformvm/reward"
+	"github.com/ava-labs/avalanchego/vms/platformvm/state"
+	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
 )
 
 // BenchmarkGetValidatorSet generates 10k diffs and calculates the time to
@@ -39,7 +39,7 @@ import (
 // This generates a single diff for each height. In practice there could be
 // multiple or zero diffs at a given height.
 //
-// Note: BenchmarkGetValidatorSet gets the validator set of a supernet rather than
+// Note: BenchmarkGetValidatorSet gets the validator set of a subnet rather than
 // the primary network because the primary network performs caching that would
 // interfere with the benchmark.
 func BenchmarkGetValidatorSet(b *testing.B) {
@@ -150,14 +150,14 @@ func BenchmarkGetValidatorSet(b *testing.B) {
 		require.NoError(err)
 		nodeIDs = append(nodeIDs, nodeID)
 	}
-	supernetID := ids.GenerateTestID()
+	subnetID := ids.GenerateTestID()
 	for _, nodeID := range nodeIDs {
 		currentHeight++
-		require.NoError(addSupernetValidator(s, supernetID, genesisTime, genesisEndTime, nodeID, currentHeight))
+		require.NoError(addSubnetValidator(s, subnetID, genesisTime, genesisEndTime, nodeID, currentHeight))
 	}
 	for i := 0; i < 9900; i++ {
 		currentHeight++
-		require.NoError(addSupernetDelegator(s, supernetID, genesisTime, genesisEndTime, nodeIDs, currentHeight))
+		require.NoError(addSubnetDelegator(s, subnetID, genesisTime, genesisEndTime, nodeIDs, currentHeight))
 	}
 
 	ctx := context.Background()
@@ -168,7 +168,7 @@ func BenchmarkGetValidatorSet(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		_, err := m.GetValidatorSet(ctx, 0, supernetID)
+		_, err := m.GetValidatorSet(ctx, 0, subnetID)
 		require.NoError(err)
 	}
 
@@ -191,7 +191,7 @@ func addPrimaryValidator(
 		TxID:            ids.GenerateTestID(),
 		NodeID:          nodeID,
 		PublicKey:       bls.PublicFromSecretKey(sk),
-		SupernetID:        constants.PrimaryNetworkID,
+		SubnetID:        constants.PrimaryNetworkID,
 		Weight:          2 * units.MegaAvax,
 		StartTime:       startTime,
 		EndTime:         endTime,
@@ -210,9 +210,9 @@ func addPrimaryValidator(
 	return nodeID, s.Commit()
 }
 
-func addSupernetValidator(
+func addSubnetValidator(
 	s state.State,
-	supernetID ids.ID,
+	subnetID ids.ID,
 	startTime time.Time,
 	endTime time.Time,
 	nodeID ids.NodeID,
@@ -221,13 +221,13 @@ func addSupernetValidator(
 	s.PutCurrentValidator(&state.Staker{
 		TxID:            ids.GenerateTestID(),
 		NodeID:          nodeID,
-		SupernetID:        supernetID,
+		SubnetID:        subnetID,
 		Weight:          1 * units.Avax,
 		StartTime:       startTime,
 		EndTime:         endTime,
 		PotentialReward: 0,
 		NextTime:        endTime,
-		Priority:        txs.SupernetPermissionlessValidatorCurrentPriority,
+		Priority:        txs.SubnetPermissionlessValidatorCurrentPriority,
 	})
 
 	blk, err := block.NewBanffStandardBlock(startTime, ids.GenerateTestID(), height, nil)
@@ -240,9 +240,9 @@ func addSupernetValidator(
 	return s.Commit()
 }
 
-func addSupernetDelegator(
+func addSubnetDelegator(
 	s state.State,
-	supernetID ids.ID,
+	subnetID ids.ID,
 	startTime time.Time,
 	endTime time.Time,
 	nodeIDs []ids.NodeID,
@@ -253,13 +253,13 @@ func addSupernetDelegator(
 	s.PutCurrentDelegator(&state.Staker{
 		TxID:            ids.GenerateTestID(),
 		NodeID:          nodeID,
-		SupernetID:        supernetID,
+		SubnetID:        subnetID,
 		Weight:          1 * units.Avax,
 		StartTime:       startTime,
 		EndTime:         endTime,
 		PotentialReward: 0,
 		NextTime:        endTime,
-		Priority:        txs.SupernetPermissionlessDelegatorCurrentPriority,
+		Priority:        txs.SubnetPermissionlessDelegatorCurrentPriority,
 	})
 
 	blk, err := block.NewBanffStandardBlock(startTime, ids.GenerateTestID(), height, nil)

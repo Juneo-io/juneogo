@@ -9,8 +9,8 @@ import (
 
 	"github.com/gorilla/rpc/v2"
 
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/vms/platformvm/block"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/vms/platformvm/block"
 )
 
 var Noop Metrics = noopMetrics{}
@@ -45,8 +45,8 @@ func (noopMetrics) SetTotalStake(uint64) {}
 
 func (noopMetrics) SetTimeUntilUnstake(time.Duration) {}
 
-func (noopMetrics) SetTimeUntilSupernetUnstake(ids.ID, time.Duration) {}
+func (noopMetrics) SetTimeUntilSubnetUnstake(ids.ID, time.Duration) {}
 
-func (noopMetrics) SetSupernetPercentConnected(ids.ID, float64) {}
+func (noopMetrics) SetSubnetPercentConnected(ids.ID, float64) {}
 
 func (noopMetrics) SetPercentConnected(float64) {}

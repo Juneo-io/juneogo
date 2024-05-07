@@ -1,18 +1,18 @@
 // Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
-package supernets
+package subnets
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/utils/set"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/utils/set"
 )
 
-func TestSupernet(t *testing.T) {
+func TestSubnet(t *testing.T) {
 	require := require.New(t)
 
 	myNodeID := ids.GenerateTestNodeID()
@@ -22,22 +22,22 @@ func TestSupernet(t *testing.T) {
 
 	s := New(myNodeID, Config{})
 	s.AddChain(chainID0)
-	require.False(s.IsBootstrapped(), "A supernet with one chain in bootstrapping shouldn't be considered bootstrapped")
+	require.False(s.IsBootstrapped(), "A subnet with one chain in bootstrapping shouldn't be considered bootstrapped")
 
 	s.Bootstrapped(chainID0)
-	require.True(s.IsBootstrapped(), "A supernet with only bootstrapped chains should be considered bootstrapped")
+	require.True(s.IsBootstrapped(), "A subnet with only bootstrapped chains should be considered bootstrapped")
 
 	s.AddChain(chainID1)
-	require.False(s.IsBootstrapped(), "A supernet with one chain in bootstrapping shouldn't be considered bootstrapped")
+	require.False(s.IsBootstrapped(), "A subnet with one chain in bootstrapping shouldn't be considered bootstrapped")
 
 	s.AddChain(chainID2)
-	require.False(s.IsBootstrapped(), "A supernet with one chain in bootstrapping shouldn't be considered bootstrapped")
+	require.False(s.IsBootstrapped(), "A subnet with one chain in bootstrapping shouldn't be considered bootstrapped")
 
 	s.Bootstrapped(chainID1)
-	require.False(s.IsBootstrapped(), "A supernet with one chain in bootstrapping shouldn't be considered bootstrapped")
+	require.False(s.IsBootstrapped(), "A subnet with one chain in bootstrapping shouldn't be considered bootstrapped")
 
 	s.Bootstrapped(chainID2)
-	require.True(s.IsBootstrapped(), "A supernet with only bootstrapped chains should be considered bootstrapped")
+	require.True(s.IsBootstrapped(), "A subnet with only bootstrapped chains should be considered bootstrapped")
 }
 
 func TestIsAllowed(t *testing.T) {

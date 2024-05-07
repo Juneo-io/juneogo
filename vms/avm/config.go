@@ -6,7 +6,7 @@ package avm
 import (
 	"encoding/json"
 
-	"github.com/Juneo-io/juneogo/vms/avm/network"
+	"github.com/ava-labs/avalanchego/vms/avm/network"
 )
 
 var DefaultConfig = Config{

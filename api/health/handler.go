@@ -9,9 +9,9 @@ import (
 
 	"github.com/gorilla/rpc/v2"
 
-	"github.com/Juneo-io/juneogo/utils/logging"
+	"github.com/ava-labs/avalanchego/utils/logging"
 
-	avajson "github.com/Juneo-io/juneogo/utils/json"
+	avajson "github.com/ava-labs/avalanchego/utils/json"
 )
 
 // NewGetAndPostHandler returns a health handler that supports GET and jsonrpc

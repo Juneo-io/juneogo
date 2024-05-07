@@ -8,21 +8,21 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/snow"
-	"github.com/Juneo-io/juneogo/utils"
-	"github.com/Juneo-io/juneogo/utils/constants"
-	"github.com/Juneo-io/juneogo/utils/crypto/secp256k1"
-	"github.com/Juneo-io/juneogo/utils/math"
-	"github.com/Juneo-io/juneogo/utils/timer/mockable"
-	"github.com/Juneo-io/juneogo/vms/components/avax"
-	"github.com/Juneo-io/juneogo/vms/platformvm/config"
-	"github.com/Juneo-io/juneogo/vms/platformvm/fx"
-	"github.com/Juneo-io/juneogo/vms/platformvm/signer"
-	"github.com/Juneo-io/juneogo/vms/platformvm/state"
-	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
-	"github.com/Juneo-io/juneogo/vms/platformvm/utxo"
-	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/snow"
+	"github.com/ava-labs/avalanchego/utils"
+	"github.com/ava-labs/avalanchego/utils/constants"
+	"github.com/ava-labs/avalanchego/utils/crypto/secp256k1"
+	"github.com/ava-labs/avalanchego/utils/math"
+	"github.com/ava-labs/avalanchego/utils/timer/mockable"
+	"github.com/ava-labs/avalanchego/vms/components/avax"
+	"github.com/ava-labs/avalanchego/vms/platformvm/config"
+	"github.com/ava-labs/avalanchego/vms/platformvm/fx"
+	"github.com/ava-labs/avalanchego/vms/platformvm/signer"
+	"github.com/ava-labs/avalanchego/vms/platformvm/state"
+	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
+	"github.com/ava-labs/avalanchego/vms/platformvm/utxo"
+	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
 )
 
 // Max number of items allowed in a page
@@ -69,7 +69,7 @@ type AtomicTxBuilder interface {
 }
 
 type DecisionTxBuilder interface {
-	// supernetID: ID of the supernet that validates the new chain
+	// subnetID: ID of the subnet that validates the new chain
 	// genesisData: byte repr. of genesis state of the new chain
 	// vmID: ID of VM this chain runs
 	// fxIDs: ids of features extensions this chain supports
@@ -78,7 +78,7 @@ type DecisionTxBuilder interface {
 	// keys: keys to sign the tx
 	// changeAddr: address to send change to, if there is any
 	NewCreateChainTx(
-		supernetID ids.ID,
+		subnetID ids.ID,
 		genesisData []byte,
 		vmID ids.ID,
 		fxIDs []ids.ID,
@@ -89,11 +89,11 @@ type DecisionTxBuilder interface {
 		memo []byte,
 	) (*txs.Tx, error)
 
-	// threshold: [threshold] of [ownerAddrs] needed to manage this supernet
-	// ownerAddrs: control addresses for the new supernet
+	// threshold: [threshold] of [ownerAddrs] needed to manage this subnet
+	// ownerAddrs: control addresses for the new subnet
 	// keys: keys to pay the fee
 	// changeAddr: address to send change to, if there is any
-	NewCreateSupernetTx(
+	NewCreateSubnetTx(
 		threshold uint32,
 		ownerAddrs []ids.ShortID,
 		keys []*secp256k1.PrivateKey,
@@ -101,8 +101,8 @@ type DecisionTxBuilder interface {
 		memo []byte,
 	) (*txs.Tx, error)
 
-	NewTransformSupernetTx(
-		supernetID ids.ID,
+	NewTransformSubnetTx(
+		subnetID ids.ID,
 		assetID ids.ID,
 		initialRewardPoolSupply uint64,
 		startRewardShare uint64,
@@ -220,39 +220,39 @@ type ProposalTxBuilder interface {
 	// startTime: unix time they start delegating
 	// endTime:  unix time they top delegating
 	// nodeID: ID of the node validating
-	// supernetID: ID of the supernet the validator will validate
+	// subnetID: ID of the subnet the validator will validate
 	// keys: keys to use for adding the validator
 	// changeAddr: address to send change to, if there is any
-	NewAddSupernetValidatorTx(
+	NewAddSubnetValidatorTx(
 		weight,
 		startTime,
 		endTime uint64,
 		nodeID ids.NodeID,
-		supernetID ids.ID,
+		subnetID ids.ID,
 		keys []*secp256k1.PrivateKey,
 		changeAddr ids.ShortID,
 		memo []byte,
 	) (*txs.Tx, error)
 
 	// Creates a transaction that removes [nodeID]
-	// as a validator from [supernetID]
+	// as a validator from [subnetID]
 	// keys: keys to use for removing the validator
 	// changeAddr: address to send change to, if there is any
-	NewRemoveSupernetValidatorTx(
+	NewRemoveSubnetValidatorTx(
 		nodeID ids.NodeID,
-		supernetID ids.ID,
+		subnetID ids.ID,
 		keys []*secp256k1.PrivateKey,
 		changeAddr ids.ShortID,
 		memo []byte,
 	) (*txs.Tx, error)
 
-	// Creates a transaction that transfers ownership of [supernetID]
-	// threshold: [threshold] of [ownerAddrs] needed to manage this supernet
-	// ownerAddrs: control addresses for the new supernet
-	// keys: keys to use for modifying the supernet
+	// Creates a transaction that transfers ownership of [subnetID]
+	// threshold: [threshold] of [ownerAddrs] needed to manage this subnet
+	// ownerAddrs: control addresses for the new subnet
+	// keys: keys to use for modifying the subnet
 	// changeAddr: address to send change to, if there is any
-	NewTransferSupernetOwnershipTx(
-		supernetID ids.ID,
+	NewTransferSubnetOwnershipTx(
+		subnetID ids.ID,
 		threshold uint32,
 		ownerAddrs []ids.ShortID,
 		keys []*secp256k1.PrivateKey,
@@ -440,7 +440,7 @@ func (b *builder) NewExportTx(
 }
 
 func (b *builder) NewCreateChainTx(
-	supernetID ids.ID,
+	subnetID ids.ID,
 	genesisData []byte,
 	vmID ids.ID,
 	fxIDs []ids.ID,
@@ -457,11 +457,11 @@ func (b *builder) NewCreateChainTx(
 		return nil, fmt.Errorf("couldn't generate tx inputs/outputs: %w", err)
 	}
 
-	supernetAuth, supernetSigners, err := b.Authorize(b.state, supernetID, keys)
+	subnetAuth, subnetSigners, err := b.Authorize(b.state, subnetID, keys)
 	if err != nil {
-		return nil, fmt.Errorf("couldn't authorize tx's supernet restrictions: %w", err)
+		return nil, fmt.Errorf("couldn't authorize tx's subnet restrictions: %w", err)
 	}
-	signers = append(signers, supernetSigners)
+	signers = append(signers, subnetSigners)
 
 	// Sort the provided fxIDs
 	utils.Sort(fxIDs)
@@ -475,13 +475,13 @@ func (b *builder) NewCreateChainTx(
 			Outs:         outs,
 			Memo:         memo,
 		}},
-		SupernetID:   supernetID,
+		SubnetID:   subnetID,
 		ChainName:    chainName,
 		ChainAssetID: chainAssetID,
 		VMID:         vmID,
 		FxIDs:        fxIDs,
 		GenesisData:  genesisData,
-		SupernetAuth: supernetAuth,
+		SubnetAuth: subnetAuth,
 	}
 	tx, err := txs.NewSigned(utx, txs.Codec, signers)
 	if err != nil {
@@ -490,7 +490,7 @@ func (b *builder) NewCreateChainTx(
 	return tx, tx.SyntacticVerify(b.ctx)
 }
 
-func (b *builder) NewCreateSupernetTx(
+func (b *builder) NewCreateSubnetTx(
 	threshold uint32,
 	ownerAddrs []ids.ShortID,
 	keys []*secp256k1.PrivateKey,
@@ -498,8 +498,8 @@ func (b *builder) NewCreateSupernetTx(
 	memo []byte,
 ) (*txs.Tx, error) {
 	timestamp := b.state.GetTimestamp()
-	createSupernetTxFee := b.cfg.GetCreateSupernetTxFee(timestamp)
-	ins, outs, _, signers, err := b.Spend(b.state, keys, 0, createSupernetTxFee, changeAddr)
+	createSubnetTxFee := b.cfg.GetCreateSubnetTxFee(timestamp)
+	ins, outs, _, signers, err := b.Spend(b.state, keys, 0, createSubnetTxFee, changeAddr)
 	if err != nil {
 		return nil, fmt.Errorf("couldn't generate tx inputs/outputs: %w", err)
 	}
@@ -508,7 +508,7 @@ func (b *builder) NewCreateSupernetTx(
 	utils.Sort(ownerAddrs)
 
 	// Create the tx
-	utx := &txs.CreateSupernetTx{
+	utx := &txs.CreateSubnetTx{
 		BaseTx: txs.BaseTx{BaseTx: avax.BaseTx{
 			NetworkID:    b.ctx.NetworkID,
 			BlockchainID: b.ctx.ChainID,
@@ -528,8 +528,8 @@ func (b *builder) NewCreateSupernetTx(
 	return tx, tx.SyntacticVerify(b.ctx)
 }
 
-func (b *builder) NewTransformSupernetTx(
-	supernetID ids.ID,
+func (b *builder) NewTransformSubnetTx(
+	subnetID ids.ID,
 	assetID ids.ID,
 	initialRewardPoolSupply uint64,
 	startRewardShare uint64,
@@ -550,18 +550,18 @@ func (b *builder) NewTransformSupernetTx(
 	changeAddr ids.ShortID,
 	memo []byte,
 ) (*txs.Tx, error) {
-	ins, outs, _, signers, err := b.Spend(b.state, keys, 0, b.cfg.TransformSupernetTxFee, changeAddr)
+	ins, outs, _, signers, err := b.Spend(b.state, keys, 0, b.cfg.TransformSubnetTxFee, changeAddr)
 	if err != nil {
 		return nil, fmt.Errorf("couldn't generate tx inputs/outputs: %w", err)
 	}
 
-	supernetAuth, supernetSigners, err := b.Authorize(b.state, supernetID, keys)
+	subnetAuth, subnetSigners, err := b.Authorize(b.state, subnetID, keys)
 	if err != nil {
-		return nil, fmt.Errorf("couldn't authorize tx's supernet restrictions: %w", err)
+		return nil, fmt.Errorf("couldn't authorize tx's subnet restrictions: %w", err)
 	}
-	signers = append(signers, supernetSigners)
+	signers = append(signers, subnetSigners)
 
-	utx := &txs.TransformSupernetTx{
+	utx := &txs.TransformSubnetTx{
 		BaseTx: txs.BaseTx{
 			BaseTx: avax.BaseTx{
 				NetworkID:    b.ctx.NetworkID,
@@ -571,7 +571,7 @@ func (b *builder) NewTransformSupernetTx(
 				Memo:         memo,
 			},
 		},
-		Supernet:                 supernetID,
+		Subnet:                 subnetID,
 		AssetID:                  assetID,
 		InitialRewardPoolSupply:  initialRewardPoolSupply,
 		StartRewardShare:         startRewardShare,
@@ -588,7 +588,7 @@ func (b *builder) NewTransformSupernetTx(
 		MinDelegatorStake:        minDelegatorStake,
 		MaxValidatorWeightFactor: maxValidatorWeightFactor,
 		UptimeRequirement:        uptimeRequirement,
-		SupernetAuth:             supernetAuth,
+		SubnetAuth:             subnetAuth,
 	}
 
 	tx, err := txs.NewSigned(utx, txs.Codec, signers)
@@ -674,7 +674,7 @@ func (b *builder) NewAddPermissionlessValidatorTx(
 			End:    endTime,
 			Wght:   stakeAmount,
 		},
-		Supernet:  constants.PrimaryNetworkID,
+		Subnet:  constants.PrimaryNetworkID,
 		Signer:    pop,
 		StakeOuts: stakedOuts,
 		ValidatorRewardsOwner: &secp256k1fx.OutputOwners{
@@ -768,7 +768,7 @@ func (b *builder) NewAddPermissionlessDelegatorTx(
 			End:    endTime,
 			Wght:   stakeAmount,
 		},
-		Supernet:  constants.PrimaryNetworkID,
+		Subnet:  constants.PrimaryNetworkID,
 		StakeOuts: lockedOuts,
 		DelegationRewardsOwner: &secp256k1fx.OutputOwners{
 			Locktime:  0,
@@ -783,12 +783,12 @@ func (b *builder) NewAddPermissionlessDelegatorTx(
 	return tx, tx.SyntacticVerify(b.ctx)
 }
 
-func (b *builder) NewAddSupernetValidatorTx(
+func (b *builder) NewAddSubnetValidatorTx(
 	weight,
 	startTime,
 	endTime uint64,
 	nodeID ids.NodeID,
-	supernetID ids.ID,
+	subnetID ids.ID,
 	keys []*secp256k1.PrivateKey,
 	changeAddr ids.ShortID,
 	memo []byte,
@@ -798,14 +798,14 @@ func (b *builder) NewAddSupernetValidatorTx(
 		return nil, fmt.Errorf("couldn't generate tx inputs/outputs: %w", err)
 	}
 
-	supernetAuth, supernetSigners, err := b.Authorize(b.state, supernetID, keys)
+	subnetAuth, subnetSigners, err := b.Authorize(b.state, subnetID, keys)
 	if err != nil {
-		return nil, fmt.Errorf("couldn't authorize tx's supernet restrictions: %w", err)
+		return nil, fmt.Errorf("couldn't authorize tx's subnet restrictions: %w", err)
 	}
-	signers = append(signers, supernetSigners)
+	signers = append(signers, subnetSigners)
 
 	// Create the tx
-	utx := &txs.AddSupernetValidatorTx{
+	utx := &txs.AddSubnetValidatorTx{
 		BaseTx: txs.BaseTx{BaseTx: avax.BaseTx{
 			NetworkID:    b.ctx.NetworkID,
 			BlockchainID: b.ctx.ChainID,
@@ -813,16 +813,16 @@ func (b *builder) NewAddSupernetValidatorTx(
 			Outs:         outs,
 			Memo:         memo,
 		}},
-		SupernetValidator: txs.SupernetValidator{
+		SubnetValidator: txs.SubnetValidator{
 			Validator: txs.Validator{
 				NodeID: nodeID,
 				Start:  startTime,
 				End:    endTime,
 				Wght:   weight,
 			},
-			Supernet: supernetID,
+			Subnet: subnetID,
 		},
-		SupernetAuth: supernetAuth,
+		SubnetAuth: subnetAuth,
 	}
 	tx, err := txs.NewSigned(utx, txs.Codec, signers)
 	if err != nil {
@@ -831,9 +831,9 @@ func (b *builder) NewAddSupernetValidatorTx(
 	return tx, tx.SyntacticVerify(b.ctx)
 }
 
-func (b *builder) NewRemoveSupernetValidatorTx(
+func (b *builder) NewRemoveSubnetValidatorTx(
 	nodeID ids.NodeID,
-	supernetID ids.ID,
+	subnetID ids.ID,
 	keys []*secp256k1.PrivateKey,
 	changeAddr ids.ShortID,
 	memo []byte,
@@ -843,14 +843,14 @@ func (b *builder) NewRemoveSupernetValidatorTx(
 		return nil, fmt.Errorf("couldn't generate tx inputs/outputs: %w", err)
 	}
 
-	supernetAuth, supernetSigners, err := b.Authorize(b.state, supernetID, keys)
+	subnetAuth, subnetSigners, err := b.Authorize(b.state, subnetID, keys)
 	if err != nil {
-		return nil, fmt.Errorf("couldn't authorize tx's supernet restrictions: %w", err)
+		return nil, fmt.Errorf("couldn't authorize tx's subnet restrictions: %w", err)
 	}
-	signers = append(signers, supernetSigners)
+	signers = append(signers, subnetSigners)
 
 	// Create the tx
-	utx := &txs.RemoveSupernetValidatorTx{
+	utx := &txs.RemoveSubnetValidatorTx{
 		BaseTx: txs.BaseTx{BaseTx: avax.BaseTx{
 			NetworkID:    b.ctx.NetworkID,
 			BlockchainID: b.ctx.ChainID,
@@ -858,9 +858,9 @@ func (b *builder) NewRemoveSupernetValidatorTx(
 			Outs:         outs,
 			Memo:         memo,
 		}},
-		Supernet:     supernetID,
+		Subnet:     subnetID,
 		NodeID:       nodeID,
-		SupernetAuth: supernetAuth,
+		SubnetAuth: subnetAuth,
 	}
 	tx, err := txs.NewSigned(utx, txs.Codec, signers)
 	if err != nil {
@@ -869,8 +869,8 @@ func (b *builder) NewRemoveSupernetValidatorTx(
 	return tx, tx.SyntacticVerify(b.ctx)
 }
 
-func (b *builder) NewTransferSupernetOwnershipTx(
-	supernetID ids.ID,
+func (b *builder) NewTransferSubnetOwnershipTx(
+	subnetID ids.ID,
 	threshold uint32,
 	ownerAddrs []ids.ShortID,
 	keys []*secp256k1.PrivateKey,
@@ -882,13 +882,13 @@ func (b *builder) NewTransferSupernetOwnershipTx(
 		return nil, fmt.Errorf("couldn't generate tx inputs/outputs: %w", err)
 	}
 
-	supernetAuth, supernetSigners, err := b.Authorize(b.state, supernetID, keys)
+	subnetAuth, subnetSigners, err := b.Authorize(b.state, subnetID, keys)
 	if err != nil {
-		return nil, fmt.Errorf("couldn't authorize tx's supernet restrictions: %w", err)
+		return nil, fmt.Errorf("couldn't authorize tx's subnet restrictions: %w", err)
 	}
-	signers = append(signers, supernetSigners)
+	signers = append(signers, subnetSigners)
 
-	utx := &txs.TransferSupernetOwnershipTx{
+	utx := &txs.TransferSubnetOwnershipTx{
 		BaseTx: txs.BaseTx{BaseTx: avax.BaseTx{
 			NetworkID:    b.ctx.NetworkID,
 			BlockchainID: b.ctx.ChainID,
@@ -896,8 +896,8 @@ func (b *builder) NewTransferSupernetOwnershipTx(
 			Outs:         outs,
 			Memo:         memo,
 		}},
-		Supernet:     supernetID,
-		SupernetAuth: supernetAuth,
+		Subnet:     subnetID,
+		SubnetAuth: subnetAuth,
 		Owner: &secp256k1fx.OutputOwners{
 			Threshold: threshold,
 			Addrs:     ownerAddrs,

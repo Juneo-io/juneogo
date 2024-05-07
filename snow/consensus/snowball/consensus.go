@@ -6,8 +6,8 @@ package snowball
 import (
 	"fmt"
 
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/utils/bag"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/utils/bag"
 )
 
 // Consensus represents a general snow instance that can be used directly to

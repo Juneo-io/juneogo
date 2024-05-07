@@ -4,11 +4,11 @@
 package executor
 
 import (
-	"github.com/Juneo-io/juneogo/chains/atomic"
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/utils/set"
-	"github.com/Juneo-io/juneogo/vms/platformvm/state"
-	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
+	"github.com/ava-labs/avalanchego/chains/atomic"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/utils/set"
+	"github.com/ava-labs/avalanchego/vms/platformvm/state"
+	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
 )
 
 var _ txs.Visitor = (*AtomicTxExecutor)(nil)
@@ -32,7 +32,7 @@ func (*AtomicTxExecutor) AddValidatorTx(*txs.AddValidatorTx) error {
 	return ErrWrongTxType
 }
 
-func (*AtomicTxExecutor) AddSupernetValidatorTx(*txs.AddSupernetValidatorTx) error {
+func (*AtomicTxExecutor) AddSubnetValidatorTx(*txs.AddSubnetValidatorTx) error {
 	return ErrWrongTxType
 }
 
@@ -44,7 +44,7 @@ func (*AtomicTxExecutor) CreateChainTx(*txs.CreateChainTx) error {
 	return ErrWrongTxType
 }
 
-func (*AtomicTxExecutor) CreateSupernetTx(*txs.CreateSupernetTx) error {
+func (*AtomicTxExecutor) CreateSubnetTx(*txs.CreateSubnetTx) error {
 	return ErrWrongTxType
 }
 
@@ -56,15 +56,15 @@ func (*AtomicTxExecutor) RewardValidatorTx(*txs.RewardValidatorTx) error {
 	return ErrWrongTxType
 }
 
-func (*AtomicTxExecutor) RemoveSupernetValidatorTx(*txs.RemoveSupernetValidatorTx) error {
+func (*AtomicTxExecutor) RemoveSubnetValidatorTx(*txs.RemoveSubnetValidatorTx) error {
 	return ErrWrongTxType
 }
 
-func (*AtomicTxExecutor) TransformSupernetTx(*txs.TransformSupernetTx) error {
+func (*AtomicTxExecutor) TransformSubnetTx(*txs.TransformSubnetTx) error {
 	return ErrWrongTxType
 }
 
-func (*AtomicTxExecutor) TransferSupernetOwnershipTx(*txs.TransferSupernetOwnershipTx) error {
+func (*AtomicTxExecutor) TransferSubnetOwnershipTx(*txs.TransferSubnetOwnershipTx) error {
 	return ErrWrongTxType
 }
 

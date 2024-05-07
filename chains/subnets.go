@@ -7,74 +7,74 @@ import (
 	"errors"
 	"sync"
 
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/supernets"
-	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/subnets"
+	"github.com/ava-labs/avalanchego/utils/constants"
 )
 
-var ErrNoPrimaryNetworkConfig = errors.New("no supernet config for primary network found")
+var ErrNoPrimaryNetworkConfig = errors.New("no subnet config for primary network found")
 
-// Supernets holds the currently running supernets on this node
-type Supernets struct {
+// Subnets holds the currently running subnets on this node
+type Subnets struct {
 	nodeID  ids.NodeID
-	configs map[ids.ID]supernets.Config
+	configs map[ids.ID]subnets.Config
 
 	lock    sync.RWMutex
-	supernets map[ids.ID]supernets.Supernet
+	subnets map[ids.ID]subnets.Subnet
 }
 
-// GetOrCreate returns a supernet running on this node, or creates one if it was
-// not running before. Returns the supernet and if the supernet was created.
-func (s *Supernets) GetOrCreate(supernetID ids.ID) (supernets.Supernet, bool) {
+// GetOrCreate returns a subnet running on this node, or creates one if it was
+// not running before. Returns the subnet and if the subnet was created.
+func (s *Subnets) GetOrCreate(subnetID ids.ID) (subnets.Subnet, bool) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
-	if supernet, ok := s.supernets[supernetID]; ok {
-		return supernet, false
+	if subnet, ok := s.subnets[subnetID]; ok {
+		return subnet, false
 	}
 
-	// Default to the primary network config if a supernet config was not
+	// Default to the primary network config if a subnet config was not
 	// specified
-	config, ok := s.configs[supernetID]
+	config, ok := s.configs[subnetID]
 	if !ok {
 		config = s.configs[constants.PrimaryNetworkID]
 	}
 
-	supernet := supernets.New(s.nodeID, config)
-	s.supernets[supernetID] = supernet
+	subnet := subnets.New(s.nodeID, config)
+	s.subnets[subnetID] = subnet
 
-	return supernet, true
+	return subnet, true
 }
 
-// Bootstrapping returns the supernetIDs of any chains that are still
+// Bootstrapping returns the subnetIDs of any chains that are still
 // bootstrapping.
-func (s *Supernets) Bootstrapping() []ids.ID {
+func (s *Subnets) Bootstrapping() []ids.ID {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 
-	supernetsBootstrapping := make([]ids.ID, 0, len(s.supernets))
-	for supernetID, supernet := range s.supernets {
-		if !supernet.IsBootstrapped() {
-			supernetsBootstrapping = append(supernetsBootstrapping, supernetID)
+	subnetsBootstrapping := make([]ids.ID, 0, len(s.subnets))
+	for subnetID, subnet := range s.subnets {
+		if !subnet.IsBootstrapped() {
+			subnetsBootstrapping = append(subnetsBootstrapping, subnetID)
 		}
 	}
 
-	return supernetsBootstrapping
+	return subnetsBootstrapping
 }
 
-// NewSupernets returns an instance of Supernets
-func NewSupernets(
+// NewSubnets returns an instance of Subnets
+func NewSubnets(
 	nodeID ids.NodeID,
-	configs map[ids.ID]supernets.Config,
-) (*Supernets, error) {
+	configs map[ids.ID]subnets.Config,
+) (*Subnets, error) {
 	if _, ok := configs[constants.PrimaryNetworkID]; !ok {
 		return nil, ErrNoPrimaryNetworkConfig
 	}
 
-	s := &Supernets{
+	s := &Subnets{
 		nodeID:  nodeID,
 		configs: configs,
-		supernets: make(map[ids.ID]supernets.Supernet),
+		subnets: make(map[ids.ID]subnets.Subnet),
 	}
 
 	_, _ = s.GetOrCreate(constants.PrimaryNetworkID)

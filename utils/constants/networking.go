@@ -7,8 +7,8 @@ import (
 	"math"
 	"time"
 
-	"github.com/Juneo-io/juneogo/utils/compression"
-	"github.com/Juneo-io/juneogo/utils/units"
+	"github.com/ava-labs/avalanchego/utils/compression"
+	"github.com/ava-labs/avalanchego/utils/units"
 )
 
 // Const variables to be exported

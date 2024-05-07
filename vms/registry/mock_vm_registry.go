@@ -13,7 +13,7 @@ import (
 	context "context"
 	reflect "reflect"
 
-	ids "github.com/Juneo-io/juneogo/ids"
+	ids "github.com/ava-labs/avalanchego/ids"
 	gomock "go.uber.org/mock/gomock"
 )
 

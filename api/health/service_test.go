@@ -11,8 +11,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/stretchr/testify/require"
 
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/utils/logging"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/utils/logging"
 )
 
 func TestServiceResponses(t *testing.T) {
@@ -110,8 +110,8 @@ func TestServiceTagResponse(t *testing.T) {
 		return "", nil
 	})
 
-	supernetID1 := ids.GenerateTestID()
-	supernetID2 := ids.GenerateTestID()
+	subnetID1 := ids.GenerateTestID()
+	subnetID2 := ids.GenerateTestID()
 
 	// test cases
 	type testMethods struct {
@@ -161,9 +161,9 @@ func TestServiceTagResponse(t *testing.T) {
 			h, err := New(logging.NoLog{}, prometheus.NewRegistry())
 			require.NoError(err)
 			require.NoError(test.register(h, "check1", check))
-			require.NoError(test.register(h, "check2", check, supernetID1.String()))
-			require.NoError(test.register(h, "check3", check, supernetID2.String()))
-			require.NoError(test.register(h, "check4", check, supernetID1.String(), supernetID2.String()))
+			require.NoError(test.register(h, "check2", check, subnetID1.String()))
+			require.NoError(test.register(h, "check3", check, subnetID2.String()))
+			require.NoError(test.register(h, "check4", check, subnetID1.String(), subnetID2.String()))
 
 			s := &Service{
 				log:    logging.NoLog{},
@@ -182,7 +182,7 @@ func TestServiceTagResponse(t *testing.T) {
 				require.Equal(notYetRunResult, reply.Checks["check1"])
 				require.False(reply.Healthy)
 
-				require.NoError(test.check(s, nil, &APIArgs{Tags: []string{supernetID1.String()}}, &reply))
+				require.NoError(test.check(s, nil, &APIArgs{Tags: []string{subnetID1.String()}}, &reply))
 				require.Len(reply.Checks, 2)
 				require.Contains(reply.Checks, "check2")
 				require.Contains(reply.Checks, "check4")
@@ -196,7 +196,7 @@ func TestServiceTagResponse(t *testing.T) {
 
 			{
 				reply := APIReply{}
-				require.NoError(test.check(s, nil, &APIArgs{Tags: []string{supernetID1.String()}}, &reply))
+				require.NoError(test.check(s, nil, &APIArgs{Tags: []string{subnetID1.String()}}, &reply))
 				require.Len(reply.Checks, 2)
 				require.Contains(reply.Checks, "check2")
 				require.Contains(reply.Checks, "check4")
@@ -208,10 +208,10 @@ func TestServiceTagResponse(t *testing.T) {
 
 			{
 				// now we'll add a new check which is unhealthy by default (notYetRunResult)
-				require.NoError(test.register(h, "check5", check, supernetID1.String()))
+				require.NoError(test.register(h, "check5", check, subnetID1.String()))
 
 				reply := APIReply{}
-				require.NoError(test.check(s, nil, &APIArgs{Tags: []string{supernetID1.String()}}, &reply))
+				require.NoError(test.check(s, nil, &APIArgs{Tags: []string{subnetID1.String()}}, &reply))
 				require.Len(reply.Checks, 3)
 				require.Contains(reply.Checks, "check2")
 				require.Contains(reply.Checks, "check4")

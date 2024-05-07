@@ -25,7 +25,7 @@ The protobuf definitions and generated code are versioned based on the
 [RPCChainVMProtocol](../version/version.go#L13) defined for the RPCChainVM.
 Many versions of an Avalanche client can use the same
 [RPCChainVMProtocol](../version/version.go#L13). But each Avalanche client and
-supernet vm must use the same protocol version to be compatible.
+subnet vm must use the same protocol version to be compatible.
 
 ## Publishing to Buf Schema Registry
 

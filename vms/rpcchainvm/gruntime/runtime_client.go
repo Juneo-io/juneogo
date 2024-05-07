@@ -6,9 +6,9 @@ package gruntime
 import (
 	"context"
 
-	"github.com/Juneo-io/juneogo/vms/rpcchainvm/runtime"
+	"github.com/ava-labs/avalanchego/vms/rpcchainvm/runtime"
 
-	pb "github.com/Juneo-io/juneogo/proto/pb/vm/runtime"
+	pb "github.com/ava-labs/avalanchego/proto/pb/vm/runtime"
 )
 
 var _ runtime.Initializer = (*Client)(nil)

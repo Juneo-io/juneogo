@@ -11,7 +11,7 @@ import (
 	"math"
 	"strings"
 
-	"github.com/Juneo-io/juneogo/utils/hashing"
+	"github.com/ava-labs/avalanchego/utils/hashing"
 )
 
 const (

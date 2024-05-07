@@ -1,6 +1,6 @@
 # Shared Memory
 
-Shared memory creates a way for blockchains in the Avalanche Ecosystem to communicate with each other by using a shared database to create a bidirectional communication channel between any two blockchains in the same supernet.
+Shared memory creates a way for blockchains in the Avalanche Ecosystem to communicate with each other by using a shared database to create a bidirectional communication channel between any two blockchains in the same subnet.
 
 ## Shared Database
 
@@ -100,7 +100,7 @@ Shared Memory enables generic cross-chain communication. Here we'll go through t
 
 ### Issue an export transaction to ChainA
 
-ChainA will verify this transaction is valid within the block containing the transaction. This verification will ensure that it pays an appropriate fee, ensure that the transaction is well formed, and check to ensure that the destination chain, ChainB, is on the same supernet as ChainA. After the block containing this transaction has been verified, it will be issued to consensus. It's important to note that the message to the shared memory of ChainB is added when this transaction is accepted by the VM. This ensures that an import transaction on ChainB is only valid when the atomic UTXO has been finalized on ChainA.
+ChainA will verify this transaction is valid within the block containing the transaction. This verification will ensure that it pays an appropriate fee, ensure that the transaction is well formed, and check to ensure that the destination chain, ChainB, is on the same subnet as ChainA. After the block containing this transaction has been verified, it will be issued to consensus. It's important to note that the message to the shared memory of ChainB is added when this transaction is accepted by the VM. This ensures that an import transaction on ChainB is only valid when the atomic UTXO has been finalized on ChainA.
 
 ### API service uses Indexed to return the set of UTXOs owned by a set of addresses
 
@@ -112,7 +112,7 @@ The user issues an import transaction to ChainB, which specifies the atomic UTXO
 
 - Confirm the UTXO is present in shared memory from the `sourceChain`
 - Confirm that no blocks in processing between the block containing this tx and the last accepted block attempt to spend the same UTXO
-- Confirm that the `sourceChain` is an eligible source, which means at least that it is on the same supernet
+- Confirm that the `sourceChain` is an eligible source, which means at least that it is on the same subnet
 
 Once the block is accepted, then the atomic UTXOs spent by the transaction will be consumed and removed from shared memory. It's important to note that because we remove UTXOs from shared memory when the transaction is accepted, we need to verify that any processing ancestor of the block we're verifying does not conflict with the atomic UTXOs that are being spent by this block. It is not sufficient to check that the atomic UTXO we want to spend is present in shared memory when the block is verified because there may be another block that has not yet been accepted, which attempts to spend the same atomic UTXO.
 
@@ -130,4 +130,4 @@ If B1 is processing (has been verified and issued to consensus, but not accepted
 
 ## Generic Communication
 
-Shared memory provides the interface for generic communication across blockchains on the same supernet. Cross-chain transactions moving assets between chains is just the first example. The same primitive can be used to send generic messages between blockchains on top of shared memory, but the basic principles of how it works and how to use it correctly remain the same.
+Shared memory provides the interface for generic communication across blockchains on the same subnet. Cross-chain transactions moving assets between chains is just the first example. The same primitive can be used to send generic messages between blockchains on top of shared memory, but the basic principles of how it works and how to use it correctly remain the same.

@@ -13,62 +13,62 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/stretchr/testify/require"
 
-	"github.com/Juneo-io/juneogo/chains"
-	"github.com/Juneo-io/juneogo/chains/atomic"
-	"github.com/Juneo-io/juneogo/database"
-	"github.com/Juneo-io/juneogo/database/memdb"
-	"github.com/Juneo-io/juneogo/database/prefixdb"
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/message"
-	"github.com/Juneo-io/juneogo/proto/pb/p2p"
-	"github.com/Juneo-io/juneogo/snow"
-	"github.com/Juneo-io/juneogo/snow/choices"
-	"github.com/Juneo-io/juneogo/snow/consensus/snowball"
-	"github.com/Juneo-io/juneogo/snow/engine/common"
-	"github.com/Juneo-io/juneogo/snow/engine/common/queue"
-	"github.com/Juneo-io/juneogo/snow/engine/common/tracker"
-	"github.com/Juneo-io/juneogo/snow/engine/snowman/bootstrap"
-	"github.com/Juneo-io/juneogo/snow/networking/benchlist"
-	"github.com/Juneo-io/juneogo/snow/networking/handler"
-	"github.com/Juneo-io/juneogo/snow/networking/router"
-	"github.com/Juneo-io/juneogo/snow/networking/sender"
-	"github.com/Juneo-io/juneogo/snow/networking/timeout"
-	"github.com/Juneo-io/juneogo/snow/snowtest"
-	"github.com/Juneo-io/juneogo/snow/uptime"
-	"github.com/Juneo-io/juneogo/snow/validators"
-	"github.com/Juneo-io/juneogo/supernets"
-	"github.com/Juneo-io/juneogo/utils/constants"
-	"github.com/Juneo-io/juneogo/utils/crypto/bls"
-	"github.com/Juneo-io/juneogo/utils/crypto/secp256k1"
-	"github.com/Juneo-io/juneogo/utils/formatting"
-	"github.com/Juneo-io/juneogo/utils/formatting/address"
-	"github.com/Juneo-io/juneogo/utils/json"
-	"github.com/Juneo-io/juneogo/utils/logging"
-	"github.com/Juneo-io/juneogo/utils/math/meter"
-	"github.com/Juneo-io/juneogo/utils/resource"
-	"github.com/Juneo-io/juneogo/utils/set"
-	"github.com/Juneo-io/juneogo/utils/timer"
-	"github.com/Juneo-io/juneogo/utils/timer/mockable"
-	"github.com/Juneo-io/juneogo/utils/units"
-	"github.com/Juneo-io/juneogo/version"
-	"github.com/Juneo-io/juneogo/vms/components/avax"
-	"github.com/Juneo-io/juneogo/vms/platformvm/api"
-	"github.com/Juneo-io/juneogo/vms/platformvm/block"
-	"github.com/Juneo-io/juneogo/vms/platformvm/config"
-	"github.com/Juneo-io/juneogo/vms/platformvm/reward"
-	"github.com/Juneo-io/juneogo/vms/platformvm/signer"
-	"github.com/Juneo-io/juneogo/vms/platformvm/status"
-	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
-	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
+	"github.com/ava-labs/avalanchego/chains"
+	"github.com/ava-labs/avalanchego/chains/atomic"
+	"github.com/ava-labs/avalanchego/database"
+	"github.com/ava-labs/avalanchego/database/memdb"
+	"github.com/ava-labs/avalanchego/database/prefixdb"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/message"
+	"github.com/ava-labs/avalanchego/proto/pb/p2p"
+	"github.com/ava-labs/avalanchego/snow"
+	"github.com/ava-labs/avalanchego/snow/choices"
+	"github.com/ava-labs/avalanchego/snow/consensus/snowball"
+	"github.com/ava-labs/avalanchego/snow/engine/common"
+	"github.com/ava-labs/avalanchego/snow/engine/common/queue"
+	"github.com/ava-labs/avalanchego/snow/engine/common/tracker"
+	"github.com/ava-labs/avalanchego/snow/engine/snowman/bootstrap"
+	"github.com/ava-labs/avalanchego/snow/networking/benchlist"
+	"github.com/ava-labs/avalanchego/snow/networking/handler"
+	"github.com/ava-labs/avalanchego/snow/networking/router"
+	"github.com/ava-labs/avalanchego/snow/networking/sender"
+	"github.com/ava-labs/avalanchego/snow/networking/timeout"
+	"github.com/ava-labs/avalanchego/snow/snowtest"
+	"github.com/ava-labs/avalanchego/snow/uptime"
+	"github.com/ava-labs/avalanchego/snow/validators"
+	"github.com/ava-labs/avalanchego/subnets"
+	"github.com/ava-labs/avalanchego/utils/constants"
+	"github.com/ava-labs/avalanchego/utils/crypto/bls"
+	"github.com/ava-labs/avalanchego/utils/crypto/secp256k1"
+	"github.com/ava-labs/avalanchego/utils/formatting"
+	"github.com/ava-labs/avalanchego/utils/formatting/address"
+	"github.com/ava-labs/avalanchego/utils/json"
+	"github.com/ava-labs/avalanchego/utils/logging"
+	"github.com/ava-labs/avalanchego/utils/math/meter"
+	"github.com/ava-labs/avalanchego/utils/resource"
+	"github.com/ava-labs/avalanchego/utils/set"
+	"github.com/ava-labs/avalanchego/utils/timer"
+	"github.com/ava-labs/avalanchego/utils/timer/mockable"
+	"github.com/ava-labs/avalanchego/utils/units"
+	"github.com/ava-labs/avalanchego/version"
+	"github.com/ava-labs/avalanchego/vms/components/avax"
+	"github.com/ava-labs/avalanchego/vms/platformvm/api"
+	"github.com/ava-labs/avalanchego/vms/platformvm/block"
+	"github.com/ava-labs/avalanchego/vms/platformvm/config"
+	"github.com/ava-labs/avalanchego/vms/platformvm/reward"
+	"github.com/ava-labs/avalanchego/vms/platformvm/signer"
+	"github.com/ava-labs/avalanchego/vms/platformvm/status"
+	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
+	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
 
-	smcon "github.com/Juneo-io/juneogo/snow/consensus/snowman"
-	smeng "github.com/Juneo-io/juneogo/snow/engine/snowman"
-	snowgetter "github.com/Juneo-io/juneogo/snow/engine/snowman/getter"
-	timetracker "github.com/Juneo-io/juneogo/snow/networking/tracker"
-	blockbuilder "github.com/Juneo-io/juneogo/vms/platformvm/block/builder"
-	blockexecutor "github.com/Juneo-io/juneogo/vms/platformvm/block/executor"
-	txbuilder "github.com/Juneo-io/juneogo/vms/platformvm/txs/builder"
-	txexecutor "github.com/Juneo-io/juneogo/vms/platformvm/txs/executor"
+	smcon "github.com/ava-labs/avalanchego/snow/consensus/snowman"
+	smeng "github.com/ava-labs/avalanchego/snow/engine/snowman"
+	snowgetter "github.com/ava-labs/avalanchego/snow/engine/snowman/getter"
+	timetracker "github.com/ava-labs/avalanchego/snow/networking/tracker"
+	blockbuilder "github.com/ava-labs/avalanchego/vms/platformvm/block/builder"
+	blockexecutor "github.com/ava-labs/avalanchego/vms/platformvm/block/executor"
+	txbuilder "github.com/ava-labs/avalanchego/vms/platformvm/txs/builder"
+	txexecutor "github.com/ava-labs/avalanchego/vms/platformvm/txs/executor"
 )
 
 const (
@@ -117,11 +117,11 @@ var (
 	defaultMaxValidatorStake = 100 * defaultMinValidatorStake
 	defaultBalance           = 2 * defaultMaxValidatorStake // amount all genesis validators have in defaultVM
 
-	// supernet that exists at genesis in defaultVM
+	// subnet that exists at genesis in defaultVM
 	// Its controlKeys are keys[0], keys[1], keys[2]
 	// Its threshold is 2
-	testSupernet1            *txs.Tx
-	testSupernet1ControlKeys = keys[0:3]
+	testSubnet1            *txs.Tx
+	testSubnet1ControlKeys = keys[0:3]
 )
 
 func init() {
@@ -239,8 +239,8 @@ func defaultVM(t *testing.T, f fork) (*VM, database.Database, *mutableSharedMemo
 		SybilProtectionEnabled: true,
 		Validators:             validators.NewManager(),
 		TxFee:                  defaultTxFee,
-		CreateSupernetTxFee:      100 * defaultTxFee,
-		TransformSupernetTxFee:   100 * defaultTxFee,
+		CreateSubnetTxFee:      100 * defaultTxFee,
+		TransformSubnetTxFee:   100 * defaultTxFee,
 		CreateBlockchainTxFee:  100 * defaultTxFee,
 		MinValidatorStake:      defaultMinValidatorStake,
 		MaxValidatorStake:      defaultMaxValidatorStake,
@@ -296,12 +296,12 @@ func defaultVM(t *testing.T, f fork) (*VM, database.Database, *mutableSharedMemo
 
 	require.NoError(vm.SetState(context.Background(), snow.NormalOp))
 
-	// Create a supernet and store it in testSupernet1
+	// Create a subnet and store it in testSubnet1
 	// Note: following Banff activation, block acceptance will move
 	// chain time ahead
 	var err error
-	testSupernet1, err = vm.txBuilder.NewCreateSupernetTx(
-		2, // threshold; 2 sigs from keys[0], keys[1], keys[2] needed to add validator to this supernet
+	testSubnet1, err = vm.txBuilder.NewCreateSubnetTx(
+		2, // threshold; 2 sigs from keys[0], keys[1], keys[2] needed to add validator to this subnet
 		// control keys are keys[0], keys[1], keys[2]
 		[]ids.ShortID{keys[0].PublicKey().Address(), keys[1].PublicKey().Address(), keys[2].PublicKey().Address()},
 		[]*secp256k1.PrivateKey{keys[0]}, // pays tx fee
@@ -310,7 +310,7 @@ func defaultVM(t *testing.T, f fork) (*VM, database.Database, *mutableSharedMemo
 	)
 	require.NoError(err)
 	vm.ctx.Lock.Unlock()
-	require.NoError(vm.issueTxFromRPC(testSupernet1))
+	require.NoError(vm.issueTxFromRPC(testSubnet1))
 	vm.ctx.Lock.Lock()
 	blk, err := vm.Builder.BuildBlock(context.Background())
 	require.NoError(err)
@@ -364,7 +364,7 @@ func TestGenesis(t *testing.T) {
 			require.NoError(err)
 
 			require.Equal(utxo.Address, addr)
-			require.Equal(uint64(utxo.Amount)-vm.CreateSupernetTxFee, out.Amount())
+			require.Equal(uint64(utxo.Amount)-vm.CreateSubnetTxFee, out.Amount())
 		}
 	}
 
@@ -376,8 +376,8 @@ func TestGenesis(t *testing.T) {
 		require.True(ok)
 	}
 
-	// Ensure the new supernet we created exists
-	_, _, err = vm.state.GetTx(testSupernet1.ID())
+	// Ensure the new subnet we created exists
+	_, _, err = vm.state.GetTx(testSubnet1.ID())
 	require.NoError(err)
 }
 
@@ -568,8 +568,8 @@ func TestAddValidatorInvalidNotReissued(t *testing.T) {
 	require.ErrorIs(err, txexecutor.ErrDuplicateValidator)
 }
 
-// Accept proposal to add validator to supernet
-func TestAddSupernetValidatorAccept(t *testing.T) {
+// Accept proposal to add validator to subnet
+func TestAddSubnetValidatorAccept(t *testing.T) {
 	require := require.New(t)
 	vm, _, _ := defaultVM(t, latestFork)
 	vm.ctx.Lock.Lock()
@@ -584,13 +584,13 @@ func TestAddSupernetValidatorAccept(t *testing.T) {
 	// create valid tx
 	// note that [startTime, endTime] is a subset of time that keys[0]
 	// validates primary network ([defaultValidateStartTime, defaultValidateEndTime])
-	tx, err := vm.txBuilder.NewAddSupernetValidatorTx(
+	tx, err := vm.txBuilder.NewAddSubnetValidatorTx(
 		defaultWeight,
 		uint64(startTime.Unix()),
 		uint64(endTime.Unix()),
 		nodeID,
-		testSupernet1.ID(),
-		[]*secp256k1.PrivateKey{testSupernet1ControlKeys[0], testSupernet1ControlKeys[1]},
+		testSubnet1.ID(),
+		[]*secp256k1.PrivateKey{testSubnet1ControlKeys[0], testSubnet1ControlKeys[1]},
 		ids.ShortEmpty, // change addr
 		nil,
 	)
@@ -612,12 +612,12 @@ func TestAddSupernetValidatorAccept(t *testing.T) {
 	require.Equal(status.Committed, txStatus)
 
 	// Verify that new validator is in current validator set
-	_, err = vm.state.GetCurrentValidator(testSupernet1.ID(), nodeID)
+	_, err = vm.state.GetCurrentValidator(testSubnet1.ID(), nodeID)
 	require.NoError(err)
 }
 
-// Reject proposal to add validator to supernet
-func TestAddSupernetValidatorReject(t *testing.T) {
+// Reject proposal to add validator to subnet
+func TestAddSubnetValidatorReject(t *testing.T) {
 	require := require.New(t)
 	vm, _, _ := defaultVM(t, latestFork)
 	vm.ctx.Lock.Lock()
@@ -632,13 +632,13 @@ func TestAddSupernetValidatorReject(t *testing.T) {
 	// create valid tx
 	// note that [startTime, endTime] is a subset of time that keys[0]
 	// validates primary network ([defaultValidateStartTime, defaultValidateEndTime])
-	tx, err := vm.txBuilder.NewAddSupernetValidatorTx(
+	tx, err := vm.txBuilder.NewAddSubnetValidatorTx(
 		defaultWeight,
 		uint64(startTime.Unix()),
 		uint64(endTime.Unix()),
 		nodeID,
-		testSupernet1.ID(),
-		[]*secp256k1.PrivateKey{testSupernet1ControlKeys[1], testSupernet1ControlKeys[2]},
+		testSubnet1.ID(),
+		[]*secp256k1.PrivateKey{testSubnet1ControlKeys[1], testSubnet1ControlKeys[2]},
 		ids.ShortEmpty, // change addr
 		nil,
 	)
@@ -659,7 +659,7 @@ func TestAddSupernetValidatorReject(t *testing.T) {
 	require.ErrorIs(err, database.ErrNotFound)
 
 	// Verify that new validator NOT in validator set
-	_, err = vm.state.GetCurrentValidator(testSupernet1.ID(), nodeID)
+	_, err = vm.state.GetCurrentValidator(testSubnet1.ID(), nodeID)
 	require.ErrorIs(err, database.ErrNotFound)
 }
 
@@ -820,12 +820,12 @@ func TestCreateChain(t *testing.T) {
 	defer vm.ctx.Lock.Unlock()
 
 	tx, err := vm.txBuilder.NewCreateChainTx(
-		testSupernet1.ID(),
+		testSubnet1.ID(),
 		nil,
 		ids.ID{'t', 'e', 's', 't', 'v', 'm'},
 		nil,
 		"name",
-		[]*secp256k1.PrivateKey{testSupernet1ControlKeys[0], testSupernet1ControlKeys[1]},
+		[]*secp256k1.PrivateKey{testSubnet1ControlKeys[0], testSubnet1ControlKeys[1]},
 		ids.ShortEmpty, // change addr
 		nil,
 	)
@@ -847,7 +847,7 @@ func TestCreateChain(t *testing.T) {
 	require.Equal(status.Committed, txStatus)
 
 	// Verify chain was created
-	chains, err := vm.state.GetChains(testSupernet1.ID())
+	chains, err := vm.state.GetChains(testSubnet1.ID())
 	require.NoError(err)
 
 	foundNewChain := false
@@ -860,17 +860,17 @@ func TestCreateChain(t *testing.T) {
 }
 
 // test where we:
-// 1) Create a supernet
-// 2) Add a validator to the supernet's current validator set
+// 1) Create a subnet
+// 2) Add a validator to the subnet's current validator set
 // 3) Advance timestamp to validator's end time (removing validator from current)
-func TestCreateSupernet(t *testing.T) {
+func TestCreateSubnet(t *testing.T) {
 	require := require.New(t)
 	vm, _, _ := defaultVM(t, latestFork)
 	vm.ctx.Lock.Lock()
 	defer vm.ctx.Lock.Unlock()
 
 	nodeID := genesisNodeIDs[0]
-	createSupernetTx, err := vm.txBuilder.NewCreateSupernetTx(
+	createSubnetTx, err := vm.txBuilder.NewCreateSubnetTx(
 		1, // threshold
 		[]ids.ShortID{ // control keys
 			keys[0].PublicKey().Address(),
@@ -883,10 +883,10 @@ func TestCreateSupernet(t *testing.T) {
 	require.NoError(err)
 
 	vm.ctx.Lock.Unlock()
-	require.NoError(vm.issueTxFromRPC(createSupernetTx))
+	require.NoError(vm.issueTxFromRPC(createSubnetTx))
 	vm.ctx.Lock.Lock()
 
-	// should contain the CreateSupernetTx
+	// should contain the CreateSubnetTx
 	blk, err := vm.Builder.BuildBlock(context.Background())
 	require.NoError(err)
 
@@ -894,32 +894,32 @@ func TestCreateSupernet(t *testing.T) {
 	require.NoError(blk.Accept(context.Background()))
 	require.NoError(vm.SetPreference(context.Background(), vm.manager.LastAccepted()))
 
-	_, txStatus, err := vm.state.GetTx(createSupernetTx.ID())
+	_, txStatus, err := vm.state.GetTx(createSubnetTx.ID())
 	require.NoError(err)
 	require.Equal(status.Committed, txStatus)
 
-	supernets, err := vm.state.GetSupernets()
+	subnets, err := vm.state.GetSubnets()
 	require.NoError(err)
 
 	found := false
-	for _, supernet := range supernets {
-		if supernet.ID() == createSupernetTx.ID() {
+	for _, subnet := range subnets {
+		if subnet.ID() == createSubnetTx.ID() {
 			found = true
 			break
 		}
 	}
 	require.True(found)
 
-	// Now that we've created a new supernet, add a validator to that supernet
+	// Now that we've created a new subnet, add a validator to that subnet
 	startTime := vm.clock.Time().Add(txexecutor.SyncBound).Add(1 * time.Second)
 	endTime := startTime.Add(defaultMinStakingDuration)
-	// [startTime, endTime] is subset of time keys[0] validates default supernet so tx is valid
-	addValidatorTx, err := vm.txBuilder.NewAddSupernetValidatorTx(
+	// [startTime, endTime] is subset of time keys[0] validates default subnet so tx is valid
+	addValidatorTx, err := vm.txBuilder.NewAddSubnetValidatorTx(
 		defaultWeight,
 		uint64(startTime.Unix()),
 		uint64(endTime.Unix()),
 		nodeID,
-		createSupernetTx.ID(),
+		createSubnetTx.ID(),
 		[]*secp256k1.PrivateKey{keys[0]},
 		ids.ShortEmpty, // change addr
 		nil,
@@ -930,7 +930,7 @@ func TestCreateSupernet(t *testing.T) {
 	require.NoError(vm.issueTxFromRPC(addValidatorTx))
 	vm.ctx.Lock.Lock()
 
-	blk, err = vm.Builder.BuildBlock(context.Background()) // should add validator to the new supernet
+	blk, err = vm.Builder.BuildBlock(context.Background()) // should add validator to the new subnet
 	require.NoError(err)
 
 	require.NoError(blk.Verify(context.Background()))
@@ -942,10 +942,10 @@ func TestCreateSupernet(t *testing.T) {
 	require.NoError(err)
 	require.Equal(status.Committed, txStatus)
 
-	_, err = vm.state.GetPendingValidator(createSupernetTx.ID(), nodeID)
+	_, err = vm.state.GetPendingValidator(createSubnetTx.ID(), nodeID)
 	require.ErrorIs(err, database.ErrNotFound)
 
-	_, err = vm.state.GetCurrentValidator(createSupernetTx.ID(), nodeID)
+	_, err = vm.state.GetCurrentValidator(createSubnetTx.ID(), nodeID)
 	require.NoError(err)
 
 	// fast forward clock to time validator should stop validating
@@ -955,10 +955,10 @@ func TestCreateSupernet(t *testing.T) {
 	require.NoError(blk.Verify(context.Background()))
 	require.NoError(blk.Accept(context.Background())) // remove validator from current validator set
 
-	_, err = vm.state.GetPendingValidator(createSupernetTx.ID(), nodeID)
+	_, err = vm.state.GetPendingValidator(createSubnetTx.ID(), nodeID)
 	require.ErrorIs(err, database.ErrNotFound)
 
-	_, err = vm.state.GetCurrentValidator(createSupernetTx.ID(), nodeID)
+	_, err = vm.state.GetCurrentValidator(createSubnetTx.ID(), nodeID)
 	require.ErrorIs(err, database.ErrNotFound)
 }
 
@@ -1331,7 +1331,7 @@ func TestBootstrapPartiallyAccepted(t *testing.T) {
 
 	peerID := ids.BuildTestNodeID([]byte{1, 2, 3, 4, 5, 4, 3, 2, 1})
 	beacons := validators.NewManager()
-	require.NoError(beacons.AddStaker(ctx.SupernetID, peerID, nil, ids.Empty, 1))
+	require.NoError(beacons.AddStaker(ctx.SubnetID, peerID, nil, ids.Empty, 1))
 
 	benchlist := benchlist.NewNoBenchlist()
 	timeoutManager, err := timeout.NewManager(
@@ -1375,7 +1375,7 @@ func TestBootstrapPartiallyAccepted(t *testing.T) {
 	externalSender.Default(true)
 
 	// Passes messages from the consensus engine to the network
-	gossipConfig := supernets.GossipConfig{
+	gossipConfig := subnets.GossipConfig{
 		AcceptedFrontierPeerSize: 1,
 		OnAcceptPeerSize:         1,
 	}
@@ -1386,7 +1386,7 @@ func TestBootstrapPartiallyAccepted(t *testing.T) {
 		chainRouter,
 		timeoutManager,
 		p2p.EngineType_ENGINE_TYPE_SNOWMAN,
-		supernets.New(consensusCtx.NodeID, supernets.Config{GossipConfig: gossipConfig}),
+		subnets.New(consensusCtx.NodeID, subnets.Config{GossipConfig: gossipConfig}),
 	)
 	require.NoError(err)
 
@@ -1402,10 +1402,10 @@ func TestBootstrapPartiallyAccepted(t *testing.T) {
 	}
 
 	peers := tracker.NewPeers()
-	totalWeight, err := beacons.TotalWeight(ctx.SupernetID)
+	totalWeight, err := beacons.TotalWeight(ctx.SubnetID)
 	require.NoError(err)
 	startup := tracker.NewStartup(peers, (totalWeight+1)/2)
-	beacons.RegisterCallbackListener(ctx.SupernetID, startup)
+	beacons.RegisterCallbackListener(ctx.SubnetID, startup)
 
 	// The engine handles consensus
 	snowGetHandler, err := snowgetter.New(
@@ -1422,7 +1422,7 @@ func TestBootstrapPartiallyAccepted(t *testing.T) {
 		AllGetsServer:                  snowGetHandler,
 		Ctx:                            consensusCtx,
 		Beacons:                        beacons,
-		SampleK:                        beacons.Count(ctx.SupernetID),
+		SampleK:                        beacons.Count(ctx.SubnetID),
 		StartupTracker:                 startup,
 		Sender:                         sender,
 		BootstrapTracker:               bootstrapTracker,
@@ -1448,7 +1448,7 @@ func TestBootstrapPartiallyAccepted(t *testing.T) {
 		2,
 		cpuTracker,
 		vm,
-		supernets.New(ctx.NodeID, supernets.Config{}),
+		subnets.New(ctx.NodeID, subnets.Config{}),
 		tracker.NewPeers(),
 	)
 	require.NoError(err)
@@ -1507,7 +1507,7 @@ func TestBootstrapPartiallyAccepted(t *testing.T) {
 
 	ctx.Lock.Lock()
 	var reqID uint32
-	externalSender.SendF = func(msg message.OutboundMessage, nodeIDs set.Set[ids.NodeID], _ ids.ID, _ supernets.Allower) set.Set[ids.NodeID] {
+	externalSender.SendF = func(msg message.OutboundMessage, nodeIDs set.Set[ids.NodeID], _ ids.ID, _ subnets.Allower) set.Set[ids.NodeID] {
 		inMsg, err := mc.Parse(msg.Bytes(), ctx.NodeID, func() {})
 		require.NoError(err)
 		require.Equal(message.GetAcceptedFrontierOp, inMsg.Op())
@@ -1521,7 +1521,7 @@ func TestBootstrapPartiallyAccepted(t *testing.T) {
 
 	require.NoError(bootstrapper.Connected(context.Background(), peerID, version.CurrentApp))
 
-	externalSender.SendF = func(msg message.OutboundMessage, nodeIDs set.Set[ids.NodeID], _ ids.ID, _ supernets.Allower) set.Set[ids.NodeID] {
+	externalSender.SendF = func(msg message.OutboundMessage, nodeIDs set.Set[ids.NodeID], _ ids.ID, _ subnets.Allower) set.Set[ids.NodeID] {
 		inMsgIntf, err := mc.Parse(msg.Bytes(), ctx.NodeID, func() {})
 		require.NoError(err)
 		require.Equal(message.GetAcceptedOp, inMsgIntf.Op())
@@ -1533,7 +1533,7 @@ func TestBootstrapPartiallyAccepted(t *testing.T) {
 
 	require.NoError(bootstrapper.AcceptedFrontier(context.Background(), peerID, reqID, advanceTimeBlkID))
 
-	externalSender.SendF = func(msg message.OutboundMessage, nodeIDs set.Set[ids.NodeID], _ ids.ID, _ supernets.Allower) set.Set[ids.NodeID] {
+	externalSender.SendF = func(msg message.OutboundMessage, nodeIDs set.Set[ids.NodeID], _ ids.ID, _ subnets.Allower) set.Set[ids.NodeID] {
 		inMsgIntf, err := mc.Parse(msg.Bytes(), ctx.NodeID, func() {})
 		require.NoError(err)
 		require.Equal(message.GetAncestorsOp, inMsgIntf.Op())
@@ -1550,7 +1550,7 @@ func TestBootstrapPartiallyAccepted(t *testing.T) {
 	frontier := set.Of(advanceTimeBlkID)
 	require.NoError(bootstrapper.Accepted(context.Background(), peerID, reqID, frontier))
 
-	externalSender.SendF = func(msg message.OutboundMessage, nodeIDs set.Set[ids.NodeID], _ ids.ID, _ supernets.Allower) set.Set[ids.NodeID] {
+	externalSender.SendF = func(msg message.OutboundMessage, nodeIDs set.Set[ids.NodeID], _ ids.ID, _ subnets.Allower) set.Set[ids.NodeID] {
 		inMsg, err := mc.Parse(msg.Bytes(), ctx.NodeID, func() {})
 		require.NoError(err)
 		require.Equal(message.GetAcceptedFrontierOp, inMsg.Op())
@@ -1564,7 +1564,7 @@ func TestBootstrapPartiallyAccepted(t *testing.T) {
 
 	require.NoError(bootstrapper.Ancestors(context.Background(), peerID, reqID, [][]byte{advanceTimeBlkBytes}))
 
-	externalSender.SendF = func(msg message.OutboundMessage, nodeIDs set.Set[ids.NodeID], _ ids.ID, _ supernets.Allower) set.Set[ids.NodeID] {
+	externalSender.SendF = func(msg message.OutboundMessage, nodeIDs set.Set[ids.NodeID], _ ids.ID, _ subnets.Allower) set.Set[ids.NodeID] {
 		inMsgIntf, err := mc.Parse(msg.Bytes(), ctx.NodeID, func() {})
 		require.NoError(err)
 		require.Equal(message.GetAcceptedOp, inMsgIntf.Op())
@@ -2038,7 +2038,7 @@ func TestRemovePermissionedValidatorDuringAddPending(t *testing.T) {
 	require.NoError(addValidatorBlock.Accept(context.Background()))
 	require.NoError(vm.SetPreference(context.Background(), vm.manager.LastAccepted()))
 
-	createSupernetTx, err := vm.txBuilder.NewCreateSupernetTx(
+	createSubnetTx, err := vm.txBuilder.NewCreateSubnetTx(
 		1,
 		[]ids.ShortID{id},
 		[]*secp256k1.PrivateKey{keys[0]},
@@ -2048,31 +2048,31 @@ func TestRemovePermissionedValidatorDuringAddPending(t *testing.T) {
 	require.NoError(err)
 
 	vm.ctx.Lock.Unlock()
-	require.NoError(vm.issueTxFromRPC(createSupernetTx))
+	require.NoError(vm.issueTxFromRPC(createSubnetTx))
 	vm.ctx.Lock.Lock()
 
-	// trigger block creation for the supernet tx
-	createSupernetBlock, err := vm.Builder.BuildBlock(context.Background())
+	// trigger block creation for the subnet tx
+	createSubnetBlock, err := vm.Builder.BuildBlock(context.Background())
 	require.NoError(err)
-	require.NoError(createSupernetBlock.Verify(context.Background()))
-	require.NoError(createSupernetBlock.Accept(context.Background()))
+	require.NoError(createSubnetBlock.Verify(context.Background()))
+	require.NoError(createSubnetBlock.Accept(context.Background()))
 	require.NoError(vm.SetPreference(context.Background(), vm.manager.LastAccepted()))
 
-	addSupernetValidatorTx, err := vm.txBuilder.NewAddSupernetValidatorTx(
+	addSubnetValidatorTx, err := vm.txBuilder.NewAddSubnetValidatorTx(
 		defaultMaxValidatorStake,
 		uint64(validatorStartTime.Unix()),
 		uint64(validatorEndTime.Unix()),
 		nodeID,
-		createSupernetTx.ID(),
+		createSubnetTx.ID(),
 		[]*secp256k1.PrivateKey{key, keys[1]},
 		keys[1].Address(),
 		nil,
 	)
 	require.NoError(err)
 
-	removeSupernetValidatorTx, err := vm.txBuilder.NewRemoveSupernetValidatorTx(
+	removeSubnetValidatorTx, err := vm.txBuilder.NewRemoveSubnetValidatorTx(
 		nodeID,
-		createSupernetTx.ID(),
+		createSubnetTx.ID(),
 		[]*secp256k1.PrivateKey{key, keys[2]},
 		keys[2].Address(),
 		nil,
@@ -2081,11 +2081,11 @@ func TestRemovePermissionedValidatorDuringAddPending(t *testing.T) {
 
 	statelessBlock, err := block.NewBanffStandardBlock(
 		vm.state.GetTimestamp(),
-		createSupernetBlock.ID(),
-		createSupernetBlock.Height()+1,
+		createSubnetBlock.ID(),
+		createSubnetBlock.Height()+1,
 		[]*txs.Tx{
-			addSupernetValidatorTx,
-			removeSupernetValidatorTx,
+			addSubnetValidatorTx,
+			removeSubnetValidatorTx,
 		},
 	)
 	require.NoError(err)
@@ -2097,18 +2097,18 @@ func TestRemovePermissionedValidatorDuringAddPending(t *testing.T) {
 	require.NoError(block.Accept(context.Background()))
 	require.NoError(vm.SetPreference(context.Background(), vm.manager.LastAccepted()))
 
-	_, err = vm.state.GetPendingValidator(createSupernetTx.ID(), nodeID)
+	_, err = vm.state.GetPendingValidator(createSubnetTx.ID(), nodeID)
 	require.ErrorIs(err, database.ErrNotFound)
 }
 
-func TestTransferSupernetOwnershipTx(t *testing.T) {
+func TestTransferSubnetOwnershipTx(t *testing.T) {
 	require := require.New(t)
 	vm, _, _ := defaultVM(t, latestFork)
 	vm.ctx.Lock.Lock()
 	defer vm.ctx.Lock.Unlock()
 
-	// Create a supernet
-	createSupernetTx, err := vm.txBuilder.NewCreateSupernetTx(
+	// Create a subnet
+	createSubnetTx, err := vm.txBuilder.NewCreateSubnetTx(
 		1,
 		[]ids.ShortID{keys[0].PublicKey().Address()},
 		[]*secp256k1.PrivateKey{keys[0]},
@@ -2116,23 +2116,23 @@ func TestTransferSupernetOwnershipTx(t *testing.T) {
 		nil,
 	)
 	require.NoError(err)
-	supernetID := createSupernetTx.ID()
+	subnetID := createSubnetTx.ID()
 
 	vm.ctx.Lock.Unlock()
-	require.NoError(vm.issueTxFromRPC(createSupernetTx))
+	require.NoError(vm.issueTxFromRPC(createSubnetTx))
 	vm.ctx.Lock.Lock()
-	createSupernetBlock, err := vm.Builder.BuildBlock(context.Background())
+	createSubnetBlock, err := vm.Builder.BuildBlock(context.Background())
 	require.NoError(err)
 
-	createSupernetRawBlock := createSupernetBlock.(*blockexecutor.Block).Block
-	require.IsType(&block.BanffStandardBlock{}, createSupernetRawBlock)
-	require.Contains(createSupernetRawBlock.Txs(), createSupernetTx)
+	createSubnetRawBlock := createSubnetBlock.(*blockexecutor.Block).Block
+	require.IsType(&block.BanffStandardBlock{}, createSubnetRawBlock)
+	require.Contains(createSubnetRawBlock.Txs(), createSubnetTx)
 
-	require.NoError(createSupernetBlock.Verify(context.Background()))
-	require.NoError(createSupernetBlock.Accept(context.Background()))
+	require.NoError(createSubnetBlock.Verify(context.Background()))
+	require.NoError(createSubnetBlock.Accept(context.Background()))
 	require.NoError(vm.SetPreference(context.Background(), vm.manager.LastAccepted()))
 
-	supernetOwner, err := vm.state.GetSupernetOwner(supernetID)
+	subnetOwner, err := vm.state.GetSubnetOwner(subnetID)
 	require.NoError(err)
 	expectedOwner := &secp256k1fx.OutputOwners{
 		Locktime:  0,
@@ -2141,10 +2141,10 @@ func TestTransferSupernetOwnershipTx(t *testing.T) {
 			keys[0].PublicKey().Address(),
 		},
 	}
-	require.Equal(expectedOwner, supernetOwner)
+	require.Equal(expectedOwner, subnetOwner)
 
-	transferSupernetOwnershipTx, err := vm.txBuilder.NewTransferSupernetOwnershipTx(
-		supernetID,
+	transferSubnetOwnershipTx, err := vm.txBuilder.NewTransferSubnetOwnershipTx(
+		subnetID,
 		1,
 		[]ids.ShortID{keys[1].PublicKey().Address()},
 		[]*secp256k1.PrivateKey{keys[0]},
@@ -2154,20 +2154,20 @@ func TestTransferSupernetOwnershipTx(t *testing.T) {
 	require.NoError(err)
 
 	vm.ctx.Lock.Unlock()
-	require.NoError(vm.issueTxFromRPC(transferSupernetOwnershipTx))
+	require.NoError(vm.issueTxFromRPC(transferSubnetOwnershipTx))
 	vm.ctx.Lock.Lock()
-	transferSupernetOwnershipBlock, err := vm.Builder.BuildBlock(context.Background())
+	transferSubnetOwnershipBlock, err := vm.Builder.BuildBlock(context.Background())
 	require.NoError(err)
 
-	transferSupernetOwnershipRawBlock := transferSupernetOwnershipBlock.(*blockexecutor.Block).Block
-	require.IsType(&block.BanffStandardBlock{}, transferSupernetOwnershipRawBlock)
-	require.Contains(transferSupernetOwnershipRawBlock.Txs(), transferSupernetOwnershipTx)
+	transferSubnetOwnershipRawBlock := transferSubnetOwnershipBlock.(*blockexecutor.Block).Block
+	require.IsType(&block.BanffStandardBlock{}, transferSubnetOwnershipRawBlock)
+	require.Contains(transferSubnetOwnershipRawBlock.Txs(), transferSubnetOwnershipTx)
 
-	require.NoError(transferSupernetOwnershipBlock.Verify(context.Background()))
-	require.NoError(transferSupernetOwnershipBlock.Accept(context.Background()))
+	require.NoError(transferSubnetOwnershipBlock.Verify(context.Background()))
+	require.NoError(transferSubnetOwnershipBlock.Accept(context.Background()))
 	require.NoError(vm.SetPreference(context.Background(), vm.manager.LastAccepted()))
 
-	supernetOwner, err = vm.state.GetSupernetOwner(supernetID)
+	subnetOwner, err = vm.state.GetSubnetOwner(subnetID)
 	require.NoError(err)
 	expectedOwner = &secp256k1fx.OutputOwners{
 		Locktime:  0,
@@ -2176,7 +2176,7 @@ func TestTransferSupernetOwnershipTx(t *testing.T) {
 			keys[1].PublicKey().Address(),
 		},
 	}
-	require.Equal(expectedOwner, supernetOwner)
+	require.Equal(expectedOwner, subnetOwner)
 }
 
 func TestBaseTx(t *testing.T) {

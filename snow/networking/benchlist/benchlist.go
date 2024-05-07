@@ -11,14 +11,14 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/snow"
-	"github.com/Juneo-io/juneogo/snow/validators"
-	"github.com/Juneo-io/juneogo/utils/heap"
-	"github.com/Juneo-io/juneogo/utils/set"
-	"github.com/Juneo-io/juneogo/utils/timer/mockable"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/snow"
+	"github.com/ava-labs/avalanchego/snow/validators"
+	"github.com/ava-labs/avalanchego/utils/heap"
+	"github.com/ava-labs/avalanchego/utils/set"
+	"github.com/ava-labs/avalanchego/utils/timer/mockable"
 
-	safemath "github.com/Juneo-io/juneogo/utils/math"
+	safemath "github.com/ava-labs/avalanchego/utils/math"
 )
 
 // If a peer consistently does not respond to queries, it will
@@ -189,10 +189,10 @@ func (b *benchlist) removedExpiredNodes() {
 	}
 
 	b.metrics.numBenched.Set(float64(b.benchedHeap.Len()))
-	benchedStake, err := b.vdrs.SubsetWeight(b.ctx.SupernetID, b.benchlistSet)
+	benchedStake, err := b.vdrs.SubsetWeight(b.ctx.SubnetID, b.benchlistSet)
 	if err != nil {
 		b.ctx.Log.Error("error calculating benched stake",
-			zap.Stringer("supernetID", b.ctx.SupernetID),
+			zap.Stringer("subnetID", b.ctx.SubnetID),
 			zap.Error(err),
 		)
 		return
@@ -261,17 +261,17 @@ func (b *benchlist) RegisterFailure(nodeID ids.NodeID) {
 // Assumes [b.lock] is held
 // Assumes [nodeID] is not already benched
 func (b *benchlist) bench(nodeID ids.NodeID) {
-	validatorStake := b.vdrs.GetWeight(b.ctx.SupernetID, nodeID)
+	validatorStake := b.vdrs.GetWeight(b.ctx.SubnetID, nodeID)
 	if validatorStake == 0 {
 		// We might want to bench a non-validator because they don't respond to
 		// my Get requests, but we choose to only bench validators.
 		return
 	}
 
-	benchedStake, err := b.vdrs.SubsetWeight(b.ctx.SupernetID, b.benchlistSet)
+	benchedStake, err := b.vdrs.SubsetWeight(b.ctx.SubnetID, b.benchlistSet)
 	if err != nil {
 		b.ctx.Log.Error("error calculating benched stake",
-			zap.Stringer("supernetID", b.ctx.SupernetID),
+			zap.Stringer("subnetID", b.ctx.SubnetID),
 			zap.Error(err),
 		)
 		return
@@ -286,10 +286,10 @@ func (b *benchlist) bench(nodeID ids.NodeID) {
 		return
 	}
 
-	totalStake, err := b.vdrs.TotalWeight(b.ctx.SupernetID)
+	totalStake, err := b.vdrs.TotalWeight(b.ctx.SubnetID)
 	if err != nil {
 		b.ctx.Log.Error("error calculating total stake",
-			zap.Stringer("supernetID", b.ctx.SupernetID),
+			zap.Stringer("subnetID", b.ctx.SubnetID),
 			zap.Error(err),
 		)
 		return

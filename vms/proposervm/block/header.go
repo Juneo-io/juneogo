@@ -3,7 +3,7 @@
 
 package block
 
-import "github.com/Juneo-io/juneogo/ids"
+import "github.com/ava-labs/avalanchego/ids"
 
 type Header interface {
 	ChainID() ids.ID

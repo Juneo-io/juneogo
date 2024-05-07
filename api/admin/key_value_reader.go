@@ -6,7 +6,7 @@ package admin
 import (
 	"context"
 
-	"github.com/Juneo-io/juneogo/database"
+	"github.com/ava-labs/avalanchego/database"
 )
 
 var _ database.KeyValueReader = (*KeyValueReader)(nil)

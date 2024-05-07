@@ -12,8 +12,8 @@ import (
 
 	"golang.org/x/crypto/chacha20poly1305"
 
-	"github.com/Juneo-io/juneogo/database"
-	"github.com/Juneo-io/juneogo/utils/hashing"
+	"github.com/ava-labs/avalanchego/database"
+	"github.com/ava-labs/avalanchego/utils/hashing"
 )
 
 var (

@@ -6,17 +6,17 @@ package peer
 import (
 	"time"
 
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/message"
-	"github.com/Juneo-io/juneogo/network/throttling"
-	"github.com/Juneo-io/juneogo/snow/networking/router"
-	"github.com/Juneo-io/juneogo/snow/networking/tracker"
-	"github.com/Juneo-io/juneogo/snow/uptime"
-	"github.com/Juneo-io/juneogo/snow/validators"
-	"github.com/Juneo-io/juneogo/utils/logging"
-	"github.com/Juneo-io/juneogo/utils/set"
-	"github.com/Juneo-io/juneogo/utils/timer/mockable"
-	"github.com/Juneo-io/juneogo/version"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/message"
+	"github.com/ava-labs/avalanchego/network/throttling"
+	"github.com/ava-labs/avalanchego/snow/networking/router"
+	"github.com/ava-labs/avalanchego/snow/networking/tracker"
+	"github.com/ava-labs/avalanchego/snow/uptime"
+	"github.com/ava-labs/avalanchego/snow/validators"
+	"github.com/ava-labs/avalanchego/utils/logging"
+	"github.com/ava-labs/avalanchego/utils/set"
+	"github.com/ava-labs/avalanchego/utils/timer/mockable"
+	"github.com/ava-labs/avalanchego/version"
 )
 
 type Config struct {
@@ -33,7 +33,7 @@ type Config struct {
 	Network              Network
 	Router               router.InboundHandler
 	VersionCompatibility version.Compatibility
-	MySupernets            set.Set[ids.ID]
+	MySubnets            set.Set[ids.ID]
 	Beacons              validators.Manager
 	Validators           validators.Manager
 	NetworkID            uint32

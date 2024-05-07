@@ -9,10 +9,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Juneo-io/juneogo/codec"
-	"github.com/Juneo-io/juneogo/codec/reflectcodec"
-	"github.com/Juneo-io/juneogo/utils/bimap"
-	"github.com/Juneo-io/juneogo/utils/wrappers"
+	"github.com/ava-labs/avalanchego/codec"
+	"github.com/ava-labs/avalanchego/codec/reflectcodec"
+	"github.com/ava-labs/avalanchego/utils/bimap"
+	"github.com/ava-labs/avalanchego/utils/wrappers"
 )
 
 const (

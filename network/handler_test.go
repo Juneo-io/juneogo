@@ -4,22 +4,22 @@
 package network
 
 import (
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/snow/networking/router"
-	"github.com/Juneo-io/juneogo/version"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/snow/networking/router"
+	"github.com/ava-labs/avalanchego/version"
 )
 
 var _ router.ExternalHandler = (*testHandler)(nil)
 
 type testHandler struct {
 	router.InboundHandler
-	ConnectedF    func(nodeID ids.NodeID, nodeVersion *version.Application, supernetID ids.ID)
+	ConnectedF    func(nodeID ids.NodeID, nodeVersion *version.Application, subnetID ids.ID)
 	DisconnectedF func(nodeID ids.NodeID)
 }
 
-func (h *testHandler) Connected(id ids.NodeID, nodeVersion *version.Application, supernetID ids.ID) {
+func (h *testHandler) Connected(id ids.NodeID, nodeVersion *version.Application, subnetID ids.ID) {
 	if h.ConnectedF != nil {
-		h.ConnectedF(id, nodeVersion, supernetID)
+		h.ConnectedF(id, nodeVersion, subnetID)
 	}
 }
 

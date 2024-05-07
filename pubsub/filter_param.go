@@ -6,8 +6,8 @@ package pubsub
 import (
 	"sync"
 
-	"github.com/Juneo-io/juneogo/pubsub/bloom"
-	"github.com/Juneo-io/juneogo/utils/set"
+	"github.com/ava-labs/avalanchego/pubsub/bloom"
+	"github.com/ava-labs/avalanchego/utils/set"
 )
 
 type FilterParam struct {

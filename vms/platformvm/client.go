@@ -7,16 +7,16 @@ import (
 	"context"
 	"time"
 
-	"github.com/Juneo-io/juneogo/api"
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/snow/validators"
-	"github.com/Juneo-io/juneogo/utils/constants"
-	"github.com/Juneo-io/juneogo/utils/crypto/secp256k1"
-	"github.com/Juneo-io/juneogo/utils/formatting"
-	"github.com/Juneo-io/juneogo/utils/formatting/address"
-	"github.com/Juneo-io/juneogo/utils/json"
-	"github.com/Juneo-io/juneogo/utils/rpc"
-	"github.com/Juneo-io/juneogo/vms/platformvm/status"
+	"github.com/ava-labs/avalanchego/api"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/snow/validators"
+	"github.com/ava-labs/avalanchego/utils/constants"
+	"github.com/ava-labs/avalanchego/utils/crypto/secp256k1"
+	"github.com/ava-labs/avalanchego/utils/formatting"
+	"github.com/ava-labs/avalanchego/utils/formatting/address"
+	"github.com/ava-labs/avalanchego/utils/json"
+	"github.com/ava-labs/avalanchego/utils/rpc"
+	"github.com/ava-labs/avalanchego/vms/platformvm/status"
 )
 
 var _ Client = (*client)(nil)
@@ -57,33 +57,33 @@ type Client interface {
 		startUTXOID ids.ID,
 		options ...rpc.Option,
 	) ([][]byte, ids.ShortID, ids.ID, error)
-	// GetSupernet returns information about the specified supernet
-	GetSupernet(ctx context.Context, supernetID ids.ID, options ...rpc.Option) (GetSupernetClientResponse, error)
-	// GetSupernets returns information about the specified supernets
+	// GetSubnet returns information about the specified subnet
+	GetSubnet(ctx context.Context, subnetID ids.ID, options ...rpc.Option) (GetSubnetClientResponse, error)
+	// GetSubnets returns information about the specified subnets
 	//
-	// Deprecated: Supernets should be fetched from a dedicated indexer.
-	GetSupernets(ctx context.Context, supernetIDs []ids.ID, options ...rpc.Option) ([]ClientSupernet, error)
+	// Deprecated: Subnets should be fetched from a dedicated indexer.
+	GetSubnets(ctx context.Context, subnetIDs []ids.ID, options ...rpc.Option) ([]ClientSubnet, error)
 	// GetStakingAssetID returns the assetID of the asset used for staking on
-	// supernet corresponding to [supernetID]
-	GetStakingAssetID(ctx context.Context, supernetID ids.ID, options ...rpc.Option) (ids.ID, error)
-	// GetCurrentValidators returns the list of current validators for supernet with ID [supernetID]
-	GetCurrentValidators(ctx context.Context, supernetID ids.ID, nodeIDs []ids.NodeID, options ...rpc.Option) ([]ClientPermissionlessValidator, error)
-	// GetPendingValidators returns the list of pending validators for supernet with ID [supernetID]
-	GetPendingValidators(ctx context.Context, supernetID ids.ID, nodeIDs []ids.NodeID, options ...rpc.Option) ([]interface{}, []interface{}, error)
+	// subnet corresponding to [subnetID]
+	GetStakingAssetID(ctx context.Context, subnetID ids.ID, options ...rpc.Option) (ids.ID, error)
+	// GetCurrentValidators returns the list of current validators for subnet with ID [subnetID]
+	GetCurrentValidators(ctx context.Context, subnetID ids.ID, nodeIDs []ids.NodeID, options ...rpc.Option) ([]ClientPermissionlessValidator, error)
+	// GetPendingValidators returns the list of pending validators for subnet with ID [subnetID]
+	GetPendingValidators(ctx context.Context, subnetID ids.ID, nodeIDs []ids.NodeID, options ...rpc.Option) ([]interface{}, []interface{}, error)
 	// GetCurrentSupply returns an upper bound on the supply of AVAX in the system along with the P-chain height
-	GetCurrentSupply(ctx context.Context, supernetID ids.ID, options ...rpc.Option) (uint64, uint64, error)
+	GetCurrentSupply(ctx context.Context, subnetID ids.ID, options ...rpc.Option) (uint64, uint64, error)
 	// GetRewardPoolSupply returns the current supply in the reward pool
-	GetRewardPoolSupply(ctx context.Context, supernetID ids.ID, options ...rpc.Option) (uint64, error)
+	GetRewardPoolSupply(ctx context.Context, subnetID ids.ID, options ...rpc.Option) (uint64, error)
 	// GetFeePoolValue returns the current value in the fee pool
 	GetFeePoolValue(ctx context.Context, options ...rpc.Option) (uint64, error)
-	// SampleValidators returns the nodeIDs of a sample of [sampleSize] validators from the current validator set for supernet with ID [supernetID]
-	SampleValidators(ctx context.Context, supernetID ids.ID, sampleSize uint16, options ...rpc.Option) ([]ids.NodeID, error)
+	// SampleValidators returns the nodeIDs of a sample of [sampleSize] validators from the current validator set for subnet with ID [subnetID]
+	SampleValidators(ctx context.Context, subnetID ids.ID, sampleSize uint16, options ...rpc.Option) ([]ids.NodeID, error)
 	// GetBlockchainStatus returns the current status of blockchain with ID: [blockchainID]
 	GetBlockchainStatus(ctx context.Context, blockchainID string, options ...rpc.Option) (status.BlockchainStatus, error)
-	// ValidatedBy returns the ID of the Supernet that validates [blockchainID]
+	// ValidatedBy returns the ID of the Subnet that validates [blockchainID]
 	ValidatedBy(ctx context.Context, blockchainID ids.ID, options ...rpc.Option) (ids.ID, error)
-	// Validates returns the list of blockchains that are validated by the supernet with ID [supernetID]
-	Validates(ctx context.Context, supernetID ids.ID, options ...rpc.Option) ([]ids.ID, error)
+	// Validates returns the list of blockchains that are validated by the subnet with ID [subnetID]
+	Validates(ctx context.Context, subnetID ids.ID, options ...rpc.Option) ([]ids.ID, error)
 	// GetBlockchains returns the list of blockchains on the platform
 	//
 	// Deprecated: Blockchains should be fetched from a dedicated indexer.
@@ -117,9 +117,9 @@ type Client interface {
 	) (map[ids.ID]uint64, [][]byte, error)
 	// GetMinStake returns the minimum staking amount in nAVAX for validators
 	// and delegators respectively
-	GetMinStake(ctx context.Context, supernetID ids.ID, options ...rpc.Option) (uint64, uint64, error)
+	GetMinStake(ctx context.Context, subnetID ids.ID, options ...rpc.Option) (uint64, uint64, error)
 	// GetTotalStake returns the total amount (in nAVAX) staked on the network
-	GetTotalStake(ctx context.Context, supernetID ids.ID, options ...rpc.Option) (uint64, error)
+	GetTotalStake(ctx context.Context, subnetID ids.ID, options ...rpc.Option) (uint64, error)
 	// GetMaxStakeAmount returns the maximum amount of nAVAX staking to the named
 	// node during the time period.
 	//
@@ -127,7 +127,7 @@ type Client interface {
 	// GetCurrentValidators, and GetPendingValidators.
 	GetMaxStakeAmount(
 		ctx context.Context,
-		supernetID ids.ID,
+		subnetID ids.ID,
 		nodeID ids.NodeID,
 		startTime uint64,
 		endTime uint64,
@@ -140,10 +140,10 @@ type Client interface {
 	// GetTimestamp returns the current chain timestamp
 	GetTimestamp(ctx context.Context, options ...rpc.Option) (time.Time, error)
 	// GetValidatorsAt returns the weights of the validator set of a provided
-	// supernet at the specified height.
+	// subnet at the specified height.
 	GetValidatorsAt(
 		ctx context.Context,
-		supernetID ids.ID,
+		subnetID ids.ID,
 		height uint64,
 		options ...rpc.Option,
 	) (map[ids.NodeID]*validators.GetValidatorOutput, error)
@@ -248,92 +248,92 @@ func (c *client) GetAtomicUTXOs(
 	return utxos, endAddr, endUTXOID, err
 }
 
-// GetSupernetClientResponse is the response from calling GetSupernet on the client
-type GetSupernetClientResponse struct {
+// GetSubnetClientResponse is the response from calling GetSubnet on the client
+type GetSubnetClientResponse struct {
 	// whether it is permissioned or not
 	IsPermissioned bool
-	// supernet auth information for a permissioned supernet
+	// subnet auth information for a permissioned subnet
 	ControlKeys []ids.ShortID
 	Threshold   uint32
 	Locktime    uint64
-	// supernet transformation tx ID for a permissionless supernet
-	SupernetTransformationTxID ids.ID
+	// subnet transformation tx ID for a permissionless subnet
+	SubnetTransformationTxID ids.ID
 }
 
-func (c *client) GetSupernet(ctx context.Context, supernetID ids.ID, options ...rpc.Option) (GetSupernetClientResponse, error) {
-	res := &GetSupernetResponse{}
-	err := c.requester.SendRequest(ctx, "platform.getSupernet", &GetSupernetArgs{
-		SupernetID: supernetID,
+func (c *client) GetSubnet(ctx context.Context, subnetID ids.ID, options ...rpc.Option) (GetSubnetClientResponse, error) {
+	res := &GetSubnetResponse{}
+	err := c.requester.SendRequest(ctx, "platform.getSubnet", &GetSubnetArgs{
+		SubnetID: subnetID,
 	}, res, options...)
 	if err != nil {
-		return GetSupernetClientResponse{}, err
+		return GetSubnetClientResponse{}, err
 	}
 	controlKeys, err := address.ParseToIDs(res.ControlKeys)
 	if err != nil {
-		return GetSupernetClientResponse{}, err
+		return GetSubnetClientResponse{}, err
 	}
 
-	return GetSupernetClientResponse{
+	return GetSubnetClientResponse{
 		IsPermissioned:           res.IsPermissioned,
 		ControlKeys:              controlKeys,
 		Threshold:                uint32(res.Threshold),
 		Locktime:                 uint64(res.Locktime),
-		SupernetTransformationTxID: res.SupernetTransformationTxID,
+		SubnetTransformationTxID: res.SubnetTransformationTxID,
 	}, nil
 }
 
-// ClientSupernet is a representation of a supernet used in client methods
-type ClientSupernet struct {
-	// ID of the supernet
+// ClientSubnet is a representation of a subnet used in client methods
+type ClientSubnet struct {
+	// ID of the subnet
 	ID ids.ID
 	// Each element of [ControlKeys] the address of a public key.
-	// A transaction to add a validator to this supernet requires
+	// A transaction to add a validator to this subnet requires
 	// signatures from [Threshold] of these keys to be valid.
 	ControlKeys []ids.ShortID
 	Threshold   uint32
 }
 
-func (c *client) GetSupernets(ctx context.Context, ids []ids.ID, options ...rpc.Option) ([]ClientSupernet, error) {
-	res := &GetSupernetsResponse{}
-	err := c.requester.SendRequest(ctx, "platform.getSupernets", &GetSupernetsArgs{
+func (c *client) GetSubnets(ctx context.Context, ids []ids.ID, options ...rpc.Option) ([]ClientSubnet, error) {
+	res := &GetSubnetsResponse{}
+	err := c.requester.SendRequest(ctx, "platform.getSubnets", &GetSubnetsArgs{
 		IDs: ids,
 	}, res, options...)
 	if err != nil {
 		return nil, err
 	}
-	supernets := make([]ClientSupernet, len(res.Supernets))
-	for i, apiSupernet := range res.Supernets {
-		controlKeys, err := address.ParseToIDs(apiSupernet.ControlKeys)
+	subnets := make([]ClientSubnet, len(res.Subnets))
+	for i, apiSubnet := range res.Subnets {
+		controlKeys, err := address.ParseToIDs(apiSubnet.ControlKeys)
 		if err != nil {
 			return nil, err
 		}
 
-		supernets[i] = ClientSupernet{
-			ID:          apiSupernet.ID,
+		subnets[i] = ClientSubnet{
+			ID:          apiSubnet.ID,
 			ControlKeys: controlKeys,
-			Threshold:   uint32(apiSupernet.Threshold),
+			Threshold:   uint32(apiSubnet.Threshold),
 		}
 	}
-	return supernets, nil
+	return subnets, nil
 }
 
-func (c *client) GetStakingAssetID(ctx context.Context, supernetID ids.ID, options ...rpc.Option) (ids.ID, error) {
+func (c *client) GetStakingAssetID(ctx context.Context, subnetID ids.ID, options ...rpc.Option) (ids.ID, error) {
 	res := &GetStakingAssetIDResponse{}
 	err := c.requester.SendRequest(ctx, "platform.getStakingAssetID", &GetStakingAssetIDArgs{
-		SupernetID: supernetID,
+		SubnetID: subnetID,
 	}, res, options...)
 	return res.AssetID, err
 }
 
 func (c *client) GetCurrentValidators(
 	ctx context.Context,
-	supernetID ids.ID,
+	subnetID ids.ID,
 	nodeIDs []ids.NodeID,
 	options ...rpc.Option,
 ) ([]ClientPermissionlessValidator, error) {
 	res := &GetCurrentValidatorsReply{}
 	err := c.requester.SendRequest(ctx, "platform.getCurrentValidators", &GetCurrentValidatorsArgs{
-		SupernetID: supernetID,
+		SubnetID: subnetID,
 		NodeIDs:  nodeIDs,
 	}, res, options...)
 	if err != nil {
@@ -344,30 +344,30 @@ func (c *client) GetCurrentValidators(
 
 func (c *client) GetPendingValidators(
 	ctx context.Context,
-	supernetID ids.ID,
+	subnetID ids.ID,
 	nodeIDs []ids.NodeID,
 	options ...rpc.Option,
 ) ([]interface{}, []interface{}, error) {
 	res := &GetPendingValidatorsReply{}
 	err := c.requester.SendRequest(ctx, "platform.getPendingValidators", &GetPendingValidatorsArgs{
-		SupernetID: supernetID,
+		SubnetID: subnetID,
 		NodeIDs:  nodeIDs,
 	}, res, options...)
 	return res.Validators, res.Delegators, err
 }
 
-func (c *client) GetCurrentSupply(ctx context.Context, supernetID ids.ID, options ...rpc.Option) (uint64, uint64, error) {
+func (c *client) GetCurrentSupply(ctx context.Context, subnetID ids.ID, options ...rpc.Option) (uint64, uint64, error) {
 	res := &GetCurrentSupplyReply{}
 	err := c.requester.SendRequest(ctx, "platform.getCurrentSupply", &GetCurrentSupplyArgs{
-		SupernetID: supernetID,
+		SubnetID: subnetID,
 	}, res, options...)
 	return uint64(res.Supply), uint64(res.Height), err
 }
 
-func (c *client) GetRewardPoolSupply(ctx context.Context, supernetID ids.ID, options ...rpc.Option) (uint64, error) {
+func (c *client) GetRewardPoolSupply(ctx context.Context, subnetID ids.ID, options ...rpc.Option) (uint64, error) {
 	res := &GetRewardPoolSupplyReply{}
 	err := c.requester.SendRequest(ctx, "platform.getRewardPoolSupply", &GetRewardPoolSupplyArgs{
-		SupernetID: supernetID,
+		SubnetID: subnetID,
 	}, res, options...)
 	return uint64(res.RewardPoolSupply), err
 }
@@ -378,10 +378,10 @@ func (c *client) GetFeePoolValue(ctx context.Context, options ...rpc.Option) (ui
 	return uint64(res.FeePoolValue), err
 }
 
-func (c *client) SampleValidators(ctx context.Context, supernetID ids.ID, sampleSize uint16, options ...rpc.Option) ([]ids.NodeID, error) {
+func (c *client) SampleValidators(ctx context.Context, subnetID ids.ID, sampleSize uint16, options ...rpc.Option) ([]ids.NodeID, error) {
 	res := &SampleValidatorsReply{}
 	err := c.requester.SendRequest(ctx, "platform.sampleValidators", &SampleValidatorsArgs{
-		SupernetID: supernetID,
+		SubnetID: subnetID,
 		Size:     json.Uint16(sampleSize),
 	}, res, options...)
 	return res.Validators, err
@@ -400,13 +400,13 @@ func (c *client) ValidatedBy(ctx context.Context, blockchainID ids.ID, options .
 	err := c.requester.SendRequest(ctx, "platform.validatedBy", &ValidatedByArgs{
 		BlockchainID: blockchainID,
 	}, res, options...)
-	return res.SupernetID, err
+	return res.SubnetID, err
 }
 
-func (c *client) Validates(ctx context.Context, supernetID ids.ID, options ...rpc.Option) ([]ids.ID, error) {
+func (c *client) Validates(ctx context.Context, subnetID ids.ID, options ...rpc.Option) ([]ids.ID, error) {
 	res := &ValidatesResponse{}
 	err := c.requester.SendRequest(ctx, "platform.validates", &ValidatesArgs{
-		SupernetID: supernetID,
+		SubnetID: subnetID,
 	}, res, options...)
 	return res.BlockchainIDs, err
 }
@@ -512,21 +512,21 @@ func (c *client) GetStake(
 	return staked, outputs, err
 }
 
-func (c *client) GetMinStake(ctx context.Context, supernetID ids.ID, options ...rpc.Option) (uint64, uint64, error) {
+func (c *client) GetMinStake(ctx context.Context, subnetID ids.ID, options ...rpc.Option) (uint64, uint64, error) {
 	res := &GetMinStakeReply{}
 	err := c.requester.SendRequest(ctx, "platform.getMinStake", &GetMinStakeArgs{
-		SupernetID: supernetID,
+		SubnetID: subnetID,
 	}, res, options...)
 	return uint64(res.MinValidatorStake), uint64(res.MinDelegatorStake), err
 }
 
-func (c *client) GetTotalStake(ctx context.Context, supernetID ids.ID, options ...rpc.Option) (uint64, error) {
+func (c *client) GetTotalStake(ctx context.Context, subnetID ids.ID, options ...rpc.Option) (uint64, error) {
 	res := &GetTotalStakeReply{}
 	err := c.requester.SendRequest(ctx, "platform.getTotalStake", &GetTotalStakeArgs{
-		SupernetID: supernetID,
+		SubnetID: subnetID,
 	}, res, options...)
 	var amount json.Uint64
-	if supernetID == constants.PrimaryNetworkID {
+	if subnetID == constants.PrimaryNetworkID {
 		amount = res.Stake
 	} else {
 		amount = res.Weight
@@ -534,10 +534,10 @@ func (c *client) GetTotalStake(ctx context.Context, supernetID ids.ID, options .
 	return uint64(amount), err
 }
 
-func (c *client) GetMaxStakeAmount(ctx context.Context, supernetID ids.ID, nodeID ids.NodeID, startTime, endTime uint64, options ...rpc.Option) (uint64, error) {
+func (c *client) GetMaxStakeAmount(ctx context.Context, subnetID ids.ID, nodeID ids.NodeID, startTime, endTime uint64, options ...rpc.Option) (uint64, error) {
 	res := &GetMaxStakeAmountReply{}
 	err := c.requester.SendRequest(ctx, "platform.getMaxStakeAmount", &GetMaxStakeAmountArgs{
-		SupernetID:  supernetID,
+		SubnetID:  subnetID,
 		NodeID:    nodeID,
 		StartTime: json.Uint64(startTime),
 		EndTime:   json.Uint64(endTime),
@@ -570,13 +570,13 @@ func (c *client) GetTimestamp(ctx context.Context, options ...rpc.Option) (time.
 
 func (c *client) GetValidatorsAt(
 	ctx context.Context,
-	supernetID ids.ID,
+	subnetID ids.ID,
 	height uint64,
 	options ...rpc.Option,
 ) (map[ids.NodeID]*validators.GetValidatorOutput, error) {
 	res := &GetValidatorsAtReply{}
 	err := c.requester.SendRequest(ctx, "platform.getValidatorsAt", &GetValidatorsAtArgs{
-		SupernetID: supernetID,
+		SubnetID: subnetID,
 		Height:   json.Uint64(height),
 	}, res, options...)
 	return res.Validators, err

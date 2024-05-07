@@ -6,11 +6,11 @@ package x
 import (
 	"time"
 
-	"github.com/Juneo-io/juneogo/vms/avm/block"
-	"github.com/Juneo-io/juneogo/vms/avm/fxs"
-	"github.com/Juneo-io/juneogo/vms/nftfx"
-	"github.com/Juneo-io/juneogo/vms/propertyfx"
-	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
+	"github.com/ava-labs/avalanchego/vms/avm/block"
+	"github.com/ava-labs/avalanchego/vms/avm/fxs"
+	"github.com/ava-labs/avalanchego/vms/nftfx"
+	"github.com/ava-labs/avalanchego/vms/propertyfx"
+	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
 )
 
 const (

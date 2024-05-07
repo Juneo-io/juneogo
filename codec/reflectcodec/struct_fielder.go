@@ -8,7 +8,7 @@ import (
 	"reflect"
 	"sync"
 
-	"github.com/Juneo-io/juneogo/codec"
+	"github.com/ava-labs/avalanchego/codec"
 )
 
 // TagValue is the value the tag must have to be serialized.

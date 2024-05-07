@@ -12,8 +12,8 @@ package keychain
 import (
 	reflect "reflect"
 
-	ids "github.com/Juneo-io/juneogo/ids"
-	version "github.com/Juneo-io/juneogo/version"
+	ids "github.com/ava-labs/avalanchego/ids"
+	version "github.com/ava-labs/avalanchego/version"
 	gomock "go.uber.org/mock/gomock"
 )
 

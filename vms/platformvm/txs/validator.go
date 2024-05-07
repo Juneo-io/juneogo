@@ -7,12 +7,12 @@ import (
 	"errors"
 	"time"
 
-	"github.com/Juneo-io/juneogo/ids"
+	"github.com/ava-labs/avalanchego/ids"
 )
 
 var (
 	ErrWeightTooSmall = errors.New("weight of this validator is too low")
-	errBadSupernetID    = errors.New("supernet ID can't be primary network ID")
+	errBadSubnetID    = errors.New("subnet ID can't be primary network ID")
 )
 
 // Validator is a validator.

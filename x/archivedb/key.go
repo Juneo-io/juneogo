@@ -7,7 +7,7 @@ import (
 	"encoding/binary"
 	"errors"
 
-	"github.com/Juneo-io/juneogo/utils/wrappers"
+	"github.com/ava-labs/avalanchego/utils/wrappers"
 )
 
 var (

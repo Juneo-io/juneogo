@@ -7,12 +7,12 @@ import (
 	"context"
 	"sync"
 
-	"github.com/Juneo-io/juneogo/ids"
+	"github.com/ava-labs/avalanchego/ids"
 )
 
 var _ State = (*lockedState)(nil)
 
-// State allows the lookup of validator sets on specified supernets at the
+// State allows the lookup of validator sets on specified subnets at the
 // requested P-chain height.
 type State interface {
 	// GetMinimumHeight returns the minimum height of the block still in the
@@ -21,16 +21,16 @@ type State interface {
 	// GetCurrentHeight returns the current height of the P-chain.
 	GetCurrentHeight(context.Context) (uint64, error)
 
-	// GetSupernetID returns the supernetID of the provided chain.
-	GetSupernetID(ctx context.Context, chainID ids.ID) (ids.ID, error)
+	// GetSubnetID returns the subnetID of the provided chain.
+	GetSubnetID(ctx context.Context, chainID ids.ID) (ids.ID, error)
 
-	// GetValidatorSet returns the validators of the provided supernet at the
+	// GetValidatorSet returns the validators of the provided subnet at the
 	// requested P-chain height.
 	// The returned map should not be modified.
 	GetValidatorSet(
 		ctx context.Context,
 		height uint64,
-		supernetID ids.ID,
+		subnetID ids.ID,
 	) (map[ids.NodeID]*GetValidatorOutput, error)
 }
 
@@ -60,22 +60,22 @@ func (s *lockedState) GetCurrentHeight(ctx context.Context) (uint64, error) {
 	return s.s.GetCurrentHeight(ctx)
 }
 
-func (s *lockedState) GetSupernetID(ctx context.Context, chainID ids.ID) (ids.ID, error) {
+func (s *lockedState) GetSubnetID(ctx context.Context, chainID ids.ID) (ids.ID, error) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
-	return s.s.GetSupernetID(ctx, chainID)
+	return s.s.GetSubnetID(ctx, chainID)
 }
 
 func (s *lockedState) GetValidatorSet(
 	ctx context.Context,
 	height uint64,
-	supernetID ids.ID,
+	subnetID ids.ID,
 ) (map[ids.NodeID]*GetValidatorOutput, error) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
-	return s.s.GetValidatorSet(ctx, height, supernetID)
+	return s.s.GetValidatorSet(ctx, height, subnetID)
 }
 
 type noValidators struct {

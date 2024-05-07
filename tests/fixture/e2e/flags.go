@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/Juneo-io/juneogo/tests/fixture/tmpnet"
+	"github.com/ava-labs/avalanchego/tests/fixture/tmpnet"
 )
 
 type FlagVars struct {

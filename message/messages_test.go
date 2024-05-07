@@ -13,11 +13,11 @@ import (
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/proto/pb/p2p"
-	"github.com/Juneo-io/juneogo/staking"
-	"github.com/Juneo-io/juneogo/utils/compression"
-	"github.com/Juneo-io/juneogo/utils/logging"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/proto/pb/p2p"
+	"github.com/ava-labs/avalanchego/staking"
+	"github.com/ava-labs/avalanchego/utils/compression"
+	"github.com/ava-labs/avalanchego/utils/logging"
 )
 
 func TestMessage(t *testing.T) {
@@ -55,7 +55,7 @@ func TestMessage(t *testing.T) {
 		bytesSaved       bool // if true, outbound message saved bytes must be non-zero
 	}{
 		{
-			desc: "ping message with no compression no supernet uptimes",
+			desc: "ping message with no compression no subnet uptimes",
 			op:   PingOp,
 			msg: &p2p.Message{
 				Message: &p2p.Message_Ping{
@@ -67,7 +67,7 @@ func TestMessage(t *testing.T) {
 			bytesSaved:       false,
 		},
 		{
-			desc: "pong message with no compression no supernet uptimes",
+			desc: "pong message with no compression no subnet uptimes",
 			op:   PongOp,
 			msg: &p2p.Message{
 				Message: &p2p.Message_Pong{
@@ -81,14 +81,14 @@ func TestMessage(t *testing.T) {
 			bytesSaved:       false,
 		},
 		{
-			desc: "ping message with no compression and supernet uptimes",
+			desc: "ping message with no compression and subnet uptimes",
 			op:   PingOp,
 			msg: &p2p.Message{
 				Message: &p2p.Message_Ping{
 					Ping: &p2p.Ping{
-						SupernetUptimes: []*p2p.SupernetUptime{
+						SubnetUptimes: []*p2p.SubnetUptime{
 							{
-								SupernetId: testID[:],
+								SubnetId: testID[:],
 								Uptime:   100,
 							},
 						},
@@ -100,15 +100,15 @@ func TestMessage(t *testing.T) {
 			bytesSaved:       false,
 		},
 		{
-			desc: "pong message with no compression and supernet uptimes",
+			desc: "pong message with no compression and subnet uptimes",
 			op:   PongOp,
 			msg: &p2p.Message{
 				Message: &p2p.Message_Pong{
 					Pong: &p2p.Pong{
 						Uptime: 100,
-						SupernetUptimes: []*p2p.SupernetUptime{
+						SubnetUptimes: []*p2p.SubnetUptime{
 							{
-								SupernetId: testID[:],
+								SubnetId: testID[:],
 								Uptime:   100,
 							},
 						},
@@ -132,7 +132,7 @@ func TestMessage(t *testing.T) {
 						MyVersion:      "v1.2.3",
 						IpSigningTime:  uint64(nowUnix),
 						IpNodeIdSig:    []byte{'y', 'e', 'e', 't'},
-						TrackedSupernets: [][]byte{testID[:]},
+						TrackedSubnets: [][]byte{testID[:]},
 						IpBlsSig:       []byte{'y', 'e', 'e', 't', '2'},
 					},
 				},

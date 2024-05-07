@@ -10,11 +10,11 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/Juneo-io/juneogo/vms/example/xsvm/cmd/account"
-	"github.com/Juneo-io/juneogo/vms/example/xsvm/cmd/chain"
-	"github.com/Juneo-io/juneogo/vms/example/xsvm/cmd/issue"
-	"github.com/Juneo-io/juneogo/vms/example/xsvm/cmd/run"
-	"github.com/Juneo-io/juneogo/vms/example/xsvm/cmd/version"
+	"github.com/ava-labs/avalanchego/vms/example/xsvm/cmd/account"
+	"github.com/ava-labs/avalanchego/vms/example/xsvm/cmd/chain"
+	"github.com/ava-labs/avalanchego/vms/example/xsvm/cmd/issue"
+	"github.com/ava-labs/avalanchego/vms/example/xsvm/cmd/run"
+	"github.com/ava-labs/avalanchego/vms/example/xsvm/cmd/version"
 )
 
 func init() {

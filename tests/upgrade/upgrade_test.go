@@ -12,8 +12,8 @@ import (
 	"github.com/onsi/gomega"
 	"github.com/stretchr/testify/require"
 
-	"github.com/Juneo-io/juneogo/tests/fixture/e2e"
-	"github.com/Juneo-io/juneogo/tests/fixture/tmpnet"
+	"github.com/ava-labs/avalanchego/tests/fixture/e2e"
+	"github.com/ava-labs/avalanchego/tests/fixture/tmpnet"
 )
 
 func TestUpgrade(t *testing.T) {

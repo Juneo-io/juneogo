@@ -9,15 +9,15 @@ import (
 	"github.com/onsi/gomega"
 
 	// ensure test packages are scanned by ginkgo
-	_ "github.com/Juneo-io/juneogo/tests/e2e/banff"
-	_ "github.com/Juneo-io/juneogo/tests/e2e/c"
-	_ "github.com/Juneo-io/juneogo/tests/e2e/faultinjection"
-	_ "github.com/Juneo-io/juneogo/tests/e2e/p"
-	_ "github.com/Juneo-io/juneogo/tests/e2e/x"
-	_ "github.com/Juneo-io/juneogo/tests/e2e/x/transfer"
+	_ "github.com/ava-labs/avalanchego/tests/e2e/banff"
+	_ "github.com/ava-labs/avalanchego/tests/e2e/c"
+	_ "github.com/ava-labs/avalanchego/tests/e2e/faultinjection"
+	_ "github.com/ava-labs/avalanchego/tests/e2e/p"
+	_ "github.com/ava-labs/avalanchego/tests/e2e/x"
+	_ "github.com/ava-labs/avalanchego/tests/e2e/x/transfer"
 
-	"github.com/Juneo-io/juneogo/tests/fixture/e2e"
-	"github.com/Juneo-io/juneogo/tests/fixture/tmpnet"
+	"github.com/ava-labs/avalanchego/tests/fixture/e2e"
+	"github.com/ava-labs/avalanchego/tests/fixture/tmpnet"
 
 	ginkgo "github.com/onsi/ginkgo/v2"
 )

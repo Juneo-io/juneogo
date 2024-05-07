@@ -3,7 +3,7 @@
 
 package tx
 
-import "github.com/Juneo-io/juneogo/ids"
+import "github.com/ava-labs/avalanchego/ids"
 
 var _ Unsigned = (*Transfer)(nil)
 

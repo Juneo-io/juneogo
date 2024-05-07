@@ -6,9 +6,9 @@ package indexer
 import (
 	"context"
 
-	"github.com/Juneo-io/juneogo/database/versiondb"
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/snow/consensus/snowman"
+	"github.com/ava-labs/avalanchego/database/versiondb"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/snow/consensus/snowman"
 )
 
 // BlockServer represents all requests heightIndexer can issue

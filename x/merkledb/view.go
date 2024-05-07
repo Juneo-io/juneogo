@@ -11,10 +11,10 @@ import (
 
 	"go.opentelemetry.io/otel/attribute"
 
-	"github.com/Juneo-io/juneogo/database"
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/utils"
-	"github.com/Juneo-io/juneogo/utils/maybe"
+	"github.com/ava-labs/avalanchego/database"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/utils"
+	"github.com/ava-labs/avalanchego/utils/maybe"
 
 	oteltrace "go.opentelemetry.io/otel/trace"
 )

@@ -9,7 +9,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/syndtr/goleveldb/leveldb"
 
-	"github.com/Juneo-io/juneogo/utils"
+	"github.com/ava-labs/avalanchego/utils"
 )
 
 var levelLabels = []string{"level"}

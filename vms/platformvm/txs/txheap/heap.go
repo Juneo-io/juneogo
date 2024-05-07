@@ -4,9 +4,9 @@
 package txheap
 
 import (
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/utils/heap"
-	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/utils/heap"
+	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
 )
 
 type Heap interface {

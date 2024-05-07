@@ -8,8 +8,8 @@ import (
 
 	"github.com/google/btree"
 
-	"github.com/Juneo-io/juneogo/utils/heap"
-	"github.com/Juneo-io/juneogo/utils/maybe"
+	"github.com/ava-labs/avalanchego/utils/heap"
+	"github.com/ava-labs/avalanchego/utils/maybe"
 )
 
 // A priority queue of syncWorkItems.

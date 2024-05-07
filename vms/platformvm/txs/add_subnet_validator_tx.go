@@ -6,61 +6,61 @@ package txs
 import (
 	"errors"
 
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/snow"
-	"github.com/Juneo-io/juneogo/utils/constants"
-	"github.com/Juneo-io/juneogo/utils/crypto/bls"
-	"github.com/Juneo-io/juneogo/vms/components/verify"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/snow"
+	"github.com/ava-labs/avalanchego/utils/constants"
+	"github.com/ava-labs/avalanchego/utils/crypto/bls"
+	"github.com/ava-labs/avalanchego/vms/components/verify"
 )
 
 var (
-	_ StakerTx        = (*AddSupernetValidatorTx)(nil)
-	_ ScheduledStaker = (*AddSupernetValidatorTx)(nil)
+	_ StakerTx        = (*AddSubnetValidatorTx)(nil)
+	_ ScheduledStaker = (*AddSubnetValidatorTx)(nil)
 
-	errAddPrimaryNetworkValidator = errors.New("can't add primary network validator with AddSupernetValidatorTx")
+	errAddPrimaryNetworkValidator = errors.New("can't add primary network validator with AddSubnetValidatorTx")
 )
 
-// AddSupernetValidatorTx is an unsigned addSupernetValidatorTx
-type AddSupernetValidatorTx struct {
+// AddSubnetValidatorTx is an unsigned addSubnetValidatorTx
+type AddSubnetValidatorTx struct {
 	// Metadata, inputs and outputs
 	BaseTx `serialize:"true"`
 	// The validator
-	SupernetValidator `serialize:"true" json:"validator"`
+	SubnetValidator `serialize:"true" json:"validator"`
 	// Auth that will be allowing this validator into the network
-	SupernetAuth verify.Verifiable `serialize:"true" json:"supernetAuthorization"`
+	SubnetAuth verify.Verifiable `serialize:"true" json:"subnetAuthorization"`
 }
 
-func (tx *AddSupernetValidatorTx) NodeID() ids.NodeID {
-	return tx.SupernetValidator.NodeID
+func (tx *AddSubnetValidatorTx) NodeID() ids.NodeID {
+	return tx.SubnetValidator.NodeID
 }
 
-func (*AddSupernetValidatorTx) PublicKey() (*bls.PublicKey, bool, error) {
+func (*AddSubnetValidatorTx) PublicKey() (*bls.PublicKey, bool, error) {
 	return nil, false, nil
 }
 
-func (*AddSupernetValidatorTx) PendingPriority() Priority {
-	return SupernetPermissionedValidatorPendingPriority
+func (*AddSubnetValidatorTx) PendingPriority() Priority {
+	return SubnetPermissionedValidatorPendingPriority
 }
 
-func (*AddSupernetValidatorTx) CurrentPriority() Priority {
-	return SupernetPermissionedValidatorCurrentPriority
+func (*AddSubnetValidatorTx) CurrentPriority() Priority {
+	return SubnetPermissionedValidatorCurrentPriority
 }
 
 // SyntacticVerify returns nil iff [tx] is valid
-func (tx *AddSupernetValidatorTx) SyntacticVerify(ctx *snow.Context) error {
+func (tx *AddSubnetValidatorTx) SyntacticVerify(ctx *snow.Context) error {
 	switch {
 	case tx == nil:
 		return ErrNilTx
 	case tx.SyntacticallyVerified: // already passed syntactic verification
 		return nil
-	case tx.Supernet == constants.PrimaryNetworkID:
+	case tx.Subnet == constants.PrimaryNetworkID:
 		return errAddPrimaryNetworkValidator
 	}
 
 	if err := tx.BaseTx.SyntacticVerify(ctx); err != nil {
 		return err
 	}
-	if err := verify.All(&tx.Validator, tx.SupernetAuth); err != nil {
+	if err := verify.All(&tx.Validator, tx.SubnetAuth); err != nil {
 		return err
 	}
 
@@ -69,6 +69,6 @@ func (tx *AddSupernetValidatorTx) SyntacticVerify(ctx *snow.Context) error {
 	return nil
 }
 
-func (tx *AddSupernetValidatorTx) Visit(visitor Visitor) error {
-	return visitor.AddSupernetValidatorTx(tx)
+func (tx *AddSubnetValidatorTx) Visit(visitor Visitor) error {
+	return visitor.AddSubnetValidatorTx(tx)
 }

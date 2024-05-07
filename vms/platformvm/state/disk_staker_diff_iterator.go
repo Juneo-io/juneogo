@@ -7,16 +7,16 @@ import (
 	"encoding/binary"
 	"fmt"
 
-	"github.com/Juneo-io/juneogo/database"
-	"github.com/Juneo-io/juneogo/ids"
+	"github.com/ava-labs/avalanchego/database"
+	"github.com/ava-labs/avalanchego/ids"
 )
 
 const (
-	// startDiffKey = [supernetID] + [inverseHeight]
+	// startDiffKey = [subnetID] + [inverseHeight]
 	startDiffKeyLength = ids.IDLen + database.Uint64Size
-	// diffKey = [supernetID] + [inverseHeight] + [nodeID]
+	// diffKey = [subnetID] + [inverseHeight] + [nodeID]
 	diffKeyLength = startDiffKeyLength + ids.NodeIDLen
-	// diffKeyNodeIDOffset = [supernetIDLen] + [inverseHeightLen]
+	// diffKeyNodeIDOffset = [subnetIDLen] + [inverseHeightLen]
 	diffKeyNodeIDOffset = ids.IDLen + database.Uint64Size
 
 	// weightValue = [isNegative] + [weight]
@@ -32,16 +32,16 @@ var (
 //
 // Invariant: the result is a prefix of [marshalDiffKey] when called with the
 // same arguments.
-func marshalStartDiffKey(supernetID ids.ID, height uint64) []byte {
+func marshalStartDiffKey(subnetID ids.ID, height uint64) []byte {
 	key := make([]byte, startDiffKeyLength)
-	copy(key, supernetID[:])
+	copy(key, subnetID[:])
 	packIterableHeight(key[ids.IDLen:], height)
 	return key
 }
 
-func marshalDiffKey(supernetID ids.ID, height uint64, nodeID ids.NodeID) []byte {
+func marshalDiffKey(subnetID ids.ID, height uint64, nodeID ids.NodeID) []byte {
 	key := make([]byte, diffKeyLength)
-	copy(key, supernetID[:])
+	copy(key, subnetID[:])
 	packIterableHeight(key[ids.IDLen:], height)
 	copy(key[diffKeyNodeIDOffset:], nodeID.Bytes())
 	return key
@@ -52,13 +52,13 @@ func unmarshalDiffKey(key []byte) (ids.ID, uint64, ids.NodeID, error) {
 		return ids.Empty, 0, ids.EmptyNodeID, errUnexpectedDiffKeyLength
 	}
 	var (
-		supernetID ids.ID
+		subnetID ids.ID
 		nodeID   ids.NodeID
 	)
-	copy(supernetID[:], key)
+	copy(subnetID[:], key)
 	height := unpackIterableHeight(key[ids.IDLen:])
 	copy(nodeID[:], key[diffKeyNodeIDOffset:])
-	return supernetID, height, nodeID, nil
+	return subnetID, height, nodeID, nil
 }
 
 func marshalWeightDiff(diff *ValidatorWeightDiff) []byte {

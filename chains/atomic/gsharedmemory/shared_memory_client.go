@@ -6,11 +6,11 @@ package gsharedmemory
 import (
 	"context"
 
-	"github.com/Juneo-io/juneogo/chains/atomic"
-	"github.com/Juneo-io/juneogo/database"
-	"github.com/Juneo-io/juneogo/ids"
+	"github.com/ava-labs/avalanchego/chains/atomic"
+	"github.com/ava-labs/avalanchego/database"
+	"github.com/ava-labs/avalanchego/ids"
 
-	sharedmemorypb "github.com/Juneo-io/juneogo/proto/pb/sharedmemory"
+	sharedmemorypb "github.com/ava-labs/avalanchego/proto/pb/sharedmemory"
 )
 
 var _ atomic.SharedMemory = (*Client)(nil)

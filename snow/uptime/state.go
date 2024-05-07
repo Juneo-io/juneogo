@@ -6,38 +6,38 @@ package uptime
 import (
 	"time"
 
-	"github.com/Juneo-io/juneogo/ids"
+	"github.com/ava-labs/avalanchego/ids"
 )
 
 type State interface {
 	// GetUptime returns [upDuration] and [lastUpdated] of [nodeID] on
-	// [supernetID].
+	// [subnetID].
 	// Returns [database.ErrNotFound] if [nodeID] isn't currently a validator of
-	// the supernet.
+	// the subnet.
 	GetUptime(
 		nodeID ids.NodeID,
-		supernetID ids.ID,
+		subnetID ids.ID,
 	) (upDuration time.Duration, lastUpdated time.Time, err error)
 
 	// SetUptime updates [upDuration] and [lastUpdated] of [nodeID] on
-	// [supernetID].
+	// [subnetID].
 	// Returns [database.ErrNotFound] if [nodeID] isn't currently a validator of
-	// the supernet.
+	// the subnet.
 	// Invariant: expects [lastUpdated] to be truncated (floored) to the nearest
 	//            second.
 	SetUptime(
 		nodeID ids.NodeID,
-		supernetID ids.ID,
+		subnetID ids.ID,
 		upDuration time.Duration,
 		lastUpdated time.Time,
 	) error
 
 	// GetStartTime returns the time that [nodeID] started validating
-	// [supernetID].
+	// [subnetID].
 	// Returns [database.ErrNotFound] if [nodeID] isn't currently a validator of
-	// the supernet.
+	// the subnet.
 	GetStartTime(
 		nodeID ids.NodeID,
-		supernetID ids.ID,
+		subnetID ids.ID,
 	) (startTime time.Time, err error)
 }

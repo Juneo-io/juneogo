@@ -4,9 +4,9 @@
 package snowball
 
 import (
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/utils/bag"
-	"github.com/Juneo-io/juneogo/utils/sampler"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/utils/bag"
+	"github.com/ava-labs/avalanchego/utils/sampler"
 )
 
 type newConsensusFunc func(factory Factory, params Parameters, choice ids.ID) Consensus

@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package message;
 
-option go_package = "github.com/Juneo-io/juneogo/proto/pb/message";
+option go_package = "github.com/ava-labs/avalanchego/proto/pb/message";
 
 message Message {
   oneof message {

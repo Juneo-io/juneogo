@@ -6,7 +6,7 @@ package common
 import (
 	"context"
 
-	"github.com/Juneo-io/juneogo/trace"
+	"github.com/ava-labs/avalanchego/trace"
 )
 
 var _ BootstrapableEngine = (*tracedBootstrapableEngine)(nil)

@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/Juneo-io/juneogo/database"
+	"github.com/ava-labs/avalanchego/database"
 )
 
 func TestInterface(t *testing.T) {

@@ -62,4 +62,4 @@ print_separator
 #   to validate that an existing network can be used by an e2e test
 #   suite run. Executing more tests would be duplicative of the testing
 #   performed against a network created by the test suite.
-E2E_USE_EXISTING_NETWORK=1 ./scripts/tests.e2e.sh --ginkgo.focus-file=permissionless_supernets.go
+E2E_USE_EXISTING_NETWORK=1 ./scripts/tests.e2e.sh --ginkgo.focus-file=permissionless_subnets.go

@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Juneo-io/juneogo/utils/ips"
+	"github.com/ava-labs/avalanchego/utils/ips"
 )
 
 func init() {

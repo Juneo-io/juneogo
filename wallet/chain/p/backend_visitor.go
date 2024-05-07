@@ -4,10 +4,10 @@
 package p
 
 import (
-	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/utils/constants"
-	"github.com/Juneo-io/juneogo/vms/components/avax"
-	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
+	"github.com/ava-labs/avalanchego/ids"
+	"github.com/ava-labs/avalanchego/utils/constants"
+	"github.com/ava-labs/avalanchego/vms/components/avax"
+	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
 
 	stdcontext "context"
 )
@@ -33,7 +33,7 @@ func (b *backendVisitor) AddValidatorTx(tx *txs.AddValidatorTx) error {
 	return b.baseTx(&tx.BaseTx)
 }
 
-func (b *backendVisitor) AddSupernetValidatorTx(tx *txs.AddSupernetValidatorTx) error {
+func (b *backendVisitor) AddSubnetValidatorTx(tx *txs.AddSubnetValidatorTx) error {
 	return b.baseTx(&tx.BaseTx)
 }
 
@@ -45,21 +45,21 @@ func (b *backendVisitor) CreateChainTx(tx *txs.CreateChainTx) error {
 	return b.baseTx(&tx.BaseTx)
 }
 
-func (b *backendVisitor) CreateSupernetTx(tx *txs.CreateSupernetTx) error {
-	b.b.setSupernetOwner(
+func (b *backendVisitor) CreateSubnetTx(tx *txs.CreateSubnetTx) error {
+	b.b.setSubnetOwner(
 		b.txID,
 		tx.Owner,
 	)
 	return b.baseTx(&tx.BaseTx)
 }
 
-func (b *backendVisitor) RemoveSupernetValidatorTx(tx *txs.RemoveSupernetValidatorTx) error {
+func (b *backendVisitor) RemoveSubnetValidatorTx(tx *txs.RemoveSubnetValidatorTx) error {
 	return b.baseTx(&tx.BaseTx)
 }
 
-func (b *backendVisitor) TransferSupernetOwnershipTx(tx *txs.TransferSupernetOwnershipTx) error {
-	b.b.setSupernetOwner(
-		tx.Supernet,
+func (b *backendVisitor) TransferSubnetOwnershipTx(tx *txs.TransferSubnetOwnershipTx) error {
+	b.b.setSubnetOwner(
+		tx.Subnet,
 		tx.Owner,
 	)
 	return b.baseTx(&tx.BaseTx)
@@ -102,7 +102,7 @@ func (b *backendVisitor) ExportTx(tx *txs.ExportTx) error {
 	return b.baseTx(&tx.BaseTx)
 }
 
-func (b *backendVisitor) TransformSupernetTx(tx *txs.TransformSupernetTx) error {
+func (b *backendVisitor) TransformSubnetTx(tx *txs.TransformSubnetTx) error {
 	return b.baseTx(&tx.BaseTx)
 }
 

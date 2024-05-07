@@ -6,8 +6,8 @@ package avalanche
 import (
 	"context"
 
-	"github.com/Juneo-io/juneogo/snow/choices"
-	"github.com/Juneo-io/juneogo/snow/consensus/snowstorm"
+	"github.com/ava-labs/avalanchego/snow/choices"
+	"github.com/ava-labs/avalanchego/snow/consensus/snowstorm"
 )
 
 var _ Vertex = (*TestVertex)(nil)

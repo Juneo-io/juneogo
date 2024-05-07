@@ -8,7 +8,7 @@ import (
 
 	"github.com/cockroachdb/pebble"
 
-	"github.com/Juneo-io/juneogo/database"
+	"github.com/ava-labs/avalanchego/database"
 )
 
 var _ database.Batch = (*batch)(nil)
