@@ -18,7 +18,7 @@ const (
 	// RPCChainVMProtocol should be bumped anytime changes are made which
 	// require the plugin vm to upgrade to latest avalanchego release to be
 	// compatible.
-	RPCChainVMProtocol uint = 34
+	RPCChainVMProtocol uint = 35
 )
 
 // These are globals that describe network upgrades and node versions
@@ -131,11 +131,17 @@ var (
 
 	DurangoTimes = map[uint32]time.Time{
 		constants.MainnetID: time.Date(2024, time.March, 6, 16, 0, 0, 0, time.UTC),
-		constants.TestnetID: time.Date(2024, time.April, 9, 16, 0, 0, 0, time.UTC),
+		constants.FujiID:    time.Date(2024, time.February, 13, 16, 0, 0, 0, time.UTC),
 	}
+
 	FeeUpdate1Times = map[uint32]time.Time{
 		constants.MainnetID: time.Date(2024, time.May, 8, 14, 0, 0, 0, time.UTC),
 		constants.TestnetID: time.Date(2024, time.May, 8, 14, 0, 0, 0, time.UTC),
+	}
+
+	EUpgradeTimes = map[uint32]time.Time{
+		constants.MainnetID: time.Date(10000, time.December, 1, 0, 0, 0, 0, time.UTC),
+		constants.FujiID:    time.Date(10000, time.December, 1, 0, 0, 0, 0, time.UTC),
 	}
 )
 
@@ -232,6 +238,13 @@ func GetCortinaTime(networkID uint32) time.Time {
 
 func GetDurangoTime(networkID uint32) time.Time {
 	if upgradeTime, exists := DurangoTimes[networkID]; exists {
+		return upgradeTime
+	}
+	return DefaultUpgradeTime
+}
+
+func GetEUpgradeTime(networkID uint32) time.Time {
+	if upgradeTime, exists := EUpgradeTimes[networkID]; exists {
 		return upgradeTime
 	}
 	return DefaultUpgradeTime

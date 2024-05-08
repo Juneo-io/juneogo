@@ -27,7 +27,7 @@ import (
 	"github.com/ava-labs/avalanchego/snow/engine/common"
 	"github.com/ava-labs/avalanchego/utils"
 	"github.com/ava-labs/avalanchego/utils/json"
-	"github.com/ava-labs/avalanchego/utils/linkedhashmap"
+	"github.com/ava-labs/avalanchego/utils/linked"
 	"github.com/ava-labs/avalanchego/utils/set"
 	"github.com/ava-labs/avalanchego/utils/timer/mockable"
 	"github.com/ava-labs/avalanchego/version"
@@ -68,7 +68,6 @@ type VM struct {
 	metrics metrics.Metrics
 
 	avax.AddressManager
-	avax.AtomicUTXOManager
 	ids.Aliaser
 	utxo.Spender
 
@@ -217,7 +216,6 @@ func (vm *VM) Initialize(
 
 	vm.typeToFxIndex = map[reflect.Type]int{}
 	vm.parser, err = block.NewCustomParser(
-		vm.DurangoTime,
 		vm.typeToFxIndex,
 		&vm.clock,
 		ctx.Log,
@@ -228,7 +226,6 @@ func (vm *VM) Initialize(
 	}
 
 	codec := vm.parser.Codec()
-	vm.AtomicUTXOManager = avax.NewAtomicUTXOManager(ctx.SharedMemory, codec)
 	vm.Spender = utxo.NewSpender(&vm.clock, codec)
 
 	state, err := state.New(
@@ -248,7 +245,7 @@ func (vm *VM) Initialize(
 	}
 
 	vm.walletService.vm = vm
-	vm.walletService.pendingTxs = linkedhashmap.New[ids.ID, *txs.Tx]()
+	vm.walletService.pendingTxs = linked.NewHashmap[ids.ID, *txs.Tx]()
 
 	// use no op impl when disabled in config
 	if avmConfig.IndexTransactions {
@@ -391,10 +388,6 @@ func (vm *VM) GetBlockIDAtHeight(_ context.Context, height uint64) (ids.ID, erro
 	return vm.state.GetBlockIDAtHeight(height)
 }
 
-func (*VM) VerifyHeightIndex(context.Context) error {
-	return nil
-}
-
 /*
  ******************************************************************************
  *********************************** DAG VM ***********************************
@@ -431,7 +424,10 @@ func (vm *VM) Linearize(ctx context.Context, stopVertexID ids.ID, toEngine chan<
 
 	// Invariant: The context lock is not held when calling network.IssueTx.
 	vm.network, err = network.New(
-		vm.ctx,
+		vm.ctx.Log,
+		vm.ctx.NodeID,
+		vm.ctx.SubnetID,
+		vm.ctx.ValidatorState,
 		vm.parser,
 		network.NewLockedTxVerifier(
 			&vm.ctx.Lock,
@@ -471,17 +467,6 @@ func (vm *VM) Linearize(ctx context.Context, stopVertexID ids.ID, toEngine chan<
 
 		// Invariant: PullGossip must never grab the context lock.
 		vm.network.PullGossip(vm.onShutdownCtx)
-	}()
-
-	go func() {
-		err := vm.state.Prune(&vm.ctx.Lock, vm.ctx.Log)
-		if err != nil {
-			vm.ctx.Log.Warn("state pruning failed",
-				zap.Error(err),
-			)
-			return
-		}
-		vm.ctx.Log.Info("state pruning finished")
 	}()
 
 	return nil

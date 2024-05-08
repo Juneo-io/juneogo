@@ -47,17 +47,17 @@ import (
 )
 
 const (
-	pruneCommitLimit           = 1024
-	pruneCommitSleepMultiplier = 5
-	pruneCommitSleepCap        = 10 * time.Second
-	pruneUpdateFrequency       = 30 * time.Second
+	indexIterationLimit           = 4096
+	indexIterationSleepMultiplier = 5
+	indexIterationSleepCap        = 10 * time.Second
+	indexLogFrequency             = 30 * time.Second
 )
 
 var (
 	_ State = (*state)(nil)
 
 	errValidatorSetAlreadyPopulated = errors.New("validator set already populated")
-	errIsNotSubnet                = errors.New("is not a subnet")
+	errIsNotSubnet                  = errors.New("is not a subnet")
 
 	BlockIDPrefix                       = []byte("blockID")
 	BlockPrefix                         = []byte("block")
@@ -66,8 +66,8 @@ var (
 	PendingPrefix                       = []byte("pending")
 	ValidatorPrefix                     = []byte("validator")
 	DelegatorPrefix                     = []byte("delegator")
-	SubnetValidatorPrefix             = []byte("subnetValidator")
-	SubnetDelegatorPrefix             = []byte("subnetDelegator")
+	SubnetValidatorPrefix               = []byte("subnetValidator")
+	SubnetDelegatorPrefix               = []byte("subnetDelegator")
 	NestedValidatorWeightDiffsPrefix    = []byte("validatorDiffs")
 	NestedValidatorPublicKeyDiffsPrefix = []byte("publicKeyDiffs")
 	FlatValidatorWeightDiffsPrefix      = []byte("flatValidatorDiffs")
@@ -75,22 +75,19 @@ var (
 	TxPrefix                            = []byte("tx")
 	RewardUTXOsPrefix                   = []byte("rewardUTXOs")
 	UTXOPrefix                          = []byte("utxo")
-	SubnetPrefix                      = []byte("subnet")
-	SubnetOwnerPrefix                 = []byte("subnetOwner")
-	TransformedSubnetPrefix           = []byte("transformedSubnet")
+	SubnetPrefix                        = []byte("subnet")
+	SubnetOwnerPrefix                   = []byte("subnetOwner")
+	TransformedSubnetPrefix             = []byte("transformedSubnet")
 	SupplyPrefix                        = []byte("supply")
-	rewardsSupplyPrefix                 = []byte("rewardsSupply")
 	ChainPrefix                         = []byte("chain")
 	SingletonPrefix                     = []byte("singleton")
 
-	TimestampKey        = []byte("timestamp")
-	CurrentSupplyKey    = []byte("current supply")
-	rewardPoolSupplyKey = []byte("reward pool supply")
-	feePoolValueKey     = []byte("fee pool value")
-	LastAcceptedKey     = []byte("last accepted")
-	HeightsIndexedKey   = []byte("heights indexed")
-	InitializedKey      = []byte("initialized")
-	PrunedKey           = []byte("pruned")
+	TimestampKey      = []byte("timestamp")
+	CurrentSupplyKey  = []byte("current supply")
+	LastAcceptedKey   = []byte("last accepted")
+	HeightsIndexedKey = []byte("heights indexed")
+	InitializedKey    = []byte("initialized")
+	PrunedKey         = []byte("pruned")
 )
 
 // Chain collects all methods to manage the state of the chain for block
@@ -190,17 +187,13 @@ type State interface {
 	// Discard uncommitted changes to the database.
 	Abort()
 
-	// Returns if the state should be pruned and indexed to remove rejected
-	// blocks and generate the block height index.
+	// ReindexBlocks converts any block indices using the legacy storage format
+	// to the new format. If this database has already updated the indices,
+	// this function will return immediately, without iterating over the
+	// database.
 	//
-	// TODO: Remove after v1.11.x is activated
-	ShouldPrune() (bool, error)
-
-	// Removes rejected blocks from disk and indexes accepted blocks by height. This
-	// function supports being (and is recommended to be) called asynchronously.
-	//
-	// TODO: Remove after v1.11.x is activated
-	PruneAndIndex(sync.Locker, logging.Logger) error
+	// TODO: Remove after v1.12.x is activated
+	ReindexBlocks(lock sync.Locker, log logging.Logger) error
 
 	// Commit changes to the base database.
 	Commit() error
@@ -214,9 +207,12 @@ type State interface {
 	Close() error
 }
 
-// TODO: Remove after v1.11.x is activated
+// Prior to https://github.com/ava-labs/avalanchego/pull/1719, blocks were
+// stored as a map from blkID to stateBlk. Nodes synced prior to this PR may
+// still have blocks partially stored using this legacy format.
+//
+// TODO: Remove after v1.12.x is activated
 type stateBlk struct {
-	Blk    block.Block
 	Bytes  []byte         `serialize:"true"`
 	Status choices.Status `serialize:"true"`
 }
@@ -250,17 +246,9 @@ type stateBlk struct {
  * | | '-. subnetDelegator
  * | |   '-. list
  * | |     '-- txID -> nil
- * | |-. nested weight diffs TODO: Remove once only the flat db is needed
- * | | '-. height+subnet
- * | |   '-. list
- * | |     '-- nodeID -> weightChange
- * | |-. nested pub key diffs TODO: Remove once only the flat db is needed
- * | | '-. height
- * | |   '-. list
- * | |     '-- nodeID -> compressed public key
- * | |-. flat weight diffs
+ * | |-. weight diffs
  * | | '-- subnet+height+nodeID -> weightChange
- * | '-. flat pub key diffs
+ * | '-. pub key diffs
  * |   '-- subnet+height+nodeID -> uncompressed public key or nil
  * |-. blockIDs
  * | '-- height -> blockID
@@ -285,7 +273,7 @@ type stateBlk struct {
  * |     '-- txID -> nil
  * '-. singletons
  *   |-- initializedKey -> nil
- *   |-- prunedKey -> nil
+ *   |-- blocksReindexedKey -> nil
  *   |-- timestampKey -> timestamp
  *   |-- currentSupplyKey -> currentSupply
  *   |-- rewardPoolSupplyKey -> rewardPoolSupply
@@ -317,30 +305,28 @@ type state struct {
 	blockCache  cache.Cacher[ids.ID, block.Block] // cache of blockID -> Block. If the entry is nil, it is not in the database
 	blockDB     database.Database
 
-	validatorsDB                   database.Database
-	currentValidatorsDB            database.Database
-	currentValidatorBaseDB         database.Database
-	currentValidatorList           linkeddb.LinkedDB
-	currentDelegatorBaseDB         database.Database
-	currentDelegatorList           linkeddb.LinkedDB
+	validatorsDB                 database.Database
+	currentValidatorsDB          database.Database
+	currentValidatorBaseDB       database.Database
+	currentValidatorList         linkeddb.LinkedDB
+	currentDelegatorBaseDB       database.Database
+	currentDelegatorList         linkeddb.LinkedDB
 	currentSubnetValidatorBaseDB database.Database
 	currentSubnetValidatorList   linkeddb.LinkedDB
 	currentSubnetDelegatorBaseDB database.Database
 	currentSubnetDelegatorList   linkeddb.LinkedDB
-	pendingValidatorsDB            database.Database
-	pendingValidatorBaseDB         database.Database
-	pendingValidatorList           linkeddb.LinkedDB
-	pendingDelegatorBaseDB         database.Database
-	pendingDelegatorList           linkeddb.LinkedDB
+	pendingValidatorsDB          database.Database
+	pendingValidatorBaseDB       database.Database
+	pendingValidatorList         linkeddb.LinkedDB
+	pendingDelegatorBaseDB       database.Database
+	pendingDelegatorList         linkeddb.LinkedDB
 	pendingSubnetValidatorBaseDB database.Database
 	pendingSubnetValidatorList   linkeddb.LinkedDB
 	pendingSubnetDelegatorBaseDB database.Database
 	pendingSubnetDelegatorList   linkeddb.LinkedDB
 
-	nestedValidatorWeightDiffsDB    database.Database
-	nestedValidatorPublicKeyDiffsDB database.Database
-	flatValidatorWeightDiffsDB      database.Database
-	flatValidatorPublicKeyDiffsDB   database.Database
+	validatorWeightDiffsDB    database.Database
+	validatorPublicKeyDiffsDB database.Database
 
 	addedTxs map[ids.ID]*txAndStatus            // map of txID -> {*txs.Tx, Status}
 	txCache  cache.Cacher[ids.ID, *txAndStatus] // txID -> {*txs.Tx, Status}. If the entry is nil, it isn't in the database
@@ -388,8 +374,9 @@ type state struct {
 	feePoolValue, persistedFeePoolValue         uint64
 	// [lastAccepted] is the most recently accepted block.
 	lastAccepted, persistedLastAccepted ids.ID
-	indexedHeights                      *heightRange
-	singletonDB                         database.Database
+	// TODO: Remove indexedHeights once v1.11.3 has been released.
+	indexedHeights *heightRange
+	singletonDB    database.Database
 }
 
 // heightRange is used to track which heights are safe to use the native DB
@@ -424,7 +411,7 @@ func (v *ValidatorWeightDiff) Add(negative bool, amount uint64) error {
 }
 
 type heightWithSubnet struct {
-	Height     uint64 `serialize:"true"`
+	Height   uint64 `serialize:"true"`
 	SubnetID ids.ID `serialize:"true"`
 }
 
@@ -494,27 +481,6 @@ func New(
 		return nil, err
 	}
 
-	// Before we start accepting new blocks, we check if the pruning process needs
-	// to be run.
-	//
-	// TODO: Cleanup after v1.11.x is activated
-	shouldPrune, err := s.ShouldPrune()
-	if err != nil {
-		return nil, err
-	}
-	if shouldPrune {
-		// If the pruned key is on disk, we must delete it to ensure our disk
-		// can't get into a partially pruned state if the node restarts mid-way
-		// through pruning.
-		if err := s.singletonDB.Delete(PrunedKey); err != nil {
-			return nil, fmt.Errorf("failed to remove prunedKey from singletonDB: %w", err)
-		}
-
-		if err := s.Commit(); err != nil {
-			return nil, fmt.Errorf("failed to commit to baseDB: %w", err)
-		}
-	}
-
 	return s, nil
 }
 
@@ -561,10 +527,8 @@ func newState(
 	pendingSubnetValidatorBaseDB := prefixdb.New(SubnetValidatorPrefix, pendingValidatorsDB)
 	pendingSubnetDelegatorBaseDB := prefixdb.New(SubnetDelegatorPrefix, pendingValidatorsDB)
 
-	nestedValidatorWeightDiffsDB := prefixdb.New(NestedValidatorWeightDiffsPrefix, validatorsDB)
-	nestedValidatorPublicKeyDiffsDB := prefixdb.New(NestedValidatorPublicKeyDiffsPrefix, validatorsDB)
-	flatValidatorWeightDiffsDB := prefixdb.New(FlatValidatorWeightDiffsPrefix, validatorsDB)
-	flatValidatorPublicKeyDiffsDB := prefixdb.New(FlatValidatorPublicKeyDiffsPrefix, validatorsDB)
+	validatorWeightDiffsDB := prefixdb.New(ValidatorWeightDiffsPrefix, validatorsDB)
+	validatorPublicKeyDiffsDB := prefixdb.New(ValidatorPublicKeyDiffsPrefix, validatorsDB)
 
 	txCache, err := metercacher.New(
 		"tx_cache",
@@ -677,19 +641,19 @@ func newState(
 		currentValidatorList:            linkeddb.NewDefault(currentValidatorBaseDB),
 		currentDelegatorBaseDB:          currentDelegatorBaseDB,
 		currentDelegatorList:            linkeddb.NewDefault(currentDelegatorBaseDB),
-		currentSubnetValidatorBaseDB:  currentSubnetValidatorBaseDB,
-		currentSubnetValidatorList:    linkeddb.NewDefault(currentSubnetValidatorBaseDB),
-		currentSubnetDelegatorBaseDB:  currentSubnetDelegatorBaseDB,
-		currentSubnetDelegatorList:    linkeddb.NewDefault(currentSubnetDelegatorBaseDB),
+		currentSubnetValidatorBaseDB:    currentSubnetValidatorBaseDB,
+		currentSubnetValidatorList:      linkeddb.NewDefault(currentSubnetValidatorBaseDB),
+		currentSubnetDelegatorBaseDB:    currentSubnetDelegatorBaseDB,
+		currentSubnetDelegatorList:      linkeddb.NewDefault(currentSubnetDelegatorBaseDB),
 		pendingValidatorsDB:             pendingValidatorsDB,
 		pendingValidatorBaseDB:          pendingValidatorBaseDB,
 		pendingValidatorList:            linkeddb.NewDefault(pendingValidatorBaseDB),
 		pendingDelegatorBaseDB:          pendingDelegatorBaseDB,
 		pendingDelegatorList:            linkeddb.NewDefault(pendingDelegatorBaseDB),
-		pendingSubnetValidatorBaseDB:  pendingSubnetValidatorBaseDB,
-		pendingSubnetValidatorList:    linkeddb.NewDefault(pendingSubnetValidatorBaseDB),
-		pendingSubnetDelegatorBaseDB:  pendingSubnetDelegatorBaseDB,
-		pendingSubnetDelegatorList:    linkeddb.NewDefault(pendingSubnetDelegatorBaseDB),
+		pendingSubnetValidatorBaseDB:    pendingSubnetValidatorBaseDB,
+		pendingSubnetValidatorList:      linkeddb.NewDefault(pendingSubnetValidatorBaseDB),
+		pendingSubnetDelegatorBaseDB:    pendingSubnetDelegatorBaseDB,
+		pendingSubnetDelegatorList:      linkeddb.NewDefault(pendingSubnetDelegatorBaseDB),
 		nestedValidatorWeightDiffsDB:    nestedValidatorWeightDiffsDB,
 		nestedValidatorPublicKeyDiffsDB: nestedValidatorPublicKeyDiffsDB,
 		flatValidatorWeightDiffsDB:      flatValidatorWeightDiffsDB,
@@ -798,37 +762,6 @@ func (s *state) shouldInit() (bool, error) {
 
 func (s *state) doneInit() error {
 	return s.singletonDB.Put(InitializedKey, nil)
-}
-
-func (s *state) ShouldPrune() (bool, error) {
-	has, err := s.singletonDB.Has(PrunedKey)
-	if err != nil {
-		return true, err
-	}
-
-	// If [prunedKey] is not in [singletonDB], [PruneAndIndex()] did not finish
-	// execution.
-	if !has {
-		return true, nil
-	}
-
-	// To ensure the db was not modified since we last ran [PruneAndIndex()], we
-	// must verify that [s.lastAccepted] is height indexed.
-	blk, err := s.GetStatelessBlock(s.lastAccepted)
-	if err != nil {
-		return true, err
-	}
-
-	_, err = s.GetBlockIDAtHeight(blk.Height())
-	if err == database.ErrNotFound {
-		return true, nil
-	}
-
-	return false, err
-}
-
-func (s *state) donePrune() error {
-	return s.singletonDB.Put(PrunedKey, nil)
 }
 
 func (s *state) GetSubnets() ([]*txs.Tx, error) {
@@ -1215,16 +1148,14 @@ func (s *state) ApplyValidatorWeightDiffs(
 	endHeight uint64,
 	subnetID ids.ID,
 ) error {
-	diffIter := s.flatValidatorWeightDiffsDB.NewIteratorWithStartAndPrefix(
+	diffIter := s.validatorWeightDiffsDB.NewIteratorWithStartAndPrefix(
 		marshalStartDiffKey(subnetID, startHeight),
 		subnetID[:],
 	)
 	defer diffIter.Release()
 
 	prevHeight := startHeight + 1
-	// TODO: Remove the index continuity checks once we are guaranteed nodes can
-	// not rollback to not support the new indexing mechanism.
-	for diffIter.Next() && s.indexedHeights != nil && s.indexedHeights.LowerBound <= endHeight {
+	for diffIter.Next() {
 		if err := ctx.Err(); err != nil {
 			return err
 		}
@@ -1274,7 +1205,7 @@ func (s *state) ApplyValidatorWeightDiffs(
 		}
 
 		prefixStruct := heightWithSubnet{
-			Height:     height,
+			Height:   height,
 			SubnetID: subnetID,
 		}
 		prefixBytes, err := block.GenesisCodec.Marshal(block.CodecVersion, prefixStruct)
@@ -1351,7 +1282,7 @@ func (s *state) ApplyValidatorPublicKeyDiffs(
 	startHeight uint64,
 	endHeight uint64,
 ) error {
-	diffIter := s.flatValidatorPublicKeyDiffsDB.NewIteratorWithStartAndPrefix(
+	diffIter := s.validatorPublicKeyDiffsDB.NewIteratorWithStartAndPrefix(
 		marshalStartDiffKey(constants.PrimaryNetworkID, startHeight),
 		constants.PrimaryNetworkID[:],
 	)
@@ -1383,7 +1314,7 @@ func (s *state) ApplyValidatorPublicKeyDiffs(
 			continue
 		}
 
-		vdr.PublicKey = bls.DeserializePublicKey(pkBytes)
+		vdr.PublicKey = bls.PublicKeyFromValidUncompressedBytes(pkBytes)
 	}
 
 	// Note: this does not fallback to the linkeddb index because the linkeddb
@@ -2051,14 +1982,9 @@ func (s *state) GetStatelessBlock(blockID ids.ID) (block.Block, error) {
 		return nil, err
 	}
 
-	blk, status, _, err := parseStoredBlock(blkBytes)
+	blk, _, err := parseStoredBlock(blkBytes)
 	if err != nil {
 		return nil, err
-	}
-
-	if status != choices.Accepted {
-		s.blockCache.Put(blockID, nil)
-		return nil, database.ErrNotFound
 	}
 
 	s.blockCache.Put(blockID, blk)
@@ -2093,10 +2019,6 @@ func (s *state) GetBlockIDAtHeight(height uint64) (ids.ID, error) {
 }
 
 func (s *state) writeCurrentStakers(updateValidators bool, height uint64, codecVersion uint16) error {
-	heightBytes := database.PackUInt64(height)
-	rawNestedPublicKeyDiffDB := prefixdb.New(heightBytes, s.nestedValidatorPublicKeyDiffsDB)
-	nestedPKDiffDB := linkeddb.NewDefault(rawNestedPublicKeyDiffDB)
-
 	for subnetID, validatorDiffs := range s.currentStakers.validatorDiffs {
 		delete(s.currentStakers.validatorDiffs, subnetID)
 
@@ -2109,7 +2031,7 @@ func (s *state) writeCurrentStakers(updateValidators bool, height uint64, codecV
 		}
 
 		prefixStruct := heightWithSubnet{
-			Height:     height,
+			Height:   height,
 			SubnetID: subnetID,
 		}
 		prefixBytes, err := block.GenesisCodec.Marshal(block.CodecVersion, prefixStruct)
@@ -2138,7 +2060,7 @@ func (s *state) writeCurrentStakers(updateValidators bool, height uint64, codecV
 					// Record that the public key for the validator is being
 					// added. This means the prior value for the public key was
 					// nil.
-					err := s.flatValidatorPublicKeyDiffsDB.Put(
+					err := s.validatorPublicKeyDiffsDB.Put(
 						marshalDiffKey(constants.PrimaryNetworkID, height, nodeID),
 						nil,
 					)
@@ -2187,20 +2109,11 @@ func (s *state) writeCurrentStakers(updateValidators bool, height uint64, codecV
 					// Note: We store the uncompressed public key here as it is
 					// significantly more efficient to parse when applying
 					// diffs.
-					err := s.flatValidatorPublicKeyDiffsDB.Put(
+					err := s.validatorPublicKeyDiffsDB.Put(
 						marshalDiffKey(constants.PrimaryNetworkID, height, nodeID),
-						bls.SerializePublicKey(staker.PublicKey),
+						bls.PublicKeyToUncompressedBytes(staker.PublicKey),
 					)
 					if err != nil {
-						return err
-					}
-
-					// TODO: Remove this once we no longer support version
-					// rollbacks.
-					//
-					// Note: We store the compressed public key here.
-					pkBytes := bls.PublicKeyToBytes(staker.PublicKey)
-					if err := nestedPKDiffDB.Put(nodeID.Bytes(), pkBytes); err != nil {
 						return err
 					}
 				}
@@ -2227,20 +2140,11 @@ func (s *state) writeCurrentStakers(updateValidators bool, height uint64, codecV
 				continue
 			}
 
-			err = s.flatValidatorWeightDiffsDB.Put(
+			err = s.validatorWeightDiffsDB.Put(
 				marshalDiffKey(subnetID, height, nodeID),
 				marshalWeightDiff(weightDiff),
 			)
 			if err != nil {
-				return err
-			}
-
-			// TODO: Remove this once we no longer support version rollbacks.
-			weightDiffBytes, err := block.GenesisCodec.Marshal(block.CodecVersion, weightDiff)
-			if err != nil {
-				return fmt.Errorf("failed to serialize validator weight diff: %w", err)
-			}
-			if err := nestedWeightDiffDB.Put(nodeID.Bytes(), weightDiffBytes); err != nil {
 				return err
 			}
 
@@ -2573,7 +2477,6 @@ func (s *state) writeMetadata() error {
 		}
 		s.persistedLastAccepted = s.lastAccepted
 	}
-
 	if s.indexedHeights != nil {
 		indexedHeightsBytes, err := block.GenesisCodec.Marshal(block.CodecVersion, s.indexedHeights)
 		if err != nil {
@@ -2583,107 +2486,102 @@ func (s *state) writeMetadata() error {
 			return fmt.Errorf("failed to write indexed range: %w", err)
 		}
 	}
-
 	return nil
 }
 
-// Returns the block, status of the block, and whether it is a [stateBlk].
+// Returns the block and whether it is a [stateBlk].
 // Invariant: blkBytes is safe to parse with blocks.GenesisCodec
 //
-// TODO: Remove after v1.11.x is activated
-func parseStoredBlock(blkBytes []byte) (block.Block, choices.Status, bool, error) {
+// TODO: Remove after v1.12.x is activated
+func parseStoredBlock(blkBytes []byte) (block.Block, bool, error) {
 	// Attempt to parse as blocks.Block
 	blk, err := block.Parse(block.GenesisCodec, blkBytes)
 	if err == nil {
-		return blk, choices.Accepted, false, nil
+		return blk, false, nil
 	}
 
 	// Fallback to [stateBlk]
 	blkState := stateBlk{}
 	if _, err := block.GenesisCodec.Unmarshal(blkBytes, &blkState); err != nil {
-		return nil, choices.Processing, false, err
+		return nil, false, err
 	}
 
-	blkState.Blk, err = block.Parse(block.GenesisCodec, blkState.Bytes)
-	if err != nil {
-		return nil, choices.Processing, false, err
-	}
-
-	return blkState.Blk, blkState.Status, true, nil
+	blk, err = block.Parse(block.GenesisCodec, blkState.Bytes)
+	return blk, true, err
 }
 
-func (s *state) PruneAndIndex(lock sync.Locker, log logging.Logger) error {
-	lock.Lock()
-	// It is possible that new blocks are added after grabbing this iterator. New
-	// blocks are guaranteed to be accepted and height-indexed, so we don't need to
-	// check them.
+func (s *state) ReindexBlocks(lock sync.Locker, log logging.Logger) error {
+	has, err := s.singletonDB.Has(BlocksReindexedKey)
+	if err != nil {
+		return err
+	}
+	if has {
+		log.Info("blocks already reindexed")
+		return nil
+	}
+
+	// It is possible that new blocks are added after grabbing this iterator.
+	// New blocks are guaranteed to be persisted in the new format, so we don't
+	// need to check them.
 	blockIterator := s.blockDB.NewIterator()
-	// Releasing is done using a closure to ensure that updating blockIterator will
-	// result in having the most recent iterator released when executing the
-	// deferred function.
+	// Releasing is done using a closure to ensure that updating blockIterator
+	// will result in having the most recent iterator released when executing
+	// the deferred function.
 	defer func() {
 		blockIterator.Release()
 	}()
 
-	// While we are pruning the disk, we disable caching of the data we are
-	// modifying. Caching is re-enabled when pruning finishes.
-	//
-	// Note: If an unexpected error occurs the caches are never re-enabled.
-	// That's fine as the node is going to be in an unhealthy state regardless.
-	oldBlockIDCache := s.blockIDCache
-	s.blockIDCache = &cache.Empty[uint64, ids.ID]{}
-	lock.Unlock()
-
-	log.Info("starting state pruning and indexing")
+	log.Info("starting block reindexing")
 
 	var (
-		startTime  = time.Now()
-		lastCommit = startTime
-		lastUpdate = startTime
-		numPruned  = 0
-		numIndexed = 0
+		startTime         = time.Now()
+		lastCommit        = startTime
+		nextUpdate        = startTime.Add(indexLogFrequency)
+		numIndicesChecked = 0
+		numIndicesUpdated = 0
 	)
 
 	for blockIterator.Next() {
-		blkBytes := blockIterator.Value()
-
-		blk, status, isStateBlk, err := parseStoredBlock(blkBytes)
+		valueBytes := blockIterator.Value()
+		blk, isStateBlk, err := parseStoredBlock(valueBytes)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to parse block: %w", err)
 		}
 
-		if status != choices.Accepted {
-			// Remove non-accepted blocks from disk.
-			if err := s.blockDB.Delete(blockIterator.Key()); err != nil {
-				return fmt.Errorf("failed to delete block: %w", err)
-			}
-
-			numPruned++
-
-			// We don't index the height of non-accepted blocks.
-			continue
-		}
-
-		blkHeight := blk.Height()
 		blkID := blk.ID()
 
-		// Populate the map of height -> blockID.
-		heightKey := database.PackUInt64(blkHeight)
-		if err := database.PutID(s.blockIDDB, heightKey, blkID); err != nil {
-			return fmt.Errorf("failed to add blockID: %w", err)
-		}
-
-		// Since we only store accepted blocks on disk, we only need to store a map of
-		// ids.ID to Block.
+		// This block was previously stored using the legacy format, update the
+		// index to remove the usage of stateBlk.
 		if isStateBlk {
+			blkBytes := blk.Bytes()
 			if err := s.blockDB.Put(blkID[:], blkBytes); err != nil {
 				return fmt.Errorf("failed to write block: %w", err)
 			}
+
+			numIndicesUpdated++
 		}
 
-		numIndexed++
+		numIndicesChecked++
 
-		if numIndexed%pruneCommitLimit == 0 {
+		now := time.Now()
+		if now.After(nextUpdate) {
+			nextUpdate = now.Add(indexLogFrequency)
+
+			progress := timer.ProgressFromHash(blkID[:])
+			eta := timer.EstimateETA(
+				startTime,
+				progress,
+				math.MaxUint64,
+			)
+
+			log.Info("reindexing blocks",
+				zap.Int("numIndicesUpdated", numIndicesUpdated),
+				zap.Int("numIndicesChecked", numIndicesChecked),
+				zap.Duration("eta", eta),
+			)
+		}
+
+		if numIndicesChecked%indexIterationLimit == 0 {
 			// We must hold the lock during committing to make sure we don't
 			// attempt to commit to disk while a block is concurrently being
 			// accepted.
@@ -2701,36 +2599,18 @@ func (s *state) PruneAndIndex(lock sync.Locker, log logging.Logger) error {
 			// clean up deleted state.
 			blockIterator.Release()
 
-			now := time.Now()
-			if now.Sub(lastUpdate) > pruneUpdateFrequency {
-				lastUpdate = now
-
-				progress := timer.ProgressFromHash(blkID[:])
-				eta := timer.EstimateETA(
-					startTime,
-					progress,
-					math.MaxUint64,
-				)
-
-				log.Info("committing state pruning and indexing",
-					zap.Int("numPruned", numPruned),
-					zap.Int("numIndexed", numIndexed),
-					zap.Duration("eta", eta),
-				)
-			}
-
 			// We take the minimum here because it's possible that the node is
 			// currently bootstrapping. This would mean that grabbing the lock
 			// could take an extremely long period of time; which we should not
 			// delay processing for.
-			pruneDuration := now.Sub(lastCommit)
+			indexDuration := now.Sub(lastCommit)
 			sleepDuration := min(
-				pruneCommitSleepMultiplier*pruneDuration,
-				pruneCommitSleepCap,
+				indexIterationSleepMultiplier*indexDuration,
+				indexIterationSleepCap,
 			)
 			time.Sleep(sleepDuration)
 
-			// Make sure not to include the sleep duration into the next prune
+			// Make sure not to include the sleep duration into the next index
 			// duration.
 			lastCommit = time.Now()
 
@@ -2738,33 +2618,27 @@ func (s *state) PruneAndIndex(lock sync.Locker, log logging.Logger) error {
 		}
 	}
 
-	// Ensure we fully iterated over all blocks before writing that pruning has
+	// Ensure we fully iterated over all blocks before writing that indexing has
 	// finished.
 	//
 	// Note: This is needed because a transient read error could cause the
 	// iterator to stop early.
 	if err := blockIterator.Error(); err != nil {
-		return err
+		return fmt.Errorf("failed to iterate over historical blocks: %w", err)
 	}
 
-	if err := s.donePrune(); err != nil {
-		return err
+	if err := s.singletonDB.Put(BlocksReindexedKey, nil); err != nil {
+		return fmt.Errorf("failed to put marked blocks as reindexed: %w", err)
 	}
 
-	// We must hold the lock during committing to make sure we don't
-	// attempt to commit to disk while a block is concurrently being
-	// accepted.
+	// We must hold the lock during committing to make sure we don't attempt to
+	// commit to disk while a block is concurrently being accepted.
 	lock.Lock()
 	defer lock.Unlock()
 
-	// Make sure we flush the original cache before re-enabling it to prevent
-	// surfacing any stale data.
-	oldBlockIDCache.Flush()
-	s.blockIDCache = oldBlockIDCache
-
-	log.Info("finished state pruning and indexing",
-		zap.Int("numPruned", numPruned),
-		zap.Int("numIndexed", numIndexed),
+	log.Info("finished block reindexing",
+		zap.Int("numIndicesUpdated", numIndicesUpdated),
+		zap.Int("numIndicesChecked", numIndicesChecked),
 		zap.Duration("duration", time.Since(startTime)),
 	)
 
