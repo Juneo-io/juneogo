@@ -78,7 +78,6 @@ import (
 	"github.com/ava-labs/avalanchego/vms/registry"
 	"github.com/ava-labs/avalanchego/vms/rpcchainvm/runtime"
 
-	coreth "github.com/ava-labs/coreth/plugin/evm"
 	avmconfig "github.com/ava-labs/avalanchego/vms/avm/config"
 	platformconfig "github.com/ava-labs/avalanchego/vms/platformvm/config"
 )
@@ -865,7 +864,7 @@ func (n *Node) initChains(genesisBytes []byte) error {
 
 	platformChain := chains.ChainParameters{
 		ID:            constants.PlatformChainID,
-		SubnetID:    constants.PrimaryNetworkID,
+		SubnetID:      constants.PrimaryNetworkID,
 		GenesisData:   genesisBytes, // Specifies other chains to create
 		VMID:          constants.PlatformVMID,
 		ChainAssetID:  n.Config.AvaxAssetID,
@@ -1104,7 +1103,7 @@ func (n *Node) initChainManager(avaxAssetID ids.ID) error {
 			ShutdownNodeFunc:                        n.Shutdown,
 			MeterVMEnabled:                          n.Config.MeterVMEnabled,
 			Metrics:                                 n.MetricsGatherer,
-			SubnetConfigs:                         n.Config.SubnetConfigs,
+			SubnetConfigs:                           n.Config.SubnetConfigs,
 			ChainConfigs:                            n.Config.ChainConfigs,
 			FrontierPollFrequency:                   n.Config.FrontierPollFrequency,
 			ConsensusAppConcurrency:                 n.Config.ConsensusAppConcurrency,
@@ -1118,7 +1117,7 @@ func (n *Node) initChainManager(avaxAssetID ids.ID) error {
 			TracingEnabled:                          n.Config.TraceConfig.Enabled,
 			Tracer:                                  n.tracer,
 			ChainDataDir:                            n.Config.ChainDataDir,
-			Subnets:                               subnets,
+			Subnets:                                 subnets,
 		},
 	)
 
@@ -1150,16 +1149,16 @@ func (n *Node) initVMs() error {
 				UptimeLockedCalculator:        n.uptimeCalculator,
 				SybilProtectionEnabled:        n.Config.SybilProtectionEnabled,
 				PartialSyncPrimaryNetwork:     n.Config.PartialSyncPrimaryNetwork,
-				TrackedSubnets:              n.Config.TrackedSubnets,
+				TrackedSubnets:                n.Config.TrackedSubnets,
 				TxFee:                         n.Config.TxFee,
 				CreateAssetTxFee:              n.Config.CreateAssetTxFee,
-				CreateSubnetTxFee:           n.Config.CreateSubnetTxFee,
-				TransformSubnetTxFee:        n.Config.TransformSubnetTxFee,
+				CreateSubnetTxFee:             n.Config.CreateSubnetTxFee,
+				TransformSubnetTxFee:          n.Config.TransformSubnetTxFee,
 				CreateBlockchainTxFee:         n.Config.CreateBlockchainTxFee,
 				AddPrimaryNetworkValidatorFee: n.Config.AddPrimaryNetworkValidatorFee,
 				AddPrimaryNetworkDelegatorFee: n.Config.AddPrimaryNetworkDelegatorFee,
-				AddSubnetValidatorFee:       n.Config.AddSubnetValidatorFee,
-				AddSubnetDelegatorFee:       n.Config.AddSubnetDelegatorFee,
+				AddSubnetValidatorFee:         n.Config.AddSubnetValidatorFee,
+				AddSubnetDelegatorFee:         n.Config.AddSubnetDelegatorFee,
 				UptimePercentage:              n.Config.UptimeRequirement,
 				MinValidatorStake:             n.Config.MinValidatorStake,
 				MaxValidatorStake:             n.Config.MaxValidatorStake,
@@ -1347,13 +1346,13 @@ func (n *Node) initInfoAPI() error {
 			NetworkID:                     n.Config.NetworkID,
 			TxFee:                         n.Config.TxFee,
 			CreateAssetTxFee:              n.Config.CreateAssetTxFee,
-			CreateSubnetTxFee:           n.Config.CreateSubnetTxFee,
-			TransformSubnetTxFee:        n.Config.TransformSubnetTxFee,
+			CreateSubnetTxFee:             n.Config.CreateSubnetTxFee,
+			TransformSubnetTxFee:          n.Config.TransformSubnetTxFee,
 			CreateBlockchainTxFee:         n.Config.CreateBlockchainTxFee,
 			AddPrimaryNetworkValidatorFee: n.Config.AddPrimaryNetworkValidatorFee,
 			AddPrimaryNetworkDelegatorFee: n.Config.AddPrimaryNetworkDelegatorFee,
-			AddSubnetValidatorFee:       n.Config.AddSubnetValidatorFee,
-			AddSubnetDelegatorFee:       n.Config.AddSubnetDelegatorFee,
+			AddSubnetValidatorFee:         n.Config.AddSubnetValidatorFee,
+			AddSubnetDelegatorFee:         n.Config.AddSubnetDelegatorFee,
 			VMManager:                     n.VMManager,
 		},
 		n.Log,

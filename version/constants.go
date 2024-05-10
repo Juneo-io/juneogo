@@ -131,17 +131,17 @@ var (
 
 	DurangoTimes = map[uint32]time.Time{
 		constants.MainnetID: time.Date(2024, time.March, 6, 16, 0, 0, 0, time.UTC),
-		constants.FujiID:    time.Date(2024, time.February, 13, 16, 0, 0, 0, time.UTC),
+		constants.TestnetID: time.Date(2024, time.April, 9, 16, 0, 0, 0, time.UTC),
 	}
 
 	FeeUpdate1Times = map[uint32]time.Time{
-		constants.MainnetID: time.Date(2024, time.May, 8, 14, 0, 0, 0, time.UTC),
-		constants.TestnetID: time.Date(2024, time.May, 8, 14, 0, 0, 0, time.UTC),
+		constants.MainnetID: time.Date(2024, time.May, 10, 17, 0, 0, 0, time.UTC),
+		constants.TestnetID: time.Date(2024, time.May, 10, 17, 0, 0, 0, time.UTC),
 	}
 
 	EUpgradeTimes = map[uint32]time.Time{
 		constants.MainnetID: time.Date(10000, time.December, 1, 0, 0, 0, 0, time.UTC),
-		constants.FujiID:    time.Date(10000, time.December, 1, 0, 0, 0, 0, time.UTC),
+		constants.TestnetID: time.Date(10000, time.December, 1, 0, 0, 0, 0, time.UTC),
 	}
 )
 
