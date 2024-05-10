@@ -8,7 +8,7 @@ import (
 	"encoding/binary"
 	"slices"
 
-	"github.com/ava-labs/avalanchego/ids"
+	"github.com/Juneo-io/juneogo/ids"
 )
 
 // TODO: Support configurable hash lengths

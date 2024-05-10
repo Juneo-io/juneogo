@@ -10,7 +10,7 @@ import (
 
 	"github.com/spf13/cast"
 
-	"github.com/ava-labs/avalanchego/utils/perms"
+	"github.com/Juneo-io/juneogo/utils/perms"
 )
 
 // Defines a mapping of flag keys to values intended to be supplied to

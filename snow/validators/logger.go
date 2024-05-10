@@ -6,18 +6,18 @@ package validators
 import (
 	"go.uber.org/zap"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils/crypto/bls"
-	"github.com/ava-labs/avalanchego/utils/logging"
-	"github.com/ava-labs/avalanchego/utils/set"
-	"github.com/ava-labs/avalanchego/vms/types"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils/crypto/bls"
+	"github.com/Juneo-io/juneogo/utils/logging"
+	"github.com/Juneo-io/juneogo/utils/set"
+	"github.com/Juneo-io/juneogo/vms/types"
 )
 
 var _ SetCallbackListener = (*logger)(nil)
 
 type logger struct {
 	log      logging.Logger
-	subnetID ids.ID
+	supernetID ids.ID
 	nodeIDs  set.Set[ids.NodeID]
 }
 
@@ -25,13 +25,13 @@ type logger struct {
 // the specified validators
 func NewLogger(
 	log logging.Logger,
-	subnetID ids.ID,
+	supernetID ids.ID,
 	nodeIDs ...ids.NodeID,
 ) SetCallbackListener {
 	nodeIDSet := set.Of(nodeIDs...)
 	return &logger{
 		log:      log,
-		subnetID: subnetID,
+		supernetID: supernetID,
 		nodeIDs:  nodeIDSet,
 	}
 }
@@ -48,7 +48,7 @@ func (l *logger) OnValidatorAdded(
 			pkBytes = bls.PublicKeyToCompressedBytes(pk)
 		}
 		l.log.Info("node added to validator set",
-			zap.Stringer("subnetID", l.subnetID),
+			zap.Stringer("supernetID", l.supernetID),
 			zap.Stringer("nodeID", nodeID),
 			zap.Reflect("publicKey", types.JSONByteSlice(pkBytes)),
 			zap.Stringer("txID", txID),
@@ -63,7 +63,7 @@ func (l *logger) OnValidatorRemoved(
 ) {
 	if l.nodeIDs.Contains(nodeID) {
 		l.log.Info("node removed from validator set",
-			zap.Stringer("subnetID", l.subnetID),
+			zap.Stringer("supernetID", l.supernetID),
 			zap.Stringer("nodeID", nodeID),
 			zap.Uint64("weight", weight),
 		)
@@ -77,7 +77,7 @@ func (l *logger) OnValidatorWeightChanged(
 ) {
 	if l.nodeIDs.Contains(nodeID) {
 		l.log.Info("validator weight changed",
-			zap.Stringer("subnetID", l.subnetID),
+			zap.Stringer("supernetID", l.supernetID),
 			zap.Stringer("nodeID", nodeID),
 			zap.Uint64("previousWeight ", oldWeight),
 			zap.Uint64("newWeight ", newWeight),

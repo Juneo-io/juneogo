@@ -6,7 +6,7 @@ package interval
 import (
 	"errors"
 
-	"github.com/ava-labs/avalanchego/database"
+	"github.com/Juneo-io/juneogo/database"
 )
 
 const (

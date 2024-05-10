@@ -9,14 +9,14 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/message"
-	"github.com/ava-labs/avalanchego/proto/pb/p2p"
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/snow/networking/tracker"
-	"github.com/ava-labs/avalanchego/snow/validators"
-	"github.com/ava-labs/avalanchego/utils/buffer"
-	"github.com/ava-labs/avalanchego/utils/timer/mockable"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/message"
+	"github.com/Juneo-io/juneogo/proto/pb/p2p"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/snow/networking/tracker"
+	"github.com/Juneo-io/juneogo/snow/validators"
+	"github.com/Juneo-io/juneogo/utils/buffer"
+	"github.com/Juneo-io/juneogo/utils/timer/mockable"
 )
 
 var _ MessageQueue = (*messageQueue)(nil)
@@ -197,7 +197,7 @@ func (m *messageQueue) Shutdown() {
 // canPop will return true for at least one message in [m.msgs]
 func (m *messageQueue) canPop(msg message.InboundMessage) bool {
 	// Always pop connected and disconnected messages.
-	if op := msg.Op(); op == message.ConnectedOp || op == message.DisconnectedOp || op == message.ConnectedSubnetOp {
+	if op := msg.Op(); op == message.ConnectedOp || op == message.DisconnectedOp || op == message.ConnectedSupernetOp {
 		return true
 	}
 
@@ -210,21 +210,21 @@ func (m *messageQueue) canPop(msg message.InboundMessage) bool {
 	// the number of nodes with unprocessed messages.
 	baseMaxCPU := 1 / float64(len(m.nodeToUnprocessedMsgs))
 	nodeID := msg.NodeID()
-	weight := m.vdrs.GetWeight(m.ctx.SubnetID, nodeID)
+	weight := m.vdrs.GetWeight(m.ctx.SupernetID, nodeID)
 
 	var portionWeight float64
-	if totalVdrsWeight, err := m.vdrs.TotalWeight(m.ctx.SubnetID); err != nil {
+	if totalVdrsWeight, err := m.vdrs.TotalWeight(m.ctx.SupernetID); err != nil {
 		// The sum of validator weights should never overflow, but if they do,
 		// we treat portionWeight as 0.
 		m.ctx.Log.Error("failed to get total weight of validators",
-			zap.Stringer("subnetID", m.ctx.SubnetID),
+			zap.Stringer("supernetID", m.ctx.SupernetID),
 			zap.Error(err),
 		)
 	} else if totalVdrsWeight == 0 {
 		// The sum of validator weights should never be 0, but handle that case
 		// for completeness here to avoid divide by 0.
 		m.ctx.Log.Warn("validator set is empty",
-			zap.Stringer("subnetID", m.ctx.SubnetID),
+			zap.Stringer("supernetID", m.ctx.SupernetID),
 		)
 	} else {
 		portionWeight = float64(weight) / float64(totalVdrsWeight)

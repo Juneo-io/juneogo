@@ -13,25 +13,25 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/database"
-	"github.com/ava-labs/avalanchego/database/memdb"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/network/p2p"
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/snow/choices"
-	"github.com/ava-labs/avalanchego/snow/consensus/snowman"
-	"github.com/ava-labs/avalanchego/snow/consensus/snowman/snowmantest"
-	"github.com/ava-labs/avalanchego/snow/engine/common"
-	"github.com/ava-labs/avalanchego/snow/engine/common/tracker"
-	"github.com/ava-labs/avalanchego/snow/engine/snowman/block"
-	"github.com/ava-labs/avalanchego/snow/engine/snowman/bootstrap/interval"
-	"github.com/ava-labs/avalanchego/snow/engine/snowman/getter"
-	"github.com/ava-labs/avalanchego/snow/snowtest"
-	"github.com/ava-labs/avalanchego/snow/validators"
-	"github.com/ava-labs/avalanchego/utils/set"
-	"github.com/ava-labs/avalanchego/version"
+	"github.com/Juneo-io/juneogo/database"
+	"github.com/Juneo-io/juneogo/database/memdb"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/network/p2p"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/snow/choices"
+	"github.com/Juneo-io/juneogo/snow/consensus/snowman"
+	"github.com/Juneo-io/juneogo/snow/consensus/snowman/snowmantest"
+	"github.com/Juneo-io/juneogo/snow/engine/common"
+	"github.com/Juneo-io/juneogo/snow/engine/common/tracker"
+	"github.com/Juneo-io/juneogo/snow/engine/snowman/block"
+	"github.com/Juneo-io/juneogo/snow/engine/snowman/bootstrap/interval"
+	"github.com/Juneo-io/juneogo/snow/engine/snowman/getter"
+	"github.com/Juneo-io/juneogo/snow/snowtest"
+	"github.com/Juneo-io/juneogo/snow/validators"
+	"github.com/Juneo-io/juneogo/utils/set"
+	"github.com/Juneo-io/juneogo/version"
 
-	p2ppb "github.com/ava-labs/avalanchego/proto/pb/p2p"
+	p2ppb "github.com/Juneo-io/juneogo/proto/pb/p2p"
 )
 
 var errUnknownBlock = errors.New("unknown block")
@@ -67,12 +67,12 @@ func newConfig(t *testing.T) (Config, ids.NodeID, *common.SenderTest, *block.Tes
 	sender.CantSendGetAcceptedFrontier = false
 
 	peer := ids.GenerateTestNodeID()
-	require.NoError(vdrs.AddStaker(ctx.SubnetID, peer, nil, ids.Empty, 1))
+	require.NoError(vdrs.AddStaker(ctx.SupernetID, peer, nil, ids.Empty, 1))
 
-	totalWeight, err := vdrs.TotalWeight(ctx.SubnetID)
+	totalWeight, err := vdrs.TotalWeight(ctx.SupernetID)
 	require.NoError(err)
 	startupTracker := tracker.NewStartup(tracker.NewPeers(), totalWeight/2+1)
-	vdrs.RegisterSetCallbackListener(ctx.SubnetID, startupTracker)
+	vdrs.RegisterSetCallbackListener(ctx.SupernetID, startupTracker)
 
 	require.NoError(startupTracker.Connected(context.Background(), peer, version.CurrentApp))
 
@@ -94,7 +94,7 @@ func newConfig(t *testing.T) (Config, ids.NodeID, *common.SenderTest, *block.Tes
 		AllGetsServer:                  snowGetHandler,
 		Ctx:                            ctx,
 		Beacons:                        vdrs,
-		SampleK:                        vdrs.Count(ctx.SubnetID),
+		SampleK:                        vdrs.Count(ctx.SupernetID),
 		StartupTracker:                 startupTracker,
 		PeerTracker:                    peerTracker,
 		Sender:                         sender,
@@ -125,7 +125,7 @@ func TestBootstrapperStartsOnlyIfEnoughStakeIsConnected(t *testing.T) {
 	startupAlpha := alpha
 
 	startupTracker := tracker.NewStartup(tracker.NewPeers(), startupAlpha)
-	peers.RegisterSetCallbackListener(ctx.SubnetID, startupTracker)
+	peers.RegisterSetCallbackListener(ctx.SupernetID, startupTracker)
 
 	snowGetHandler, err := getter.New(vm, sender, ctx.Log, time.Second, 2000, ctx.Registerer)
 	require.NoError(err)
@@ -192,7 +192,7 @@ func TestBootstrapperStartsOnlyIfEnoughStakeIsConnected(t *testing.T) {
 
 	// attempt starting bootstrapper with not enough stake connected. Bootstrapper should stall.
 	vdr0 := ids.GenerateTestNodeID()
-	require.NoError(peers.AddStaker(ctx.SubnetID, vdr0, nil, ids.Empty, startupAlpha/2))
+	require.NoError(peers.AddStaker(ctx.SupernetID, vdr0, nil, ids.Empty, startupAlpha/2))
 
 	peerTracker.Connected(vdr0, version.CurrentApp)
 	require.NoError(bs.Connected(context.Background(), vdr0, version.CurrentApp))
@@ -202,7 +202,7 @@ func TestBootstrapperStartsOnlyIfEnoughStakeIsConnected(t *testing.T) {
 
 	// finally attempt starting bootstrapper with enough stake connected. Frontiers should be requested.
 	vdr := ids.GenerateTestNodeID()
-	require.NoError(peers.AddStaker(ctx.SubnetID, vdr, nil, ids.Empty, startupAlpha))
+	require.NoError(peers.AddStaker(ctx.SupernetID, vdr, nil, ids.Empty, startupAlpha))
 
 	peerTracker.Connected(vdr, version.CurrentApp)
 	require.NoError(bs.Connected(context.Background(), vdr, version.CurrentApp))
@@ -634,12 +634,12 @@ func TestBootstrapNoParseOnNew(t *testing.T) {
 	sender.CantSendGetAcceptedFrontier = false
 
 	peer := ids.GenerateTestNodeID()
-	require.NoError(peers.AddStaker(ctx.SubnetID, peer, nil, ids.Empty, 1))
+	require.NoError(peers.AddStaker(ctx.SupernetID, peer, nil, ids.Empty, 1))
 
-	totalWeight, err := peers.TotalWeight(ctx.SubnetID)
+	totalWeight, err := peers.TotalWeight(ctx.SupernetID)
 	require.NoError(err)
 	startupTracker := tracker.NewStartup(tracker.NewPeers(), totalWeight/2+1)
-	peers.RegisterSetCallbackListener(ctx.SubnetID, startupTracker)
+	peers.RegisterSetCallbackListener(ctx.SupernetID, startupTracker)
 	require.NoError(startupTracker.Connected(context.Background(), peer, version.CurrentApp))
 
 	snowGetHandler, err := getter.New(vm, sender, ctx.Log, time.Second, 2000, ctx.Registerer)
@@ -675,7 +675,7 @@ func TestBootstrapNoParseOnNew(t *testing.T) {
 		AllGetsServer:                  snowGetHandler,
 		Ctx:                            ctx,
 		Beacons:                        peers,
-		SampleK:                        peers.Count(ctx.SubnetID),
+		SampleK:                        peers.Count(ctx.SupernetID),
 		StartupTracker:                 startupTracker,
 		PeerTracker:                    peerTracker,
 		Sender:                         sender,

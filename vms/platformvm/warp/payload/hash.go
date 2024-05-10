@@ -6,7 +6,7 @@ package payload
 import (
 	"fmt"
 
-	"github.com/ava-labs/avalanchego/ids"
+	"github.com/Juneo-io/juneogo/ids"
 )
 
 var _ Payload = (*Hash)(nil)

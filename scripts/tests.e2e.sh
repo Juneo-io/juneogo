@@ -26,7 +26,7 @@ go install -v github.com/onsi/ginkgo/v2/ginkgo@v2.13.1
 ACK_GINKGO_RC=true ginkgo build ./tests/e2e
 ./tests/e2e/e2e.test --help
 
-# Enable subnet testing by building xsvm
+# Enable supernet testing by building xsvm
 ./scripts/build_xsvm.sh
 echo ""
 

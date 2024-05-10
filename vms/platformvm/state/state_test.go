@@ -15,31 +15,31 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
-	"github.com/ava-labs/avalanchego/database"
-	"github.com/ava-labs/avalanchego/database/memdb"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/snow/choices"
-	"github.com/ava-labs/avalanchego/snow/validators"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/crypto/bls"
-	"github.com/ava-labs/avalanchego/utils/logging"
-	"github.com/ava-labs/avalanchego/utils/units"
-	"github.com/ava-labs/avalanchego/utils/wrappers"
-	"github.com/ava-labs/avalanchego/vms/components/avax"
-	"github.com/ava-labs/avalanchego/vms/platformvm/block"
-	"github.com/ava-labs/avalanchego/vms/platformvm/config"
-	"github.com/ava-labs/avalanchego/vms/platformvm/fx"
-	"github.com/ava-labs/avalanchego/vms/platformvm/genesis"
-	"github.com/ava-labs/avalanchego/vms/platformvm/metrics"
-	"github.com/ava-labs/avalanchego/vms/platformvm/reward"
-	"github.com/ava-labs/avalanchego/vms/platformvm/signer"
-	"github.com/ava-labs/avalanchego/vms/platformvm/status"
-	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
-	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
-	"github.com/ava-labs/avalanchego/vms/types"
+	"github.com/Juneo-io/juneogo/database"
+	"github.com/Juneo-io/juneogo/database/memdb"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/snow/choices"
+	"github.com/Juneo-io/juneogo/snow/validators"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/crypto/bls"
+	"github.com/Juneo-io/juneogo/utils/logging"
+	"github.com/Juneo-io/juneogo/utils/units"
+	"github.com/Juneo-io/juneogo/utils/wrappers"
+	"github.com/Juneo-io/juneogo/vms/components/avax"
+	"github.com/Juneo-io/juneogo/vms/platformvm/block"
+	"github.com/Juneo-io/juneogo/vms/platformvm/config"
+	"github.com/Juneo-io/juneogo/vms/platformvm/fx"
+	"github.com/Juneo-io/juneogo/vms/platformvm/genesis"
+	"github.com/Juneo-io/juneogo/vms/platformvm/metrics"
+	"github.com/Juneo-io/juneogo/vms/platformvm/reward"
+	"github.com/Juneo-io/juneogo/vms/platformvm/signer"
+	"github.com/Juneo-io/juneogo/vms/platformvm/status"
+	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
+	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
+	"github.com/Juneo-io/juneogo/vms/types"
 
-	safemath "github.com/ava-labs/avalanchego/utils/math"
+	safemath "github.com/Juneo-io/juneogo/utils/math"
 )
 
 var (
@@ -97,7 +97,7 @@ func TestStateSyncGenesis(t *testing.T) {
 func TestPersistStakers(t *testing.T) {
 	tests := map[string]struct {
 		// Insert or delete a staker to state and store it
-		storeStaker func(*require.Assertions, ids.ID /*=subnetID*/, *state) *Staker
+		storeStaker func(*require.Assertions, ids.ID /*=supernetID*/, *state) *Staker
 
 		// Check that the staker is duly stored/removed in P-chain state
 		checkStakerInState func(*require.Assertions, *state, *Staker)
@@ -113,7 +113,7 @@ func TestPersistStakers(t *testing.T) {
 		checkDiffs func(*require.Assertions, *state, *Staker, uint64)
 	}{
 		"add current validator": {
-			storeStaker: func(r *require.Assertions, subnetID ids.ID, s *state) *Staker {
+			storeStaker: func(r *require.Assertions, supernetID ids.ID, s *state) *Staker {
 				var (
 					startTime = time.Now().Unix()
 					endTime   = time.Now().Add(14 * 24 * time.Hour).Unix()
@@ -126,7 +126,7 @@ func TestPersistStakers(t *testing.T) {
 					validatorReward uint64 = 5678
 				)
 
-				utx := createPermissionlessValidatorTx(r, subnetID, validatorsData)
+				utx := createPermissionlessValidatorTx(r, supernetID, validatorsData)
 				addPermValTx := &txs.Tx{Unsigned: utx}
 				r.NoError(addPermValTx.Initialize(txs.Codec))
 
@@ -144,12 +144,12 @@ func TestPersistStakers(t *testing.T) {
 				return staker
 			},
 			checkStakerInState: func(r *require.Assertions, s *state, staker *Staker) {
-				retrievedStaker, err := s.GetCurrentValidator(staker.SubnetID, staker.NodeID)
+				retrievedStaker, err := s.GetCurrentValidator(staker.SupernetID, staker.NodeID)
 				r.NoError(err)
 				r.Equal(staker, retrievedStaker)
 			},
 			checkValidatorsSet: func(r *require.Assertions, s *state, staker *Staker) {
-				valsMap := s.cfg.Validators.GetMap(staker.SubnetID)
+				valsMap := s.cfg.Validators.GetMap(staker.SupernetID)
 				r.Len(valsMap, 1)
 				valOut, found := valsMap[staker.NodeID]
 				r.True(found)
@@ -160,13 +160,13 @@ func TestPersistStakers(t *testing.T) {
 				}, valOut)
 			},
 			checkValidatorUptimes: func(r *require.Assertions, s *state, staker *Staker) {
-				upDuration, lastUpdated, err := s.GetUptime(staker.NodeID, staker.SubnetID)
+				upDuration, lastUpdated, err := s.GetUptime(staker.NodeID, staker.SupernetID)
 				r.NoError(err)
 				r.Equal(upDuration, time.Duration(0))
 				r.Equal(lastUpdated, staker.StartTime)
 			},
 			checkDiffs: func(r *require.Assertions, s *state, staker *Staker, height uint64) {
-				weightDiffBytes, err := s.validatorWeightDiffsDB.Get(marshalDiffKey(staker.SubnetID, height, staker.NodeID))
+				weightDiffBytes, err := s.validatorWeightDiffsDB.Get(marshalDiffKey(staker.SupernetID, height, staker.NodeID))
 				r.NoError(err)
 				weightDiff, err := unmarshalWeightDiff(weightDiffBytes)
 				r.NoError(err)
@@ -175,8 +175,8 @@ func TestPersistStakers(t *testing.T) {
 					Amount:   staker.Weight,
 				}, weightDiff)
 
-				blsDiffBytes, err := s.validatorPublicKeyDiffsDB.Get(marshalDiffKey(staker.SubnetID, height, staker.NodeID))
-				if staker.SubnetID == constants.PrimaryNetworkID {
+				blsDiffBytes, err := s.validatorPublicKeyDiffsDB.Get(marshalDiffKey(staker.SupernetID, height, staker.NodeID))
+				if staker.SupernetID == constants.PrimaryNetworkID {
 					r.NoError(err)
 					r.Nil(blsDiffBytes)
 				} else {
@@ -185,7 +185,7 @@ func TestPersistStakers(t *testing.T) {
 			},
 		},
 		"add current delegator": {
-			storeStaker: func(r *require.Assertions, subnetID ids.ID, s *state) *Staker {
+			storeStaker: func(r *require.Assertions, supernetID ids.ID, s *state) *Staker {
 				// insert the delegator and its validator
 				var (
 					valStartTime = time.Now().Truncate(time.Second).Unix()
@@ -208,7 +208,7 @@ func TestPersistStakers(t *testing.T) {
 					delegatorReward uint64 = 5432
 				)
 
-				utxVal := createPermissionlessValidatorTx(r, subnetID, validatorsData)
+				utxVal := createPermissionlessValidatorTx(r, supernetID, validatorsData)
 				addPermValTx := &txs.Tx{Unsigned: utxVal}
 				r.NoError(addPermValTx.Initialize(txs.Codec))
 
@@ -220,7 +220,7 @@ func TestPersistStakers(t *testing.T) {
 				)
 				r.NoError(err)
 
-				utxDel := createPermissionlessDelegatorTx(subnetID, delegatorData)
+				utxDel := createPermissionlessDelegatorTx(supernetID, delegatorData)
 				addPermDelTx := &txs.Tx{Unsigned: utxDel}
 				r.NoError(addPermDelTx.Initialize(txs.Codec))
 
@@ -242,7 +242,7 @@ func TestPersistStakers(t *testing.T) {
 				return del
 			},
 			checkStakerInState: func(r *require.Assertions, s *state, staker *Staker) {
-				delIt, err := s.GetCurrentDelegatorIterator(staker.SubnetID, staker.NodeID)
+				delIt, err := s.GetCurrentDelegatorIterator(staker.SupernetID, staker.NodeID)
 				r.NoError(err)
 				r.True(delIt.Next())
 				retrievedDelegator := delIt.Value()
@@ -251,10 +251,10 @@ func TestPersistStakers(t *testing.T) {
 				r.Equal(staker, retrievedDelegator)
 			},
 			checkValidatorsSet: func(r *require.Assertions, s *state, staker *Staker) {
-				val, err := s.GetCurrentValidator(staker.SubnetID, staker.NodeID)
+				val, err := s.GetCurrentValidator(staker.SupernetID, staker.NodeID)
 				r.NoError(err)
 
-				valsMap := s.cfg.Validators.GetMap(staker.SubnetID)
+				valsMap := s.cfg.Validators.GetMap(staker.SupernetID)
 				r.Len(valsMap, 1)
 				valOut, found := valsMap[staker.NodeID]
 				r.True(found)
@@ -264,7 +264,7 @@ func TestPersistStakers(t *testing.T) {
 			checkValidatorUptimes: func(*require.Assertions, *state, *Staker) {},
 			checkDiffs: func(r *require.Assertions, s *state, staker *Staker, height uint64) {
 				// validator's weight must increase of delegator's weight amount
-				weightDiffBytes, err := s.validatorWeightDiffsDB.Get(marshalDiffKey(staker.SubnetID, height, staker.NodeID))
+				weightDiffBytes, err := s.validatorWeightDiffsDB.Get(marshalDiffKey(staker.SupernetID, height, staker.NodeID))
 				r.NoError(err)
 				weightDiff, err := unmarshalWeightDiff(weightDiffBytes)
 				r.NoError(err)
@@ -275,7 +275,7 @@ func TestPersistStakers(t *testing.T) {
 			},
 		},
 		"add pending validator": {
-			storeStaker: func(r *require.Assertions, subnetID ids.ID, s *state) *Staker {
+			storeStaker: func(r *require.Assertions, supernetID ids.ID, s *state) *Staker {
 				var (
 					startTime = time.Now().Unix()
 					endTime   = time.Now().Add(14 * 24 * time.Hour).Unix()
@@ -288,7 +288,7 @@ func TestPersistStakers(t *testing.T) {
 					}
 				)
 
-				utx := createPermissionlessValidatorTx(r, subnetID, validatorsData)
+				utx := createPermissionlessValidatorTx(r, supernetID, validatorsData)
 				addPermValTx := &txs.Tx{Unsigned: utx}
 				r.NoError(addPermValTx.Initialize(txs.Codec))
 
@@ -304,31 +304,31 @@ func TestPersistStakers(t *testing.T) {
 				return staker
 			},
 			checkStakerInState: func(r *require.Assertions, s *state, staker *Staker) {
-				retrievedStaker, err := s.GetPendingValidator(staker.SubnetID, staker.NodeID)
+				retrievedStaker, err := s.GetPendingValidator(staker.SupernetID, staker.NodeID)
 				r.NoError(err)
 				r.Equal(staker, retrievedStaker)
 			},
 			checkValidatorsSet: func(r *require.Assertions, s *state, staker *Staker) {
 				// pending validators are not showed in validators set
-				valsMap := s.cfg.Validators.GetMap(staker.SubnetID)
+				valsMap := s.cfg.Validators.GetMap(staker.SupernetID)
 				r.Empty(valsMap)
 			},
 			checkValidatorUptimes: func(r *require.Assertions, s *state, staker *Staker) {
 				// pending validators uptime is not tracked
-				_, _, err := s.GetUptime(staker.NodeID, staker.SubnetID)
+				_, _, err := s.GetUptime(staker.NodeID, staker.SupernetID)
 				r.ErrorIs(err, database.ErrNotFound)
 			},
 			checkDiffs: func(r *require.Assertions, s *state, staker *Staker, height uint64) {
 				// pending validators weight diff and bls diffs are not stored
-				_, err := s.validatorWeightDiffsDB.Get(marshalDiffKey(staker.SubnetID, height, staker.NodeID))
+				_, err := s.validatorWeightDiffsDB.Get(marshalDiffKey(staker.SupernetID, height, staker.NodeID))
 				r.ErrorIs(err, database.ErrNotFound)
 
-				_, err = s.validatorPublicKeyDiffsDB.Get(marshalDiffKey(staker.SubnetID, height, staker.NodeID))
+				_, err = s.validatorPublicKeyDiffsDB.Get(marshalDiffKey(staker.SupernetID, height, staker.NodeID))
 				r.ErrorIs(err, database.ErrNotFound)
 			},
 		},
 		"add pending delegator": {
-			storeStaker: func(r *require.Assertions, subnetID ids.ID, s *state) *Staker {
+			storeStaker: func(r *require.Assertions, supernetID ids.ID, s *state) *Staker {
 				// insert the delegator and its validator
 				var (
 					valStartTime = time.Now().Truncate(time.Second).Unix()
@@ -351,14 +351,14 @@ func TestPersistStakers(t *testing.T) {
 					}
 				)
 
-				utxVal := createPermissionlessValidatorTx(r, subnetID, validatorsData)
+				utxVal := createPermissionlessValidatorTx(r, supernetID, validatorsData)
 				addPermValTx := &txs.Tx{Unsigned: utxVal}
 				r.NoError(addPermValTx.Initialize(txs.Codec))
 
 				val, err := NewPendingStaker(addPermValTx.ID(), utxVal)
 				r.NoError(err)
 
-				utxDel := createPermissionlessDelegatorTx(subnetID, delegatorData)
+				utxDel := createPermissionlessDelegatorTx(supernetID, delegatorData)
 				addPermDelTx := &txs.Tx{Unsigned: utxDel}
 				r.NoError(addPermDelTx.Initialize(txs.Codec))
 
@@ -376,7 +376,7 @@ func TestPersistStakers(t *testing.T) {
 				return del
 			},
 			checkStakerInState: func(r *require.Assertions, s *state, staker *Staker) {
-				delIt, err := s.GetPendingDelegatorIterator(staker.SubnetID, staker.NodeID)
+				delIt, err := s.GetPendingDelegatorIterator(staker.SupernetID, staker.NodeID)
 				r.NoError(err)
 				r.True(delIt.Next())
 				retrievedDelegator := delIt.Value()
@@ -385,14 +385,14 @@ func TestPersistStakers(t *testing.T) {
 				r.Equal(staker, retrievedDelegator)
 			},
 			checkValidatorsSet: func(r *require.Assertions, s *state, staker *Staker) {
-				valsMap := s.cfg.Validators.GetMap(staker.SubnetID)
+				valsMap := s.cfg.Validators.GetMap(staker.SupernetID)
 				r.Empty(valsMap)
 			},
 			checkValidatorUptimes: func(*require.Assertions, *state, *Staker) {},
 			checkDiffs:            func(*require.Assertions, *state, *Staker, uint64) {},
 		},
 		"delete current validator": {
-			storeStaker: func(r *require.Assertions, subnetID ids.ID, s *state) *Staker {
+			storeStaker: func(r *require.Assertions, supernetID ids.ID, s *state) *Staker {
 				// add them remove the validator
 				var (
 					startTime = time.Now().Unix()
@@ -406,7 +406,7 @@ func TestPersistStakers(t *testing.T) {
 					validatorReward uint64 = 5678
 				)
 
-				utx := createPermissionlessValidatorTx(r, subnetID, validatorsData)
+				utx := createPermissionlessValidatorTx(r, supernetID, validatorsData)
 				addPermValTx := &txs.Tx{Unsigned: utx}
 				r.NoError(addPermValTx.Initialize(txs.Codec))
 
@@ -427,21 +427,21 @@ func TestPersistStakers(t *testing.T) {
 				return staker
 			},
 			checkStakerInState: func(r *require.Assertions, s *state, staker *Staker) {
-				_, err := s.GetCurrentValidator(staker.SubnetID, staker.NodeID)
+				_, err := s.GetCurrentValidator(staker.SupernetID, staker.NodeID)
 				r.ErrorIs(err, database.ErrNotFound)
 			},
 			checkValidatorsSet: func(r *require.Assertions, s *state, staker *Staker) {
 				// deleted validators are not showed in the validators set anymore
-				valsMap := s.cfg.Validators.GetMap(staker.SubnetID)
+				valsMap := s.cfg.Validators.GetMap(staker.SupernetID)
 				r.Empty(valsMap)
 			},
 			checkValidatorUptimes: func(r *require.Assertions, s *state, staker *Staker) {
 				// uptimes of delete validators are dropped
-				_, _, err := s.GetUptime(staker.NodeID, staker.SubnetID)
+				_, _, err := s.GetUptime(staker.NodeID, staker.SupernetID)
 				r.ErrorIs(err, database.ErrNotFound)
 			},
 			checkDiffs: func(r *require.Assertions, s *state, staker *Staker, height uint64) {
-				weightDiffBytes, err := s.validatorWeightDiffsDB.Get(marshalDiffKey(staker.SubnetID, height, staker.NodeID))
+				weightDiffBytes, err := s.validatorWeightDiffsDB.Get(marshalDiffKey(staker.SupernetID, height, staker.NodeID))
 				r.NoError(err)
 				weightDiff, err := unmarshalWeightDiff(weightDiffBytes)
 				r.NoError(err)
@@ -450,8 +450,8 @@ func TestPersistStakers(t *testing.T) {
 					Amount:   staker.Weight,
 				}, weightDiff)
 
-				blsDiffBytes, err := s.validatorPublicKeyDiffsDB.Get(marshalDiffKey(staker.SubnetID, height, staker.NodeID))
-				if staker.SubnetID == constants.PrimaryNetworkID {
+				blsDiffBytes, err := s.validatorPublicKeyDiffsDB.Get(marshalDiffKey(staker.SupernetID, height, staker.NodeID))
+				if staker.SupernetID == constants.PrimaryNetworkID {
 					r.NoError(err)
 					r.Equal(bls.PublicKeyFromValidUncompressedBytes(blsDiffBytes), staker.PublicKey)
 				} else {
@@ -460,7 +460,7 @@ func TestPersistStakers(t *testing.T) {
 			},
 		},
 		"delete current delegator": {
-			storeStaker: func(r *require.Assertions, subnetID ids.ID, s *state) *Staker {
+			storeStaker: func(r *require.Assertions, supernetID ids.ID, s *state) *Staker {
 				// insert validator and delegator, then remove the delegator
 				var (
 					valStartTime = time.Now().Truncate(time.Second).Unix()
@@ -483,7 +483,7 @@ func TestPersistStakers(t *testing.T) {
 					delegatorReward uint64 = 5432
 				)
 
-				utxVal := createPermissionlessValidatorTx(r, subnetID, validatorsData)
+				utxVal := createPermissionlessValidatorTx(r, supernetID, validatorsData)
 				addPermValTx := &txs.Tx{Unsigned: utxVal}
 				r.NoError(addPermValTx.Initialize(txs.Codec))
 
@@ -495,7 +495,7 @@ func TestPersistStakers(t *testing.T) {
 				)
 				r.NoError(err)
 
-				utxDel := createPermissionlessDelegatorTx(subnetID, delegatorData)
+				utxDel := createPermissionlessDelegatorTx(supernetID, delegatorData)
 				addPermDelTx := &txs.Tx{Unsigned: utxDel}
 				r.NoError(addPermDelTx.Initialize(txs.Codec))
 
@@ -520,16 +520,16 @@ func TestPersistStakers(t *testing.T) {
 				return del
 			},
 			checkStakerInState: func(r *require.Assertions, s *state, staker *Staker) {
-				delIt, err := s.GetCurrentDelegatorIterator(staker.SubnetID, staker.NodeID)
+				delIt, err := s.GetCurrentDelegatorIterator(staker.SupernetID, staker.NodeID)
 				r.NoError(err)
 				r.False(delIt.Next())
 				delIt.Release()
 			},
 			checkValidatorsSet: func(r *require.Assertions, s *state, staker *Staker) {
-				val, err := s.GetCurrentValidator(staker.SubnetID, staker.NodeID)
+				val, err := s.GetCurrentValidator(staker.SupernetID, staker.NodeID)
 				r.NoError(err)
 
-				valsMap := s.cfg.Validators.GetMap(staker.SubnetID)
+				valsMap := s.cfg.Validators.GetMap(staker.SupernetID)
 				r.Len(valsMap, 1)
 				valOut, found := valsMap[staker.NodeID]
 				r.True(found)
@@ -539,7 +539,7 @@ func TestPersistStakers(t *testing.T) {
 			checkValidatorUptimes: func(*require.Assertions, *state, *Staker) {},
 			checkDiffs: func(r *require.Assertions, s *state, staker *Staker, height uint64) {
 				// validator's weight must decrease of delegator's weight amount
-				weightDiffBytes, err := s.validatorWeightDiffsDB.Get(marshalDiffKey(staker.SubnetID, height, staker.NodeID))
+				weightDiffBytes, err := s.validatorWeightDiffsDB.Get(marshalDiffKey(staker.SupernetID, height, staker.NodeID))
 				r.NoError(err)
 				weightDiff, err := unmarshalWeightDiff(weightDiffBytes)
 				r.NoError(err)
@@ -550,7 +550,7 @@ func TestPersistStakers(t *testing.T) {
 			},
 		},
 		"delete pending validator": {
-			storeStaker: func(r *require.Assertions, subnetID ids.ID, s *state) *Staker {
+			storeStaker: func(r *require.Assertions, supernetID ids.ID, s *state) *Staker {
 				var (
 					startTime = time.Now().Unix()
 					endTime   = time.Now().Add(14 * 24 * time.Hour).Unix()
@@ -563,7 +563,7 @@ func TestPersistStakers(t *testing.T) {
 					}
 				)
 
-				utx := createPermissionlessValidatorTx(r, subnetID, validatorsData)
+				utx := createPermissionlessValidatorTx(r, supernetID, validatorsData)
 				addPermValTx := &txs.Tx{Unsigned: utx}
 				r.NoError(addPermValTx.Initialize(txs.Codec))
 
@@ -583,27 +583,27 @@ func TestPersistStakers(t *testing.T) {
 				return staker
 			},
 			checkStakerInState: func(r *require.Assertions, s *state, staker *Staker) {
-				_, err := s.GetPendingValidator(staker.SubnetID, staker.NodeID)
+				_, err := s.GetPendingValidator(staker.SupernetID, staker.NodeID)
 				r.ErrorIs(err, database.ErrNotFound)
 			},
 			checkValidatorsSet: func(r *require.Assertions, s *state, staker *Staker) {
-				valsMap := s.cfg.Validators.GetMap(staker.SubnetID)
+				valsMap := s.cfg.Validators.GetMap(staker.SupernetID)
 				r.Empty(valsMap)
 			},
 			checkValidatorUptimes: func(r *require.Assertions, s *state, staker *Staker) {
-				_, _, err := s.GetUptime(staker.NodeID, staker.SubnetID)
+				_, _, err := s.GetUptime(staker.NodeID, staker.SupernetID)
 				r.ErrorIs(err, database.ErrNotFound)
 			},
 			checkDiffs: func(r *require.Assertions, s *state, staker *Staker, height uint64) {
-				_, err := s.validatorWeightDiffsDB.Get(marshalDiffKey(staker.SubnetID, height, staker.NodeID))
+				_, err := s.validatorWeightDiffsDB.Get(marshalDiffKey(staker.SupernetID, height, staker.NodeID))
 				r.ErrorIs(err, database.ErrNotFound)
 
-				_, err = s.validatorPublicKeyDiffsDB.Get(marshalDiffKey(staker.SubnetID, height, staker.NodeID))
+				_, err = s.validatorPublicKeyDiffsDB.Get(marshalDiffKey(staker.SupernetID, height, staker.NodeID))
 				r.ErrorIs(err, database.ErrNotFound)
 			},
 		},
 		"delete pending delegator": {
-			storeStaker: func(r *require.Assertions, subnetID ids.ID, s *state) *Staker {
+			storeStaker: func(r *require.Assertions, supernetID ids.ID, s *state) *Staker {
 				// insert validator and delegator the remove the validator
 				var (
 					valStartTime = time.Now().Truncate(time.Second).Unix()
@@ -626,14 +626,14 @@ func TestPersistStakers(t *testing.T) {
 					}
 				)
 
-				utxVal := createPermissionlessValidatorTx(r, subnetID, validatorsData)
+				utxVal := createPermissionlessValidatorTx(r, supernetID, validatorsData)
 				addPermValTx := &txs.Tx{Unsigned: utxVal}
 				r.NoError(addPermValTx.Initialize(txs.Codec))
 
 				val, err := NewPendingStaker(addPermValTx.ID(), utxVal)
 				r.NoError(err)
 
-				utxDel := createPermissionlessDelegatorTx(subnetID, delegatorData)
+				utxDel := createPermissionlessDelegatorTx(supernetID, delegatorData)
 				addPermDelTx := &txs.Tx{Unsigned: utxDel}
 				r.NoError(addPermDelTx.Initialize(txs.Codec))
 
@@ -652,13 +652,13 @@ func TestPersistStakers(t *testing.T) {
 				return del
 			},
 			checkStakerInState: func(r *require.Assertions, s *state, staker *Staker) {
-				delIt, err := s.GetPendingDelegatorIterator(staker.SubnetID, staker.NodeID)
+				delIt, err := s.GetPendingDelegatorIterator(staker.SupernetID, staker.NodeID)
 				r.NoError(err)
 				r.False(delIt.Next())
 				delIt.Release()
 			},
 			checkValidatorsSet: func(r *require.Assertions, s *state, staker *Staker) {
-				valsMap := s.cfg.Validators.GetMap(staker.SubnetID)
+				valsMap := s.cfg.Validators.GetMap(staker.SupernetID)
 				r.Empty(valsMap)
 			},
 			checkValidatorUptimes: func(*require.Assertions, *state, *Staker) {},
@@ -666,16 +666,16 @@ func TestPersistStakers(t *testing.T) {
 		},
 	}
 
-	subnetIDs := []ids.ID{constants.PrimaryNetworkID, ids.GenerateTestID()}
-	for _, subnetID := range subnetIDs {
+	supernetIDs := []ids.ID{constants.PrimaryNetworkID, ids.GenerateTestID()}
+	for _, supernetID := range supernetIDs {
 		for name, test := range tests {
-			t.Run(fmt.Sprintf("%s - subnetID %s", name, subnetID), func(t *testing.T) {
+			t.Run(fmt.Sprintf("%s - supernetID %s", name, supernetID), func(t *testing.T) {
 				require := require.New(t)
 
 				state, db := newUninitializedState(require)
 
 				// create and store the staker
-				staker := test.storeStaker(require, subnetID, state)
+				staker := test.storeStaker(require, supernetID, state)
 
 				// check all relevant data are stored
 				test.checkStakerInState(require, state, staker)
@@ -726,10 +726,10 @@ func newInitializedState(require *require.Assertions) State {
 	require.NoError(initialValidatorTx.Initialize(txs.Codec))
 
 	initialChain := &txs.CreateChainTx{
-		SubnetID:   constants.PrimaryNetworkID,
+		SupernetID:   constants.PrimaryNetworkID,
 		ChainName:  "x",
 		VMID:       constants.AVMID,
-		SubnetAuth: &secp256k1fx.Input{},
+		SupernetAuth: &secp256k1fx.Input{},
 	}
 	initialChainTx := &txs.Tx{Unsigned: initialChain}
 	require.NoError(initialChainTx.Initialize(txs.Codec))
@@ -796,9 +796,9 @@ func newStateFromDB(require *require.Assertions, db database.Database) *state {
 	return state
 }
 
-func createPermissionlessValidatorTx(r *require.Assertions, subnetID ids.ID, validatorsData txs.Validator) *txs.AddPermissionlessValidatorTx {
+func createPermissionlessValidatorTx(r *require.Assertions, supernetID ids.ID, validatorsData txs.Validator) *txs.AddPermissionlessValidatorTx {
 	var sig signer.Signer = &signer.Empty{}
-	if subnetID == constants.PrimaryNetworkID {
+	if supernetID == constants.PrimaryNetworkID {
 		sk, err := bls.NewSecretKey()
 		r.NoError(err)
 		sig = signer.NewProofOfPossession(sk)
@@ -831,7 +831,7 @@ func createPermissionlessValidatorTx(r *require.Assertions, subnetID ids.ID, val
 			},
 		},
 		Validator: validatorsData,
-		Subnet:    subnetID,
+		Supernet:    supernetID,
 		Signer:    sig,
 
 		StakeOuts: []*avax.TransferableOutput{
@@ -869,7 +869,7 @@ func createPermissionlessValidatorTx(r *require.Assertions, subnetID ids.ID, val
 	}
 }
 
-func createPermissionlessDelegatorTx(subnetID ids.ID, delegatorData txs.Validator) *txs.AddPermissionlessDelegatorTx {
+func createPermissionlessDelegatorTx(supernetID ids.ID, delegatorData txs.Validator) *txs.AddPermissionlessDelegatorTx {
 	return &txs.AddPermissionlessDelegatorTx{
 		BaseTx: txs.BaseTx{
 			BaseTx: avax.BaseTx{
@@ -897,7 +897,7 @@ func createPermissionlessDelegatorTx(subnetID ids.ID, delegatorData txs.Validato
 			},
 		},
 		Validator: delegatorData,
-		Subnet:    subnetID,
+		Supernet:    supernetID,
 
 		StakeOuts: []*avax.TransferableOutput{
 			{
@@ -1075,7 +1075,7 @@ func TestStateAddRemoveValidator(t *testing.T) {
 
 	var (
 		numNodes  = 3
-		subnetID  = ids.GenerateTestID()
+		supernetID  = ids.GenerateTestID()
 		startTime = time.Now()
 		endTime   = startTime.Add(24 * time.Hour)
 		stakers   = make([]Staker, numNodes)
@@ -1090,12 +1090,12 @@ func TestStateAddRemoveValidator(t *testing.T) {
 			PotentialReward: uint64(i + 1),
 		}
 		if i%2 == 0 {
-			stakers[i].SubnetID = subnetID
+			stakers[i].SupernetID = supernetID
 		} else {
 			sk, err := bls.NewSecretKey()
 			require.NoError(err)
 			stakers[i].PublicKey = bls.PublicFromSecretKey(sk)
-			stakers[i].SubnetID = constants.PrimaryNetworkID
+			stakers[i].SupernetID = constants.PrimaryNetworkID
 		}
 	}
 
@@ -1106,19 +1106,19 @@ func TestStateAddRemoveValidator(t *testing.T) {
 		removedValidators []Staker
 
 		expectedPrimaryValidatorSet map[ids.NodeID]*validators.GetValidatorOutput
-		expectedSubnetValidatorSet  map[ids.NodeID]*validators.GetValidatorOutput
+		expectedSupernetValidatorSet  map[ids.NodeID]*validators.GetValidatorOutput
 	}
 	diffs := []diff{
 		{
 			// Do nothing
 			expectedPrimaryValidatorSet: map[ids.NodeID]*validators.GetValidatorOutput{},
-			expectedSubnetValidatorSet:  map[ids.NodeID]*validators.GetValidatorOutput{},
+			expectedSupernetValidatorSet:  map[ids.NodeID]*validators.GetValidatorOutput{},
 		},
 		{
-			// Add a subnet validator
+			// Add a supernet validator
 			addedValidators:             []Staker{stakers[0]},
 			expectedPrimaryValidatorSet: map[ids.NodeID]*validators.GetValidatorOutput{},
-			expectedSubnetValidatorSet: map[ids.NodeID]*validators.GetValidatorOutput{
+			expectedSupernetValidatorSet: map[ids.NodeID]*validators.GetValidatorOutput{
 				stakers[0].NodeID: {
 					NodeID: stakers[0].NodeID,
 					Weight: stakers[0].Weight,
@@ -1126,10 +1126,10 @@ func TestStateAddRemoveValidator(t *testing.T) {
 			},
 		},
 		{
-			// Remove a subnet validator
+			// Remove a supernet validator
 			removedValidators:           []Staker{stakers[0]},
 			expectedPrimaryValidatorSet: map[ids.NodeID]*validators.GetValidatorOutput{},
-			expectedSubnetValidatorSet:  map[ids.NodeID]*validators.GetValidatorOutput{},
+			expectedSupernetValidatorSet:  map[ids.NodeID]*validators.GetValidatorOutput{},
 		},
 		{ // Add a primary network validator
 			addedValidators: []Staker{stakers[1]},
@@ -1140,7 +1140,7 @@ func TestStateAddRemoveValidator(t *testing.T) {
 					Weight:    stakers[1].Weight,
 				},
 			},
-			expectedSubnetValidatorSet: map[ids.NodeID]*validators.GetValidatorOutput{},
+			expectedSupernetValidatorSet: map[ids.NodeID]*validators.GetValidatorOutput{},
 		},
 		{
 			// Do nothing
@@ -1151,15 +1151,15 @@ func TestStateAddRemoveValidator(t *testing.T) {
 					Weight:    stakers[1].Weight,
 				},
 			},
-			expectedSubnetValidatorSet: map[ids.NodeID]*validators.GetValidatorOutput{},
+			expectedSupernetValidatorSet: map[ids.NodeID]*validators.GetValidatorOutput{},
 		},
 		{ // Remove a primary network validator
 			removedValidators:           []Staker{stakers[1]},
 			expectedPrimaryValidatorSet: map[ids.NodeID]*validators.GetValidatorOutput{},
-			expectedSubnetValidatorSet:  map[ids.NodeID]*validators.GetValidatorOutput{},
+			expectedSupernetValidatorSet:  map[ids.NodeID]*validators.GetValidatorOutput{},
 		},
 		{
-			// Add 2 subnet validators and a primary network validator
+			// Add 2 supernet validators and a primary network validator
 			addedValidators: []Staker{stakers[0], stakers[1], stakers[2]},
 			expectedPrimaryValidatorSet: map[ids.NodeID]*validators.GetValidatorOutput{
 				stakers[1].NodeID: {
@@ -1168,7 +1168,7 @@ func TestStateAddRemoveValidator(t *testing.T) {
 					Weight:    stakers[1].Weight,
 				},
 			},
-			expectedSubnetValidatorSet: map[ids.NodeID]*validators.GetValidatorOutput{
+			expectedSupernetValidatorSet: map[ids.NodeID]*validators.GetValidatorOutput{
 				stakers[0].NodeID: {
 					NodeID: stakers[0].NodeID,
 					Weight: stakers[0].Weight,
@@ -1180,10 +1180,10 @@ func TestStateAddRemoveValidator(t *testing.T) {
 			},
 		},
 		{
-			// Remove 2 subnet validators and a primary network validator.
+			// Remove 2 supernet validators and a primary network validator.
 			removedValidators:           []Staker{stakers[0], stakers[1], stakers[2]},
 			expectedPrimaryValidatorSet: map[ids.NodeID]*validators.GetValidatorOutput{},
-			expectedSubnetValidatorSet:  map[ids.NodeID]*validators.GetValidatorOutput{},
+			expectedSupernetValidatorSet:  map[ids.NodeID]*validators.GetValidatorOutput{},
 		},
 	}
 	for currentIndex, diff := range diffs {
@@ -1210,13 +1210,13 @@ func TestStateAddRemoveValidator(t *testing.T) {
 		require.NoError(state.Commit())
 
 		for _, added := range diff.addedValidators {
-			gotValidator, err := state.GetCurrentValidator(added.SubnetID, added.NodeID)
+			gotValidator, err := state.GetCurrentValidator(added.SupernetID, added.NodeID)
 			require.NoError(err)
 			require.Equal(added, *gotValidator)
 		}
 
 		for _, removed := range diff.removedValidators {
-			_, err := state.GetCurrentValidator(removed.SubnetID, removed.NodeID)
+			_, err := state.GetCurrentValidator(removed.SupernetID, removed.NodeID)
 			require.ErrorIs(err, database.ErrNotFound)
 		}
 
@@ -1242,15 +1242,15 @@ func TestStateAddRemoveValidator(t *testing.T) {
 			))
 			requireEqualPublicKeysValidatorSet(require, prevDiff.expectedPrimaryValidatorSet, primaryValidatorSet)
 
-			subnetValidatorSet := copyValidatorSet(diff.expectedSubnetValidatorSet)
+			supernetValidatorSet := copyValidatorSet(diff.expectedSupernetValidatorSet)
 			require.NoError(state.ApplyValidatorWeightDiffs(
 				context.Background(),
-				subnetValidatorSet,
+				supernetValidatorSet,
 				currentHeight,
 				prevHeight+1,
-				subnetID,
+				supernetID,
 			))
-			requireEqualWeightsValidatorSet(require, prevDiff.expectedSubnetValidatorSet, subnetValidatorSet)
+			requireEqualWeightsValidatorSet(require, prevDiff.expectedSupernetValidatorSet, supernetValidatorSet)
 		}
 	}
 }
@@ -1364,7 +1364,7 @@ func TestReindexBlocks(t *testing.T) {
 	require.True(reindexed)
 }
 
-func TestStateSubnetOwner(t *testing.T) {
+func TestStateSupernetOwner(t *testing.T) {
 	require := require.New(t)
 
 	state := newInitializedState(require)
@@ -1374,29 +1374,29 @@ func TestStateSubnetOwner(t *testing.T) {
 		owner1 = fx.NewMockOwner(ctrl)
 		owner2 = fx.NewMockOwner(ctrl)
 
-		createSubnetTx = &txs.Tx{
-			Unsigned: &txs.CreateSubnetTx{
+		createSupernetTx = &txs.Tx{
+			Unsigned: &txs.CreateSupernetTx{
 				BaseTx: txs.BaseTx{},
 				Owner:  owner1,
 			},
 		}
 
-		subnetID = createSubnetTx.ID()
+		supernetID = createSupernetTx.ID()
 	)
 
-	owner, err := state.GetSubnetOwner(subnetID)
+	owner, err := state.GetSupernetOwner(supernetID)
 	require.ErrorIs(err, database.ErrNotFound)
 	require.Nil(owner)
 
-	state.AddSubnet(createSubnetTx)
-	state.SetSubnetOwner(subnetID, owner1)
+	state.AddSupernet(createSupernetTx)
+	state.SetSupernetOwner(supernetID, owner1)
 
-	owner, err = state.GetSubnetOwner(subnetID)
+	owner, err = state.GetSupernetOwner(supernetID)
 	require.NoError(err)
 	require.Equal(owner1, owner)
 
-	state.SetSubnetOwner(subnetID, owner2)
-	owner, err = state.GetSubnetOwner(subnetID)
+	state.SetSupernetOwner(supernetID, owner2)
+	owner, err = state.GetSupernetOwner(supernetID)
 	require.NoError(err)
 	require.Equal(owner2, owner)
 }

@@ -17,13 +17,13 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/ava-labs/avalanchego/config"
-	"github.com/ava-labs/avalanchego/genesis"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils/crypto/secp256k1"
-	"github.com/ava-labs/avalanchego/utils/perms"
-	"github.com/ava-labs/avalanchego/utils/set"
-	"github.com/ava-labs/avalanchego/vms/platformvm"
+	"github.com/Juneo-io/juneogo/config"
+	"github.com/Juneo-io/juneogo/genesis"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils/crypto/secp256k1"
+	"github.com/Juneo-io/juneogo/utils/perms"
+	"github.com/Juneo-io/juneogo/utils/set"
+	"github.com/Juneo-io/juneogo/vms/platformvm"
 )
 
 // The Network type is defined in this file (orchestration) and
@@ -47,7 +47,7 @@ const (
 	HardHatKeyStr = "56289e99c94b6912bfc12adc093c9b51124f0dc54ac7a766b2bc5ccf558d8027"
 )
 
-// HardhatKey is a legacy used for hardhat testing in subnet-evm
+// HardhatKey is a legacy used for hardhat testing in supernet-evm
 // TODO(marun) Remove when no longer needed.
 var HardhatKey *secp256k1.PrivateKey
 
@@ -93,8 +93,8 @@ type Network struct {
 	// Nodes that constitute the network
 	Nodes []*Node
 
-	// Subnets that have been enabled on the network
-	Subnets []*Subnet
+	// Supernets that have been enabled on the network
+	Supernets []*Supernet
 }
 
 // Ensure a real and absolute network dir so that node
@@ -126,7 +126,7 @@ func StartNewNetwork(
 	if err := network.Start(ctx, w); err != nil {
 		return err
 	}
-	return network.CreateSubnets(ctx, w)
+	return network.CreateSupernets(ctx, w)
 }
 
 // Stops the nodes of the network configured in the provided directory.
@@ -508,10 +508,10 @@ func (n *Network) EnsureNodeConfig(node *Node) error {
 			config.ChainConfigDirKey: n.getChainConfigDir(),
 		}
 
-		// Only set the subnet dir if it exists or the node won't start.
-		subnetDir := n.getSubnetDir()
-		if _, err := os.Stat(subnetDir); err == nil {
-			defaultFlags[config.SubnetConfigDirKey] = subnetDir
+		// Only set the supernet dir if it exists or the node won't start.
+		supernetDir := n.getSupernetDir()
+		if _, err := os.Stat(supernetDir); err == nil {
+			defaultFlags[config.SupernetConfigDirKey] = supernetDir
 		} else if !errors.Is(err, os.ErrNotExist) {
 			return err
 		}
@@ -537,107 +537,107 @@ func (n *Network) EnsureNodeConfig(node *Node) error {
 	return nil
 }
 
-// TrackedSubnetsForNode returns the subnet IDs for the given node
-func (n *Network) TrackedSubnetsForNode(nodeID ids.NodeID) string {
-	subnetIDs := make([]string, 0, len(n.Subnets))
-	for _, subnet := range n.Subnets {
-		if subnet.SubnetID == ids.Empty {
-			// Subnet has not yet been created
+// TrackedSupernetsForNode returns the supernet IDs for the given node
+func (n *Network) TrackedSupernetsForNode(nodeID ids.NodeID) string {
+	supernetIDs := make([]string, 0, len(n.Supernets))
+	for _, supernet := range n.Supernets {
+		if supernet.SupernetID == ids.Empty {
+			// Supernet has not yet been created
 			continue
 		}
-		// Only track subnets that this node validates
-		for _, validatorID := range subnet.ValidatorIDs {
+		// Only track supernets that this node validates
+		for _, validatorID := range supernet.ValidatorIDs {
 			if validatorID == nodeID {
-				subnetIDs = append(subnetIDs, subnet.SubnetID.String())
+				supernetIDs = append(supernetIDs, supernet.SupernetID.String())
 				break
 			}
 		}
 	}
-	return strings.Join(subnetIDs, ",")
+	return strings.Join(supernetIDs, ",")
 }
 
-func (n *Network) GetSubnet(name string) *Subnet {
-	for _, subnet := range n.Subnets {
-		if subnet.Name == name {
-			return subnet
+func (n *Network) GetSupernet(name string) *Supernet {
+	for _, supernet := range n.Supernets {
+		if supernet.Name == name {
+			return supernet
 		}
 	}
 	return nil
 }
 
-// Ensure that each subnet on the network is created.
-func (n *Network) CreateSubnets(ctx context.Context, w io.Writer) error {
-	createdSubnets := make([]*Subnet, 0, len(n.Subnets))
-	for _, subnet := range n.Subnets {
-		if len(subnet.ValidatorIDs) == 0 {
-			return fmt.Errorf("subnet %s needs at least one validator", subnet.SubnetID)
+// Ensure that each supernet on the network is created.
+func (n *Network) CreateSupernets(ctx context.Context, w io.Writer) error {
+	createdSupernets := make([]*Supernet, 0, len(n.Supernets))
+	for _, supernet := range n.Supernets {
+		if len(supernet.ValidatorIDs) == 0 {
+			return fmt.Errorf("supernet %s needs at least one validator", supernet.SupernetID)
 		}
-		if subnet.SubnetID != ids.Empty {
-			// The subnet already exists
+		if supernet.SupernetID != ids.Empty {
+			// The supernet already exists
 			continue
 		}
 
-		if _, err := fmt.Fprintf(w, "Creating subnet %q\n", subnet.Name); err != nil {
+		if _, err := fmt.Fprintf(w, "Creating supernet %q\n", supernet.Name); err != nil {
 			return err
 		}
 
-		if subnet.OwningKey == nil {
+		if supernet.OwningKey == nil {
 			// Allocate a pre-funded key and remove it from the network so it won't be used for
 			// other purposes
 			if len(n.PreFundedKeys) == 0 {
-				return fmt.Errorf("no pre-funded keys available to create subnet %q", subnet.Name)
+				return fmt.Errorf("no pre-funded keys available to create supernet %q", supernet.Name)
 			}
-			subnet.OwningKey = n.PreFundedKeys[len(n.PreFundedKeys)-1]
+			supernet.OwningKey = n.PreFundedKeys[len(n.PreFundedKeys)-1]
 			n.PreFundedKeys = n.PreFundedKeys[:len(n.PreFundedKeys)-1]
 		}
 
-		// Create the subnet on the network
-		if err := subnet.Create(ctx, n.Nodes[0].URI); err != nil {
+		// Create the supernet on the network
+		if err := supernet.Create(ctx, n.Nodes[0].URI); err != nil {
 			return err
 		}
 
-		if _, err := fmt.Fprintf(w, " created subnet %q as %q\n", subnet.Name, subnet.SubnetID); err != nil {
+		if _, err := fmt.Fprintf(w, " created supernet %q as %q\n", supernet.Name, supernet.SupernetID); err != nil {
 			return err
 		}
 
-		// Persist the subnet configuration
-		if err := subnet.Write(n.getSubnetDir(), n.getChainConfigDir()); err != nil {
+		// Persist the supernet configuration
+		if err := supernet.Write(n.getSupernetDir(), n.getChainConfigDir()); err != nil {
 			return err
 		}
 
-		if _, err := fmt.Fprintf(w, " wrote configuration for subnet %q\n", subnet.Name); err != nil {
+		if _, err := fmt.Fprintf(w, " wrote configuration for supernet %q\n", supernet.Name); err != nil {
 			return err
 		}
 
-		createdSubnets = append(createdSubnets, subnet)
+		createdSupernets = append(createdSupernets, supernet)
 	}
 
-	if len(createdSubnets) == 0 {
+	if len(createdSupernets) == 0 {
 		return nil
 	}
 
-	// Ensure the in-memory subnet state
-	n.Subnets = append(n.Subnets, createdSubnets...)
+	// Ensure the in-memory supernet state
+	n.Supernets = append(n.Supernets, createdSupernets...)
 
 	// Ensure the pre-funded key changes are persisted to disk
 	if err := n.Write(); err != nil {
 		return err
 	}
 
-	if _, err := fmt.Fprintln(w, "Restarting node(s) to enable them to track the new subnet(s)"); err != nil {
+	if _, err := fmt.Fprintln(w, "Restarting node(s) to enable them to track the new supernet(s)"); err != nil {
 		return err
 	}
 	reconfiguredNodes := []*Node{}
 	for _, node := range n.Nodes {
-		existingTrackedSubnets, err := node.Flags.GetStringVal(config.TrackSubnetsKey)
+		existingTrackedSupernets, err := node.Flags.GetStringVal(config.TrackSupernetsKey)
 		if err != nil {
 			return err
 		}
-		trackedSubnets := n.TrackedSubnetsForNode(node.NodeID)
-		if existingTrackedSubnets == trackedSubnets {
+		trackedSupernets := n.TrackedSupernetsForNode(node.NodeID)
+		if existingTrackedSupernets == trackedSupernets {
 			continue
 		}
-		node.Flags[config.TrackSubnetsKey] = trackedSubnets
+		node.Flags[config.TrackSupernetsKey] = trackedSupernets
 		reconfiguredNodes = append(reconfiguredNodes, node)
 	}
 	for _, node := range reconfiguredNodes {
@@ -646,15 +646,15 @@ func (n *Network) CreateSubnets(ctx context.Context, w io.Writer) error {
 		}
 	}
 
-	// Add validators for the subnet
-	for _, subnet := range createdSubnets {
-		if _, err := fmt.Fprintf(w, "Adding validators for subnet %q\n", subnet.Name); err != nil {
+	// Add validators for the supernet
+	for _, supernet := range createdSupernets {
+		if _, err := fmt.Fprintf(w, "Adding validators for supernet %q\n", supernet.Name); err != nil {
 			return err
 		}
 
-		// Collect the nodes intended to validate the subnet
-		validatorIDs := set.NewSet[ids.NodeID](len(subnet.ValidatorIDs))
-		validatorIDs.Add(subnet.ValidatorIDs...)
+		// Collect the nodes intended to validate the supernet
+		validatorIDs := set.NewSet[ids.NodeID](len(supernet.ValidatorIDs))
+		validatorIDs.Add(supernet.ValidatorIDs...)
 		validatorNodes := []*Node{}
 		for _, node := range n.Nodes {
 			if !validatorIDs.Contains(node.NodeID) {
@@ -663,37 +663,37 @@ func (n *Network) CreateSubnets(ctx context.Context, w io.Writer) error {
 			validatorNodes = append(validatorNodes, node)
 		}
 
-		if err := subnet.AddValidators(ctx, w, validatorNodes...); err != nil {
+		if err := supernet.AddValidators(ctx, w, validatorNodes...); err != nil {
 			return err
 		}
 	}
 
-	// Wait for nodes to become subnet validators
+	// Wait for nodes to become supernet validators
 	pChainClient := platformvm.NewClient(n.Nodes[0].URI)
 	validatorsToRestart := set.Set[ids.NodeID]{}
-	for _, subnet := range createdSubnets {
-		if err := waitForActiveValidators(ctx, w, pChainClient, subnet); err != nil {
+	for _, supernet := range createdSupernets {
+		if err := waitForActiveValidators(ctx, w, pChainClient, supernet); err != nil {
 			return err
 		}
 
-		// It should now be safe to create chains for the subnet
-		if err := subnet.CreateChains(ctx, w, n.Nodes[0].URI); err != nil {
+		// It should now be safe to create chains for the supernet
+		if err := supernet.CreateChains(ctx, w, n.Nodes[0].URI); err != nil {
 			return err
 		}
 
 		// Persist the chain configuration
-		if err := subnet.Write(n.getSubnetDir(), n.getChainConfigDir()); err != nil {
+		if err := supernet.Write(n.getSupernetDir(), n.getChainConfigDir()); err != nil {
 			return err
 		}
-		if _, err := fmt.Fprintf(w, " wrote chain configuration for subnet %q\n", subnet.Name); err != nil {
+		if _, err := fmt.Fprintf(w, " wrote chain configuration for supernet %q\n", supernet.Name); err != nil {
 			return err
 		}
 
-		// If one or more of the subnets chains have explicit configuration, the
-		// subnet's validator nodes will need to be restarted for those nodes to read
+		// If one or more of the supernets chains have explicit configuration, the
+		// supernet's validator nodes will need to be restarted for those nodes to read
 		// the newly written chain configuration and apply it to the chain(s).
-		if subnet.HasChainConfig() {
-			validatorsToRestart.Add(subnet.ValidatorIDs...)
+		if supernet.HasChainConfig() {
+			validatorsToRestart.Add(supernet.ValidatorIDs...)
 		}
 	}
 

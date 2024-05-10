@@ -9,16 +9,16 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils/set"
-	"github.com/ava-labs/avalanchego/utils/units"
-	"github.com/ava-labs/avalanchego/vms/platformvm/state"
-	"github.com/ava-labs/avalanchego/vms/platformvm/txs/txstest"
-	"github.com/ava-labs/avalanchego/vms/platformvm/utxo"
-	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils/set"
+	"github.com/Juneo-io/juneogo/utils/units"
+	"github.com/Juneo-io/juneogo/vms/platformvm/state"
+	"github.com/Juneo-io/juneogo/vms/platformvm/txs/txstest"
+	"github.com/Juneo-io/juneogo/vms/platformvm/utxo"
+	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
 )
 
-func TestCreateSubnetTxAP3FeeChange(t *testing.T) {
+func TestCreateSupernetTxAP3FeeChange(t *testing.T) {
 	ap3Time := defaultGenesisTime.Add(time.Hour)
 	tests := []struct {
 		name        string
@@ -62,9 +62,9 @@ func TestCreateSubnetTxAP3FeeChange(t *testing.T) {
 			}
 
 			cfg := *env.config
-			cfg.CreateSubnetTxFee = test.fee
+			cfg.CreateSupernetTxFee = test.fee
 			builder := txstest.NewBuilder(env.ctx, &cfg, env.state)
-			tx, err := builder.NewCreateSubnetTx(
+			tx, err := builder.NewCreateSupernetTx(
 				&secp256k1fx.OutputOwners{},
 				preFundedKeys,
 			)

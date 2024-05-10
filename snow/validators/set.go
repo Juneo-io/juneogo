@@ -11,12 +11,12 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils/crypto/bls"
-	"github.com/ava-labs/avalanchego/utils/formatting"
-	"github.com/ava-labs/avalanchego/utils/math"
-	"github.com/ava-labs/avalanchego/utils/sampler"
-	"github.com/ava-labs/avalanchego/utils/set"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils/crypto/bls"
+	"github.com/Juneo-io/juneogo/utils/formatting"
+	"github.com/Juneo-io/juneogo/utils/math"
+	"github.com/Juneo-io/juneogo/utils/sampler"
+	"github.com/Juneo-io/juneogo/utils/set"
 )
 
 var (
@@ -26,9 +26,9 @@ var (
 )
 
 // newSet returns a new, empty set of validators.
-func newSet(subnetID ids.ID, callbackListeners []ManagerCallbackListener) *vdrSet {
+func newSet(supernetID ids.ID, callbackListeners []ManagerCallbackListener) *vdrSet {
 	return &vdrSet{
-		subnetID:                 subnetID,
+		supernetID:                 supernetID,
 		vdrs:                     make(map[ids.NodeID]*Validator),
 		totalWeight:              new(big.Int),
 		sampler:                  sampler.NewWeightedWithoutReplacement(),
@@ -37,7 +37,7 @@ func newSet(subnetID ids.ID, callbackListeners []ManagerCallbackListener) *vdrSe
 }
 
 type vdrSet struct {
-	subnetID ids.ID
+	supernetID ids.ID
 
 	lock        sync.RWMutex
 	vdrs        map[ids.NodeID]*Validator
@@ -317,7 +317,7 @@ func (s *vdrSet) RegisterManagerCallbackListener(callbackListener ManagerCallbac
 
 	s.managerCallbackListeners = append(s.managerCallbackListeners, callbackListener)
 	for _, vdr := range s.vdrSlice {
-		callbackListener.OnValidatorAdded(s.subnetID, vdr.NodeID, vdr.PublicKey, vdr.TxID, vdr.Weight)
+		callbackListener.OnValidatorAdded(s.supernetID, vdr.NodeID, vdr.PublicKey, vdr.TxID, vdr.Weight)
 	}
 }
 
@@ -334,7 +334,7 @@ func (s *vdrSet) RegisterCallbackListener(callbackListener SetCallbackListener) 
 // Assumes [s.lock] is held
 func (s *vdrSet) callWeightChangeCallbacks(node ids.NodeID, oldWeight, newWeight uint64) {
 	for _, callbackListener := range s.managerCallbackListeners {
-		callbackListener.OnValidatorWeightChanged(s.subnetID, node, oldWeight, newWeight)
+		callbackListener.OnValidatorWeightChanged(s.supernetID, node, oldWeight, newWeight)
 	}
 	for _, callbackListener := range s.setCallbackListeners {
 		callbackListener.OnValidatorWeightChanged(node, oldWeight, newWeight)
@@ -344,7 +344,7 @@ func (s *vdrSet) callWeightChangeCallbacks(node ids.NodeID, oldWeight, newWeight
 // Assumes [s.lock] is held
 func (s *vdrSet) callValidatorAddedCallbacks(node ids.NodeID, pk *bls.PublicKey, txID ids.ID, weight uint64) {
 	for _, callbackListener := range s.managerCallbackListeners {
-		callbackListener.OnValidatorAdded(s.subnetID, node, pk, txID, weight)
+		callbackListener.OnValidatorAdded(s.supernetID, node, pk, txID, weight)
 	}
 	for _, callbackListener := range s.setCallbackListeners {
 		callbackListener.OnValidatorAdded(node, pk, txID, weight)
@@ -354,7 +354,7 @@ func (s *vdrSet) callValidatorAddedCallbacks(node ids.NodeID, pk *bls.PublicKey,
 // Assumes [s.lock] is held
 func (s *vdrSet) callValidatorRemovedCallbacks(node ids.NodeID, weight uint64) {
 	for _, callbackListener := range s.managerCallbackListeners {
-		callbackListener.OnValidatorRemoved(s.subnetID, node, weight)
+		callbackListener.OnValidatorRemoved(s.supernetID, node, weight)
 	}
 	for _, callbackListener := range s.setCallbackListeners {
 		callbackListener.OnValidatorRemoved(node, weight)

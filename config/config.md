@@ -219,8 +219,8 @@ and the VM will use default values if nothing is passed in.
 Full reference for all configuration options for some standard chains can be
 found in a separate [chain config flags](/nodes/configure/chain-configs/chain-config-flags.md) document.
 
-Full reference for `subnet-evm` upgrade configuration can be found in a separate
-[Customize a Subnet](/build/subnet/upgrade/customize-a-subnet.md) document.
+Full reference for `supernet-evm` upgrade configuration can be found in a separate
+[Customize a Supernet](/build/supernet/upgrade/customize-a-supernet.md) document.
 
 #### `--chain-config-content` (string)
 
@@ -252,7 +252,7 @@ The above example aliases the Blockchain whose ID is
 `"q2aTwKuyzgs8pynF7UXBZCU7DejbZbZ6EUyHr3JQzYgwNPUPi"` to `"DFK"`. Chain
 aliases are added after adding primary network aliases and before any changes to
 the aliases via the admin API. This means that the first alias included for a
-Blockchain on a Subnet will be treated as the `"Primary Alias"` instead of the
+Blockchain on a Supernet will be treated as the `"Primary Alias"` instead of the
 full blockchainID. The Primary Alias is used in all metrics and logs.
 
 #### `--chain-aliases-file-content` (string)
@@ -716,37 +716,37 @@ As an alternative to `--staking-tls-key-file`, it allows specifying base64
 encoded content of the TLS private key used by the node. Note that full private
 key content, with the leading and trailing header, must be base64 encoded.
 
-## Subnets
+## Supernets
 
-### Subnet Tracking
+### Supernet Tracking
 
-#### `--track-subnets` (string)
+#### `--track-supernets` (string)
 
-Comma separated list of Subnet IDs that this node would track if added to.
+Comma separated list of Supernet IDs that this node would track if added to.
 Defaults to empty (will only validate the Primary Network).
 
-### Subnet Configs
+### Supernet Configs
 
-It is possible to provide parameters for Subnets. Parameters here apply to all
-chains in the specified Subnets. Parameters must be specified with a
-`{subnetID}.json` config file under `--subnet-config-dir`. AvalancheGo loads
-configs for Subnets specified in
-`--track-subnets` parameter.
+It is possible to provide parameters for Supernets. Parameters here apply to all
+chains in the specified Supernets. Parameters must be specified with a
+`{supernetID}.json` config file under `--supernet-config-dir`. AvalancheGo loads
+configs for Supernets specified in
+`--track-supernets` parameter.
 
-Full reference for all configuration options for a Subnet can be found in a
-separate [Subnet Configs](./subnet-configs) document.
+Full reference for all configuration options for a Supernet can be found in a
+separate [Supernet Configs](./supernet-configs) document.
 
-#### `--subnet-config-dir` (`string`)
+#### `--supernet-config-dir` (`string`)
 
-Specifies the directory that contains Subnet configs, as described above.
-Defaults to `$HOME/.avalanchego/configs/subnets`. If the flag is set explicitly,
+Specifies the directory that contains Supernet configs, as described above.
+Defaults to `$HOME/.avalanchego/configs/supernets`. If the flag is set explicitly,
 the specified folder must exist, or AvalancheGo will exit with an error. This
-flag is ignored if `--subnet-config-content` is specified.
+flag is ignored if `--supernet-config-content` is specified.
 
-Example: Let's say we have a Subnet with ID
+Example: Let's say we have a Supernet with ID
 `p4jUwqZsA2LuSftroCd3zb4ytH8W99oXKuKVZdsty7eQ3rXD6`. We can create a config file
-under the default `subnet-config-dir` at
-`$HOME/.avalanchego/configs/subnets/p4jUwqZsA2LuSftroCd3zb4ytH8W99oXKuKVZdsty7eQ3rXD6.json`.
+under the default `supernet-config-dir` at
+`$HOME/.avalanchego/configs/supernets/p4jUwqZsA2LuSftroCd3zb4ytH8W99oXKuKVZdsty7eQ3rXD6.json`.
 An example config file is:
 
 ```json
@@ -763,9 +763,9 @@ An example config file is:
 By default, none of these directories and/or files exist. You would need to create them manually if needed.
 :::
 
-#### `--subnet-config-content` (string)
+#### `--supernet-config-content` (string)
 
-As an alternative to `--subnet-config-dir`, it allows specifying base64 encoded parameters for a Subnet.
+As an alternative to `--supernet-config-dir`, it allows specifying base64 encoded parameters for a Supernet.
 
 ## Version
 
@@ -839,9 +839,9 @@ Transaction fee, in nAVAX, for transactions that create new assets. Defaults to
 `10000000` nAVAX (.01 AVAX) per transaction. This can only be changed on a local
 network.
 
-#### `--create-subnet-tx-fee` (int)
+#### `--create-supernet-tx-fee` (int)
 
-Transaction fee, in nAVAX, for transactions that create new Subnets. Defaults to
+Transaction fee, in nAVAX, for transactions that create new Supernets. Defaults to
 `1000000000` nAVAX (1 AVAX) per transaction. This can only be changed on a local
 network.
 
@@ -851,9 +851,9 @@ Transaction fee, in nAVAX, for transactions that create new blockchains.
 Defaults to `1000000000` nAVAX (1 AVAX) per transaction. This can only be
 changed on a local network.
 
-#### `--transform-subnet-tx-fee` (int)
+#### `--transform-supernet-tx-fee` (int)
 
-Transaction fee, in nAVAX, for transactions that transform Subnets. Defaults to
+Transaction fee, in nAVAX, for transactions that transform Supernets. Defaults to
 `1000000000` nAVAX (1 AVAX) per transaction. This can only be changed on a local network.
 
 #### `--add-primary-network-validator-fee` (int)
@@ -866,14 +866,14 @@ This can only be changed on a local network.
 Transaction fee, in nAVAX, for transactions that add new primary network delegators. Defaults to 0.
 This can only be changed on a local network.
 
-#### `--add-subnet-validator-fee` (int)
+#### `--add-supernet-validator-fee` (int)
 
-Transaction fee, in nAVAX, for transactions that add new Subnet validators.
+Transaction fee, in nAVAX, for transactions that add new Supernet validators.
 Defaults to `10000000` nAVAX (.01 AVAX).
 
-#### `--add-subnet-delegator-fee` (int)
+#### `--add-supernet-delegator-fee` (int)
 
-Transaction fee, in nAVAX, for transactions that add new Subnet delegators.
+Transaction fee, in nAVAX, for transactions that add new Supernet delegators.
 Defaults to `10000000` nAVAX (.01 AVAX).
 
 #### `--min-delegator-stake` (int)

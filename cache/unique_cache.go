@@ -6,7 +6,7 @@ package cache
 import (
 	"sync"
 
-	"github.com/ava-labs/avalanchego/utils/linked"
+	"github.com/Juneo-io/juneogo/utils/linked"
 )
 
 var _ Deduplicator[struct{}, Evictable[struct{}]] = (*EvictableLRU[struct{}, Evictable[struct{}]])(nil)

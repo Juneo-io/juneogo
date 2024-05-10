@@ -6,9 +6,9 @@ package txstest
 import (
 	"time"
 
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/vms/platformvm/config"
-	"github.com/ava-labs/avalanchego/wallet/chain/p/builder"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/vms/platformvm/config"
+	"github.com/Juneo-io/juneogo/wallet/chain/p/builder"
 )
 
 func newContext(
@@ -20,12 +20,12 @@ func newContext(
 		NetworkID:                     ctx.NetworkID,
 		AVAXAssetID:                   ctx.AVAXAssetID,
 		BaseTxFee:                     cfg.TxFee,
-		CreateSubnetTxFee:             cfg.GetCreateSubnetTxFee(timestamp),
-		TransformSubnetTxFee:          cfg.TransformSubnetTxFee,
+		CreateSupernetTxFee:             cfg.GetCreateSupernetTxFee(timestamp),
+		TransformSupernetTxFee:          cfg.TransformSupernetTxFee,
 		CreateBlockchainTxFee:         cfg.GetCreateBlockchainTxFee(timestamp),
 		AddPrimaryNetworkValidatorFee: cfg.AddPrimaryNetworkValidatorFee,
 		AddPrimaryNetworkDelegatorFee: cfg.AddPrimaryNetworkDelegatorFee,
-		AddSubnetValidatorFee:         cfg.AddSubnetValidatorFee,
-		AddSubnetDelegatorFee:         cfg.AddSubnetDelegatorFee,
+		AddSupernetValidatorFee:         cfg.AddSupernetValidatorFee,
+		AddSupernetDelegatorFee:         cfg.AddSupernetDelegatorFee,
 	}
 }

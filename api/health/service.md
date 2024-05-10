@@ -29,7 +29,7 @@ match the specified tags and global health checks like `network`, `database` etc
 When filtered, the returned results will not show the full node health,
 but only a subset of filtered health checks.
 This means the node can still be unhealthy in unfiltered checks, even if the returned results show that the node is healthy.
-AvalancheGo supports using subnetIDs as tags.
+AvalancheGo supports using supernetIDs as tags.
 
 ## GET Request
 
@@ -42,7 +42,7 @@ In-depth information about the node's health is included in the response body.
 
 To filter GET health checks, add a `tag` query parameter to the request.
 The `tag` parameter is a string.
-For example, to filter health results by subnetID `29uVeLPJB1eQJkzRemU8g8wZDw5uJRqpab5U2mX9euieVwiEbL`,
+For example, to filter health results by supernetID `29uVeLPJB1eQJkzRemU8g8wZDw5uJRqpab5U2mX9euieVwiEbL`,
 use the following query:
 
 ```sh
@@ -50,19 +50,19 @@ curl 'http://localhost:9650/ext/health?tag=29uVeLPJB1eQJkzRemU8g8wZDw5uJRqpab5U2
 ```
 
 In this example returned results will contain global health checks and health checks that are
-related to subnetID `29uVeLPJB1eQJkzRemU8g8wZDw5uJRqpab5U2mX9euieVwiEbL`.
+related to supernetID `29uVeLPJB1eQJkzRemU8g8wZDw5uJRqpab5U2mX9euieVwiEbL`.
 
-**Note:** This filtering can show healthy results even if the node is unhealthy in other Chains/Subnets.
+**Note:** This filtering can show healthy results even if the node is unhealthy in other Chains/Supernets.
 
 In order to filter results by multiple tags, use multiple `tag` query parameters.
-For example, to filter health results by subnetID `29uVeLPJB1eQJkzRemU8g8wZDw5uJRqpab5U2mX9euieVwiEbL` and
+For example, to filter health results by supernetID `29uVeLPJB1eQJkzRemU8g8wZDw5uJRqpab5U2mX9euieVwiEbL` and
 `28nrH5T2BMvNrWecFcV3mfccjs6axM1TVyqe79MCv2Mhs8kxiY` use the following query:
 
 ```sh
 curl 'http://localhost:9650/ext/health?tag=29uVeLPJB1eQJkzRemU8g8wZDw5uJRqpab5U2mX9euieVwiEbL&tag=28nrH5T2BMvNrWecFcV3mfccjs6axM1TVyqe79MCv2Mhs8kxiY'
 ```
 
-The returned results will include health checks for both subnetIDs as well as global health checks.
+The returned results will include health checks for both supernetIDs as well as global health checks.
 
 ### Endpoints
 

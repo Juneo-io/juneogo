@@ -3,7 +3,7 @@
 
 package linked
 
-import "github.com/ava-labs/avalanchego/utils"
+import "github.com/Juneo-io/juneogo/utils"
 
 type keyValue[K, V any] struct {
 	key   K

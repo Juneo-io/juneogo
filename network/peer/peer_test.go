@@ -13,23 +13,23 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/message"
-	"github.com/ava-labs/avalanchego/network/throttling"
-	"github.com/ava-labs/avalanchego/proto/pb/p2p"
-	"github.com/ava-labs/avalanchego/snow/networking/router"
-	"github.com/ava-labs/avalanchego/snow/networking/tracker"
-	"github.com/ava-labs/avalanchego/snow/uptime"
-	"github.com/ava-labs/avalanchego/snow/validators"
-	"github.com/ava-labs/avalanchego/staking"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/crypto/bls"
-	"github.com/ava-labs/avalanchego/utils/ips"
-	"github.com/ava-labs/avalanchego/utils/logging"
-	"github.com/ava-labs/avalanchego/utils/math/meter"
-	"github.com/ava-labs/avalanchego/utils/resource"
-	"github.com/ava-labs/avalanchego/utils/set"
-	"github.com/ava-labs/avalanchego/version"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/message"
+	"github.com/Juneo-io/juneogo/network/throttling"
+	"github.com/Juneo-io/juneogo/proto/pb/p2p"
+	"github.com/Juneo-io/juneogo/snow/networking/router"
+	"github.com/Juneo-io/juneogo/snow/networking/tracker"
+	"github.com/Juneo-io/juneogo/snow/uptime"
+	"github.com/Juneo-io/juneogo/snow/validators"
+	"github.com/Juneo-io/juneogo/staking"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/crypto/bls"
+	"github.com/Juneo-io/juneogo/utils/ips"
+	"github.com/Juneo-io/juneogo/utils/logging"
+	"github.com/Juneo-io/juneogo/utils/math/meter"
+	"github.com/Juneo-io/juneogo/utils/resource"
+	"github.com/Juneo-io/juneogo/utils/set"
+	"github.com/Juneo-io/juneogo/version"
 )
 
 type testPeer struct {
@@ -60,7 +60,7 @@ func newMessageCreator(t *testing.T) message.Creator {
 	return mc
 }
 
-func makeRawTestPeers(t *testing.T, trackedSubnets set.Set[ids.ID]) (*rawTestPeer, *rawTestPeer) {
+func makeRawTestPeers(t *testing.T, trackedSupernets set.Set[ids.ID]) (*rawTestPeer, *rawTestPeer) {
 	t.Helper()
 	require := require.New(t)
 
@@ -102,7 +102,7 @@ func makeRawTestPeers(t *testing.T, trackedSubnets set.Set[ids.ID]) (*rawTestPee
 		Log:                  logging.NoLog{},
 		InboundMsgThrottler:  throttling.NewNoInboundThrottler(),
 		VersionCompatibility: version.GetCompatibility(constants.LocalID),
-		MySubnets:            trackedSubnets,
+		MySupernets:            trackedSupernets,
 		UptimeCalculator:     uptime.NoOpCalculator,
 		Beacons:              validators.NewManager(),
 		Validators:           validators.NewManager(),
@@ -158,8 +158,8 @@ func makeRawTestPeers(t *testing.T, trackedSubnets set.Set[ids.ID]) (*rawTestPee
 	return peer0, peer1
 }
 
-func makeTestPeers(t *testing.T, trackedSubnets set.Set[ids.ID]) (*testPeer, *testPeer) {
-	rawPeer0, rawPeer1 := makeRawTestPeers(t, trackedSubnets)
+func makeTestPeers(t *testing.T, trackedSupernets set.Set[ids.ID]) (*testPeer, *testPeer) {
+	rawPeer0, rawPeer1 := makeRawTestPeers(t, trackedSupernets)
 
 	peer0 := &testPeer{
 		Peer: Start(
@@ -194,11 +194,11 @@ func makeTestPeers(t *testing.T, trackedSubnets set.Set[ids.ID]) (*testPeer, *te
 	return peer0, peer1
 }
 
-func makeReadyTestPeers(t *testing.T, trackedSubnets set.Set[ids.ID]) (*testPeer, *testPeer) {
+func makeReadyTestPeers(t *testing.T, trackedSupernets set.Set[ids.ID]) (*testPeer, *testPeer) {
 	t.Helper()
 	require := require.New(t)
 
-	peer0, peer1 := makeTestPeers(t, trackedSubnets)
+	peer0, peer1 := makeTestPeers(t, trackedSupernets)
 
 	require.NoError(peer0.AwaitReady(context.Background()))
 	require.True(peer0.Ready())
@@ -272,10 +272,10 @@ func TestSend(t *testing.T) {
 }
 
 func TestPingUptimes(t *testing.T) {
-	trackedSubnetID := ids.GenerateTestID()
-	untrackedSubnetID := ids.GenerateTestID()
+	trackedSupernetID := ids.GenerateTestID()
+	untrackedSupernetID := ids.GenerateTestID()
 
-	trackedSubnets := set.Of(trackedSubnetID)
+	trackedSupernets := set.Of(trackedSupernetID)
 
 	mc := newMessageCreator(t)
 
@@ -297,19 +297,19 @@ func TestPingUptimes(t *testing.T) {
 				require.True(ok)
 				require.Equal(uint32(1), uptime)
 
-				uptime, ok = peer.ObservedUptime(trackedSubnetID)
+				uptime, ok = peer.ObservedUptime(trackedSupernetID)
 				require.False(ok)
 				require.Zero(uptime)
 			},
 		},
 		{
-			name: "primary network and subnet",
+			name: "primary network and supernet",
 			msg: func() message.OutboundMessage {
 				pingMsg, err := mc.Ping(
 					1,
-					[]*p2p.SubnetUptime{
+					[]*p2p.SupernetUptime{
 						{
-							SubnetId: trackedSubnetID[:],
+							SupernetId: trackedSupernetID[:],
 							Uptime:   1,
 						},
 					},
@@ -322,25 +322,25 @@ func TestPingUptimes(t *testing.T) {
 				require.True(ok)
 				require.Equal(uint32(1), uptime)
 
-				uptime, ok = peer.ObservedUptime(trackedSubnetID)
+				uptime, ok = peer.ObservedUptime(trackedSupernetID)
 				require.True(ok)
 				require.Equal(uint32(1), uptime)
 			},
 		},
 		{
-			name: "primary network and non tracked subnet",
+			name: "primary network and non tracked supernet",
 			msg: func() message.OutboundMessage {
 				pingMsg, err := mc.Ping(
 					1,
-					[]*p2p.SubnetUptime{
+					[]*p2p.SupernetUptime{
 						{
-							// Providing the untrackedSubnetID here should cause
+							// Providing the untrackedSupernetID here should cause
 							// the remote peer to disconnect from us.
-							SubnetId: untrackedSubnetID[:],
+							SupernetId: untrackedSupernetID[:],
 							Uptime:   1,
 						},
 						{
-							SubnetId: trackedSubnetID[:],
+							SupernetId: trackedSupernetID[:],
 							Uptime:   1,
 						},
 					},
@@ -354,7 +354,7 @@ func TestPingUptimes(t *testing.T) {
 
 	// Note: we reuse peers across tests because makeReadyTestPeers takes awhile
 	// to run.
-	peer0, peer1 := makeReadyTestPeers(t, trackedSubnets)
+	peer0, peer1 := makeReadyTestPeers(t, trackedSupernets)
 	defer func() {
 		peer1.StartClose()
 		peer0.StartClose()

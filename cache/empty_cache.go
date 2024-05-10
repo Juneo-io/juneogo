@@ -3,7 +3,7 @@
 
 package cache
 
-import "github.com/ava-labs/avalanchego/utils"
+import "github.com/Juneo-io/juneogo/utils"
 
 var _ Cacher[struct{}, struct{}] = (*Empty[struct{}, struct{}])(nil)
 

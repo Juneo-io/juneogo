@@ -13,10 +13,10 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow/engine/common"
-	"github.com/ava-labs/avalanchego/snow/validators"
-	"github.com/ava-labs/avalanchego/utils/logging"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow/engine/common"
+	"github.com/Juneo-io/juneogo/snow/validators"
+	"github.com/Juneo-io/juneogo/utils/logging"
 )
 
 func TestValidatorsSample(t *testing.T) {
@@ -167,7 +167,7 @@ func TestValidatorsSample(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			require := require.New(t)
-			subnetID := ids.GenerateTestID()
+			supernetID := ids.GenerateTestID()
 			ctrl := gomock.NewController(t)
 			mockValidators := validators.NewMockState(ctrl)
 
@@ -190,7 +190,7 @@ func TestValidatorsSample(t *testing.T) {
 
 				calls = append(calls,
 					mockValidators.EXPECT().
-						GetValidatorSet(gomock.Any(), gomock.Any(), subnetID).
+						GetValidatorSet(gomock.Any(), gomock.Any(), supernetID).
 						Return(validatorSet, call.getValidatorSetErr))
 			}
 			gomock.InOrder(calls...)
@@ -202,7 +202,7 @@ func TestValidatorsSample(t *testing.T) {
 			require.NoError(network.Connected(ctx, nodeID1, nil))
 			require.NoError(network.Connected(ctx, nodeID2, nil))
 
-			v := NewValidators(network.Peers, network.log, subnetID, mockValidators, tt.maxStaleness)
+			v := NewValidators(network.Peers, network.log, supernetID, mockValidators, tt.maxStaleness)
 			for _, call := range tt.calls {
 				v.lastUpdated = call.time
 				sampled := v.Sample(ctx, call.limit)
@@ -309,11 +309,11 @@ func TestValidatorsTop(t *testing.T) {
 				}
 			}
 
-			subnetID := ids.GenerateTestID()
+			supernetID := ids.GenerateTestID()
 			mockValidators := validators.NewMockState(ctrl)
 
 			mockValidators.EXPECT().GetCurrentHeight(gomock.Any()).Return(uint64(1), nil)
-			mockValidators.EXPECT().GetValidatorSet(gomock.Any(), uint64(1), subnetID).Return(validatorSet, nil)
+			mockValidators.EXPECT().GetValidatorSet(gomock.Any(), uint64(1), supernetID).Return(validatorSet, nil)
 
 			network, err := NewNetwork(logging.NoLog{}, &common.FakeSender{}, prometheus.NewRegistry(), "")
 			require.NoError(err)
@@ -322,7 +322,7 @@ func TestValidatorsTop(t *testing.T) {
 			require.NoError(network.Connected(ctx, nodeID1, nil))
 			require.NoError(network.Connected(ctx, nodeID2, nil))
 
-			v := NewValidators(network.Peers, network.log, subnetID, mockValidators, time.Second)
+			v := NewValidators(network.Peers, network.log, supernetID, mockValidators, time.Second)
 			nodeIDs := v.Top(ctx, test.percentage)
 			require.Equal(test.expected, nodeIDs)
 		})

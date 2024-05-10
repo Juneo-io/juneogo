@@ -12,12 +12,12 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow/validators"
-	"github.com/ava-labs/avalanchego/utils"
-	"github.com/ava-labs/avalanchego/utils/logging"
-	"github.com/ava-labs/avalanchego/utils/sampler"
-	"github.com/ava-labs/avalanchego/utils/set"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow/validators"
+	"github.com/Juneo-io/juneogo/utils"
+	"github.com/Juneo-io/juneogo/utils/logging"
+	"github.com/Juneo-io/juneogo/utils/sampler"
+	"github.com/Juneo-io/juneogo/utils/set"
 )
 
 var (
@@ -37,14 +37,14 @@ type ValidatorSubset interface {
 func NewValidators(
 	peers *Peers,
 	log logging.Logger,
-	subnetID ids.ID,
+	supernetID ids.ID,
 	validators validators.State,
 	maxValidatorSetStaleness time.Duration,
 ) *Validators {
 	return &Validators{
 		peers:                    peers,
 		log:                      log,
-		subnetID:                 subnetID,
+		supernetID:                 supernetID,
 		validators:               validators,
 		maxValidatorSetStaleness: maxValidatorSetStaleness,
 	}
@@ -54,7 +54,7 @@ func NewValidators(
 type Validators struct {
 	peers                    *Peers
 	log                      logging.Logger
-	subnetID                 ids.ID
+	supernetID                 ids.ID
 	validators               validators.State
 	maxValidatorSetStaleness time.Duration
 
@@ -92,7 +92,7 @@ func (v *Validators) refresh(ctx context.Context) {
 		v.log.Warn("failed to get current height", zap.Error(err))
 		return
 	}
-	validatorSet, err := v.validators.GetValidatorSet(ctx, height, v.subnetID)
+	validatorSet, err := v.validators.GetValidatorSet(ctx, height, v.supernetID)
 	if err != nil {
 		v.log.Warn("failed to get validator set", zap.Error(err))
 		return

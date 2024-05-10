@@ -4,8 +4,8 @@
 package avax
 
 import (
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/vms/components/verify"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/vms/components/verify"
 )
 
 var (

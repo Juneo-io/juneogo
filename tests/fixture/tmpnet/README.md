@@ -34,7 +34,7 @@ the following non-test files:
 | node.go           | Node        | Orchestrates and configures nodes              |
 | node_config.go    | Node        | Reads and writes node configuration            |
 | node_process.go   | NodeProcess | Orchestrates node processes                    |
-| subnet.go         | Subnet      | Orchestrates subnets                           |
+| supernet.go         | Supernet      | Orchestrates supernets                           |
 | utils.go          |             | Defines shared utility functions               |
 
 ## Usage
@@ -73,9 +73,9 @@ network.
 
 `tmpnetctl` was previously used to create temporary networks for use
 across multiple e2e test runs. As the usage of temporary networks has
-expanded to require subnets, that usage has been supplanted by the
+expanded to require supernets, that usage has been supplanted by the
 `--reuse-network` flag defined for the e2e suite. It was easier to
-support defining subnet configuration in the e2e suite in code than to
+support defining supernet configuration in the e2e suite in code than to
 extend a cli tool like `tmpnetctl` to support similar capabilities.
 
 ### Via code
@@ -87,9 +87,9 @@ network := &tmpnet.Network{                   // Configure non-default values fo
     DefaultFlags: tmpnet.FlagsMap{
         config.LogLevelKey: "INFO",           // Change one of the network's defaults
     },
-    Subnets: []*tmpnet.Subnet{                // Subnets to create on the new network once it is running
+    Supernets: []*tmpnet.Supernet{                // Supernets to create on the new network once it is running
         {
-            Name: "xsvm-a",                   // User-defined name used to reference subnet in code and on disk
+            Name: "xsvm-a",                   // User-defined name used to reference supernet in code and on disk
             Chains: []*tmpnet.Chain{
                 {
                     VMName: "xsvm",           // Name of the VM the chain will run, will be used to derive the name of the VM binary
@@ -162,11 +162,11 @@ HOME
             ├── config.json                              // Common configuration (including defaults and pre-funded keys)
             ├── genesis.json                             // Genesis for all nodes
             ├── network.env                              // Sets network dir env var to simplify network usage
-            └── subnets                                  // Directory containing subnet config for both avalanchego and tmpnet
-                ├── subnet-a.json                        // tmpnet configuration for subnet-a and its chain(s)
-                ├── subnet-b.json                        // tmpnet configuration for subnet-b and its chain(s)
-                └── 2jRbWtaonb2RP8DEM5DBsd7o2o8d...RqNs9 // The ID of a subnet is the name of its configuration dir
-                    └── config.json                      // avalanchego configuration for subnet
+            └── supernets                                  // Directory containing supernet config for both avalanchego and tmpnet
+                ├── supernet-a.json                        // tmpnet configuration for supernet-a and its chain(s)
+                ├── supernet-b.json                        // tmpnet configuration for supernet-b and its chain(s)
+                └── 2jRbWtaonb2RP8DEM5DBsd7o2o8d...RqNs9 // The ID of a supernet is the name of its configuration dir
+                    └── config.json                      // avalanchego configuration for supernet
 ```
 
 ### Common networking configuration
@@ -192,7 +192,7 @@ The chain configuration for a temporary network is stored at
 by all nodes in the network. The C-Chain config will be generated with
 reasonable defaults if not supplied. X-Chain and P-Chain will use
 implicit defaults. The configuration for custom chains can be provided
-with subnet configuration and will be writen to the appropriate path.
+with supernet configuration and will be writen to the appropriate path.
 
 Each node in the network can override network-level chain
 configuration by setting `--chain-config-dir` to an explicit value and

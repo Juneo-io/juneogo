@@ -6,10 +6,10 @@ package message
 import (
 	"time"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/proto/pb/p2p"
-	"github.com/ava-labs/avalanchego/utils/compression"
-	"github.com/ava-labs/avalanchego/utils/ips"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/proto/pb/p2p"
+	"github.com/Juneo-io/juneogo/utils/compression"
+	"github.com/Juneo-io/juneogo/utils/ips"
 )
 
 var _ OutboundMsgBuilder = (*outMsgBuilder)(nil)
@@ -29,7 +29,7 @@ type OutboundMsgBuilder interface {
 		ipSigningTime uint64,
 		ipNodeIDSig []byte,
 		ipBLSSig []byte,
-		trackedSubnets []ids.ID,
+		trackedSupernets []ids.ID,
 		supportedACPs []uint32,
 		objectedACPs []uint32,
 		knownPeersFilter []byte,
@@ -48,7 +48,7 @@ type OutboundMsgBuilder interface {
 
 	Ping(
 		primaryUptime uint32,
-		subnetUptimes []*p2p.SubnetUptime,
+		supernetUptimes []*p2p.SupernetUptime,
 	) (OutboundMessage, error)
 
 	Pong() (OutboundMessage, error)
@@ -197,14 +197,14 @@ func newOutboundBuilder(compressionType compression.Type, builder *msgBuilder) O
 
 func (b *outMsgBuilder) Ping(
 	primaryUptime uint32,
-	subnetUptimes []*p2p.SubnetUptime,
+	supernetUptimes []*p2p.SupernetUptime,
 ) (OutboundMessage, error) {
 	return b.builder.createOutbound(
 		&p2p.Message{
 			Message: &p2p.Message_Ping{
 				Ping: &p2p.Ping{
 					Uptime:        primaryUptime,
-					SubnetUptimes: subnetUptimes,
+					SupernetUptimes: supernetUptimes,
 				},
 			},
 		},
@@ -236,14 +236,14 @@ func (b *outMsgBuilder) Handshake(
 	ipSigningTime uint64,
 	ipNodeIDSig []byte,
 	ipBLSSig []byte,
-	trackedSubnets []ids.ID,
+	trackedSupernets []ids.ID,
 	supportedACPs []uint32,
 	objectedACPs []uint32,
 	knownPeersFilter []byte,
 	knownPeersSalt []byte,
 ) (OutboundMessage, error) {
-	subnetIDBytes := make([][]byte, len(trackedSubnets))
-	encodeIDs(trackedSubnets, subnetIDBytes)
+	supernetIDBytes := make([][]byte, len(trackedSupernets))
+	encodeIDs(trackedSupernets, supernetIDBytes)
 	return b.builder.createOutbound(
 		&p2p.Message{
 			Message: &p2p.Message_Handshake{
@@ -254,7 +254,7 @@ func (b *outMsgBuilder) Handshake(
 					IpPort:         uint32(ip.Port),
 					IpSigningTime:  ipSigningTime,
 					IpNodeIdSig:    ipNodeIDSig,
-					TrackedSubnets: subnetIDBytes,
+					TrackedSupernets: supernetIDBytes,
 					Client: &p2p.Client{
 						Name:  client,
 						Major: major,

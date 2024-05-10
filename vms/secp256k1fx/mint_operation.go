@@ -6,8 +6,8 @@ package secp256k1fx
 import (
 	"errors"
 
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/vms/components/verify"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/vms/components/verify"
 )
 
 var errNilMintOperation = errors.New("nil mint operation")

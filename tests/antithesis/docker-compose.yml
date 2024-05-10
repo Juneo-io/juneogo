@@ -3,7 +3,7 @@ networks:
     driver: bridge
     ipam:
       config:
-      - { subnet: 10.0.20.0/24 }
+      - { supernet: 10.0.20.0/24 }
 services:
   # workload waits until cluster is up, issues 5 transactions, and the intializes the wallet. THEN we start fuzzing
   workload:

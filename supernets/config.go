@@ -1,27 +1,27 @@
 // Copyright (C) 2019-2024, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
-package subnets
+package supernets
 
 import (
 	"errors"
 	"fmt"
 	"time"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow/consensus/snowball"
-	"github.com/ava-labs/avalanchego/utils/set"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow/consensus/snowball"
+	"github.com/Juneo-io/juneogo/utils/set"
 )
 
 var errAllowedNodesWhenNotValidatorOnly = errors.New("allowedNodes can only be set when ValidatorOnly is true")
 
 type Config struct {
-	// ValidatorOnly indicates that this Subnet's Chains are available to only subnet validators.
+	// ValidatorOnly indicates that this Supernet's Chains are available to only supernet validators.
 	// No chain related messages will go out to non-validators.
 	// Validators will drop messages received from non-validators.
-	// Also see [AllowedNodes] to allow non-validators to connect to this Subnet.
+	// Also see [AllowedNodes] to allow non-validators to connect to this Supernet.
 	ValidatorOnly bool `json:"validatorOnly" yaml:"validatorOnly"`
-	// AllowedNodes is the set of node IDs that are explicitly allowed to connect to this Subnet when
+	// AllowedNodes is the set of node IDs that are explicitly allowed to connect to this Supernet when
 	// ValidatorOnly is enabled.
 	AllowedNodes        set.Set[ids.NodeID] `json:"allowedNodes"        yaml:"allowedNodes"`
 	ConsensusParameters snowball.Parameters `json:"consensusParameters" yaml:"consensusParameters"`

@@ -4,10 +4,10 @@
 package builder
 
 import (
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/logging"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/logging"
 )
 
 const Alias = "X"
@@ -28,7 +28,7 @@ func NewSnowContext(
 	lookup := ids.NewAliaser()
 	return &snow.Context{
 		NetworkID:   networkID,
-		SubnetID:    constants.PrimaryNetworkID,
+		SupernetID:    constants.PrimaryNetworkID,
 		ChainID:     blockchainID,
 		XChainID:    blockchainID,
 		AVAXAssetID: avaxAssetID,

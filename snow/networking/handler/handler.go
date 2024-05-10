@@ -17,21 +17,21 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 
-	"github.com/ava-labs/avalanchego/api/health"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/message"
-	"github.com/ava-labs/avalanchego/network/p2p"
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/snow/engine/common"
-	"github.com/ava-labs/avalanchego/snow/networking/tracker"
-	"github.com/ava-labs/avalanchego/snow/validators"
-	"github.com/ava-labs/avalanchego/subnets"
-	"github.com/ava-labs/avalanchego/utils/logging"
-	"github.com/ava-labs/avalanchego/utils/set"
-	"github.com/ava-labs/avalanchego/utils/timer/mockable"
+	"github.com/Juneo-io/juneogo/api/health"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/message"
+	"github.com/Juneo-io/juneogo/network/p2p"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/snow/engine/common"
+	"github.com/Juneo-io/juneogo/snow/networking/tracker"
+	"github.com/Juneo-io/juneogo/snow/validators"
+	"github.com/Juneo-io/juneogo/supernets"
+	"github.com/Juneo-io/juneogo/utils/logging"
+	"github.com/Juneo-io/juneogo/utils/set"
+	"github.com/Juneo-io/juneogo/utils/timer/mockable"
 
-	p2ppb "github.com/ava-labs/avalanchego/proto/pb/p2p"
-	commontracker "github.com/ava-labs/avalanchego/snow/engine/common/tracker"
+	p2ppb "github.com/Juneo-io/juneogo/proto/pb/p2p"
+	commontracker "github.com/Juneo-io/juneogo/snow/engine/common/tracker"
 )
 
 const (
@@ -118,11 +118,11 @@ type handler struct {
 	// Closed when this handler and [engine] are done shutting down
 	closed chan struct{}
 
-	subnetConnector validators.SubnetConnector
+	supernetConnector validators.SupernetConnector
 
-	subnet subnets.Subnet
+	supernet supernets.Supernet
 
-	// Tracks the peers that are currently connected to this subnet
+	// Tracks the peers that are currently connected to this supernet
 	peerTracker commontracker.Peers
 	p2pTracker  *p2p.PeerTracker
 }
@@ -136,8 +136,8 @@ func New(
 	gossipFrequency time.Duration,
 	threadPoolSize int,
 	resourceTracker tracker.ResourceTracker,
-	subnetConnector validators.SubnetConnector,
-	subnet subnets.Subnet,
+	supernetConnector validators.SupernetConnector,
+	supernet supernets.Supernet,
 	peerTracker commontracker.Peers,
 	p2pTracker *p2p.PeerTracker,
 ) (Handler, error) {
@@ -145,14 +145,14 @@ func New(
 		ctx:             ctx,
 		validators:      validators,
 		msgFromVMChan:   msgFromVMChan,
-		preemptTimeouts: subnet.OnBootstrapCompleted(),
+		preemptTimeouts: supernet.OnBootstrapCompleted(),
 		gossipFrequency: gossipFrequency,
 		timeouts:        make(chan struct{}, 1),
 		closingChan:     make(chan struct{}),
 		closed:          make(chan struct{}),
 		resourceTracker: resourceTracker,
-		subnetConnector: subnetConnector,
-		subnet:          subnet,
+		supernetConnector: supernetConnector,
+		supernet:          supernet,
 		peerTracker:     peerTracker,
 		p2pTracker:      p2pTracker,
 	}
@@ -181,8 +181,8 @@ func (h *handler) Context() *snow.ConsensusContext {
 }
 
 func (h *handler) ShouldHandle(nodeID ids.NodeID) bool {
-	_, ok := h.validators.GetValidator(h.ctx.SubnetID, nodeID)
-	return h.subnet.IsAllowed(nodeID, ok)
+	_, ok := h.validators.GetValidator(h.ctx.SupernetID, nodeID)
+	return h.supernet.IsAllowed(nodeID, ok)
 }
 
 func (h *handler) SetEngineManager(engineManager *EngineManager) {
@@ -750,8 +750,8 @@ func (h *handler) handleSyncMsg(ctx context.Context, msg Message) error {
 		h.p2pTracker.Connected(nodeID, msg.NodeVersion)
 		return engine.Connected(ctx, nodeID, msg.NodeVersion)
 
-	case *message.ConnectedSubnet:
-		return h.subnetConnector.ConnectedSubnet(ctx, nodeID, msg.SubnetID)
+	case *message.ConnectedSupernet:
+		return h.supernetConnector.ConnectedSupernet(ctx, nodeID, msg.SupernetID)
 
 	case *message.Disconnected:
 		err := h.peerTracker.Disconnected(ctx, nodeID)

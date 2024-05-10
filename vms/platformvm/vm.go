@@ -15,47 +15,47 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"go.uber.org/zap"
 
-	"github.com/ava-labs/avalanchego/cache"
-	"github.com/ava-labs/avalanchego/codec"
-	"github.com/ava-labs/avalanchego/codec/linearcodec"
-	"github.com/ava-labs/avalanchego/database"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/snow/consensus/snowman"
-	"github.com/ava-labs/avalanchego/snow/engine/common"
-	"github.com/ava-labs/avalanchego/snow/uptime"
-	"github.com/ava-labs/avalanchego/snow/validators"
-	"github.com/ava-labs/avalanchego/utils"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/json"
-	"github.com/ava-labs/avalanchego/utils/logging"
-	"github.com/ava-labs/avalanchego/utils/timer/mockable"
-	"github.com/ava-labs/avalanchego/version"
-	"github.com/ava-labs/avalanchego/vms/components/avax"
-	"github.com/ava-labs/avalanchego/vms/platformvm/block"
-	"github.com/ava-labs/avalanchego/vms/platformvm/config"
-	"github.com/ava-labs/avalanchego/vms/platformvm/fx"
-	"github.com/ava-labs/avalanchego/vms/platformvm/metrics"
-	"github.com/ava-labs/avalanchego/vms/platformvm/network"
-	"github.com/ava-labs/avalanchego/vms/platformvm/reward"
-	"github.com/ava-labs/avalanchego/vms/platformvm/state"
-	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
-	"github.com/ava-labs/avalanchego/vms/platformvm/txs/mempool"
-	"github.com/ava-labs/avalanchego/vms/platformvm/utxo"
-	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
+	"github.com/Juneo-io/juneogo/cache"
+	"github.com/Juneo-io/juneogo/codec"
+	"github.com/Juneo-io/juneogo/codec/linearcodec"
+	"github.com/Juneo-io/juneogo/database"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/snow/consensus/snowman"
+	"github.com/Juneo-io/juneogo/snow/engine/common"
+	"github.com/Juneo-io/juneogo/snow/uptime"
+	"github.com/Juneo-io/juneogo/snow/validators"
+	"github.com/Juneo-io/juneogo/utils"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/json"
+	"github.com/Juneo-io/juneogo/utils/logging"
+	"github.com/Juneo-io/juneogo/utils/timer/mockable"
+	"github.com/Juneo-io/juneogo/version"
+	"github.com/Juneo-io/juneogo/vms/components/avax"
+	"github.com/Juneo-io/juneogo/vms/platformvm/block"
+	"github.com/Juneo-io/juneogo/vms/platformvm/config"
+	"github.com/Juneo-io/juneogo/vms/platformvm/fx"
+	"github.com/Juneo-io/juneogo/vms/platformvm/metrics"
+	"github.com/Juneo-io/juneogo/vms/platformvm/network"
+	"github.com/Juneo-io/juneogo/vms/platformvm/reward"
+	"github.com/Juneo-io/juneogo/vms/platformvm/state"
+	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
+	"github.com/Juneo-io/juneogo/vms/platformvm/txs/mempool"
+	"github.com/Juneo-io/juneogo/vms/platformvm/utxo"
+	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
 
-	snowmanblock "github.com/ava-labs/avalanchego/snow/engine/snowman/block"
-	blockbuilder "github.com/ava-labs/avalanchego/vms/platformvm/block/builder"
-	blockexecutor "github.com/ava-labs/avalanchego/vms/platformvm/block/executor"
-	txexecutor "github.com/ava-labs/avalanchego/vms/platformvm/txs/executor"
-	pvalidators "github.com/ava-labs/avalanchego/vms/platformvm/validators"
+	snowmanblock "github.com/Juneo-io/juneogo/snow/engine/snowman/block"
+	blockbuilder "github.com/Juneo-io/juneogo/vms/platformvm/block/builder"
+	blockexecutor "github.com/Juneo-io/juneogo/vms/platformvm/block/executor"
+	txexecutor "github.com/Juneo-io/juneogo/vms/platformvm/txs/executor"
+	pvalidators "github.com/Juneo-io/juneogo/vms/platformvm/validators"
 )
 
 var (
 	_ snowmanblock.ChainVM       = (*VM)(nil)
 	_ secp256k1fx.VM             = (*VM)(nil)
 	_ validators.State           = (*VM)(nil)
-	_ validators.SubnetConnector = (*VM)(nil)
+	_ validators.SupernetConnector = (*VM)(nil)
 )
 
 type VM struct {
@@ -183,7 +183,7 @@ func (vm *VM) Initialize(
 	vm.Network, err = network.New(
 		chainCtx.Log,
 		chainCtx.NodeID,
-		chainCtx.SubnetID,
+		chainCtx.SupernetID,
 		validators.NewLockedState(
 			&chainCtx.Lock,
 			validatorManager,
@@ -290,23 +290,23 @@ func (vm *VM) pruneMempool() error {
 func (vm *VM) initBlockchains() error {
 	if vm.Config.PartialSyncPrimaryNetwork {
 		vm.ctx.Log.Info("skipping primary network chain creation")
-	} else if err := vm.createSubnet(constants.PrimaryNetworkID); err != nil {
+	} else if err := vm.createSupernet(constants.PrimaryNetworkID); err != nil {
 		return err
 	}
 
 	if vm.SybilProtectionEnabled {
-		for subnetID := range vm.TrackedSubnets {
-			if err := vm.createSubnet(subnetID); err != nil {
+		for supernetID := range vm.TrackedSupernets {
+			if err := vm.createSupernet(supernetID); err != nil {
 				return err
 			}
 		}
 	} else {
-		subnets, err := vm.state.GetSubnets()
+		supernets, err := vm.state.GetSupernets()
 		if err != nil {
 			return err
 		}
-		for _, subnet := range subnets {
-			if err := vm.createSubnet(subnet.ID()); err != nil {
+		for _, supernet := range supernets {
+			if err := vm.createSupernet(supernet.ID()); err != nil {
 				return err
 			}
 		}
@@ -314,9 +314,9 @@ func (vm *VM) initBlockchains() error {
 	return nil
 }
 
-// Create the subnet with ID [subnetID]
-func (vm *VM) createSubnet(subnetID ids.ID) error {
-	chains, err := vm.state.GetChains(subnetID)
+// Create the supernet with ID [supernetID]
+func (vm *VM) createSupernet(supernetID ids.ID) error {
+	chains, err := vm.state.GetChains(supernetID)
 	if err != nil {
 		return err
 	}
@@ -355,14 +355,14 @@ func (vm *VM) onNormalOperationsStarted() error {
 	vl := validators.NewLogger(vm.ctx.Log, constants.PrimaryNetworkID, vm.ctx.NodeID)
 	vm.Validators.RegisterSetCallbackListener(constants.PrimaryNetworkID, vl)
 
-	for subnetID := range vm.TrackedSubnets {
-		vdrIDs := vm.Validators.GetValidatorIDs(subnetID)
-		if err := vm.uptimeManager.StartTracking(vdrIDs, subnetID); err != nil {
+	for supernetID := range vm.TrackedSupernets {
+		vdrIDs := vm.Validators.GetValidatorIDs(supernetID)
+		if err := vm.uptimeManager.StartTracking(vdrIDs, supernetID); err != nil {
 			return err
 		}
 
-		vl := validators.NewLogger(vm.ctx.Log, subnetID, vm.ctx.NodeID)
-		vm.Validators.RegisterSetCallbackListener(subnetID, vl)
+		vl := validators.NewLogger(vm.ctx.Log, supernetID, vm.ctx.NodeID)
+		vm.Validators.RegisterSetCallbackListener(supernetID, vl)
 	}
 
 	if err := vm.state.Commit(); err != nil {
@@ -400,9 +400,9 @@ func (vm *VM) Shutdown(context.Context) error {
 			return err
 		}
 
-		for subnetID := range vm.TrackedSubnets {
-			vdrIDs := vm.Validators.GetValidatorIDs(subnetID)
-			if err := vm.uptimeManager.StopTracking(vdrIDs, subnetID); err != nil {
+		for supernetID := range vm.TrackedSupernets {
+			vdrIDs := vm.Validators.GetValidatorIDs(supernetID)
+			if err := vm.uptimeManager.StopTracking(vdrIDs, supernetID); err != nil {
 				return err
 			}
 		}
@@ -475,8 +475,8 @@ func (vm *VM) Connected(_ context.Context, nodeID ids.NodeID, _ *version.Applica
 	return vm.uptimeManager.Connect(nodeID, constants.PrimaryNetworkID)
 }
 
-func (vm *VM) ConnectedSubnet(_ context.Context, nodeID ids.NodeID, subnetID ids.ID) error {
-	return vm.uptimeManager.Connect(nodeID, subnetID)
+func (vm *VM) ConnectedSupernet(_ context.Context, nodeID ids.NodeID, supernetID ids.ID) error {
+	return vm.uptimeManager.Connect(nodeID, supernetID)
 }
 
 func (vm *VM) Disconnected(_ context.Context, nodeID ids.NodeID) error {

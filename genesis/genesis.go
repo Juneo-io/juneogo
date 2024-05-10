@@ -8,23 +8,23 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/formatting"
-	"github.com/ava-labs/avalanchego/utils/formatting/address"
-	"github.com/ava-labs/avalanchego/utils/json"
-	"github.com/ava-labs/avalanchego/utils/set"
-	"github.com/ava-labs/avalanchego/vms/avm"
-	"github.com/ava-labs/avalanchego/vms/avm/fxs"
-	"github.com/ava-labs/avalanchego/vms/nftfx"
-	"github.com/ava-labs/avalanchego/vms/platformvm/api"
-	"github.com/ava-labs/avalanchego/vms/platformvm/genesis"
-	"github.com/ava-labs/avalanchego/vms/propertyfx"
-	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/formatting"
+	"github.com/Juneo-io/juneogo/utils/formatting/address"
+	"github.com/Juneo-io/juneogo/utils/json"
+	"github.com/Juneo-io/juneogo/utils/set"
+	"github.com/Juneo-io/juneogo/vms/avm"
+	"github.com/Juneo-io/juneogo/vms/avm/fxs"
+	"github.com/Juneo-io/juneogo/vms/nftfx"
+	"github.com/Juneo-io/juneogo/vms/platformvm/api"
+	"github.com/Juneo-io/juneogo/vms/platformvm/genesis"
+	"github.com/Juneo-io/juneogo/vms/propertyfx"
+	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
 
-	xchaintxs "github.com/ava-labs/avalanchego/vms/avm/txs"
-	pchaintxs "github.com/ava-labs/avalanchego/vms/platformvm/txs"
+	xchaintxs "github.com/Juneo-io/juneogo/vms/avm/txs"
+	pchaintxs "github.com/Juneo-io/juneogo/vms/platformvm/txs"
 )
 
 const (
@@ -556,7 +556,7 @@ func FromConfig(config *Config) ([]byte, ids.ID, error) {
 	platformvmArgs.Chains = []api.Chain{
 		{
 			GenesisData: avmReply.Bytes,
-			SubnetID:  constants.PrimaryNetworkID,
+			SupernetID:  constants.PrimaryNetworkID,
 			VMID:        constants.AVMID,
 			FxIDs: []ids.ID{
 				secp256k1fx.ID,
@@ -568,84 +568,84 @@ func FromConfig(config *Config) ([]byte, ids.ID, error) {
 		},
 		{
 			GenesisData:  juneGenesisStr,
-			SubnetID:   constants.PrimaryNetworkID,
+			SupernetID:   constants.PrimaryNetworkID,
 			VMID:         constants.EVMID,
 			Name:         "JUNE-Chain",
 			ChainAssetID: assetsIDs[june.Symbol],
 		},
 		{
 			GenesisData:  usdt1GenesisStr,
-			SubnetID:   constants.PrimaryNetworkID,
+			SupernetID:   constants.PrimaryNetworkID,
 			VMID:         constants.EVMID,
 			Name:         "USDT1-Chain",
 			ChainAssetID: assetsIDs[usdt1.Symbol],
 		},
 		{
 			GenesisData:  usd1GenesisStr,
-			SubnetID:   constants.PrimaryNetworkID,
+			SupernetID:   constants.PrimaryNetworkID,
 			VMID:         constants.EVMID,
 			Name:         "USD1-Chain",
 			ChainAssetID: assetsIDs[usd1.Symbol],
 		},
 		{
 			GenesisData:  dai1GenesisStr,
-			SubnetID:   constants.PrimaryNetworkID,
+			SupernetID:   constants.PrimaryNetworkID,
 			VMID:         constants.EVMID,
 			Name:         "DAI1-Chain",
 			ChainAssetID: assetsIDs[dai1.Symbol],
 		},
 		{
 			GenesisData:  eur1GenesisStr,
-			SubnetID:   constants.PrimaryNetworkID,
+			SupernetID:   constants.PrimaryNetworkID,
 			VMID:         constants.EVMID,
 			Name:         "EUR1-Chain",
 			ChainAssetID: assetsIDs[eur1.Symbol],
 		},
 		{
 			GenesisData:  sgd1GenesisStr,
-			SubnetID:   constants.PrimaryNetworkID,
+			SupernetID:   constants.PrimaryNetworkID,
 			VMID:         constants.EVMID,
 			Name:         "SGD1-Chain",
 			ChainAssetID: assetsIDs[sgd1.Symbol],
 		},
 		{
 			GenesisData:  gld1GenesisStr,
-			SubnetID:   constants.PrimaryNetworkID,
+			SupernetID:   constants.PrimaryNetworkID,
 			VMID:         constants.EVMID,
 			Name:         "GLD1-Chain",
 			ChainAssetID: assetsIDs[gld1.Symbol],
 		},
 		{
 			GenesisData:  mbtc1GenesisStr,
-			SubnetID:   constants.PrimaryNetworkID,
+			SupernetID:   constants.PrimaryNetworkID,
 			VMID:         constants.EVMID,
 			Name:         "mBTC1-Chain",
 			ChainAssetID: assetsIDs[mbtc1.Symbol],
 		},
 		{
 			GenesisData:  doge1GenesisStr,
-			SubnetID:   constants.PrimaryNetworkID,
+			SupernetID:   constants.PrimaryNetworkID,
 			VMID:         constants.EVMID,
 			Name:         "DOGE1-Chain",
 			ChainAssetID: assetsIDs[doge1.Symbol],
 		},
 		{
 			GenesisData:  ltc1GenesisStr,
-			SubnetID:   constants.PrimaryNetworkID,
+			SupernetID:   constants.PrimaryNetworkID,
 			VMID:         constants.EVMID,
 			Name:         "LTC1-Chain",
 			ChainAssetID: assetsIDs[ltc1.Symbol],
 		},
 		{
 			GenesisData:  bch1GenesisStr,
-			SubnetID:   constants.PrimaryNetworkID,
+			SupernetID:   constants.PrimaryNetworkID,
 			VMID:         constants.EVMID,
 			Name:         "BCH1-Chain",
 			ChainAssetID: assetsIDs[bch1.Symbol],
 		},
 		{
 			GenesisData:  link1GenesisStr,
-			SubnetID:   constants.PrimaryNetworkID,
+			SupernetID:   constants.PrimaryNetworkID,
 			VMID:         constants.EVMID,
 			Name:         "LINK1-Chain",
 			ChainAssetID: assetsIDs[link1.Symbol],

@@ -8,11 +8,11 @@ import (
 
 	_ "embed"
 
-	"github.com/ava-labs/avalanchego/utils/cb58"
-	"github.com/ava-labs/avalanchego/utils/crypto/secp256k1"
-	"github.com/ava-labs/avalanchego/utils/units"
-	"github.com/ava-labs/avalanchego/utils/wrappers"
-	"github.com/ava-labs/avalanchego/vms/platformvm/reward"
+	"github.com/Juneo-io/juneogo/utils/cb58"
+	"github.com/Juneo-io/juneogo/utils/crypto/secp256k1"
+	"github.com/Juneo-io/juneogo/utils/units"
+	"github.com/Juneo-io/juneogo/utils/wrappers"
+	"github.com/Juneo-io/juneogo/vms/platformvm/reward"
 )
 
 // cushion valley very silver fragile car syrup slam army roast conduct jacket
@@ -40,13 +40,13 @@ var (
 		TxFeeConfig: TxFeeConfig{
 			TxFee:                         10 * units.MilliAvax,
 			CreateAssetTxFee:              100 * units.MilliAvax,
-			CreateSubnetTxFee:           100 * units.MilliAvax,
-			TransformSubnetTxFee:        10 * units.Avax,
+			CreateSupernetTxFee:           100 * units.MilliAvax,
+			TransformSupernetTxFee:        10 * units.Avax,
 			CreateBlockchainTxFee:         100 * units.MilliAvax,
 			AddPrimaryNetworkValidatorFee: 0,
 			AddPrimaryNetworkDelegatorFee: 0,
-			AddSubnetValidatorFee:       100 * units.MilliAvax,
-			AddSubnetDelegatorFee:       100 * units.MilliAvax,
+			AddSupernetValidatorFee:       100 * units.MilliAvax,
+			AddSupernetDelegatorFee:       100 * units.MilliAvax,
 		},
 		StakingConfig: StakingConfig{
 			UptimeRequirement: .8, // 80%

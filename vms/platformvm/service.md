@@ -447,7 +447,7 @@ platform.getBlockchains() ->
     blockchains: []{
         id: string,
         name:string,
-        subnetID: string,
+        supernetID: string,
         vmID: string
     }
 }
@@ -456,7 +456,7 @@ platform.getBlockchains() ->
 - `blockchains` is all of the blockchains that exists on the Avalanche network.
 - `name` is the human-readable name of this blockchain.
 - `id` is the blockchain’s ID.
-- `subnetID` is the ID of the Subnet that validates this blockchain.
+- `supernetID` is the ID of the Supernet that validates this blockchain.
 - `vmID` is the ID of the Virtual Machine the blockchain runs.
 
 **Example Call:**
@@ -480,43 +480,43 @@ curl -X POST --data '{
       {
         "id": "2oYMBNV4eNHyqk2fjjV5nVQLDbtmNJzq5s3qs3Lo6ftnC6FByM",
         "name": "X-Chain",
-        "subnetID": "11111111111111111111111111111111LpoYY",
+        "supernetID": "11111111111111111111111111111111LpoYY",
         "vmID": "jvYyfQTxGMJLuGWa55kdP2p2zSUYsQ5Raupu4TW34ZAUBAbtq"
       },
       {
         "id": "2q9e4r6Mu3U68nU1fYjgbR6JvwrRx36CohpAX5UQxse55x1Q5",
         "name": "C-Chain",
-        "subnetID": "11111111111111111111111111111111LpoYY",
+        "supernetID": "11111111111111111111111111111111LpoYY",
         "vmID": "mgj786NP7uDwBCcq6YwThhaN8FLyybkCa4zBWTQbNgmK6k9A6"
       },
       {
         "id": "CqhF97NNugqYLiGaQJ2xckfmkEr8uNeGG5TQbyGcgnZ5ahQwa",
         "name": "Simple DAG Payments",
-        "subnetID": "11111111111111111111111111111111LpoYY",
+        "supernetID": "11111111111111111111111111111111LpoYY",
         "vmID": "sqjdyTKUSrQs1YmKDTUbdUhdstSdtRTGRbUn8sqK8B6pkZkz1"
       },
       {
         "id": "VcqKNBJsYanhVFxGyQE5CyNVYxL3ZFD7cnKptKWeVikJKQkjv",
         "name": "Simple Chain Payments",
-        "subnetID": "11111111111111111111111111111111LpoYY",
+        "supernetID": "11111111111111111111111111111111LpoYY",
         "vmID": "sqjchUjzDqDfBPGjfQq2tXW1UCwZTyvzAWHsNzF2cb1eVHt6w"
       },
       {
         "id": "2SMYrx4Dj6QqCEA3WjnUTYEFSnpqVTwyV3GPNgQqQZbBbFgoJX",
         "name": "Simple Timestamp Server",
-        "subnetID": "11111111111111111111111111111111LpoYY",
+        "supernetID": "11111111111111111111111111111111LpoYY",
         "vmID": "tGas3T58KzdjLHhBDMnH2TvrddhqTji5iZAMZ3RXs2NLpSnhH"
       },
       {
         "id": "KDYHHKjM4yTJTT8H8qPs5KXzE6gQH5TZrmP1qVr1P6qECj3XN",
         "name": "My new timestamp",
-        "subnetID": "2bRCr6B4MiEfSjidDwxDpdCyviwnfUVqB2HGwhm947w9YYqb7r",
+        "supernetID": "2bRCr6B4MiEfSjidDwxDpdCyviwnfUVqB2HGwhm947w9YYqb7r",
         "vmID": "tGas3T58KzdjLHhBDMnH2TvrddhqTji5iZAMZ3RXs2NLpSnhH"
       },
       {
         "id": "2TtHFqEAAJ6b33dromYMqfgavGPF3iCpdG3hwNMiart2aB5QHi",
         "name": "My new AVM",
-        "subnetID": "2bRCr6B4MiEfSjidDwxDpdCyviwnfUVqB2HGwhm947w9YYqb7r",
+        "supernetID": "2bRCr6B4MiEfSjidDwxDpdCyviwnfUVqB2HGwhm947w9YYqb7r",
         "vmID": "jvYyfQTxGMJLuGWa55kdP2p2zSUYsQ5Raupu4TW34ZAUBAbtq"
       }
     ]
@@ -576,14 +576,14 @@ curl -X POST --data '{
 
 ### `platform.getCurrentSupply`
 
-Returns an upper bound on amount of tokens that exist that can stake the requested Subnet. This is
+Returns an upper bound on amount of tokens that exist that can stake the requested Supernet. This is
 an upper bound because it does not account for burnt tokens, including transaction fees.
 
 **Signature:**
 
 ```sh
 platform.getCurrentSupply({
-    subnetID: string // optional
+    supernetID: string // optional
 }) -> {supply: int}
 ```
 
@@ -596,7 +596,7 @@ curl -X POST --data '{
     "jsonrpc": "2.0",
     "method": "platform.getCurrentSupply",
     "params": {
-        "subnetID": "11111111111111111111111111111111LpoYY"
+        "supernetID": "11111111111111111111111111111111LpoYY"
     },
     "id": 1
 }' -H 'content-type:application/json;' 127.0.0.1:9650/ext/bc/P
@@ -618,13 +618,13 @@ The response in this example indicates that AVAX’s supply is at most 365.865 m
 
 ### `platform.getCurrentValidators`
 
-List the current validators of the given Subnet.
+List the current validators of the given Supernet.
 
 **Signature:**
 
 ```sh
 platform.getCurrentValidators({
-    subnetID: string, // optional
+    supernetID: string, // optional
     nodeIDs: string[], // optional
 }) -> {
     validators: []{
@@ -671,41 +671,41 @@ platform.getCurrentValidators({
 }
 ```
 
-- `subnetID` is the Subnet whose current validators are returned. If omitted, returns the current
+- `supernetID` is the Supernet whose current validators are returned. If omitted, returns the current
   validators of the Primary Network.
 - `nodeIDs` is a list of the NodeIDs of current validators to request. If omitted, all current
   validators are returned. If a specified NodeID is not in the set of current validators, it will
   not be included in the response.
 - `validators`:
   - `txID` is the validator transaction.
-  - `startTime` is the Unix time when the validator starts validating the Subnet.
-  - `endTime` is the Unix time when the validator stops validating the Subnet.
-  - `stakeAmount` is the amount of tokens this validator staked. Omitted if `subnetID` is not a PoS
-    Subnet.
+  - `startTime` is the Unix time when the validator starts validating the Supernet.
+  - `endTime` is the Unix time when the validator stops validating the Supernet.
+  - `stakeAmount` is the amount of tokens this validator staked. Omitted if `supernetID` is not a PoS
+    Supernet.
   - `nodeID` is the validator’s node ID.
-  - `weight` is the validator’s weight when sampling validators. Omitted if `subnetID` is a PoS
-    Subnet.
+  - `weight` is the validator’s weight when sampling validators. Omitted if `supernetID` is a PoS
+    Supernet.
   - `validationRewardOwner` is an `OutputOwners` output which includes `locktime`, `threshold` and
     array of `addresses`. Specifies the owner of the potential reward earned from staking. Omitted
-    if `subnetID` is not a PoS Subnet.
+    if `supernetID` is not a PoS Supernet.
   - `delegationRewardOwner` is an `OutputOwners` output which includes `locktime`, `threshold` and
     array of `addresses`. Specifies the owner of the potential reward earned from delegations.
-    Omitted if `subnetID` is not a PoS Subnet.
-  - `potentialReward` is the potential reward earned from staking. Omitted if `subnetID` is not a
-    PoS Subnet.
+    Omitted if `supernetID` is not a PoS Supernet.
+  - `potentialReward` is the potential reward earned from staking. Omitted if `supernetID` is not a
+    PoS Supernet.
   - `delegationFeeRate` is the percent fee this validator charges when others delegate stake to
-    them. Omitted if `subnetID` is not a PoS Subnet.
+    them. Omitted if `supernetID` is not a PoS Supernet.
   - `uptime` is the % of time the queried node has reported the peer as online and validating the
-    Subnet. Omitted if `subnetID` is not a PoS Subnet.
-  - `connected` is if the node is connected and tracks the Subnet.
+    Supernet. Omitted if `supernetID` is not a PoS Supernet.
+  - `connected` is if the node is connected and tracks the Supernet.
   - `signer` is the node's BLS public key and proof of possession. Omitted if the validator doesn't
     have a BLS public key.
   - `delegatorCount` is the number of delegators on this validator.
-    Omitted if `subnetID` is not a PoS Subnet.
+    Omitted if `supernetID` is not a PoS Supernet.
   - `delegatorWeight` is total weight of delegators on this validator.
-    Omitted if `subnetID` is not a PoS Subnet.
+    Omitted if `supernetID` is not a PoS Supernet.
   - `delegators` is the list of delegators to this validator.
-    Omitted if `subnetID` is not a PoS Subnet.
+    Omitted if `supernetID` is not a PoS Supernet.
     Omitted unless `nodeIDs` specifies a single NodeID.
     - `txID` is the delegator transaction.
     - `startTime` is the Unix time when the delegator started.
@@ -831,7 +831,7 @@ Returns the maximum amount of nAVAX staking to the named node during a particula
 ```sh
 platform.getMaxStakeAmount(
     {
-        subnetID: string,
+        supernetID: string,
         nodeID: string,
         startTime: int,
         endTime: int
@@ -842,7 +842,7 @@ platform.getMaxStakeAmount(
 }
 ```
 
-- `subnetID` is a Buffer or cb58 string representing Subnet
+- `supernetID` is a Buffer or cb58 string representing Supernet
 - `nodeID` is a string representing ID of the node whose stake amount is required during the given
   duration
 - `startTime` is a big number denoting start time of the duration during which stake amount of the
@@ -857,7 +857,7 @@ curl -X POST --data '{
     "jsonrpc": "2.0",
     "method": "platform.getMaxStakeAmount",
     "params": {
-        "subnetID":"11111111111111111111111111111111LpoYY",
+        "supernetID":"11111111111111111111111111111111LpoYY",
         "nodeID":"NodeID-7Xhw2mDxuDS44j42TCB6U5579esbSt3Lg",
         "startTime": 1644240334,
         "endTime": 1644240634
@@ -880,14 +880,14 @@ curl -X POST --data '{
 
 ### `platform.getMinStake`
 
-Get the minimum amount of tokens required to validate the requested Subnet and the minimum amount of
+Get the minimum amount of tokens required to validate the requested Supernet and the minimum amount of
 tokens that can be delegated.
 
 **Signature:**
 
 ```sh
 platform.getMinStake({
-    subnetID: string // optional
+    supernetID: string // optional
 }) ->
 {
     minValidatorStake : uint64,
@@ -903,7 +903,7 @@ curl -X POST --data '{
     "id"     :1,
     "method" :"platform.getMinStake",
     "params": {
-        "subnetID":"11111111111111111111111111111111LpoYY"
+        "supernetID":"11111111111111111111111111111111LpoYY"
     },
 }' -H 'content-type:application/json;' 127.0.0.1:9650/ext/bc/P
 ```
@@ -923,14 +923,14 @@ curl -X POST --data '{
 
 ### `platform.getPendingValidators`
 
-List the validators in the pending validator set of the specified Subnet. Each validator is not
-currently validating the Subnet but will in the future.
+List the validators in the pending validator set of the specified Supernet. Each validator is not
+currently validating the Supernet but will in the future.
 
 **Signature:**
 
 ```sh
 platform.getPendingValidators({
-    subnetID: string, // optional
+    supernetID: string, // optional
     nodeIDs: string[], // optional
 }) -> {
     validators: []{
@@ -957,23 +957,23 @@ platform.getPendingValidators({
 }
 ```
 
-- `subnetID` is the Subnet whose current validators are returned. If omitted, returns the current
+- `supernetID` is the Supernet whose current validators are returned. If omitted, returns the current
   validators of the Primary Network.
 - `nodeIDs` is a list of the NodeIDs of pending validators to request. If omitted, all pending
   validators are returned. If a specified NodeID is not in the set of pending validators, it will
   not be included in the response.
 - `validators`:
   - `txID` is the validator transaction.
-  - `startTime` is the Unix time when the validator starts validating the Subnet.
-  - `endTime` is the Unix time when the validator stops validating the Subnet.
-  - `stakeAmount` is the amount of tokens this validator staked. Omitted if `subnetID` is not a PoS
-    Subnet.
+  - `startTime` is the Unix time when the validator starts validating the Supernet.
+  - `endTime` is the Unix time when the validator stops validating the Supernet.
+  - `stakeAmount` is the amount of tokens this validator staked. Omitted if `supernetID` is not a PoS
+    Supernet.
   - `nodeID` is the validator’s node ID.
-  - `connected` if the node is connected and tracks the Subnet.
+  - `connected` if the node is connected and tracks the Supernet.
   - `signer` is the node's BLS public key and proof of possession. Omitted if the validator doesn't
     have a BLS public key.
-  - `weight` is the validator’s weight when sampling validators. Omitted if `subnetID` is a PoS
-    Subnet.
+  - `weight` is the validator’s weight when sampling validators. Omitted if `supernetID` is a PoS
+    Supernet.
 - `delegators`:
   - `txID` is the delegator transaction.
   - `startTime` is the Unix time when the delegator starts.
@@ -1152,20 +1152,20 @@ curl -X POST --data '{
 
 ### `platform.getStakingAssetID`
 
-Retrieve an assetID for a Subnet’s staking asset.
+Retrieve an assetID for a Supernet’s staking asset.
 
 **Signature:**
 
 ```sh
 platform.getStakingAssetID({
-    subnetID: string // optional
+    supernetID: string // optional
 }) -> {
     assetID: string
 }
 ```
 
-- `subnetID` is the Subnet whose assetID is requested.
-- `assetID` is the assetID for a Subnet’s staking asset.
+- `supernetID` is the Supernet whose assetID is requested.
+- `assetID` is the assetID for a Supernet’s staking asset.
 
 **Example Call:**
 
@@ -1174,7 +1174,7 @@ curl -X POST --data '{
     "jsonrpc": "2.0",
     "method": "platform.getStakingAssetID",
     "params": {
-        "subnetID": "11111111111111111111111111111111LpoYY"
+        "supernetID": "11111111111111111111111111111111LpoYY"
     },
     "id": 1
 }' -H 'content-type:application/json;' 127.0.0.1:9650/ext/bc/P
@@ -1202,7 +1202,7 @@ Testnet: U8iRqJoiJm8xZHAacmvYyZVwqQx6uDNtQeP3CQ6fcgQk3JqnK
 
 :::
 
-### `platform.getSubnets`
+### `platform.getSupernets`
 
 :::caution
 
@@ -1210,16 +1210,16 @@ Deprecated as of [**v1.9.12**](https://github.com/ava-labs/avalanchego/releases/
 
 :::
 
-Get info about the Subnets.
+Get info about the Supernets.
 
 **Signature:**
 
 ```sh
-platform.getSubnets({
+platform.getSupernets({
     ids: []string
 }) ->
 {
-    subnets: []{
+    supernets: []{
         id: string,
         controlKeys: []string,
         threshold: string
@@ -1227,22 +1227,22 @@ platform.getSubnets({
 }
 ```
 
-- `ids` are the IDs of the Subnets to get information about. If omitted, gets information about all
-  Subnets.
-- `id` is the Subnet’s ID.
+- `ids` are the IDs of the Supernets to get information about. If omitted, gets information about all
+  Supernets.
+- `id` is the Supernet’s ID.
 - `threshold` signatures from addresses in `controlKeys` are needed to add a validator to the
-  Subnet. If the Subnet is a PoS Subnet, then `threshold` will be `0` and `controlKeys` will be
+  Supernet. If the Supernet is a PoS Supernet, then `threshold` will be `0` and `controlKeys` will be
   empty.
 
 See [here](/nodes/validate/add-a-validator.md) for information on adding a validator to a
-Subnet.
+Supernet.
 
 **Example Call:**
 
 ```sh
 curl -X POST --data '{
     "jsonrpc": "2.0",
-    "method": "platform.getSubnets",
+    "method": "platform.getSupernets",
     "params": {"ids":["hW8Ma7dLMA7o4xmJf3AXBbo17bXzE7xnThUd3ypM4VAWo1sNJ"]},
     "id": 1
 }' -H 'content-type:application/json;' 127.0.0.1:9650/ext/bc/P
@@ -1254,7 +1254,7 @@ curl -X POST --data '{
 {
   "jsonrpc": "2.0",
   "result": {
-    "subnets": [
+    "supernets": [
       {
         "id": "hW8Ma7dLMA7o4xmJf3AXBbo17bXzE7xnThUd3ypM4VAWo1sNJ",
         "controlKeys": [
@@ -1305,13 +1305,13 @@ curl -X POST --data '{
 
 ### `platform.getTotalStake`
 
-Get the total amount of tokens staked on the requested Subnet.
+Get the total amount of tokens staked on the requested Supernet.
 
 **Signature:**
 
 ```sh
 platform.getTotalStake({
-    subnetID: string
+    supernetID: string
 }) -> {
     stake: int
     weight: int
@@ -1327,7 +1327,7 @@ curl -X POST --data '{
     "jsonrpc": "2.0",
     "method": "platform.getTotalStake",
     "params": {
-      "subnetID": "11111111111111111111111111111111LpoYY"
+      "supernetID": "11111111111111111111111111111111LpoYY"
     },
     "id": 1
 }
@@ -1347,7 +1347,7 @@ curl -X POST --data '{
 }
 ```
 
-#### Subnet Example
+#### Supernet Example
 
 **Example Call:**
 
@@ -1356,7 +1356,7 @@ curl -X POST --data '{
     "jsonrpc": "2.0",
     "method": "platform.getTotalStake",
     "params": {
-        "subnetID": "2bRCr6B4MiEfSjidDwxDpdCyviwnfUVqB2HGwhm947w9YYqb7r",
+        "supernetID": "2bRCr6B4MiEfSjidDwxDpdCyviwnfUVqB2HGwhm947w9YYqb7r",
     },
     "id": 1
 }
@@ -1702,7 +1702,7 @@ This gives response:
 
 ### `platform.getValidatorsAt`
 
-Get the validators and their weights of a Subnet or the Primary Network at a given P-Chain height.
+Get the validators and their weights of a Supernet or the Primary Network at a given P-Chain height.
 
 **Signature:**
 
@@ -1710,13 +1710,13 @@ Get the validators and their weights of a Subnet or the Primary Network at a giv
 platform.getValidatorsAt(
     {
         height: int,
-        subnetID: string, // optional
+        supernetID: string, // optional
     }
 )
 ```
 
 - `height` is the P-Chain height to get the validator set at.
-- `subnetID` is the Subnet ID to get the validator set of. If not given, gets validator set of the
+- `supernetID` is the Supernet ID to get the validator set of. If not given, gets validator set of the
   Primary Network.
 
 **Example Call:**
@@ -1847,7 +1847,7 @@ curl -X POST --data '{
 
 ### `platform.sampleValidators`
 
-Sample validators from the specified Subnet.
+Sample validators from the specified Supernet.
 
 **Signature:**
 
@@ -1855,7 +1855,7 @@ Sample validators from the specified Subnet.
 platform.sampleValidators(
     {
         size: int,
-        subnetID: string, // optional
+        supernetID: string, // optional
     }
 ) ->
 {
@@ -1864,7 +1864,7 @@ platform.sampleValidators(
 ```
 
 - `size` is the number of validators to sample.
-- `subnetID` is the Subnet to sampled from. If omitted, defaults to the Primary Network.
+- `supernetID` is the Supernet to sampled from. If omitted, defaults to the Primary Network.
 - Each element of `validators` is the ID of a validator.
 
 **Example Call:**
@@ -1897,7 +1897,7 @@ curl -X POST --data '{
 
 ### `platform.validatedBy`
 
-Get the Subnet that validates a given blockchain.
+Get the Supernet that validates a given blockchain.
 
 **Signature:**
 
@@ -1906,11 +1906,11 @@ platform.validatedBy(
     {
         blockchainID: string
     }
-) -> {subnetID: string}
+) -> {supernetID: string}
 ```
 
 - `blockchainID` is the blockchain’s ID.
-- `subnetID` is the ID of the Subnet that validates the blockchain.
+- `supernetID` is the ID of the Supernet that validates the blockchain.
 
 **Example Call:**
 
@@ -1931,7 +1931,7 @@ curl -X POST --data '{
 {
   "jsonrpc": "2.0",
   "result": {
-    "subnetID": "2bRCr6B4MiEfSjidDwxDpdCyviwnfUVqB2HGwhm947w9YYqb7r"
+    "supernetID": "2bRCr6B4MiEfSjidDwxDpdCyviwnfUVqB2HGwhm947w9YYqb7r"
   },
   "id": 1
 }
@@ -1939,20 +1939,20 @@ curl -X POST --data '{
 
 ### `platform.validates`
 
-Get the IDs of the blockchains a Subnet validates.
+Get the IDs of the blockchains a Supernet validates.
 
 **Signature:**
 
 ```sh
 platform.validates(
     {
-        subnetID: string
+        supernetID: string
     }
 ) -> {blockchainIDs: []string}
 ```
 
-- `subnetID` is the Subnet’s ID.
-- Each element of `blockchainIDs` is the ID of a blockchain the Subnet validates.
+- `supernetID` is the Supernet’s ID.
+- Each element of `blockchainIDs` is the ID of a blockchain the Supernet validates.
 
 **Example Call:**
 
@@ -1961,7 +1961,7 @@ curl -X POST --data '{
     "jsonrpc": "2.0",
     "method": "platform.validates",
     "params": {
-        "subnetID":"2bRCr6B4MiEfSjidDwxDpdCyviwnfUVqB2HGwhm947w9YYqb7r"
+        "supernetID":"2bRCr6B4MiEfSjidDwxDpdCyviwnfUVqB2HGwhm947w9YYqb7r"
     },
     "id": 1
 }' -H 'content-type:application/json;' 127.0.0.1:9650/ext/bc/P

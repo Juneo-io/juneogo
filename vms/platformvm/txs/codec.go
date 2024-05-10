@@ -6,13 +6,13 @@ package txs
 import (
 	"math"
 
-	"github.com/ava-labs/avalanchego/codec"
-	"github.com/ava-labs/avalanchego/codec/linearcodec"
-	"github.com/ava-labs/avalanchego/utils"
-	"github.com/ava-labs/avalanchego/utils/wrappers"
-	"github.com/ava-labs/avalanchego/vms/platformvm/signer"
-	"github.com/ava-labs/avalanchego/vms/platformvm/stakeable"
-	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
+	"github.com/Juneo-io/juneogo/codec"
+	"github.com/Juneo-io/juneogo/codec/linearcodec"
+	"github.com/Juneo-io/juneogo/utils"
+	"github.com/Juneo-io/juneogo/utils/wrappers"
+	"github.com/Juneo-io/juneogo/vms/platformvm/signer"
+	"github.com/Juneo-io/juneogo/vms/platformvm/stakeable"
+	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
 )
 
 const CodecVersion = 0
@@ -79,10 +79,10 @@ func RegisterUnsignedTxsTypes(targetCodec linearcodec.Codec) error {
 		targetCodec.RegisterType(&secp256k1fx.OutputOwners{}),
 
 		targetCodec.RegisterType(&AddValidatorTx{}),
-		targetCodec.RegisterType(&AddSubnetValidatorTx{}),
+		targetCodec.RegisterType(&AddSupernetValidatorTx{}),
 		targetCodec.RegisterType(&AddDelegatorTx{}),
 		targetCodec.RegisterType(&CreateChainTx{}),
-		targetCodec.RegisterType(&CreateSubnetTx{}),
+		targetCodec.RegisterType(&CreateSupernetTx{}),
 		targetCodec.RegisterType(&ImportTx{}),
 		targetCodec.RegisterType(&ExportTx{}),
 		targetCodec.RegisterType(&AdvanceTimeTx{}),
@@ -92,8 +92,8 @@ func RegisterUnsignedTxsTypes(targetCodec linearcodec.Codec) error {
 		targetCodec.RegisterType(&stakeable.LockOut{}),
 
 		// Banff additions:
-		targetCodec.RegisterType(&RemoveSubnetValidatorTx{}),
-		targetCodec.RegisterType(&TransformSubnetTx{}),
+		targetCodec.RegisterType(&RemoveSupernetValidatorTx{}),
+		targetCodec.RegisterType(&TransformSupernetTx{}),
 		targetCodec.RegisterType(&AddPermissionlessValidatorTx{}),
 		targetCodec.RegisterType(&AddPermissionlessDelegatorTx{}),
 
@@ -105,7 +105,7 @@ func RegisterUnsignedTxsTypes(targetCodec linearcodec.Codec) error {
 
 func RegisterDUnsignedTxsTypes(targetCodec linearcodec.Codec) error {
 	return utils.Err(
-		targetCodec.RegisterType(&TransferSubnetOwnershipTx{}),
+		targetCodec.RegisterType(&TransferSupernetOwnershipTx{}),
 		targetCodec.RegisterType(&BaseTx{}),
 	)
 }

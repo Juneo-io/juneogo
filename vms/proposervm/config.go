@@ -7,7 +7,7 @@ import (
 	"crypto"
 	"time"
 
-	"github.com/ava-labs/avalanchego/staking"
+	"github.com/Juneo-io/juneogo/staking"
 )
 
 type Config struct {

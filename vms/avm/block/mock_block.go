@@ -13,10 +13,10 @@ import (
 	reflect "reflect"
 	time "time"
 
-	codec "github.com/ava-labs/avalanchego/codec"
-	ids "github.com/ava-labs/avalanchego/ids"
-	snow "github.com/ava-labs/avalanchego/snow"
-	txs "github.com/ava-labs/avalanchego/vms/avm/txs"
+	codec "github.com/Juneo-io/juneogo/codec"
+	ids "github.com/Juneo-io/juneogo/ids"
+	snow "github.com/Juneo-io/juneogo/snow"
+	txs "github.com/Juneo-io/juneogo/vms/avm/txs"
 	gomock "go.uber.org/mock/gomock"
 )
 

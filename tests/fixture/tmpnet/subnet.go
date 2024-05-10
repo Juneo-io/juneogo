@@ -12,20 +12,20 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/crypto/secp256k1"
-	"github.com/ava-labs/avalanchego/utils/perms"
-	"github.com/ava-labs/avalanchego/utils/set"
-	"github.com/ava-labs/avalanchego/utils/units"
-	"github.com/ava-labs/avalanchego/vms/platformvm"
-	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
-	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
-	"github.com/ava-labs/avalanchego/wallet/subnet/primary"
-	"github.com/ava-labs/avalanchego/wallet/subnet/primary/common"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/crypto/secp256k1"
+	"github.com/Juneo-io/juneogo/utils/perms"
+	"github.com/Juneo-io/juneogo/utils/set"
+	"github.com/Juneo-io/juneogo/utils/units"
+	"github.com/Juneo-io/juneogo/vms/platformvm"
+	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
+	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
+	"github.com/Juneo-io/juneogo/wallet/supernet/primary"
+	"github.com/Juneo-io/juneogo/wallet/supernet/primary/common"
 )
 
-const defaultSubnetDirName = "subnets"
+const defaultSupernetDirName = "supernets"
 
 type Chain struct {
 	// Set statically
@@ -58,34 +58,34 @@ func (c *Chain) WriteConfig(chainDir string) error {
 	return nil
 }
 
-type Subnet struct {
-	// A unique string that can be used to refer to the subnet across different temporary
-	// networks (since the SubnetID will be different every time the subnet is created)
+type Supernet struct {
+	// A unique string that can be used to refer to the supernet across different temporary
+	// networks (since the SupernetID will be different every time the supernet is created)
 	Name string
 
 	Config FlagsMap
 
-	// The ID of the transaction that created the subnet
-	SubnetID ids.ID
+	// The ID of the transaction that created the supernet
+	SupernetID ids.ID
 
-	// The private key that owns the subnet
+	// The private key that owns the supernet
 	OwningKey *secp256k1.PrivateKey
 
-	// IDs of the nodes responsible for validating the subnet
+	// IDs of the nodes responsible for validating the supernet
 	ValidatorIDs []ids.NodeID
 
 	Chains []*Chain
 }
 
-// Retrieves a wallet configured for use with the subnet
-func (s *Subnet) GetWallet(ctx context.Context, uri string) (primary.Wallet, error) {
+// Retrieves a wallet configured for use with the supernet
+func (s *Supernet) GetWallet(ctx context.Context, uri string) (primary.Wallet, error) {
 	keychain := secp256k1fx.NewKeychain(s.OwningKey)
 
-	// Only fetch the subnet transaction if a subnet ID is present. This won't be true when
-	// the wallet is first used to create the subnet.
+	// Only fetch the supernet transaction if a supernet ID is present. This won't be true when
+	// the wallet is first used to create the supernet.
 	txIDs := set.Set[ids.ID]{}
-	if s.SubnetID != ids.Empty {
-		txIDs.Add(s.SubnetID)
+	if s.SupernetID != ids.Empty {
+		txIDs.Add(s.SupernetID)
 	}
 
 	return primary.MakeWallet(ctx, &primary.WalletConfig{
@@ -96,16 +96,16 @@ func (s *Subnet) GetWallet(ctx context.Context, uri string) (primary.Wallet, err
 	})
 }
 
-// Issues the subnet creation transaction and retains the result. The URI of a node is
+// Issues the supernet creation transaction and retains the result. The URI of a node is
 // required to issue the transaction.
-func (s *Subnet) Create(ctx context.Context, uri string) error {
+func (s *Supernet) Create(ctx context.Context, uri string) error {
 	wallet, err := s.GetWallet(ctx, uri)
 	if err != nil {
 		return err
 	}
 	pWallet := wallet.P()
 
-	subnetTx, err := pWallet.IssueCreateSubnetTx(
+	supernetTx, err := pWallet.IssueCreateSupernetTx(
 		&secp256k1fx.OutputOwners{
 			Threshold: 1,
 			Addrs: []ids.ShortID{
@@ -115,27 +115,27 @@ func (s *Subnet) Create(ctx context.Context, uri string) error {
 		common.WithContext(ctx),
 	)
 	if err != nil {
-		return fmt.Errorf("failed to create subnet %s: %w", s.Name, err)
+		return fmt.Errorf("failed to create supernet %s: %w", s.Name, err)
 	}
-	s.SubnetID = subnetTx.ID()
+	s.SupernetID = supernetTx.ID()
 
 	return nil
 }
 
-func (s *Subnet) CreateChains(ctx context.Context, w io.Writer, uri string) error {
+func (s *Supernet) CreateChains(ctx context.Context, w io.Writer, uri string) error {
 	wallet, err := s.GetWallet(ctx, uri)
 	if err != nil {
 		return err
 	}
 	pWallet := wallet.P()
 
-	if _, err := fmt.Fprintf(w, "Creating chains for subnet %q\n", s.Name); err != nil {
+	if _, err := fmt.Fprintf(w, "Creating chains for supernet %q\n", s.Name); err != nil {
 		return err
 	}
 
 	for _, chain := range s.Chains {
 		createChainTx, err := pWallet.IssueCreateChainTx(
-			s.SubnetID,
+			s.SupernetID,
 			chain.Genesis,
 			chain.VMID,
 			nil,
@@ -147,15 +147,15 @@ func (s *Subnet) CreateChains(ctx context.Context, w io.Writer, uri string) erro
 		}
 		chain.ChainID = createChainTx.ID()
 
-		if _, err := fmt.Fprintf(w, " created chain %q for VM %q on subnet %q\n", chain.ChainID, chain.VMID, s.Name); err != nil {
+		if _, err := fmt.Fprintf(w, " created chain %q for VM %q on supernet %q\n", chain.ChainID, chain.VMID, s.Name); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-// Add validators to the subnet
-func (s *Subnet) AddValidators(ctx context.Context, w io.Writer, nodes ...*Node) error {
+// Add validators to the supernet
+func (s *Supernet) AddValidators(ctx context.Context, w io.Writer, nodes ...*Node) error {
 	apiURI := nodes[0].URI
 
 	wallet, err := s.GetWallet(ctx, apiURI)
@@ -164,7 +164,7 @@ func (s *Subnet) AddValidators(ctx context.Context, w io.Writer, nodes ...*Node)
 	}
 	pWallet := wallet.P()
 
-	// Collect the end times for current validators to reuse for subnet validators
+	// Collect the end times for current validators to reuse for supernet validators
 	pvmClient := platformvm.NewClient(apiURI)
 	validators, err := pvmClient.GetCurrentValidators(ctx, constants.PrimaryNetworkID, nil)
 	if err != nil {
@@ -182,15 +182,15 @@ func (s *Subnet) AddValidators(ctx context.Context, w io.Writer, nodes ...*Node)
 			return fmt.Errorf("failed to find end time for %s", node.NodeID)
 		}
 
-		_, err := pWallet.IssueAddSubnetValidatorTx(
-			&txs.SubnetValidator{
+		_, err := pWallet.IssueAddSupernetValidatorTx(
+			&txs.SupernetValidator{
 				Validator: txs.Validator{
 					NodeID: node.NodeID,
 					Start:  uint64(startTime.Unix()),
 					End:    endTime,
 					Wght:   units.Schmeckle,
 				},
-				Subnet: s.SubnetID,
+				Supernet: s.SupernetID,
 			},
 			common.WithContext(ctx),
 		)
@@ -198,7 +198,7 @@ func (s *Subnet) AddValidators(ctx context.Context, w io.Writer, nodes ...*Node)
 			return err
 		}
 
-		if _, err := fmt.Fprintf(w, " added %s as validator for subnet `%s`\n", node.NodeID, s.Name); err != nil {
+		if _, err := fmt.Fprintf(w, " added %s as validator for supernet `%s`\n", node.NodeID, s.Name); err != nil {
 			return err
 		}
 	}
@@ -206,59 +206,59 @@ func (s *Subnet) AddValidators(ctx context.Context, w io.Writer, nodes ...*Node)
 	return nil
 }
 
-// Write the subnet configuration to disk
-func (s *Subnet) Write(subnetDir string, chainDir string) error {
-	if err := os.MkdirAll(subnetDir, perms.ReadWriteExecute); err != nil {
-		return fmt.Errorf("failed to create subnet dir: %w", err)
+// Write the supernet configuration to disk
+func (s *Supernet) Write(supernetDir string, chainDir string) error {
+	if err := os.MkdirAll(supernetDir, perms.ReadWriteExecute); err != nil {
+		return fmt.Errorf("failed to create supernet dir: %w", err)
 	}
-	tmpnetConfigPath := filepath.Join(subnetDir, s.Name+".json")
+	tmpnetConfigPath := filepath.Join(supernetDir, s.Name+".json")
 
-	// Since subnets are expected to be serialized for the first time
+	// Since supernets are expected to be serialized for the first time
 	// without their chains having been created (i.e. chains will have
 	// empty IDs), use the absence of chain IDs as a prompt for a
-	// subnet name uniqueness check.
+	// supernet name uniqueness check.
 	if len(s.Chains) > 0 && s.Chains[0].ChainID == ids.Empty {
 		_, err := os.Stat(tmpnetConfigPath)
 		if err != nil && !os.IsNotExist(err) {
 			return err
 		}
 		if err == nil {
-			return fmt.Errorf("a subnet with name %s already exists", s.Name)
+			return fmt.Errorf("a supernet with name %s already exists", s.Name)
 		}
 	}
 
-	// Write subnet configuration for tmpnet
+	// Write supernet configuration for tmpnet
 	bytes, err := DefaultJSONMarshal(s)
 	if err != nil {
-		return fmt.Errorf("failed to marshal tmpnet subnet %s: %w", s.Name, err)
+		return fmt.Errorf("failed to marshal tmpnet supernet %s: %w", s.Name, err)
 	}
 	if err := os.WriteFile(tmpnetConfigPath, bytes, perms.ReadWrite); err != nil {
-		return fmt.Errorf("failed to write tmpnet subnet config %s: %w", s.Name, err)
+		return fmt.Errorf("failed to write tmpnet supernet config %s: %w", s.Name, err)
 	}
 
-	// The subnet and chain configurations for avalanchego can only be written once
+	// The supernet and chain configurations for avalanchego can only be written once
 	// they have been created since the id of the creating transaction must be
 	// included in the path.
-	if s.SubnetID == ids.Empty {
+	if s.SupernetID == ids.Empty {
 		return nil
 	}
 
 	// TODO(marun) Ensure removal of an existing file if no configuration should be provided
 	if len(s.Config) > 0 {
-		// Write subnet configuration for avalanchego
+		// Write supernet configuration for avalanchego
 		bytes, err = DefaultJSONMarshal(s.Config)
 		if err != nil {
-			return fmt.Errorf("failed to marshal avalanchego subnet config %s: %w", s.Name, err)
+			return fmt.Errorf("failed to marshal avalanchego supernet config %s: %w", s.Name, err)
 		}
 
-		avgoConfigDir := filepath.Join(subnetDir, s.SubnetID.String())
+		avgoConfigDir := filepath.Join(supernetDir, s.SupernetID.String())
 		if err := os.MkdirAll(avgoConfigDir, perms.ReadWriteExecute); err != nil {
-			return fmt.Errorf("failed to create avalanchego subnet config dir: %w", err)
+			return fmt.Errorf("failed to create avalanchego supernet config dir: %w", err)
 		}
 
 		avgoConfigPath := filepath.Join(avgoConfigDir, defaultConfigFilename)
 		if err := os.WriteFile(avgoConfigPath, bytes, perms.ReadWrite); err != nil {
-			return fmt.Errorf("failed to write avalanchego subnet config %s: %w", s.Name, err)
+			return fmt.Errorf("failed to write avalanchego supernet config %s: %w", s.Name, err)
 		}
 	}
 
@@ -271,11 +271,11 @@ func (s *Subnet) Write(subnetDir string, chainDir string) error {
 	return nil
 }
 
-// HasChainConfig indicates whether at least one of the subnet's
+// HasChainConfig indicates whether at least one of the supernet's
 // chains have explicit configuration. This can be used to determine
 // whether validator restart is required after chain creation to
 // ensure that chains are configured correctly.
-func (s *Subnet) HasChainConfig() bool {
+func (s *Supernet) HasChainConfig() bool {
 	for _, chain := range s.Chains {
 		if len(chain.Config) > 0 {
 			return true
@@ -288,12 +288,12 @@ func waitForActiveValidators(
 	ctx context.Context,
 	w io.Writer,
 	pChainClient platformvm.Client,
-	subnet *Subnet,
+	supernet *Supernet,
 ) error {
 	ticker := time.NewTicker(DefaultPollingInterval)
 	defer ticker.Stop()
 
-	if _, err := fmt.Fprintf(w, "Waiting for validators of subnet %q to become active\n", subnet.Name); err != nil {
+	if _, err := fmt.Fprintf(w, "Waiting for validators of supernet %q to become active\n", supernet.Name); err != nil {
 		return err
 	}
 
@@ -305,7 +305,7 @@ func waitForActiveValidators(
 		if _, err := fmt.Fprint(w, "."); err != nil {
 			return err
 		}
-		validators, err := pChainClient.GetCurrentValidators(ctx, subnet.SubnetID, nil)
+		validators, err := pChainClient.GetCurrentValidators(ctx, supernet.SupernetID, nil)
 		if err != nil {
 			return err
 		}
@@ -314,13 +314,13 @@ func waitForActiveValidators(
 			validatorSet.Add(validator.NodeID)
 		}
 		allActive := true
-		for _, validatorID := range subnet.ValidatorIDs {
+		for _, validatorID := range supernet.ValidatorIDs {
 			if !validatorSet.Contains(validatorID) {
 				allActive = false
 			}
 		}
 		if allActive {
-			if _, err := fmt.Fprintf(w, "\n saw the expected active validators of subnet %q\n", subnet.Name); err != nil {
+			if _, err := fmt.Fprintf(w, "\n saw the expected active validators of supernet %q\n", supernet.Name); err != nil {
 				return err
 			}
 			return nil
@@ -328,47 +328,47 @@ func waitForActiveValidators(
 
 		select {
 		case <-ctx.Done():
-			return fmt.Errorf("failed to see the expected active validators of subnet %q before timeout", subnet.Name)
+			return fmt.Errorf("failed to see the expected active validators of supernet %q before timeout", supernet.Name)
 		case <-ticker.C:
 		}
 	}
 }
 
-// Reads subnets from [network dir]/subnets/[subnet name].json
-func readSubnets(subnetDir string) ([]*Subnet, error) {
-	if _, err := os.Stat(subnetDir); os.IsNotExist(err) {
+// Reads supernets from [network dir]/supernets/[supernet name].json
+func readSupernets(supernetDir string) ([]*Supernet, error) {
+	if _, err := os.Stat(supernetDir); os.IsNotExist(err) {
 		return nil, nil
 	} else if err != nil {
 		return nil, err
 	}
 
-	entries, err := os.ReadDir(subnetDir)
+	entries, err := os.ReadDir(supernetDir)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read subnet dir: %w", err)
+		return nil, fmt.Errorf("failed to read supernet dir: %w", err)
 	}
 
-	subnets := []*Subnet{}
+	supernets := []*Supernet{}
 	for _, entry := range entries {
 		if entry.IsDir() {
 			// Looking only for files
 			continue
 		}
 		if filepath.Ext(entry.Name()) != ".json" {
-			// Subnet files should have a .json extension
+			// Supernet files should have a .json extension
 			continue
 		}
 
-		subnetPath := filepath.Join(subnetDir, entry.Name())
-		bytes, err := os.ReadFile(subnetPath)
+		supernetPath := filepath.Join(supernetDir, entry.Name())
+		bytes, err := os.ReadFile(supernetPath)
 		if err != nil {
-			return nil, fmt.Errorf("failed to read subnet file %s: %w", subnetPath, err)
+			return nil, fmt.Errorf("failed to read supernet file %s: %w", supernetPath, err)
 		}
-		subnet := &Subnet{}
-		if err := json.Unmarshal(bytes, subnet); err != nil {
-			return nil, fmt.Errorf("failed to unmarshal subnet from %s: %w", subnetPath, err)
+		supernet := &Supernet{}
+		if err := json.Unmarshal(bytes, supernet); err != nil {
+			return nil, fmt.Errorf("failed to unmarshal supernet from %s: %w", supernetPath, err)
 		}
-		subnets = append(subnets, subnet)
+		supernets = append(supernets, supernet)
 	}
 
-	return subnets, nil
+	return supernets, nil
 }

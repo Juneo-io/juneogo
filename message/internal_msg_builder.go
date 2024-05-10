@@ -8,10 +8,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/proto/pb/p2p"
-	"github.com/ava-labs/avalanchego/utils/timer/mockable"
-	"github.com/ava-labs/avalanchego/version"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/proto/pb/p2p"
+	"github.com/Juneo-io/juneogo/utils/timer/mockable"
+	"github.com/Juneo-io/juneogo/version"
 )
 
 var (
@@ -493,27 +493,27 @@ func InternalConnected(nodeID ids.NodeID, nodeVersion *version.Application) Inbo
 	}
 }
 
-// ConnectedSubnet contains the subnet ID of the subnet that the node is
+// ConnectedSupernet contains the supernet ID of the supernet that the node is
 // connected to.
-type ConnectedSubnet struct {
-	SubnetID ids.ID `json:"subnet_id,omitempty"`
+type ConnectedSupernet struct {
+	SupernetID ids.ID `json:"supernet_id,omitempty"`
 }
 
-func (m *ConnectedSubnet) String() string {
+func (m *ConnectedSupernet) String() string {
 	return fmt.Sprintf(
-		"SubnetID: %s",
-		m.SubnetID,
+		"SupernetID: %s",
+		m.SupernetID,
 	)
 }
 
-// InternalConnectedSubnet returns a message that indicates the node with [nodeID] is
-// connected to the subnet with the given [subnetID].
-func InternalConnectedSubnet(nodeID ids.NodeID, subnetID ids.ID) InboundMessage {
+// InternalConnectedSupernet returns a message that indicates the node with [nodeID] is
+// connected to the supernet with the given [supernetID].
+func InternalConnectedSupernet(nodeID ids.NodeID, supernetID ids.ID) InboundMessage {
 	return &inboundMessage{
 		nodeID: nodeID,
-		op:     ConnectedSubnetOp,
-		message: &ConnectedSubnet{
-			SubnetID: subnetID,
+		op:     ConnectedSupernetOp,
+		message: &ConnectedSupernet{
+			SupernetID: supernetID,
 		},
 		expiration: mockable.MaxTime,
 	}

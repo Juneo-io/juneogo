@@ -12,24 +12,24 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
-	"github.com/ava-labs/avalanchego/database"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow/consensus/snowman"
-	"github.com/ava-labs/avalanchego/snow/snowtest"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/crypto/bls"
-	"github.com/ava-labs/avalanchego/utils/crypto/secp256k1"
-	"github.com/ava-labs/avalanchego/vms/components/avax"
-	"github.com/ava-labs/avalanchego/vms/platformvm/block"
-	"github.com/ava-labs/avalanchego/vms/platformvm/reward"
-	"github.com/ava-labs/avalanchego/vms/platformvm/signer"
-	"github.com/ava-labs/avalanchego/vms/platformvm/state"
-	"github.com/ava-labs/avalanchego/vms/platformvm/status"
-	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
-	"github.com/ava-labs/avalanchego/vms/platformvm/txs/executor"
-	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
+	"github.com/Juneo-io/juneogo/database"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow/consensus/snowman"
+	"github.com/Juneo-io/juneogo/snow/snowtest"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/crypto/bls"
+	"github.com/Juneo-io/juneogo/utils/crypto/secp256k1"
+	"github.com/Juneo-io/juneogo/vms/components/avax"
+	"github.com/Juneo-io/juneogo/vms/platformvm/block"
+	"github.com/Juneo-io/juneogo/vms/platformvm/reward"
+	"github.com/Juneo-io/juneogo/vms/platformvm/signer"
+	"github.com/Juneo-io/juneogo/vms/platformvm/state"
+	"github.com/Juneo-io/juneogo/vms/platformvm/status"
+	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
+	"github.com/Juneo-io/juneogo/vms/platformvm/txs/executor"
+	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
 
-	walletcommon "github.com/ava-labs/avalanchego/wallet/subnet/primary/common"
+	walletcommon "github.com/Juneo-io/juneogo/wallet/supernet/primary/common"
 )
 
 func TestApricotProposalBlockTimeVerification(t *testing.T) {
@@ -93,7 +93,7 @@ func TestApricotProposalBlockTimeVerification(t *testing.T) {
 	currentStakersIt.EXPECT().Value().Return(&state.Staker{
 		TxID:      addValTx.ID(),
 		NodeID:    utx.NodeID(),
-		SubnetID:  utx.SubnetID(),
+		SupernetID:  utx.SupernetID(),
 		StartTime: utx.StartTime(),
 		NextTime:  chainTime,
 		EndTime:   chainTime,
@@ -416,9 +416,9 @@ func TestBanffProposalBlockUpdateStakers(t *testing.T) {
 
 	tests := []test{
 		{
-			description:   "advance time to before staker1 start with subnet",
+			description:   "advance time to before staker1 start with supernet",
 			stakers:       []staker{staker1, staker2, staker3, staker4, staker5},
-			subnetStakers: []staker{staker1, staker2, staker3, staker4, staker5},
+			supernetStakers: []staker{staker1, staker2, staker3, staker4, staker5},
 			advanceTimeTo: []time.Time{staker1.startTime.Add(-1 * time.Second)},
 			expectedStakers: map[ids.NodeID]stakerStatus{
 				staker1.nodeID: pending,
@@ -427,7 +427,7 @@ func TestBanffProposalBlockUpdateStakers(t *testing.T) {
 				staker4.nodeID: pending,
 				staker5.nodeID: pending,
 			},
-			expectedSubnetStakers: map[ids.NodeID]stakerStatus{
+			expectedSupernetStakers: map[ids.NodeID]stakerStatus{
 				staker1.nodeID: pending,
 				staker2.nodeID: pending,
 				staker3.nodeID: pending,
@@ -436,9 +436,9 @@ func TestBanffProposalBlockUpdateStakers(t *testing.T) {
 			},
 		},
 		{
-			description:   "advance time to staker 1 start with subnet",
+			description:   "advance time to staker 1 start with supernet",
 			stakers:       []staker{staker1, staker2, staker3, staker4, staker5},
-			subnetStakers: []staker{staker1},
+			supernetStakers: []staker{staker1},
 			advanceTimeTo: []time.Time{staker1.startTime},
 			expectedStakers: map[ids.NodeID]stakerStatus{
 				staker1.nodeID: current,
@@ -447,7 +447,7 @@ func TestBanffProposalBlockUpdateStakers(t *testing.T) {
 				staker4.nodeID: pending,
 				staker5.nodeID: pending,
 			},
-			expectedSubnetStakers: map[ids.NodeID]stakerStatus{
+			expectedSupernetStakers: map[ids.NodeID]stakerStatus{
 				staker1.nodeID: current,
 				staker2.nodeID: pending,
 				staker3.nodeID: pending,
@@ -470,7 +470,7 @@ func TestBanffProposalBlockUpdateStakers(t *testing.T) {
 		{
 			description:   "staker3 should validate only primary network",
 			stakers:       []staker{staker1, staker2, staker3, staker4, staker5},
-			subnetStakers: []staker{staker1, staker2, staker3Sub, staker4, staker5},
+			supernetStakers: []staker{staker1, staker2, staker3Sub, staker4, staker5},
 			advanceTimeTo: []time.Time{staker1.startTime, staker2.startTime, staker3.startTime},
 			expectedStakers: map[ids.NodeID]stakerStatus{
 				staker1.nodeID: current,
@@ -479,7 +479,7 @@ func TestBanffProposalBlockUpdateStakers(t *testing.T) {
 				staker4.nodeID: current,
 				staker5.nodeID: pending,
 			},
-			expectedSubnetStakers: map[ids.NodeID]stakerStatus{
+			expectedSupernetStakers: map[ids.NodeID]stakerStatus{
 				staker1.nodeID:    current,
 				staker2.nodeID:    current,
 				staker3Sub.nodeID: pending,
@@ -488,9 +488,9 @@ func TestBanffProposalBlockUpdateStakers(t *testing.T) {
 			},
 		},
 		{
-			description:   "advance time to staker3 start with subnet",
+			description:   "advance time to staker3 start with supernet",
 			stakers:       []staker{staker1, staker2, staker3, staker4, staker5},
-			subnetStakers: []staker{staker1, staker2, staker3Sub, staker4, staker5},
+			supernetStakers: []staker{staker1, staker2, staker3Sub, staker4, staker5},
 			advanceTimeTo: []time.Time{staker1.startTime, staker2.startTime, staker3.startTime, staker3Sub.startTime},
 			expectedStakers: map[ids.NodeID]stakerStatus{
 				staker1.nodeID: current,
@@ -499,7 +499,7 @@ func TestBanffProposalBlockUpdateStakers(t *testing.T) {
 				staker4.nodeID: current,
 				staker5.nodeID: pending,
 			},
-			expectedSubnetStakers: map[ids.NodeID]stakerStatus{
+			expectedSupernetStakers: map[ids.NodeID]stakerStatus{
 				staker1.nodeID: current,
 				staker2.nodeID: current,
 				staker3.nodeID: current,
@@ -533,8 +533,8 @@ func TestBanffProposalBlockUpdateStakers(t *testing.T) {
 			require := require.New(t)
 			env := newEnvironment(t, nil, banff)
 
-			subnetID := testSubnet1.ID()
-			env.config.TrackedSubnets.Add(subnetID)
+			supernetID := testSupernet1.ID()
+			env.config.TrackedSupernets.Add(supernetID)
 
 			for _, staker := range test.stakers {
 				tx, err := env.txBuilder.NewAddValidatorTx(
@@ -568,16 +568,16 @@ func TestBanffProposalBlockUpdateStakers(t *testing.T) {
 				require.NoError(env.state.Commit())
 			}
 
-			for _, subStaker := range test.subnetStakers {
-				tx, err := env.txBuilder.NewAddSubnetValidatorTx(
-					&txs.SubnetValidator{
+			for _, subStaker := range test.supernetStakers {
+				tx, err := env.txBuilder.NewAddSupernetValidatorTx(
+					&txs.SupernetValidator{
 						Validator: txs.Validator{
 							NodeID: subStaker.nodeID,
 							Start:  uint64(subStaker.startTime.Unix()),
 							End:    uint64(subStaker.endTime.Unix()),
 							Wght:   10,
 						},
-						Subnet: subnetID,
+						Supernet: supernetID,
 					},
 					[]*secp256k1.PrivateKey{preFundedKeys[0], preFundedKeys[1]},
 					walletcommon.WithChangeOwner(&secp256k1fx.OutputOwners{
@@ -587,13 +587,13 @@ func TestBanffProposalBlockUpdateStakers(t *testing.T) {
 				)
 				require.NoError(err)
 
-				subnetStaker, err := state.NewPendingStaker(
+				supernetStaker, err := state.NewPendingStaker(
 					tx.ID(),
-					tx.Unsigned.(*txs.AddSubnetValidatorTx),
+					tx.Unsigned.(*txs.AddSupernetValidatorTx),
 				)
 				require.NoError(err)
 
-				env.state.PutPendingValidator(subnetStaker)
+				env.state.PutPendingValidator(supernetStaker)
 				env.state.AddTx(tx, status.Committed)
 				require.NoError(env.state.Commit())
 			}
@@ -687,13 +687,13 @@ func TestBanffProposalBlockUpdateStakers(t *testing.T) {
 				}
 			}
 
-			for stakerNodeID, status := range test.expectedSubnetStakers {
+			for stakerNodeID, status := range test.expectedSupernetStakers {
 				switch status {
 				case pending:
-					_, ok := env.config.Validators.GetValidator(subnetID, stakerNodeID)
+					_, ok := env.config.Validators.GetValidator(supernetID, stakerNodeID)
 					require.False(ok)
 				case current:
-					_, ok := env.config.Validators.GetValidator(subnetID, stakerNodeID)
+					_, ok := env.config.Validators.GetValidator(supernetID, stakerNodeID)
 					require.True(ok)
 				}
 			}
@@ -701,36 +701,36 @@ func TestBanffProposalBlockUpdateStakers(t *testing.T) {
 	}
 }
 
-func TestBanffProposalBlockRemoveSubnetValidator(t *testing.T) {
+func TestBanffProposalBlockRemoveSupernetValidator(t *testing.T) {
 	require := require.New(t)
 	env := newEnvironment(t, nil, banff)
 
-	subnetID := testSubnet1.ID()
-	env.config.TrackedSubnets.Add(subnetID)
+	supernetID := testSupernet1.ID()
+	env.config.TrackedSupernets.Add(supernetID)
 
-	// Add a subnet validator to the staker set
-	subnetValidatorNodeID := genesisNodeIDs[0]
-	subnetVdr1StartTime := defaultValidateStartTime
-	subnetVdr1EndTime := defaultValidateStartTime.Add(defaultMinStakingDuration)
-	tx, err := env.txBuilder.NewAddSubnetValidatorTx(
-		&txs.SubnetValidator{
+	// Add a supernet validator to the staker set
+	supernetValidatorNodeID := genesisNodeIDs[0]
+	supernetVdr1StartTime := defaultValidateStartTime
+	supernetVdr1EndTime := defaultValidateStartTime.Add(defaultMinStakingDuration)
+	tx, err := env.txBuilder.NewAddSupernetValidatorTx(
+		&txs.SupernetValidator{
 			Validator: txs.Validator{
-				NodeID: subnetValidatorNodeID,
-				Start:  uint64(subnetVdr1StartTime.Unix()),
-				End:    uint64(subnetVdr1EndTime.Unix()),
+				NodeID: supernetValidatorNodeID,
+				Start:  uint64(supernetVdr1StartTime.Unix()),
+				End:    uint64(supernetVdr1EndTime.Unix()),
 				Wght:   1,
 			},
-			Subnet: subnetID,
+			Supernet: supernetID,
 		},
 		[]*secp256k1.PrivateKey{preFundedKeys[0], preFundedKeys[1]},
 	)
 	require.NoError(err)
 
-	addSubnetValTx := tx.Unsigned.(*txs.AddSubnetValidatorTx)
+	addSupernetValTx := tx.Unsigned.(*txs.AddSupernetValidatorTx)
 	staker, err := state.NewCurrentStaker(
 		tx.ID(),
-		addSubnetValTx,
-		addSubnetValTx.StartTime(),
+		addSupernetValTx,
+		addSupernetValTx.StartTime(),
 		0,
 	)
 	require.NoError(err)
@@ -742,16 +742,16 @@ func TestBanffProposalBlockRemoveSubnetValidator(t *testing.T) {
 	// The above validator is now part of the staking set
 
 	// Queue a staker that joins the staker set after the above validator leaves
-	subnetVdr2NodeID := genesisNodeIDs[1]
-	tx, err = env.txBuilder.NewAddSubnetValidatorTx(
-		&txs.SubnetValidator{
+	supernetVdr2NodeID := genesisNodeIDs[1]
+	tx, err = env.txBuilder.NewAddSupernetValidatorTx(
+		&txs.SupernetValidator{
 			Validator: txs.Validator{
-				NodeID: subnetVdr2NodeID,
-				Start:  uint64(subnetVdr1EndTime.Add(time.Second).Unix()),
-				End:    uint64(subnetVdr1EndTime.Add(time.Second).Add(defaultMinStakingDuration).Unix()),
+				NodeID: supernetVdr2NodeID,
+				Start:  uint64(supernetVdr1EndTime.Add(time.Second).Unix()),
+				End:    uint64(supernetVdr1EndTime.Add(time.Second).Add(defaultMinStakingDuration).Unix()),
 				Wght:   1,
 			},
-			Subnet: subnetID,
+			Supernet: supernetID,
 		},
 		[]*secp256k1.PrivateKey{preFundedKeys[0], preFundedKeys[1]},
 	)
@@ -759,7 +759,7 @@ func TestBanffProposalBlockRemoveSubnetValidator(t *testing.T) {
 
 	staker, err = state.NewPendingStaker(
 		tx.ID(),
-		tx.Unsigned.(*txs.AddSubnetValidatorTx),
+		tx.Unsigned.(*txs.AddSupernetValidatorTx),
 	)
 	require.NoError(err)
 
@@ -770,12 +770,12 @@ func TestBanffProposalBlockRemoveSubnetValidator(t *testing.T) {
 	// The above validator is now in the pending staker set
 
 	// Advance time to the first staker's end time.
-	env.clk.Set(subnetVdr1EndTime)
+	env.clk.Set(supernetVdr1EndTime)
 
 	// add Staker0 (with the right end time) to state
 	// so to allow proposalBlk issuance
 	staker0StartTime := defaultValidateStartTime
-	staker0EndTime := subnetVdr1EndTime
+	staker0EndTime := supernetVdr1EndTime
 	addStaker0, err := env.txBuilder.NewAddValidatorTx(
 		&txs.Validator{
 			NodeID: ids.GenerateTestNodeID(),
@@ -823,7 +823,7 @@ func TestBanffProposalBlockRemoveSubnetValidator(t *testing.T) {
 	parentBlk, err := env.state.GetStatelessBlock(preferredID)
 	require.NoError(err)
 	statelessProposalBlock, err := block.NewBanffProposalBlock(
-		subnetVdr1EndTime,
+		supernetVdr1EndTime,
 		parentBlk.ID(),
 		parentBlk.Height()+1,
 		s0RewardTx,
@@ -840,42 +840,42 @@ func TestBanffProposalBlockRemoveSubnetValidator(t *testing.T) {
 
 	blkStateMap := env.blkManager.(*manager).blkIDToState
 	updatedState := blkStateMap[commitBlk.ID()].onAcceptState
-	_, err = updatedState.GetCurrentValidator(subnetID, subnetValidatorNodeID)
+	_, err = updatedState.GetCurrentValidator(supernetID, supernetValidatorNodeID)
 	require.ErrorIs(err, database.ErrNotFound)
 
 	// Check VM Validators are removed successfully
 	require.NoError(propBlk.Accept(context.Background()))
 	require.NoError(commitBlk.Accept(context.Background()))
-	_, ok := env.config.Validators.GetValidator(subnetID, subnetVdr2NodeID)
+	_, ok := env.config.Validators.GetValidator(supernetID, supernetVdr2NodeID)
 	require.False(ok)
-	_, ok = env.config.Validators.GetValidator(subnetID, subnetValidatorNodeID)
+	_, ok = env.config.Validators.GetValidator(supernetID, supernetValidatorNodeID)
 	require.False(ok)
 }
 
-func TestBanffProposalBlockTrackedSubnet(t *testing.T) {
+func TestBanffProposalBlockTrackedSupernet(t *testing.T) {
 	for _, tracked := range []bool{true, false} {
 		t.Run(fmt.Sprintf("tracked %t", tracked), func(t *testing.T) {
 			require := require.New(t)
 			env := newEnvironment(t, nil, banff)
 
-			subnetID := testSubnet1.ID()
+			supernetID := testSupernet1.ID()
 			if tracked {
-				env.config.TrackedSubnets.Add(subnetID)
+				env.config.TrackedSupernets.Add(supernetID)
 			}
 
-			// Add a subnet validator to the staker set
-			subnetValidatorNodeID := genesisNodeIDs[0]
-			subnetVdr1StartTime := defaultGenesisTime.Add(1 * time.Minute)
-			subnetVdr1EndTime := defaultGenesisTime.Add(10 * defaultMinStakingDuration).Add(1 * time.Minute)
-			tx, err := env.txBuilder.NewAddSubnetValidatorTx(
-				&txs.SubnetValidator{
+			// Add a supernet validator to the staker set
+			supernetValidatorNodeID := genesisNodeIDs[0]
+			supernetVdr1StartTime := defaultGenesisTime.Add(1 * time.Minute)
+			supernetVdr1EndTime := defaultGenesisTime.Add(10 * defaultMinStakingDuration).Add(1 * time.Minute)
+			tx, err := env.txBuilder.NewAddSupernetValidatorTx(
+				&txs.SupernetValidator{
 					Validator: txs.Validator{
-						NodeID: subnetValidatorNodeID,
-						Start:  uint64(subnetVdr1StartTime.Unix()),
-						End:    uint64(subnetVdr1EndTime.Unix()),
+						NodeID: supernetValidatorNodeID,
+						Start:  uint64(supernetVdr1StartTime.Unix()),
+						End:    uint64(supernetVdr1EndTime.Unix()),
 						Wght:   1,
 					},
-					Subnet: subnetID,
+					Supernet: supernetID,
 				},
 				[]*secp256k1.PrivateKey{preFundedKeys[0], preFundedKeys[1]},
 			)
@@ -883,7 +883,7 @@ func TestBanffProposalBlockTrackedSubnet(t *testing.T) {
 
 			staker, err := state.NewPendingStaker(
 				tx.ID(),
-				tx.Unsigned.(*txs.AddSubnetValidatorTx),
+				tx.Unsigned.(*txs.AddSupernetValidatorTx),
 			)
 			require.NoError(err)
 
@@ -892,12 +892,12 @@ func TestBanffProposalBlockTrackedSubnet(t *testing.T) {
 			require.NoError(env.state.Commit())
 
 			// Advance time to the staker's start time.
-			env.clk.Set(subnetVdr1StartTime)
+			env.clk.Set(supernetVdr1StartTime)
 
 			// add Staker0 (with the right end time) to state
 			// so to allow proposalBlk issuance
 			staker0StartTime := defaultGenesisTime
-			staker0EndTime := subnetVdr1StartTime
+			staker0EndTime := supernetVdr1StartTime
 			addStaker0, err := env.txBuilder.NewAddValidatorTx(
 				&txs.Validator{
 					NodeID: ids.GenerateTestNodeID(),
@@ -941,7 +941,7 @@ func TestBanffProposalBlockTrackedSubnet(t *testing.T) {
 			parentBlk, err := env.state.GetStatelessBlock(preferredID)
 			require.NoError(err)
 			statelessProposalBlock, err := block.NewBanffProposalBlock(
-				subnetVdr1StartTime,
+				supernetVdr1StartTime,
 				parentBlk.ID(),
 				parentBlk.Height()+1,
 				s0RewardTx,
@@ -957,7 +957,7 @@ func TestBanffProposalBlockTrackedSubnet(t *testing.T) {
 
 			require.NoError(propBlk.Accept(context.Background()))
 			require.NoError(commitBlk.Accept(context.Background()))
-			_, ok := env.config.Validators.GetValidator(subnetID, subnetValidatorNodeID)
+			_, ok := env.config.Validators.GetValidator(supernetID, supernetValidatorNodeID)
 			require.True(ok)
 		})
 	}
@@ -1366,14 +1366,14 @@ func TestAddValidatorProposalBlock(t *testing.T) {
 	require.NoError(err)
 
 	addValidatorTx, err := env.txBuilder.NewAddPermissionlessValidatorTx(
-		&txs.SubnetValidator{
+		&txs.SupernetValidator{
 			Validator: txs.Validator{
 				NodeID: nodeID,
 				Start:  uint64(validatorStartTime.Unix()),
 				End:    uint64(validatorEndTime.Unix()),
 				Wght:   env.config.MinValidatorStake,
 			},
-			Subnet: constants.PrimaryNetworkID,
+			Supernet: constants.PrimaryNetworkID,
 		},
 		signer.NewProofOfPossession(sk),
 		env.ctx.AVAXAssetID,
@@ -1453,14 +1453,14 @@ func TestAddValidatorProposalBlock(t *testing.T) {
 	require.NoError(err)
 
 	addValidatorTx2, err := env.txBuilder.NewAddPermissionlessValidatorTx(
-		&txs.SubnetValidator{
+		&txs.SupernetValidator{
 			Validator: txs.Validator{
 				NodeID: nodeID,
 				Start:  uint64(validatorStartTime.Unix()),
 				End:    uint64(validatorEndTime.Unix()),
 				Wght:   env.config.MinValidatorStake,
 			},
-			Subnet: constants.PrimaryNetworkID,
+			Supernet: constants.PrimaryNetworkID,
 		},
 		signer.NewProofOfPossession(sk),
 		env.ctx.AVAXAssetID,

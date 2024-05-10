@@ -6,7 +6,7 @@ package bloom
 import (
 	"errors"
 
-	"github.com/ava-labs/avalanchego/utils/bloom"
+	"github.com/Juneo-io/juneogo/utils/bloom"
 )
 
 const bytesPerHash = 8

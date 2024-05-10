@@ -4,9 +4,9 @@
 package merkledb
 
 import (
-	"github.com/ava-labs/avalanchego/cache"
-	"github.com/ava-labs/avalanchego/database"
-	"github.com/ava-labs/avalanchego/utils"
+	"github.com/Juneo-io/juneogo/cache"
+	"github.com/Juneo-io/juneogo/database"
+	"github.com/Juneo-io/juneogo/utils"
 )
 
 // Holds intermediate nodes. That is, those without values.

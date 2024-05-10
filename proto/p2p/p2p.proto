@@ -3,7 +3,7 @@ syntax = "proto3";
 package p2p;
 
 // Reference: https://developers.google.com/protocol-buffers/docs/proto3
-option go_package = "github.com/ava-labs/avalanchego/proto/pb/p2p";
+option go_package = "github.com/Juneo-io/juneogo/proto/pb/p2p";
 
 // Represents peer-to-peer messages.
 // Only one type can be non-null.
@@ -64,15 +64,15 @@ message Message {
 message Ping {
   // Uptime percentage on the primary network [0, 100]
   uint32 uptime = 1;
-  // Uptime percentage on subnets
-  repeated SubnetUptime subnet_uptimes = 2;
+  // Uptime percentage on supernets
+  repeated SupernetUptime supernet_uptimes = 2;
 }
 
-// SubnetUptime is a descriptor for a peer's perceived uptime on a subnet.
-message SubnetUptime {
-  // Subnet the peer is validating
-  bytes subnet_id = 1;
-  // Uptime percentage on the subnet [0, 100]
+// SupernetUptime is a descriptor for a peer's perceived uptime on a supernet.
+message SupernetUptime {
+  // Supernet the peer is validating
+  bytes supernet_id = 1;
+  // Uptime percentage on the supernet [0, 100]
   uint32 uptime = 2;
 }
 
@@ -103,8 +103,8 @@ message Handshake {
   // Signature of the peer IP port pair at a provided timestamp with the TLS
   // key.
   bytes ip_node_id_sig = 7;
-  // Subnets the peer is tracking
-  repeated bytes tracked_subnets = 8;
+  // Supernets the peer is tracking
+  repeated bytes tracked_supernets = 8;
   Client client = 9;
   repeated uint32 supported_acps = 10;
   repeated uint32 objected_acps = 11;

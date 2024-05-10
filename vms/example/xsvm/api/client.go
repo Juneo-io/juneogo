@@ -8,13 +8,13 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/rpc"
-	"github.com/ava-labs/avalanchego/vms/example/xsvm/block"
-	"github.com/ava-labs/avalanchego/vms/example/xsvm/genesis"
-	"github.com/ava-labs/avalanchego/vms/example/xsvm/tx"
-	"github.com/ava-labs/avalanchego/vms/platformvm/warp"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/rpc"
+	"github.com/Juneo-io/juneogo/vms/example/xsvm/block"
+	"github.com/Juneo-io/juneogo/vms/example/xsvm/genesis"
+	"github.com/Juneo-io/juneogo/vms/example/xsvm/tx"
+	"github.com/Juneo-io/juneogo/vms/platformvm/warp"
 )
 
 const defaultPollingInterval = 50 * time.Millisecond
@@ -94,7 +94,7 @@ func (c *client) Network(
 		resp,
 		options...,
 	)
-	return resp.NetworkID, resp.SubnetID, resp.ChainID, err
+	return resp.NetworkID, resp.SupernetID, resp.ChainID, err
 }
 
 func (c *client) Genesis(

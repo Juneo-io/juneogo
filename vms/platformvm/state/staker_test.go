@@ -11,9 +11,9 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils/crypto/bls"
-	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils/crypto/bls"
+	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
 )
 
 var errCustom = errors.New("custom")
@@ -140,18 +140,18 @@ func TestNewCurrentStaker(t *testing.T) {
 	sk, err := bls.NewSecretKey()
 	require.NoError(err)
 	publicKey := bls.PublicFromSecretKey(sk)
-	subnetID := ids.GenerateTestID()
+	supernetID := ids.GenerateTestID()
 	weight := uint64(12345)
 	startTime := time.Now()
 	endTime := startTime.Add(time.Hour)
 	potentialReward := uint64(54321)
-	currentPriority := txs.SubnetPermissionedValidatorCurrentPriority
+	currentPriority := txs.SupernetPermissionedValidatorCurrentPriority
 
 	stakerTx := txs.NewMockStaker(ctrl)
 	stakerTx.EXPECT().EndTime().Return(endTime)
 	stakerTx.EXPECT().NodeID().Return(nodeID)
 	stakerTx.EXPECT().PublicKey().Return(publicKey, true, nil)
-	stakerTx.EXPECT().SubnetID().Return(subnetID)
+	stakerTx.EXPECT().SupernetID().Return(supernetID)
 	stakerTx.EXPECT().Weight().Return(weight)
 	stakerTx.EXPECT().CurrentPriority().Return(currentPriority)
 
@@ -161,7 +161,7 @@ func TestNewCurrentStaker(t *testing.T) {
 	require.Equal(txID, staker.TxID)
 	require.Equal(nodeID, staker.NodeID)
 	require.Equal(publicKey, staker.PublicKey)
-	require.Equal(subnetID, staker.SubnetID)
+	require.Equal(supernetID, staker.SupernetID)
 	require.Equal(weight, staker.Weight)
 	require.Equal(startTime, staker.StartTime)
 	require.Equal(endTime, staker.EndTime)
@@ -184,16 +184,16 @@ func TestNewPendingStaker(t *testing.T) {
 	sk, err := bls.NewSecretKey()
 	require.NoError(err)
 	publicKey := bls.PublicFromSecretKey(sk)
-	subnetID := ids.GenerateTestID()
+	supernetID := ids.GenerateTestID()
 	weight := uint64(12345)
 	startTime := time.Now()
 	endTime := time.Now()
-	pendingPriority := txs.SubnetPermissionedValidatorPendingPriority
+	pendingPriority := txs.SupernetPermissionedValidatorPendingPriority
 
 	stakerTx := txs.NewMockScheduledStaker(ctrl)
 	stakerTx.EXPECT().NodeID().Return(nodeID)
 	stakerTx.EXPECT().PublicKey().Return(publicKey, true, nil)
-	stakerTx.EXPECT().SubnetID().Return(subnetID)
+	stakerTx.EXPECT().SupernetID().Return(supernetID)
 	stakerTx.EXPECT().Weight().Return(weight)
 	stakerTx.EXPECT().StartTime().Return(startTime)
 	stakerTx.EXPECT().EndTime().Return(endTime)
@@ -205,7 +205,7 @@ func TestNewPendingStaker(t *testing.T) {
 	require.Equal(txID, staker.TxID)
 	require.Equal(nodeID, staker.NodeID)
 	require.Equal(publicKey, staker.PublicKey)
-	require.Equal(subnetID, staker.SubnetID)
+	require.Equal(supernetID, staker.SupernetID)
 	require.Equal(weight, staker.Weight)
 	require.Equal(startTime, staker.StartTime)
 	require.Equal(endTime, staker.EndTime)

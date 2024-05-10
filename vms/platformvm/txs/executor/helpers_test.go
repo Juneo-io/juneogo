@@ -12,39 +12,39 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/chains"
-	"github.com/ava-labs/avalanchego/chains/atomic"
-	"github.com/ava-labs/avalanchego/codec"
-	"github.com/ava-labs/avalanchego/codec/linearcodec"
-	"github.com/ava-labs/avalanchego/database"
-	"github.com/ava-labs/avalanchego/database/memdb"
-	"github.com/ava-labs/avalanchego/database/versiondb"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/snow/snowtest"
-	"github.com/ava-labs/avalanchego/snow/uptime"
-	"github.com/ava-labs/avalanchego/snow/validators"
-	"github.com/ava-labs/avalanchego/utils"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/crypto/secp256k1"
-	"github.com/ava-labs/avalanchego/utils/formatting"
-	"github.com/ava-labs/avalanchego/utils/formatting/address"
-	"github.com/ava-labs/avalanchego/utils/json"
-	"github.com/ava-labs/avalanchego/utils/logging"
-	"github.com/ava-labs/avalanchego/utils/timer/mockable"
-	"github.com/ava-labs/avalanchego/utils/units"
-	"github.com/ava-labs/avalanchego/vms/platformvm/api"
-	"github.com/ava-labs/avalanchego/vms/platformvm/config"
-	"github.com/ava-labs/avalanchego/vms/platformvm/fx"
-	"github.com/ava-labs/avalanchego/vms/platformvm/metrics"
-	"github.com/ava-labs/avalanchego/vms/platformvm/reward"
-	"github.com/ava-labs/avalanchego/vms/platformvm/state"
-	"github.com/ava-labs/avalanchego/vms/platformvm/status"
-	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
-	"github.com/ava-labs/avalanchego/vms/platformvm/txs/txstest"
-	"github.com/ava-labs/avalanchego/vms/platformvm/utxo"
-	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
-	"github.com/ava-labs/avalanchego/wallet/subnet/primary/common"
+	"github.com/Juneo-io/juneogo/chains"
+	"github.com/Juneo-io/juneogo/chains/atomic"
+	"github.com/Juneo-io/juneogo/codec"
+	"github.com/Juneo-io/juneogo/codec/linearcodec"
+	"github.com/Juneo-io/juneogo/database"
+	"github.com/Juneo-io/juneogo/database/memdb"
+	"github.com/Juneo-io/juneogo/database/versiondb"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/snow/snowtest"
+	"github.com/Juneo-io/juneogo/snow/uptime"
+	"github.com/Juneo-io/juneogo/snow/validators"
+	"github.com/Juneo-io/juneogo/utils"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/crypto/secp256k1"
+	"github.com/Juneo-io/juneogo/utils/formatting"
+	"github.com/Juneo-io/juneogo/utils/formatting/address"
+	"github.com/Juneo-io/juneogo/utils/json"
+	"github.com/Juneo-io/juneogo/utils/logging"
+	"github.com/Juneo-io/juneogo/utils/timer/mockable"
+	"github.com/Juneo-io/juneogo/utils/units"
+	"github.com/Juneo-io/juneogo/vms/platformvm/api"
+	"github.com/Juneo-io/juneogo/vms/platformvm/config"
+	"github.com/Juneo-io/juneogo/vms/platformvm/fx"
+	"github.com/Juneo-io/juneogo/vms/platformvm/metrics"
+	"github.com/Juneo-io/juneogo/vms/platformvm/reward"
+	"github.com/Juneo-io/juneogo/vms/platformvm/state"
+	"github.com/Juneo-io/juneogo/vms/platformvm/status"
+	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
+	"github.com/Juneo-io/juneogo/vms/platformvm/txs/txstest"
+	"github.com/Juneo-io/juneogo/vms/platformvm/utxo"
+	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
+	"github.com/Juneo-io/juneogo/wallet/supernet/primary/common"
 )
 
 const (
@@ -71,8 +71,8 @@ var (
 	defaultTxFee              = uint64(100)
 	lastAcceptedID            = ids.GenerateTestID()
 
-	testSubnet1            *txs.Tx
-	testSubnet1ControlKeys = preFundedKeys[0:3]
+	testSupernet1            *txs.Tx
+	testSupernet1ControlKeys = preFundedKeys[0:3]
 
 	// Node IDs of genesis validators. Initialized in init function
 	genesisNodeIDs []ids.NodeID
@@ -175,7 +175,7 @@ func newEnvironment(t *testing.T, f fork) *environment {
 		backend:        backend,
 	}
 
-	addSubnet(t, env)
+	addSupernet(t, env)
 
 	t.Cleanup(func() {
 		env.ctx.Lock.Lock()
@@ -188,10 +188,10 @@ func newEnvironment(t *testing.T, f fork) *environment {
 
 			require.NoError(env.uptimes.StopTracking(validatorIDs, constants.PrimaryNetworkID))
 
-			for subnetID := range env.config.TrackedSubnets {
-				validatorIDs := env.config.Validators.GetValidatorIDs(subnetID)
+			for supernetID := range env.config.TrackedSupernets {
+				validatorIDs := env.config.Validators.GetValidatorIDs(supernetID)
 
-				require.NoError(env.uptimes.StopTracking(validatorIDs, subnetID))
+				require.NoError(env.uptimes.StopTracking(validatorIDs, supernetID))
 			}
 			env.state.SetHeight(math.MaxUint64)
 			require.NoError(env.state.Commit())
@@ -204,12 +204,12 @@ func newEnvironment(t *testing.T, f fork) *environment {
 	return env
 }
 
-func addSubnet(t *testing.T, env *environment) {
+func addSupernet(t *testing.T, env *environment) {
 	require := require.New(t)
 
-	// Create a subnet
+	// Create a supernet
 	var err error
-	testSubnet1, err = env.txBuilder.NewCreateSubnetTx(
+	testSupernet1, err = env.txBuilder.NewCreateSupernetTx(
 		&secp256k1fx.OutputOwners{
 			Threshold: 2,
 			Addrs: []ids.ShortID{
@@ -233,11 +233,11 @@ func addSubnet(t *testing.T, env *environment) {
 	executor := StandardTxExecutor{
 		Backend: &env.backend,
 		State:   stateDiff,
-		Tx:      testSubnet1,
+		Tx:      testSupernet1,
 	}
-	require.NoError(testSubnet1.Unsigned.Visit(&executor))
+	require.NoError(testSupernet1.Unsigned.Visit(&executor))
 
-	stateDiff.AddTx(testSubnet1, status.Committed)
+	stateDiff.AddTx(testSupernet1, status.Committed)
 	require.NoError(stateDiff.Apply(env.state))
 	require.NoError(env.state.Commit())
 }
@@ -279,7 +279,7 @@ func defaultConfig(t *testing.T, f fork) *config.Config {
 		UptimeLockedCalculator: uptime.NewLockedCalculator(),
 		Validators:             validators.NewManager(),
 		TxFee:                  defaultTxFee,
-		CreateSubnetTxFee:      100 * defaultTxFee,
+		CreateSupernetTxFee:      100 * defaultTxFee,
 		CreateBlockchainTxFee:  100 * defaultTxFee,
 		MinValidatorStake:      5 * units.MilliAvax,
 		MaxValidatorStake:      500 * units.MilliAvax,

@@ -8,19 +8,19 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/utils/crypto/secp256k1"
-	"github.com/ava-labs/avalanchego/vms/components/avax"
-	"github.com/ava-labs/avalanchego/vms/platformvm/config"
-	"github.com/ava-labs/avalanchego/vms/platformvm/state"
-	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
-	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
-	"github.com/ava-labs/avalanchego/wallet/chain/p/builder"
-	"github.com/ava-labs/avalanchego/wallet/subnet/primary/common"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/utils/crypto/secp256k1"
+	"github.com/Juneo-io/juneogo/vms/components/avax"
+	"github.com/Juneo-io/juneogo/vms/platformvm/config"
+	"github.com/Juneo-io/juneogo/vms/platformvm/state"
+	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
+	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
+	"github.com/Juneo-io/juneogo/wallet/chain/p/builder"
+	"github.com/Juneo-io/juneogo/wallet/supernet/primary/common"
 
-	vmsigner "github.com/ava-labs/avalanchego/vms/platformvm/signer"
-	walletsigner "github.com/ava-labs/avalanchego/wallet/chain/p/signer"
+	vmsigner "github.com/Juneo-io/juneogo/vms/platformvm/signer"
+	walletsigner "github.com/Juneo-io/juneogo/wallet/chain/p/signer"
 )
 
 func NewBuilder(
@@ -82,7 +82,7 @@ func (b *Builder) NewExportTx(
 }
 
 func (b *Builder) NewCreateChainTx(
-	subnetID ids.ID,
+	supernetID ids.ID,
 	genesis []byte,
 	vmID ids.ID,
 	fxIDs []ids.ID,
@@ -93,7 +93,7 @@ func (b *Builder) NewCreateChainTx(
 	pBuilder, pSigner := b.builders(keys)
 
 	utx, err := pBuilder.NewCreateChainTx(
-		subnetID,
+		supernetID,
 		genesis,
 		vmID,
 		fxIDs,
@@ -107,26 +107,26 @@ func (b *Builder) NewCreateChainTx(
 	return walletsigner.SignUnsigned(context.Background(), pSigner, utx)
 }
 
-func (b *Builder) NewCreateSubnetTx(
+func (b *Builder) NewCreateSupernetTx(
 	owner *secp256k1fx.OutputOwners,
 	keys []*secp256k1.PrivateKey,
 	options ...common.Option,
 ) (*txs.Tx, error) {
 	pBuilder, pSigner := b.builders(keys)
 
-	utx, err := pBuilder.NewCreateSubnetTx(
+	utx, err := pBuilder.NewCreateSupernetTx(
 		owner,
 		options...,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed building create subnet tx: %w", err)
+		return nil, fmt.Errorf("failed building create supernet tx: %w", err)
 	}
 
 	return walletsigner.SignUnsigned(context.Background(), pSigner, utx)
 }
 
-func (b *Builder) NewTransformSubnetTx(
-	subnetID ids.ID,
+func (b *Builder) NewTransformSupernetTx(
+	supernetID ids.ID,
 	assetID ids.ID,
 	initialSupply uint64,
 	maxSupply uint64,
@@ -145,8 +145,8 @@ func (b *Builder) NewTransformSubnetTx(
 ) (*txs.Tx, error) {
 	pBuilder, pSigner := b.builders(keys)
 
-	utx, err := pBuilder.NewTransformSubnetTx(
-		subnetID,
+	utx, err := pBuilder.NewTransformSupernetTx(
+		supernetID,
 		assetID,
 		initialSupply,
 		maxSupply,
@@ -163,7 +163,7 @@ func (b *Builder) NewTransformSubnetTx(
 		options...,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed building transform subnet tx: %w", err)
+		return nil, fmt.Errorf("failed building transform supernet tx: %w", err)
 	}
 
 	return walletsigner.SignUnsigned(context.Background(), pSigner, utx)
@@ -192,7 +192,7 @@ func (b *Builder) NewAddValidatorTx(
 }
 
 func (b *Builder) NewAddPermissionlessValidatorTx(
-	vdr *txs.SubnetValidator,
+	vdr *txs.SupernetValidator,
 	signer vmsigner.Signer,
 	assetID ids.ID,
 	validationRewardsOwner *secp256k1fx.OutputOwners,
@@ -240,7 +240,7 @@ func (b *Builder) NewAddDelegatorTx(
 }
 
 func (b *Builder) NewAddPermissionlessDelegatorTx(
-	vdr *txs.SubnetValidator,
+	vdr *txs.SupernetValidator,
 	assetID ids.ID,
 	rewardsOwner *secp256k1fx.OutputOwners,
 	keys []*secp256k1.PrivateKey,
@@ -261,59 +261,59 @@ func (b *Builder) NewAddPermissionlessDelegatorTx(
 	return walletsigner.SignUnsigned(context.Background(), pSigner, utx)
 }
 
-func (b *Builder) NewAddSubnetValidatorTx(
-	vdr *txs.SubnetValidator,
+func (b *Builder) NewAddSupernetValidatorTx(
+	vdr *txs.SupernetValidator,
 	keys []*secp256k1.PrivateKey,
 	options ...common.Option,
 ) (*txs.Tx, error) {
 	pBuilder, pSigner := b.builders(keys)
 
-	utx, err := pBuilder.NewAddSubnetValidatorTx(
+	utx, err := pBuilder.NewAddSupernetValidatorTx(
 		vdr,
 		options...,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed building add subnet validator tx: %w", err)
+		return nil, fmt.Errorf("failed building add supernet validator tx: %w", err)
 	}
 
 	return walletsigner.SignUnsigned(context.Background(), pSigner, utx)
 }
 
-func (b *Builder) NewRemoveSubnetValidatorTx(
+func (b *Builder) NewRemoveSupernetValidatorTx(
 	nodeID ids.NodeID,
-	subnetID ids.ID,
+	supernetID ids.ID,
 	keys []*secp256k1.PrivateKey,
 	options ...common.Option,
 ) (*txs.Tx, error) {
 	pBuilder, pSigner := b.builders(keys)
 
-	utx, err := pBuilder.NewRemoveSubnetValidatorTx(
+	utx, err := pBuilder.NewRemoveSupernetValidatorTx(
 		nodeID,
-		subnetID,
+		supernetID,
 		options...,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed building remove subnet validator tx: %w", err)
+		return nil, fmt.Errorf("failed building remove supernet validator tx: %w", err)
 	}
 
 	return walletsigner.SignUnsigned(context.Background(), pSigner, utx)
 }
 
-func (b *Builder) NewTransferSubnetOwnershipTx(
-	subnetID ids.ID,
+func (b *Builder) NewTransferSupernetOwnershipTx(
+	supernetID ids.ID,
 	owner *secp256k1fx.OutputOwners,
 	keys []*secp256k1.PrivateKey,
 	options ...common.Option,
 ) (*txs.Tx, error) {
 	pBuilder, pSigner := b.builders(keys)
 
-	utx, err := pBuilder.NewTransferSubnetOwnershipTx(
-		subnetID,
+	utx, err := pBuilder.NewTransferSupernetOwnershipTx(
+		supernetID,
 		owner,
 		options...,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed building transfer subnet ownership tx: %w", err)
+		return nil, fmt.Errorf("failed building transfer supernet ownership tx: %w", err)
 	}
 
 	return walletsigner.SignUnsigned(context.Background(), pSigner, utx)

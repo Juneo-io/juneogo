@@ -10,46 +10,46 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/tests"
-	"github.com/ava-labs/avalanchego/tests/fixture/e2e"
-	"github.com/ava-labs/avalanchego/tests/fixture/tmpnet"
-	"github.com/ava-labs/avalanchego/utils/crypto/secp256k1"
-	"github.com/ava-labs/avalanchego/utils/units"
-	"github.com/ava-labs/avalanchego/vms/example/xsvm"
-	"github.com/ava-labs/avalanchego/vms/example/xsvm/api"
-	"github.com/ava-labs/avalanchego/vms/example/xsvm/cmd/issue/export"
-	"github.com/ava-labs/avalanchego/vms/example/xsvm/cmd/issue/importtx"
-	"github.com/ava-labs/avalanchego/vms/example/xsvm/cmd/issue/transfer"
-	"github.com/ava-labs/avalanchego/vms/example/xsvm/genesis"
+	"github.com/Juneo-io/juneogo/tests"
+	"github.com/Juneo-io/juneogo/tests/fixture/e2e"
+	"github.com/Juneo-io/juneogo/tests/fixture/tmpnet"
+	"github.com/Juneo-io/juneogo/utils/crypto/secp256k1"
+	"github.com/Juneo-io/juneogo/utils/units"
+	"github.com/Juneo-io/juneogo/vms/example/xsvm"
+	"github.com/Juneo-io/juneogo/vms/example/xsvm/api"
+	"github.com/Juneo-io/juneogo/vms/example/xsvm/cmd/issue/export"
+	"github.com/Juneo-io/juneogo/vms/example/xsvm/cmd/issue/importtx"
+	"github.com/Juneo-io/juneogo/vms/example/xsvm/cmd/issue/transfer"
+	"github.com/Juneo-io/juneogo/vms/example/xsvm/genesis"
 
 	ginkgo "github.com/onsi/ginkgo/v2"
 )
 
 var (
-	subnetAName = "xsvm-a"
-	subnetBName = "xsvm-b"
+	supernetAName = "xsvm-a"
+	supernetBName = "xsvm-b"
 )
 
-func XSVMSubnets(nodes ...*tmpnet.Node) []*tmpnet.Subnet {
-	return []*tmpnet.Subnet{
-		newXSVMSubnet(subnetAName, nodes...),
-		newXSVMSubnet(subnetBName, nodes...),
+func XSVMSupernets(nodes ...*tmpnet.Node) []*tmpnet.Supernet {
+	return []*tmpnet.Supernet{
+		newXSVMSupernet(supernetAName, nodes...),
+		newXSVMSupernet(supernetBName, nodes...),
 	}
 }
 
 var _ = ginkgo.Describe("[XSVM]", func() {
 	require := require.New(ginkgo.GinkgoT())
 
-	ginkgo.It("should support transfers between subnets", func() {
+	ginkgo.It("should support transfers between supernets", func() {
 		network := e2e.Env.GetNetwork()
 
-		sourceSubnet := network.GetSubnet(subnetAName)
-		require.NotNil(sourceSubnet)
-		destinationSubnet := network.GetSubnet(subnetBName)
-		require.NotNil(destinationSubnet)
+		sourceSupernet := network.GetSupernet(supernetAName)
+		require.NotNil(sourceSupernet)
+		destinationSupernet := network.GetSupernet(supernetBName)
+		require.NotNil(destinationSupernet)
 
-		sourceChain := sourceSubnet.Chains[0]
-		destinationChain := destinationSubnet.Chains[0]
+		sourceChain := sourceSupernet.Chains[0]
+		destinationChain := destinationSupernet.Chains[0]
 
 		apiNode := network.Nodes[0]
 		tests.Outf(" issuing transactions on %s (%s)\n", apiNode.NodeID, apiNode.URI)
@@ -67,7 +67,7 @@ var _ = ginkgo.Describe("[XSVM]", func() {
 		require.NoError(err)
 		require.GreaterOrEqual(initialSourcedBalance, units.Schmeckle)
 
-		ginkgo.By(fmt.Sprintf("exporting from chain %s on subnet %s", sourceChain.ChainID, sourceSubnet.SubnetID))
+		ginkgo.By(fmt.Sprintf("exporting from chain %s on supernet %s", sourceChain.ChainID, sourceSupernet.SupernetID))
 		exportTxStatus, err := export.Export(
 			e2e.DefaultContext(),
 			&export.Config{
@@ -92,8 +92,8 @@ var _ = ginkgo.Describe("[XSVM]", func() {
 			))
 		}
 
-		ginkgo.By(fmt.Sprintf("issuing transaction on chain %s on subnet %s to activate snowman++ consensus",
-			destinationChain.ChainID, destinationSubnet.SubnetID))
+		ginkgo.By(fmt.Sprintf("issuing transaction on chain %s on supernet %s to activate snowman++ consensus",
+			destinationChain.ChainID, destinationSupernet.SupernetID))
 		recipientKey, err := secp256k1.NewPrivateKey()
 		require.NoError(err)
 		transferTxStatus, err := transfer.Transfer(
@@ -110,7 +110,7 @@ var _ = ginkgo.Describe("[XSVM]", func() {
 		require.NoError(err)
 		tests.Outf(" issued transaction with ID: %s\n", transferTxStatus.TxID)
 
-		ginkgo.By(fmt.Sprintf("importing to blockchain %s on subnet %s", destinationChain.ChainID, destinationSubnet.SubnetID))
+		ginkgo.By(fmt.Sprintf("importing to blockchain %s on supernet %s", destinationChain.ChainID, destinationSupernet.SupernetID))
 		sourceURIs := make([]string, len(network.Nodes))
 		for i, node := range network.Nodes {
 			sourceURIs[i] = node.URI
@@ -142,9 +142,9 @@ var _ = ginkgo.Describe("[XSVM]", func() {
 	})
 })
 
-func newXSVMSubnet(name string, nodes ...*tmpnet.Node) *tmpnet.Subnet {
+func newXSVMSupernet(name string, nodes ...*tmpnet.Node) *tmpnet.Supernet {
 	if len(nodes) == 0 {
-		panic("a subnet must be validated by at least one node")
+		panic("a supernet must be validated by at least one node")
 	}
 
 	key, err := secp256k1.NewPrivateKey()
@@ -165,7 +165,7 @@ func newXSVMSubnet(name string, nodes ...*tmpnet.Node) *tmpnet.Subnet {
 		panic(err)
 	}
 
-	return &tmpnet.Subnet{
+	return &tmpnet.Supernet{
 		Name: name,
 		Chains: []*tmpnet.Chain{
 			{

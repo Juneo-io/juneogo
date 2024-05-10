@@ -14,41 +14,41 @@ import (
 	"github.com/stretchr/testify/require"
 	"golang.org/x/sync/errgroup"
 
-	"github.com/ava-labs/avalanchego/chains"
-	"github.com/ava-labs/avalanchego/chains/atomic"
-	"github.com/ava-labs/avalanchego/database"
-	"github.com/ava-labs/avalanchego/database/memdb"
-	"github.com/ava-labs/avalanchego/database/prefixdb"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/network/p2p"
-	"github.com/ava-labs/avalanchego/network/p2p/gossip"
-	"github.com/ava-labs/avalanchego/snow/choices"
-	"github.com/ava-labs/avalanchego/snow/consensus/snowman"
-	"github.com/ava-labs/avalanchego/snow/engine/common"
-	"github.com/ava-labs/avalanchego/snow/snowtest"
-	"github.com/ava-labs/avalanchego/snow/uptime"
-	"github.com/ava-labs/avalanchego/snow/validators"
-	"github.com/ava-labs/avalanchego/utils/bloom"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/crypto/bls"
-	"github.com/ava-labs/avalanchego/utils/crypto/secp256k1"
-	"github.com/ava-labs/avalanchego/utils/timer/mockable"
-	"github.com/ava-labs/avalanchego/version"
-	"github.com/ava-labs/avalanchego/vms/components/avax"
-	"github.com/ava-labs/avalanchego/vms/platformvm/block"
-	"github.com/ava-labs/avalanchego/vms/platformvm/config"
-	"github.com/ava-labs/avalanchego/vms/platformvm/metrics"
-	"github.com/ava-labs/avalanchego/vms/platformvm/network"
-	"github.com/ava-labs/avalanchego/vms/platformvm/reward"
-	"github.com/ava-labs/avalanchego/vms/platformvm/signer"
-	"github.com/ava-labs/avalanchego/vms/platformvm/state"
-	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
-	"github.com/ava-labs/avalanchego/vms/platformvm/txs/executor"
-	"github.com/ava-labs/avalanchego/vms/platformvm/txs/txstest"
-	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
+	"github.com/Juneo-io/juneogo/chains"
+	"github.com/Juneo-io/juneogo/chains/atomic"
+	"github.com/Juneo-io/juneogo/database"
+	"github.com/Juneo-io/juneogo/database/memdb"
+	"github.com/Juneo-io/juneogo/database/prefixdb"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/network/p2p"
+	"github.com/Juneo-io/juneogo/network/p2p/gossip"
+	"github.com/Juneo-io/juneogo/snow/choices"
+	"github.com/Juneo-io/juneogo/snow/consensus/snowman"
+	"github.com/Juneo-io/juneogo/snow/engine/common"
+	"github.com/Juneo-io/juneogo/snow/snowtest"
+	"github.com/Juneo-io/juneogo/snow/uptime"
+	"github.com/Juneo-io/juneogo/snow/validators"
+	"github.com/Juneo-io/juneogo/utils/bloom"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/crypto/bls"
+	"github.com/Juneo-io/juneogo/utils/crypto/secp256k1"
+	"github.com/Juneo-io/juneogo/utils/timer/mockable"
+	"github.com/Juneo-io/juneogo/version"
+	"github.com/Juneo-io/juneogo/vms/components/avax"
+	"github.com/Juneo-io/juneogo/vms/platformvm/block"
+	"github.com/Juneo-io/juneogo/vms/platformvm/config"
+	"github.com/Juneo-io/juneogo/vms/platformvm/metrics"
+	"github.com/Juneo-io/juneogo/vms/platformvm/network"
+	"github.com/Juneo-io/juneogo/vms/platformvm/reward"
+	"github.com/Juneo-io/juneogo/vms/platformvm/signer"
+	"github.com/Juneo-io/juneogo/vms/platformvm/state"
+	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
+	"github.com/Juneo-io/juneogo/vms/platformvm/txs/executor"
+	"github.com/Juneo-io/juneogo/vms/platformvm/txs/txstest"
+	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
 
-	blockexecutor "github.com/ava-labs/avalanchego/vms/platformvm/block/executor"
-	walletcommon "github.com/ava-labs/avalanchego/wallet/subnet/primary/common"
+	blockexecutor "github.com/Juneo-io/juneogo/vms/platformvm/block/executor"
+	walletcommon "github.com/Juneo-io/juneogo/wallet/supernet/primary/common"
 )
 
 func TestAddDelegatorTxOverDelegatedRegression(t *testing.T) {
@@ -488,7 +488,7 @@ func TestUnverifiedParentPanicRegression(t *testing.T) {
 		vm.state,
 	)
 
-	addSubnetTx0, err := txBuilder.NewCreateSubnetTx(
+	addSupernetTx0, err := txBuilder.NewCreateSupernetTx(
 		&secp256k1fx.OutputOwners{
 			Threshold: 1,
 			Addrs:     []ids.ShortID{addr0},
@@ -501,7 +501,7 @@ func TestUnverifiedParentPanicRegression(t *testing.T) {
 	)
 	require.NoError(err)
 
-	addSubnetTx1, err := txBuilder.NewCreateSubnetTx(
+	addSupernetTx1, err := txBuilder.NewCreateSupernetTx(
 		&secp256k1fx.OutputOwners{
 			Threshold: 1,
 			Addrs:     []ids.ShortID{addr1},
@@ -514,7 +514,7 @@ func TestUnverifiedParentPanicRegression(t *testing.T) {
 	)
 	require.NoError(err)
 
-	addSubnetTx2, err := txBuilder.NewCreateSubnetTx(
+	addSupernetTx2, err := txBuilder.NewCreateSupernetTx(
 		&secp256k1fx.OutputOwners{
 			Threshold: 1,
 			Addrs:     []ids.ShortID{addr1},
@@ -537,43 +537,43 @@ func TestUnverifiedParentPanicRegression(t *testing.T) {
 		preferredChainTime,
 		preferredID,
 		preferredHeight+1,
-		[]*txs.Tx{addSubnetTx0},
+		[]*txs.Tx{addSupernetTx0},
 	)
 	require.NoError(err)
-	addSubnetBlk0 := vm.manager.NewBlock(statelessStandardBlk)
+	addSupernetBlk0 := vm.manager.NewBlock(statelessStandardBlk)
 
 	statelessStandardBlk, err = block.NewBanffStandardBlock(
 		preferredChainTime,
 		preferredID,
 		preferredHeight+1,
-		[]*txs.Tx{addSubnetTx1},
+		[]*txs.Tx{addSupernetTx1},
 	)
 	require.NoError(err)
-	addSubnetBlk1 := vm.manager.NewBlock(statelessStandardBlk)
+	addSupernetBlk1 := vm.manager.NewBlock(statelessStandardBlk)
 
 	statelessStandardBlk, err = block.NewBanffStandardBlock(
 		preferredChainTime,
-		addSubnetBlk1.ID(),
+		addSupernetBlk1.ID(),
 		preferredHeight+2,
-		[]*txs.Tx{addSubnetTx2},
+		[]*txs.Tx{addSupernetTx2},
 	)
 	require.NoError(err)
-	addSubnetBlk2 := vm.manager.NewBlock(statelessStandardBlk)
+	addSupernetBlk2 := vm.manager.NewBlock(statelessStandardBlk)
 
-	_, err = vm.ParseBlock(context.Background(), addSubnetBlk0.Bytes())
+	_, err = vm.ParseBlock(context.Background(), addSupernetBlk0.Bytes())
 	require.NoError(err)
 
-	_, err = vm.ParseBlock(context.Background(), addSubnetBlk1.Bytes())
+	_, err = vm.ParseBlock(context.Background(), addSupernetBlk1.Bytes())
 	require.NoError(err)
 
-	_, err = vm.ParseBlock(context.Background(), addSubnetBlk2.Bytes())
+	_, err = vm.ParseBlock(context.Background(), addSupernetBlk2.Bytes())
 	require.NoError(err)
 
-	require.NoError(addSubnetBlk0.Verify(context.Background()))
-	require.NoError(addSubnetBlk0.Accept(context.Background()))
+	require.NoError(addSupernetBlk0.Verify(context.Background()))
+	require.NoError(addSupernetBlk0.Accept(context.Background()))
 
 	// Doesn't matter what verify returns as long as it's not panicking.
-	_ = addSubnetBlk2.Verify(context.Background())
+	_ = addSupernetBlk2.Verify(context.Background())
 }
 
 func TestRejectedStateRegressionInvalidValidatorTimestamp(t *testing.T) {
@@ -1400,7 +1400,7 @@ func TestRemovePermissionedValidatorDuringPendingToCurrentTransitionNotTracked(t
 	require.NoError(addValidatorBlock.Accept(context.Background()))
 	require.NoError(vm.SetPreference(context.Background(), vm.manager.LastAccepted()))
 
-	createSubnetTx, err := txBuilder.NewCreateSubnetTx(
+	createSupernetTx, err := txBuilder.NewCreateSupernetTx(
 		&secp256k1fx.OutputOwners{
 			Threshold: 1,
 			Addrs:     []ids.ShortID{changeAddr},
@@ -1414,25 +1414,25 @@ func TestRemovePermissionedValidatorDuringPendingToCurrentTransitionNotTracked(t
 	require.NoError(err)
 
 	vm.ctx.Lock.Unlock()
-	require.NoError(vm.issueTxFromRPC(createSubnetTx))
+	require.NoError(vm.issueTxFromRPC(createSupernetTx))
 	vm.ctx.Lock.Lock()
 
-	// trigger block creation for the subnet tx
-	createSubnetBlock, err := vm.Builder.BuildBlock(context.Background())
+	// trigger block creation for the supernet tx
+	createSupernetBlock, err := vm.Builder.BuildBlock(context.Background())
 	require.NoError(err)
-	require.NoError(createSubnetBlock.Verify(context.Background()))
-	require.NoError(createSubnetBlock.Accept(context.Background()))
+	require.NoError(createSupernetBlock.Verify(context.Background()))
+	require.NoError(createSupernetBlock.Accept(context.Background()))
 	require.NoError(vm.SetPreference(context.Background(), vm.manager.LastAccepted()))
 
-	addSubnetValidatorTx, err := txBuilder.NewAddSubnetValidatorTx(
-		&txs.SubnetValidator{
+	addSupernetValidatorTx, err := txBuilder.NewAddSupernetValidatorTx(
+		&txs.SupernetValidator{
 			Validator: txs.Validator{
 				NodeID: nodeID,
 				Start:  uint64(validatorStartTime.Unix()),
 				End:    uint64(validatorEndTime.Unix()),
 				Wght:   defaultMaxValidatorStake,
 			},
-			Subnet: createSubnetTx.ID(),
+			Supernet: createSupernetTx.ID(),
 		},
 		[]*secp256k1.PrivateKey{keys[0], keys[1]},
 		walletcommon.WithChangeOwner(&secp256k1fx.OutputOwners{
@@ -1443,27 +1443,27 @@ func TestRemovePermissionedValidatorDuringPendingToCurrentTransitionNotTracked(t
 	require.NoError(err)
 
 	vm.ctx.Lock.Unlock()
-	require.NoError(vm.issueTxFromRPC(addSubnetValidatorTx))
+	require.NoError(vm.issueTxFromRPC(addSupernetValidatorTx))
 	vm.ctx.Lock.Lock()
 
 	// trigger block creation for the validator tx
-	addSubnetValidatorBlock, err := vm.Builder.BuildBlock(context.Background())
+	addSupernetValidatorBlock, err := vm.Builder.BuildBlock(context.Background())
 	require.NoError(err)
-	require.NoError(addSubnetValidatorBlock.Verify(context.Background()))
-	require.NoError(addSubnetValidatorBlock.Accept(context.Background()))
+	require.NoError(addSupernetValidatorBlock.Verify(context.Background()))
+	require.NoError(addSupernetValidatorBlock.Accept(context.Background()))
 	require.NoError(vm.SetPreference(context.Background(), vm.manager.LastAccepted()))
 
 	emptyValidatorSet, err := vm.GetValidatorSet(
 		context.Background(),
-		addSubnetValidatorBlock.Height(),
-		createSubnetTx.ID(),
+		addSupernetValidatorBlock.Height(),
+		createSupernetTx.ID(),
 	)
 	require.NoError(err)
 	require.Empty(emptyValidatorSet)
 
-	removeSubnetValidatorTx, err := txBuilder.NewRemoveSubnetValidatorTx(
+	removeSupernetValidatorTx, err := txBuilder.NewRemoveSupernetValidatorTx(
 		nodeID,
-		createSubnetTx.ID(),
+		createSupernetTx.ID(),
 		[]*secp256k1.PrivateKey{keys[0], keys[1]},
 		walletcommon.WithChangeOwner(&secp256k1fx.OutputOwners{
 			Threshold: 1,
@@ -1477,20 +1477,20 @@ func TestRemovePermissionedValidatorDuringPendingToCurrentTransitionNotTracked(t
 	vm.clock.Set(validatorStartTime)
 
 	vm.ctx.Lock.Unlock()
-	require.NoError(vm.issueTxFromRPC(removeSubnetValidatorTx))
+	require.NoError(vm.issueTxFromRPC(removeSupernetValidatorTx))
 	vm.ctx.Lock.Lock()
 
 	// trigger block creation for the validator tx
-	removeSubnetValidatorBlock, err := vm.Builder.BuildBlock(context.Background())
+	removeSupernetValidatorBlock, err := vm.Builder.BuildBlock(context.Background())
 	require.NoError(err)
-	require.NoError(removeSubnetValidatorBlock.Verify(context.Background()))
-	require.NoError(removeSubnetValidatorBlock.Accept(context.Background()))
+	require.NoError(removeSupernetValidatorBlock.Verify(context.Background()))
+	require.NoError(removeSupernetValidatorBlock.Accept(context.Background()))
 	require.NoError(vm.SetPreference(context.Background(), vm.manager.LastAccepted()))
 
 	emptyValidatorSet, err = vm.GetValidatorSet(
 		context.Background(),
-		addSubnetValidatorBlock.Height(),
-		createSubnetTx.ID(),
+		addSupernetValidatorBlock.Height(),
+		createSupernetTx.ID(),
 	)
 	require.NoError(err)
 	require.Empty(emptyValidatorSet)
@@ -1544,7 +1544,7 @@ func TestRemovePermissionedValidatorDuringPendingToCurrentTransitionTracked(t *t
 	require.NoError(addValidatorBlock.Accept(context.Background()))
 	require.NoError(vm.SetPreference(context.Background(), vm.manager.LastAccepted()))
 
-	createSubnetTx, err := txBuilder.NewCreateSubnetTx(
+	createSupernetTx, err := txBuilder.NewCreateSupernetTx(
 		&secp256k1fx.OutputOwners{
 			Threshold: 1,
 			Addrs:     []ids.ShortID{changeAddr},
@@ -1558,25 +1558,25 @@ func TestRemovePermissionedValidatorDuringPendingToCurrentTransitionTracked(t *t
 	require.NoError(err)
 
 	vm.ctx.Lock.Unlock()
-	require.NoError(vm.issueTxFromRPC(createSubnetTx))
+	require.NoError(vm.issueTxFromRPC(createSupernetTx))
 	vm.ctx.Lock.Lock()
 
-	// trigger block creation for the subnet tx
-	createSubnetBlock, err := vm.Builder.BuildBlock(context.Background())
+	// trigger block creation for the supernet tx
+	createSupernetBlock, err := vm.Builder.BuildBlock(context.Background())
 	require.NoError(err)
-	require.NoError(createSubnetBlock.Verify(context.Background()))
-	require.NoError(createSubnetBlock.Accept(context.Background()))
+	require.NoError(createSupernetBlock.Verify(context.Background()))
+	require.NoError(createSupernetBlock.Accept(context.Background()))
 	require.NoError(vm.SetPreference(context.Background(), vm.manager.LastAccepted()))
 
-	addSubnetValidatorTx, err := txBuilder.NewAddSubnetValidatorTx(
-		&txs.SubnetValidator{
+	addSupernetValidatorTx, err := txBuilder.NewAddSupernetValidatorTx(
+		&txs.SupernetValidator{
 			Validator: txs.Validator{
 				NodeID: nodeID,
 				Start:  uint64(validatorStartTime.Unix()),
 				End:    uint64(validatorEndTime.Unix()),
 				Wght:   defaultMaxValidatorStake,
 			},
-			Subnet: createSubnetTx.ID(),
+			Supernet: createSupernetTx.ID(),
 		},
 		[]*secp256k1.PrivateKey{keys[0], keys[1]},
 		walletcommon.WithChangeOwner(&secp256k1fx.OutputOwners{
@@ -1587,19 +1587,19 @@ func TestRemovePermissionedValidatorDuringPendingToCurrentTransitionTracked(t *t
 	require.NoError(err)
 
 	vm.ctx.Lock.Unlock()
-	require.NoError(vm.issueTxFromRPC(addSubnetValidatorTx))
+	require.NoError(vm.issueTxFromRPC(addSupernetValidatorTx))
 	vm.ctx.Lock.Lock()
 
 	// trigger block creation for the validator tx
-	addSubnetValidatorBlock, err := vm.Builder.BuildBlock(context.Background())
+	addSupernetValidatorBlock, err := vm.Builder.BuildBlock(context.Background())
 	require.NoError(err)
-	require.NoError(addSubnetValidatorBlock.Verify(context.Background()))
-	require.NoError(addSubnetValidatorBlock.Accept(context.Background()))
+	require.NoError(addSupernetValidatorBlock.Verify(context.Background()))
+	require.NoError(addSupernetValidatorBlock.Accept(context.Background()))
 	require.NoError(vm.SetPreference(context.Background(), vm.manager.LastAccepted()))
 
-	removeSubnetValidatorTx, err := txBuilder.NewRemoveSubnetValidatorTx(
+	removeSupernetValidatorTx, err := txBuilder.NewRemoveSupernetValidatorTx(
 		nodeID,
-		createSubnetTx.ID(),
+		createSupernetTx.ID(),
 		[]*secp256k1.PrivateKey{keys[0], keys[1]},
 		walletcommon.WithChangeOwner(&secp256k1fx.OutputOwners{
 			Threshold: 1,
@@ -1613,39 +1613,39 @@ func TestRemovePermissionedValidatorDuringPendingToCurrentTransitionTracked(t *t
 	vm.clock.Set(validatorStartTime)
 
 	vm.ctx.Lock.Unlock()
-	require.NoError(vm.issueTxFromRPC(removeSubnetValidatorTx))
+	require.NoError(vm.issueTxFromRPC(removeSupernetValidatorTx))
 	vm.ctx.Lock.Lock()
 
 	// trigger block creation for the validator tx
-	removeSubnetValidatorBlock, err := vm.Builder.BuildBlock(context.Background())
+	removeSupernetValidatorBlock, err := vm.Builder.BuildBlock(context.Background())
 	require.NoError(err)
-	require.NoError(removeSubnetValidatorBlock.Verify(context.Background()))
-	require.NoError(removeSubnetValidatorBlock.Accept(context.Background()))
+	require.NoError(removeSupernetValidatorBlock.Verify(context.Background()))
+	require.NoError(removeSupernetValidatorBlock.Accept(context.Background()))
 	require.NoError(vm.SetPreference(context.Background(), vm.manager.LastAccepted()))
 }
 
 // GetValidatorSet must return the BLS keys for a given validator correctly when
 // queried at a previous height, even in case it has currently expired
-func TestSubnetValidatorBLSKeyDiffAfterExpiry(t *testing.T) {
+func TestSupernetValidatorBLSKeyDiffAfterExpiry(t *testing.T) {
 	// setup
 	require := require.New(t)
 	vm, txBuilder, _, _ := defaultVM(t, cortina)
 	vm.ctx.Lock.Lock()
 	defer vm.ctx.Lock.Unlock()
 
-	subnetID := testSubnet1.TxID
+	supernetID := testSupernet1.TxID
 
 	// setup time
 	currentTime := defaultGenesisTime
 	vm.clock.Set(currentTime)
 	vm.state.SetTimestamp(currentTime)
 
-	// A subnet validator stakes and then stops; also its primary network counterpart stops staking
+	// A supernet validator stakes and then stops; also its primary network counterpart stops staking
 	var (
 		primaryStartTime   = currentTime.Add(executor.SyncBound)
-		subnetStartTime    = primaryStartTime.Add(executor.SyncBound)
-		subnetEndTime      = subnetStartTime.Add(defaultMinStakingDuration)
-		primaryEndTime     = subnetEndTime.Add(time.Second)
+		supernetStartTime    = primaryStartTime.Add(executor.SyncBound)
+		supernetEndTime      = supernetStartTime.Add(defaultMinStakingDuration)
+		primaryEndTime     = supernetEndTime.Add(time.Second)
 		primaryReStartTime = primaryEndTime.Add(executor.SyncBound)
 		primaryReEndTime   = primaryReStartTime.Add(defaultMinStakingDuration)
 	)
@@ -1660,14 +1660,14 @@ func TestSubnetValidatorBLSKeyDiffAfterExpiry(t *testing.T) {
 
 	// build primary network validator with BLS key
 	primaryTx, err := txBuilder.NewAddPermissionlessValidatorTx(
-		&txs.SubnetValidator{
+		&txs.SupernetValidator{
 			Validator: txs.Validator{
 				NodeID: nodeID,
 				Start:  uint64(primaryStartTime.Unix()),
 				End:    uint64(primaryEndTime.Unix()),
 				Wght:   vm.MinValidatorStake,
 			},
-			Subnet: constants.PrimaryNetworkID,
+			Supernet: constants.PrimaryNetworkID,
 		},
 		signer.NewProofOfPossession(sk1),
 		vm.ctx.AVAXAssetID,
@@ -1706,16 +1706,16 @@ func TestSubnetValidatorBLSKeyDiffAfterExpiry(t *testing.T) {
 	primaryStartHeight, err := vm.GetCurrentHeight(context.Background())
 	require.NoError(err)
 
-	// insert the subnet validator
-	subnetTx, err := txBuilder.NewAddSubnetValidatorTx(
-		&txs.SubnetValidator{
+	// insert the supernet validator
+	supernetTx, err := txBuilder.NewAddSupernetValidatorTx(
+		&txs.SupernetValidator{
 			Validator: txs.Validator{
 				NodeID: nodeID,
-				Start:  uint64(subnetStartTime.Unix()),
-				End:    uint64(subnetEndTime.Unix()),
+				Start:  uint64(supernetStartTime.Unix()),
+				End:    uint64(supernetEndTime.Unix()),
 				Wght:   1,
 			},
-			Subnet: subnetID,
+			Supernet: supernetID,
 		},
 		[]*secp256k1.PrivateKey{keys[0], keys[1]},
 		walletcommon.WithChangeOwner(&secp256k1fx.OutputOwners{
@@ -1726,32 +1726,32 @@ func TestSubnetValidatorBLSKeyDiffAfterExpiry(t *testing.T) {
 	require.NoError(err)
 
 	vm.ctx.Lock.Unlock()
-	require.NoError(vm.issueTxFromRPC(subnetTx))
+	require.NoError(vm.issueTxFromRPC(supernetTx))
 	vm.ctx.Lock.Lock()
 	require.NoError(buildAndAcceptStandardBlock(vm))
 
-	// move time ahead, promoting the subnet validator to current
-	currentTime = subnetStartTime
+	// move time ahead, promoting the supernet validator to current
+	currentTime = supernetStartTime
 	vm.clock.Set(currentTime)
 	vm.state.SetTimestamp(currentTime)
 	require.NoError(buildAndAcceptStandardBlock(vm))
 
-	_, err = vm.state.GetCurrentValidator(subnetID, nodeID)
+	_, err = vm.state.GetCurrentValidator(supernetID, nodeID)
 	require.NoError(err)
 
-	subnetStartHeight, err := vm.GetCurrentHeight(context.Background())
+	supernetStartHeight, err := vm.GetCurrentHeight(context.Background())
 	require.NoError(err)
 
-	// move time ahead, terminating the subnet validator
-	currentTime = subnetEndTime
+	// move time ahead, terminating the supernet validator
+	currentTime = supernetEndTime
 	vm.clock.Set(currentTime)
 	vm.state.SetTimestamp(currentTime)
 	require.NoError(buildAndAcceptStandardBlock(vm))
 
-	_, err = vm.state.GetCurrentValidator(subnetID, nodeID)
+	_, err = vm.state.GetCurrentValidator(supernetID, nodeID)
 	require.ErrorIs(err, database.ErrNotFound)
 
-	subnetEndHeight, err := vm.GetCurrentHeight(context.Background())
+	supernetEndHeight, err := vm.GetCurrentHeight(context.Background())
 	require.NoError(err)
 
 	// move time ahead, terminating primary network validator
@@ -1787,14 +1787,14 @@ func TestSubnetValidatorBLSKeyDiffAfterExpiry(t *testing.T) {
 	require.NotEqual(sk1, sk2)
 
 	primaryRestartTx, err := txBuilder.NewAddPermissionlessValidatorTx(
-		&txs.SubnetValidator{
+		&txs.SupernetValidator{
 			Validator: txs.Validator{
 				NodeID: nodeID,
 				Start:  uint64(primaryReStartTime.Unix()),
 				End:    uint64(primaryReEndTime.Unix()),
 				Wght:   vm.MinValidatorStake,
 			},
-			Subnet: constants.PrimaryNetworkID,
+			Supernet: constants.PrimaryNetworkID,
 		},
 		signer.NewProofOfPossession(sk2),
 		vm.ctx.AVAXAssetID,
@@ -1861,21 +1861,21 @@ func TestSubnetValidatorBLSKeyDiffAfterExpiry(t *testing.T) {
 		uPrimaryRestartTx.Signer.Key(),
 	))
 
-	for height := subnetStartHeight; height < subnetEndHeight; height++ {
+	for height := supernetStartHeight; height < supernetEndHeight; height++ {
 		require.NoError(checkValidatorBlsKeyIsSet(
 			vm.State,
 			nodeID,
-			subnetID,
+			supernetID,
 			height,
 			uPrimaryTx.Signer.Key(),
 		))
 	}
 
-	for height := subnetEndHeight; height <= primaryRestartHeight; height++ {
+	for height := supernetEndHeight; height <= primaryRestartHeight; height++ {
 		err := checkValidatorBlsKeyIsSet(
 			vm.State,
 			nodeID,
-			subnetID,
+			supernetID,
 			primaryEndHeight,
 			uPrimaryTx.Signer.Key(),
 		)
@@ -1979,14 +1979,14 @@ func TestPrimaryNetworkValidatorPopulatedToEmptyBLSKeyDiff(t *testing.T) {
 	require.NoError(err)
 
 	primaryRestartTx, err := txBuilder.NewAddPermissionlessValidatorTx(
-		&txs.SubnetValidator{
+		&txs.SupernetValidator{
 			Validator: txs.Validator{
 				NodeID: nodeID,
 				Start:  uint64(primaryStartTime2.Unix()),
 				End:    uint64(primaryEndTime2.Unix()),
 				Wght:   vm.MinValidatorStake,
 			},
-			Subnet: constants.PrimaryNetworkID,
+			Supernet: constants.PrimaryNetworkID,
 		},
 		signer.NewProofOfPossession(sk2),
 		vm.ctx.AVAXAssetID,
@@ -2033,11 +2033,11 @@ func TestPrimaryNetworkValidatorPopulatedToEmptyBLSKeyDiff(t *testing.T) {
 	}
 }
 
-func TestSubnetValidatorPopulatedToEmptyBLSKeyDiff(t *testing.T) {
-	// A primary network validator has an empty BLS key and a subnet validator.
+func TestSupernetValidatorPopulatedToEmptyBLSKeyDiff(t *testing.T) {
+	// A primary network validator has an empty BLS key and a supernet validator.
 	// Primary network validator terminates its first staking cycle and it
 	// restakes adding the BLS key. Querying the validator set back when BLS key
-	// was empty must return an empty BLS key for the subnet validator
+	// was empty must return an empty BLS key for the supernet validator
 
 	// setup
 	require := require.New(t)
@@ -2045,7 +2045,7 @@ func TestSubnetValidatorPopulatedToEmptyBLSKeyDiff(t *testing.T) {
 	vm.ctx.Lock.Lock()
 	defer vm.ctx.Lock.Unlock()
 
-	subnetID := testSubnet1.TxID
+	supernetID := testSupernet1.TxID
 
 	// setup time
 	currentTime := defaultGenesisTime
@@ -2055,9 +2055,9 @@ func TestSubnetValidatorPopulatedToEmptyBLSKeyDiff(t *testing.T) {
 	// A primary network validator stake twice
 	var (
 		primaryStartTime1 = currentTime.Add(executor.SyncBound)
-		subnetStartTime   = primaryStartTime1.Add(executor.SyncBound)
-		subnetEndTime     = subnetStartTime.Add(defaultMinStakingDuration)
-		primaryEndTime1   = subnetEndTime.Add(time.Second)
+		supernetStartTime   = primaryStartTime1.Add(executor.SyncBound)
+		supernetEndTime     = supernetStartTime.Add(defaultMinStakingDuration)
+		primaryEndTime1   = supernetEndTime.Add(time.Second)
 		primaryStartTime2 = primaryEndTime1.Add(executor.SyncBound)
 		primaryEndTime2   = primaryStartTime2.Add(defaultMinStakingDuration)
 	)
@@ -2102,16 +2102,16 @@ func TestSubnetValidatorPopulatedToEmptyBLSKeyDiff(t *testing.T) {
 	primaryStartHeight, err := vm.GetCurrentHeight(context.Background())
 	require.NoError(err)
 
-	// insert the subnet validator
-	subnetTx, err := txBuilder.NewAddSubnetValidatorTx(
-		&txs.SubnetValidator{
+	// insert the supernet validator
+	supernetTx, err := txBuilder.NewAddSupernetValidatorTx(
+		&txs.SupernetValidator{
 			Validator: txs.Validator{
 				NodeID: nodeID,
-				Start:  uint64(subnetStartTime.Unix()),
-				End:    uint64(subnetEndTime.Unix()),
+				Start:  uint64(supernetStartTime.Unix()),
+				End:    uint64(supernetEndTime.Unix()),
 				Wght:   1,
 			},
-			Subnet: subnetID,
+			Supernet: supernetID,
 		},
 		[]*secp256k1.PrivateKey{keys[0], keys[1]},
 		walletcommon.WithChangeOwner(&secp256k1fx.OutputOwners{
@@ -2122,32 +2122,32 @@ func TestSubnetValidatorPopulatedToEmptyBLSKeyDiff(t *testing.T) {
 	require.NoError(err)
 
 	vm.ctx.Lock.Unlock()
-	require.NoError(vm.issueTxFromRPC(subnetTx))
+	require.NoError(vm.issueTxFromRPC(supernetTx))
 	vm.ctx.Lock.Lock()
 	require.NoError(buildAndAcceptStandardBlock(vm))
 
-	// move time ahead, promoting the subnet validator to current
-	currentTime = subnetStartTime
+	// move time ahead, promoting the supernet validator to current
+	currentTime = supernetStartTime
 	vm.clock.Set(currentTime)
 	vm.state.SetTimestamp(currentTime)
 	require.NoError(buildAndAcceptStandardBlock(vm))
 
-	_, err = vm.state.GetCurrentValidator(subnetID, nodeID)
+	_, err = vm.state.GetCurrentValidator(supernetID, nodeID)
 	require.NoError(err)
 
-	subnetStartHeight, err := vm.GetCurrentHeight(context.Background())
+	supernetStartHeight, err := vm.GetCurrentHeight(context.Background())
 	require.NoError(err)
 
-	// move time ahead, terminating the subnet validator
-	currentTime = subnetEndTime
+	// move time ahead, terminating the supernet validator
+	currentTime = supernetEndTime
 	vm.clock.Set(currentTime)
 	vm.state.SetTimestamp(currentTime)
 	require.NoError(buildAndAcceptStandardBlock(vm))
 
-	_, err = vm.state.GetCurrentValidator(subnetID, nodeID)
+	_, err = vm.state.GetCurrentValidator(supernetID, nodeID)
 	require.ErrorIs(err, database.ErrNotFound)
 
-	subnetEndHeight, err := vm.GetCurrentHeight(context.Background())
+	supernetEndHeight, err := vm.GetCurrentHeight(context.Background())
 	require.NoError(err)
 
 	// move time ahead, terminating primary network validator
@@ -2182,14 +2182,14 @@ func TestSubnetValidatorPopulatedToEmptyBLSKeyDiff(t *testing.T) {
 	require.NoError(err)
 
 	primaryRestartTx, err := txBuilder.NewAddPermissionlessValidatorTx(
-		&txs.SubnetValidator{
+		&txs.SupernetValidator{
 			Validator: txs.Validator{
 				NodeID: nodeID,
 				Start:  uint64(primaryStartTime2.Unix()),
 				End:    uint64(primaryEndTime2.Unix()),
 				Wght:   vm.MinValidatorStake,
 			},
-			Subnet: constants.PrimaryNetworkID,
+			Supernet: constants.PrimaryNetworkID,
 		},
 		signer.NewProofOfPossession(sk2),
 		vm.ctx.AVAXAssetID,
@@ -2234,21 +2234,21 @@ func TestSubnetValidatorPopulatedToEmptyBLSKeyDiff(t *testing.T) {
 			emptySigner.Key(),
 		))
 	}
-	for height := subnetStartHeight; height < subnetEndHeight; height++ {
+	for height := supernetStartHeight; height < supernetEndHeight; height++ {
 		require.NoError(checkValidatorBlsKeyIsSet(
 			vm.State,
 			nodeID,
-			subnetID,
+			supernetID,
 			height,
 			emptySigner.Key(),
 		))
 	}
 }
 
-func TestSubnetValidatorSetAfterPrimaryNetworkValidatorRemoval(t *testing.T) {
-	// A primary network validator and a subnet validator are running.
+func TestSupernetValidatorSetAfterPrimaryNetworkValidatorRemoval(t *testing.T) {
+	// A primary network validator and a supernet validator are running.
 	// Primary network validator terminates its staking cycle.
-	// Querying the validator set when the subnet validator existed should
+	// Querying the validator set when the supernet validator existed should
 	// succeed.
 
 	// setup
@@ -2257,7 +2257,7 @@ func TestSubnetValidatorSetAfterPrimaryNetworkValidatorRemoval(t *testing.T) {
 	vm.ctx.Lock.Lock()
 	defer vm.ctx.Lock.Unlock()
 
-	subnetID := testSubnet1.TxID
+	supernetID := testSupernet1.TxID
 
 	// setup time
 	currentTime := defaultGenesisTime
@@ -2267,9 +2267,9 @@ func TestSubnetValidatorSetAfterPrimaryNetworkValidatorRemoval(t *testing.T) {
 	// A primary network validator stake twice
 	var (
 		primaryStartTime1 = currentTime.Add(executor.SyncBound)
-		subnetStartTime   = primaryStartTime1.Add(executor.SyncBound)
-		subnetEndTime     = subnetStartTime.Add(defaultMinStakingDuration)
-		primaryEndTime1   = subnetEndTime.Add(time.Second)
+		supernetStartTime   = primaryStartTime1.Add(executor.SyncBound)
+		supernetEndTime     = supernetStartTime.Add(defaultMinStakingDuration)
+		primaryEndTime1   = supernetEndTime.Add(time.Second)
 	)
 
 	// Add a primary network validator with no BLS key
@@ -2309,16 +2309,16 @@ func TestSubnetValidatorSetAfterPrimaryNetworkValidatorRemoval(t *testing.T) {
 	_, err = vm.state.GetCurrentValidator(constants.PrimaryNetworkID, nodeID)
 	require.NoError(err)
 
-	// insert the subnet validator
-	subnetTx, err := txBuilder.NewAddSubnetValidatorTx(
-		&txs.SubnetValidator{
+	// insert the supernet validator
+	supernetTx, err := txBuilder.NewAddSupernetValidatorTx(
+		&txs.SupernetValidator{
 			Validator: txs.Validator{
 				NodeID: nodeID,
-				Start:  uint64(subnetStartTime.Unix()),
-				End:    uint64(subnetEndTime.Unix()),
+				Start:  uint64(supernetStartTime.Unix()),
+				End:    uint64(supernetEndTime.Unix()),
 				Wght:   1,
 			},
-			Subnet: subnetID,
+			Supernet: supernetID,
 		},
 		[]*secp256k1.PrivateKey{keys[0], keys[1]},
 		walletcommon.WithChangeOwner(&secp256k1fx.OutputOwners{
@@ -2329,29 +2329,29 @@ func TestSubnetValidatorSetAfterPrimaryNetworkValidatorRemoval(t *testing.T) {
 	require.NoError(err)
 
 	vm.ctx.Lock.Unlock()
-	require.NoError(vm.issueTxFromRPC(subnetTx))
+	require.NoError(vm.issueTxFromRPC(supernetTx))
 	vm.ctx.Lock.Lock()
 	require.NoError(buildAndAcceptStandardBlock(vm))
 
-	// move time ahead, promoting the subnet validator to current
-	currentTime = subnetStartTime
+	// move time ahead, promoting the supernet validator to current
+	currentTime = supernetStartTime
 	vm.clock.Set(currentTime)
 	vm.state.SetTimestamp(currentTime)
 	require.NoError(buildAndAcceptStandardBlock(vm))
 
-	_, err = vm.state.GetCurrentValidator(subnetID, nodeID)
+	_, err = vm.state.GetCurrentValidator(supernetID, nodeID)
 	require.NoError(err)
 
-	subnetStartHeight, err := vm.GetCurrentHeight(context.Background())
+	supernetStartHeight, err := vm.GetCurrentHeight(context.Background())
 	require.NoError(err)
 
-	// move time ahead, terminating the subnet validator
-	currentTime = subnetEndTime
+	// move time ahead, terminating the supernet validator
+	currentTime = supernetEndTime
 	vm.clock.Set(currentTime)
 	vm.state.SetTimestamp(currentTime)
 	require.NoError(buildAndAcceptStandardBlock(vm))
 
-	_, err = vm.state.GetCurrentValidator(subnetID, nodeID)
+	_, err = vm.state.GetCurrentValidator(supernetID, nodeID)
 	require.ErrorIs(err, database.ErrNotFound)
 
 	// move time ahead, terminating primary network validator
@@ -2379,8 +2379,8 @@ func TestSubnetValidatorSetAfterPrimaryNetworkValidatorRemoval(t *testing.T) {
 	require.ErrorIs(err, database.ErrNotFound)
 
 	// Generating the validator set should not error when re-introducing a
-	// subnet validator whose primary network validator was also removed.
-	_, err = vm.State.GetValidatorSet(context.Background(), subnetStartHeight, subnetID)
+	// supernet validator whose primary network validator was also removed.
+	_, err = vm.State.GetValidatorSet(context.Background(), supernetStartHeight, supernetID)
 	require.NoError(err)
 }
 
@@ -2470,11 +2470,11 @@ func buildAndAcceptStandardBlock(vm *VM) error {
 func checkValidatorBlsKeyIsSet(
 	valState validators.State,
 	nodeID ids.NodeID,
-	subnetID ids.ID,
+	supernetID ids.ID,
 	height uint64,
 	expectedBlsKey *bls.PublicKey,
 ) error {
-	vals, err := valState.GetValidatorSet(context.Background(), height, subnetID)
+	vals, err := valState.GetValidatorSet(context.Background(), height, supernetID)
 	if err != nil {
 		return err
 	}

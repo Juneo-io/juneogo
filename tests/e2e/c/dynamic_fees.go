@@ -7,17 +7,17 @@ import (
 	"math/big"
 	"strings"
 
-	"github.com/ava-labs/coreth/core/types"
-	"github.com/ava-labs/coreth/params"
-	"github.com/ava-labs/coreth/plugin/evm"
+	"github.com/Juneo-io/jeth/core/types"
+	"github.com/Juneo-io/jeth/params"
+	"github.com/Juneo-io/jeth/plugin/evm"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/tests"
-	"github.com/ava-labs/avalanchego/tests/fixture/e2e"
-	"github.com/ava-labs/avalanchego/tests/fixture/tmpnet"
-	"github.com/ava-labs/avalanchego/utils/crypto/secp256k1"
+	"github.com/Juneo-io/juneogo/tests"
+	"github.com/Juneo-io/juneogo/tests/fixture/e2e"
+	"github.com/Juneo-io/juneogo/tests/fixture/tmpnet"
+	"github.com/Juneo-io/juneogo/utils/crypto/secp256k1"
 
 	ginkgo "github.com/onsi/ginkgo/v2"
 )

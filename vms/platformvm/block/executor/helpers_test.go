@@ -12,45 +12,45 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
-	"github.com/ava-labs/avalanchego/chains"
-	"github.com/ava-labs/avalanchego/chains/atomic"
-	"github.com/ava-labs/avalanchego/codec"
-	"github.com/ava-labs/avalanchego/codec/linearcodec"
-	"github.com/ava-labs/avalanchego/database"
-	"github.com/ava-labs/avalanchego/database/memdb"
-	"github.com/ava-labs/avalanchego/database/prefixdb"
-	"github.com/ava-labs/avalanchego/database/versiondb"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/snow/engine/common"
-	"github.com/ava-labs/avalanchego/snow/snowtest"
-	"github.com/ava-labs/avalanchego/snow/uptime"
-	"github.com/ava-labs/avalanchego/snow/validators"
-	"github.com/ava-labs/avalanchego/utils"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/crypto/secp256k1"
-	"github.com/ava-labs/avalanchego/utils/formatting"
-	"github.com/ava-labs/avalanchego/utils/formatting/address"
-	"github.com/ava-labs/avalanchego/utils/json"
-	"github.com/ava-labs/avalanchego/utils/logging"
-	"github.com/ava-labs/avalanchego/utils/timer/mockable"
-	"github.com/ava-labs/avalanchego/utils/units"
-	"github.com/ava-labs/avalanchego/vms/platformvm/api"
-	"github.com/ava-labs/avalanchego/vms/platformvm/config"
-	"github.com/ava-labs/avalanchego/vms/platformvm/fx"
-	"github.com/ava-labs/avalanchego/vms/platformvm/metrics"
-	"github.com/ava-labs/avalanchego/vms/platformvm/reward"
-	"github.com/ava-labs/avalanchego/vms/platformvm/state"
-	"github.com/ava-labs/avalanchego/vms/platformvm/status"
-	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
-	"github.com/ava-labs/avalanchego/vms/platformvm/txs/executor"
-	"github.com/ava-labs/avalanchego/vms/platformvm/txs/mempool"
-	"github.com/ava-labs/avalanchego/vms/platformvm/txs/txstest"
-	"github.com/ava-labs/avalanchego/vms/platformvm/utxo"
-	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
+	"github.com/Juneo-io/juneogo/chains"
+	"github.com/Juneo-io/juneogo/chains/atomic"
+	"github.com/Juneo-io/juneogo/codec"
+	"github.com/Juneo-io/juneogo/codec/linearcodec"
+	"github.com/Juneo-io/juneogo/database"
+	"github.com/Juneo-io/juneogo/database/memdb"
+	"github.com/Juneo-io/juneogo/database/prefixdb"
+	"github.com/Juneo-io/juneogo/database/versiondb"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/snow/engine/common"
+	"github.com/Juneo-io/juneogo/snow/snowtest"
+	"github.com/Juneo-io/juneogo/snow/uptime"
+	"github.com/Juneo-io/juneogo/snow/validators"
+	"github.com/Juneo-io/juneogo/utils"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/crypto/secp256k1"
+	"github.com/Juneo-io/juneogo/utils/formatting"
+	"github.com/Juneo-io/juneogo/utils/formatting/address"
+	"github.com/Juneo-io/juneogo/utils/json"
+	"github.com/Juneo-io/juneogo/utils/logging"
+	"github.com/Juneo-io/juneogo/utils/timer/mockable"
+	"github.com/Juneo-io/juneogo/utils/units"
+	"github.com/Juneo-io/juneogo/vms/platformvm/api"
+	"github.com/Juneo-io/juneogo/vms/platformvm/config"
+	"github.com/Juneo-io/juneogo/vms/platformvm/fx"
+	"github.com/Juneo-io/juneogo/vms/platformvm/metrics"
+	"github.com/Juneo-io/juneogo/vms/platformvm/reward"
+	"github.com/Juneo-io/juneogo/vms/platformvm/state"
+	"github.com/Juneo-io/juneogo/vms/platformvm/status"
+	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
+	"github.com/Juneo-io/juneogo/vms/platformvm/txs/executor"
+	"github.com/Juneo-io/juneogo/vms/platformvm/txs/mempool"
+	"github.com/Juneo-io/juneogo/vms/platformvm/txs/txstest"
+	"github.com/Juneo-io/juneogo/vms/platformvm/utxo"
+	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
 
-	pvalidators "github.com/ava-labs/avalanchego/vms/platformvm/validators"
-	walletcommon "github.com/ava-labs/avalanchego/wallet/subnet/primary/common"
+	pvalidators "github.com/Juneo-io/juneogo/vms/platformvm/validators"
+	walletcommon "github.com/Juneo-io/juneogo/wallet/supernet/primary/common"
 )
 
 const (
@@ -81,7 +81,7 @@ var (
 	defaultTxFee              = uint64(100)
 
 	genesisBlkID ids.ID
-	testSubnet1  *txs.Tx
+	testSupernet1  *txs.Tx
 
 	// Node IDs of genesis validators. Initialized in init function
 	genesisNodeIDs []ids.NodeID
@@ -107,10 +107,10 @@ type staker struct {
 type test struct {
 	description           string
 	stakers               []staker
-	subnetStakers         []staker
+	supernetStakers         []staker
 	advanceTimeTo         []time.Time
 	expectedStakers       map[ids.NodeID]stakerStatus
-	expectedSubnetStakers map[ids.NodeID]stakerStatus
+	expectedSupernetStakers map[ids.NodeID]stakerStatus
 }
 
 type environment struct {
@@ -207,7 +207,7 @@ func newEnvironment(t *testing.T, ctrl *gomock.Controller, f fork) *environment 
 			res.backend,
 			pvalidators.TestManager,
 		)
-		addSubnet(res)
+		addSupernet(res)
 	} else {
 		res.blkManager = NewManager(
 			res.mempool,
@@ -216,7 +216,7 @@ func newEnvironment(t *testing.T, ctrl *gomock.Controller, f fork) *environment 
 			res.backend,
 			pvalidators.TestManager,
 		)
-		// we do not add any subnet to state, since we can mock
+		// we do not add any supernet to state, since we can mock
 		// whatever we need
 	}
 
@@ -248,10 +248,10 @@ func newEnvironment(t *testing.T, ctrl *gomock.Controller, f fork) *environment 
 	return res
 }
 
-func addSubnet(env *environment) {
-	// Create a subnet
+func addSupernet(env *environment) {
+	// Create a supernet
 	var err error
-	testSubnet1, err = env.txBuilder.NewCreateSubnetTx(
+	testSupernet1, err = env.txBuilder.NewCreateSupernetTx(
 		&secp256k1fx.OutputOwners{
 			Threshold: 2,
 			Addrs: []ids.ShortID{
@@ -280,14 +280,14 @@ func addSubnet(env *environment) {
 	executor := executor.StandardTxExecutor{
 		Backend: env.backend,
 		State:   stateDiff,
-		Tx:      testSubnet1,
+		Tx:      testSupernet1,
 	}
-	err = testSubnet1.Unsigned.Visit(&executor)
+	err = testSupernet1.Unsigned.Visit(&executor)
 	if err != nil {
 		panic(err)
 	}
 
-	stateDiff.AddTx(testSubnet1, status.Committed)
+	stateDiff.AddTx(testSupernet1, status.Committed)
 	if err := stateDiff.Apply(env.state); err != nil {
 		panic(err)
 	}
@@ -330,7 +330,7 @@ func defaultConfig(t *testing.T, f fork) *config.Config {
 		UptimeLockedCalculator: uptime.NewLockedCalculator(),
 		Validators:             validators.NewManager(),
 		TxFee:                  defaultTxFee,
-		CreateSubnetTxFee:      100 * defaultTxFee,
+		CreateSupernetTxFee:      100 * defaultTxFee,
 		CreateBlockchainTxFee:  100 * defaultTxFee,
 		MinValidatorStake:      5 * units.MilliAvax,
 		MaxValidatorStake:      500 * units.MilliAvax,

@@ -8,19 +8,19 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/api/info"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/tests"
-	"github.com/ava-labs/avalanchego/tests/fixture/e2e"
-	"github.com/ava-labs/avalanchego/utils"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/crypto/bls"
-	"github.com/ava-labs/avalanchego/utils/units"
-	"github.com/ava-labs/avalanchego/vms/components/avax"
-	"github.com/ava-labs/avalanchego/vms/platformvm"
-	"github.com/ava-labs/avalanchego/vms/platformvm/signer"
-	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
-	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
+	"github.com/Juneo-io/juneogo/api/info"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/tests"
+	"github.com/Juneo-io/juneogo/tests/fixture/e2e"
+	"github.com/Juneo-io/juneogo/utils"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/crypto/bls"
+	"github.com/Juneo-io/juneogo/utils/units"
+	"github.com/Juneo-io/juneogo/vms/components/avax"
+	"github.com/Juneo-io/juneogo/vms/platformvm"
+	"github.com/Juneo-io/juneogo/vms/platformvm/signer"
+	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
+	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
 
 	ginkgo "github.com/onsi/ginkgo/v2"
 )
@@ -80,13 +80,13 @@ var _ = e2e.DescribePChain("[Workflow]", func() {
 			validatorID, err := ids.ToNodeID(utils.RandomBytes(ids.NodeIDLen))
 			require.NoError(err)
 
-			vdr := &txs.SubnetValidator{
+			vdr := &txs.SupernetValidator{
 				Validator: txs.Validator{
 					NodeID: validatorID,
 					End:    uint64(time.Now().Add(72 * time.Hour).Unix()),
 					Wght:   minValStake,
 				},
-				Subnet: constants.PrimaryNetworkID,
+				Supernet: constants.PrimaryNetworkID,
 			}
 			rewardOwner := &secp256k1fx.OutputOwners{
 				Threshold: 1,

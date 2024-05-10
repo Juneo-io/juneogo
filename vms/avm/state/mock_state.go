@@ -13,11 +13,11 @@ import (
 	reflect "reflect"
 	time "time"
 
-	database "github.com/ava-labs/avalanchego/database"
-	ids "github.com/ava-labs/avalanchego/ids"
-	block "github.com/ava-labs/avalanchego/vms/avm/block"
-	txs "github.com/ava-labs/avalanchego/vms/avm/txs"
-	avax "github.com/ava-labs/avalanchego/vms/components/avax"
+	database "github.com/Juneo-io/juneogo/database"
+	ids "github.com/Juneo-io/juneogo/ids"
+	block "github.com/Juneo-io/juneogo/vms/avm/block"
+	txs "github.com/Juneo-io/juneogo/vms/avm/txs"
+	avax "github.com/Juneo-io/juneogo/vms/components/avax"
 	gomock "go.uber.org/mock/gomock"
 )
 

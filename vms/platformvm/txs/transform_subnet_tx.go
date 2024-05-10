@@ -7,15 +7,15 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/vms/components/verify"
-	"github.com/ava-labs/avalanchego/vms/platformvm/reward"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/vms/components/verify"
+	"github.com/Juneo-io/juneogo/vms/platformvm/reward"
 )
 
 var (
-	_ UnsignedTx = (*TransformSubnetTx)(nil)
+	_ UnsignedTx = (*TransformSupernetTx)(nil)
 
 	errCantTransformPrimaryNetwork    = errors.New("cannot transform primary network")
 	errEmptyAssetID                   = errors.New("empty asset ID is not valid")
@@ -42,21 +42,21 @@ var (
 	errUptimeRequirementTooLarge      = fmt.Errorf("uptime requirement must be less than or equal to %d", reward.PercentDenominator)
 )
 
-// TransformSubnetTx is an unsigned transformSubnetTx
-type TransformSubnetTx struct {
+// TransformSupernetTx is an unsigned transformSupernetTx
+type TransformSupernetTx struct {
 	// Metadata, inputs and outputs
 	BaseTx `serialize:"true"`
-	// ID of the Subnet to transform
+	// ID of the Supernet to transform
 	// Restrictions:
 	// - Must not be the Primary Network ID
-	Subnet ids.ID `serialize:"true" json:"subnetID"`
-	// Asset to use when staking on the Subnet
+	Supernet ids.ID `serialize:"true" json:"supernetID"`
+	// Asset to use when staking on the Supernet
 	// Restrictions:
 	// - Must not be the Empty ID
 	// - Must not be the AVAX ID
 	AssetID ids.ID `serialize:"true" json:"assetID"`
 	// Amount to specify as the amount of rewards that will be initially
-	// available in the reward pool of the subnet.
+	// available in the reward pool of the supernet.
 	// Restrictions:
 	// - Must be > 0
 	InitialRewardPoolSupply uint64 `serialize:"true" json:"initialRewardPoolSupply"`
@@ -145,16 +145,16 @@ type TransformSubnetTx struct {
 	// - Must be <= [reward.PercentDenominator]
 	UptimeRequirement uint32 `serialize:"true" json:"uptimeRequirement"`
 	// Authorizes this transformation
-	SubnetAuth verify.Verifiable `serialize:"true" json:"subnetAuthorization"`
+	SupernetAuth verify.Verifiable `serialize:"true" json:"supernetAuthorization"`
 }
 
-func (tx *TransformSubnetTx) SyntacticVerify(ctx *snow.Context) error {
+func (tx *TransformSupernetTx) SyntacticVerify(ctx *snow.Context) error {
 	switch {
 	case tx == nil:
 		return ErrNilTx
 	case tx.SyntacticallyVerified: // already passed syntactic verification
 		return nil
-	case tx.Subnet == constants.PrimaryNetworkID:
+	case tx.Supernet == constants.PrimaryNetworkID:
 		return errCantTransformPrimaryNetwork
 	case tx.AssetID == ids.Empty:
 		return errEmptyAssetID
@@ -205,7 +205,7 @@ func (tx *TransformSubnetTx) SyntacticVerify(ctx *snow.Context) error {
 	if err := tx.BaseTx.SyntacticVerify(ctx); err != nil {
 		return err
 	}
-	if err := tx.SubnetAuth.Verify(); err != nil {
+	if err := tx.SupernetAuth.Verify(); err != nil {
 		return err
 	}
 
@@ -213,6 +213,6 @@ func (tx *TransformSubnetTx) SyntacticVerify(ctx *snow.Context) error {
 	return nil
 }
 
-func (tx *TransformSubnetTx) Visit(visitor Visitor) error {
-	return visitor.TransformSubnetTx(tx)
+func (tx *TransformSupernetTx) Visit(visitor Visitor) error {
+	return visitor.TransformSupernetTx(tx)
 }

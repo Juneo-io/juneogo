@@ -1,21 +1,21 @@
 ---
 tags: [Nodes]
-description: Reference for all available Subnet config options and flags.
-sidebar_label: Subnet Configs
-pagination_label: Subnet Configs
+description: Reference for all available Supernet config options and flags.
+sidebar_label: Supernet Configs
+pagination_label: Supernet Configs
 sidebar_position: 2
 ---
 
-# Subnet Configs
+# Supernet Configs
 
-It is possible to provide parameters for a Subnet. Parameters here apply to all
-chains in the specified Subnet.
+It is possible to provide parameters for a Supernet. Parameters here apply to all
+chains in the specified Supernet.
 
-AvalancheGo looks for files specified with `{subnetID}.json` under
-`--subnet-config-dir` as documented
-[here](/nodes/configure/avalanchego-config-flags.md#subnet-configs).
+AvalancheGo looks for files specified with `{supernetID}.json` under
+`--supernet-config-dir` as documented
+[here](/nodes/configure/avalanchego-config-flags.md#supernet-configs).
 
-Here is an example of Subnet config file:
+Here is an example of Supernet config file:
 
 ```json
 {
@@ -29,38 +29,38 @@ Here is an example of Subnet config file:
 
 ## Parameters
 
-### Private Subnet
+### Private Supernet
 
 #### `validatorOnly` (bool)
 
-If `true` this node does not expose Subnet blockchain contents to non-validators
+If `true` this node does not expose Supernet blockchain contents to non-validators
 via P2P messages. Defaults to `false`.
 
-Avalanche Subnets are public by default. It means that every node can sync and
-listen ongoing transactions/blocks in Subnets, even they're not validating the
-listened Subnet.
+Avalanche Supernets are public by default. It means that every node can sync and
+listen ongoing transactions/blocks in Supernets, even they're not validating the
+listened Supernet.
 
-Subnet validators can choose not to publish contents of blockchains via this
+Supernet validators can choose not to publish contents of blockchains via this
 configuration. If a node sets `validatorOnly` to true, the node exchanges
-messages only with this Subnet's validators. Other peers will not be able to
-learn contents of this Subnet from this node.
+messages only with this Supernet's validators. Other peers will not be able to
+learn contents of this Supernet from this node.
 
 :::tip
 
-This is a node-specific configuration. Every validator of this Subnet has to use
-this configuration in order to create a full private Subnet.
+This is a node-specific configuration. Every validator of this Supernet has to use
+this configuration in order to create a full private Supernet.
 
 :::
 
 #### `allowedNodes` (string list)
 
 If `validatorOnly=true` this allows explicitly specified NodeIDs to be allowed
-to sync the Subnet regardless of validator status. Defaults to be empty.
+to sync the Supernet regardless of validator status. Defaults to be empty.
 
 :::tip
 
-This is a node-specific configuration. Every validator of this Subnet has to use
-this configuration in order to properly allow a node in the private Subnet.
+This is a node-specific configuration. Every validator of this Supernet has to use
+this configuration in order to properly allow a node in the private Supernet.
 
 :::
 
@@ -75,9 +75,9 @@ frequency at which blocks are built.
 
 ### Consensus Parameters
 
-Subnet configs supports loading new consensus parameters. JSON keys are
+Supernet configs supports loading new consensus parameters. JSON keys are
 different from their matching `CLI` keys. These parameters must be grouped under
-`consensusParameters` key. The consensus parameters of a Subnet default to the
+`consensusParameters` key. The consensus parameters of a Supernet default to the
 same values used for the Primary Network, which are given [CLI Snow Parameters](/nodes/configure/avalanchego-config-flags.md#snow-parameters).
 
 | CLI Key                          | JSON Key              |
@@ -94,7 +94,7 @@ same values used for the Primary Network, which are given [CLI Snow Parameters](
 
 ### Gossip Configs
 
-It's possible to define different Gossip configurations for each Subnet without
+It's possible to define different Gossip configurations for each Supernet without
 changing values for Primary Network. JSON keys of these
 parameters are different from their matching `CLI` keys. These parameters
 default to the same values used for the Primary Network. For more information

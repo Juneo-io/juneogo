@@ -10,9 +10,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/ava-labs/avalanchego/vms/example/xsvm/api"
-	"github.com/ava-labs/avalanchego/vms/example/xsvm/cmd/issue/status"
-	"github.com/ava-labs/avalanchego/vms/example/xsvm/tx"
+	"github.com/Juneo-io/juneogo/vms/example/xsvm/api"
+	"github.com/Juneo-io/juneogo/vms/example/xsvm/cmd/issue/status"
+	"github.com/Juneo-io/juneogo/vms/example/xsvm/tx"
 )
 
 func Command() *cobra.Command {

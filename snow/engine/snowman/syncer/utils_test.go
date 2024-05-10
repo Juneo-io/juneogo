@@ -10,15 +10,15 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/database"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/snow/engine/common"
-	"github.com/ava-labs/avalanchego/snow/engine/common/tracker"
-	"github.com/ava-labs/avalanchego/snow/engine/snowman/block"
-	"github.com/ava-labs/avalanchego/snow/engine/snowman/getter"
-	"github.com/ava-labs/avalanchego/snow/validators"
-	"github.com/ava-labs/avalanchego/utils/hashing"
+	"github.com/Juneo-io/juneogo/database"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/snow/engine/common"
+	"github.com/Juneo-io/juneogo/snow/engine/common/tracker"
+	"github.com/Juneo-io/juneogo/snow/engine/snowman/block"
+	"github.com/Juneo-io/juneogo/snow/engine/snowman/getter"
+	"github.com/Juneo-io/juneogo/snow/validators"
+	"github.com/Juneo-io/juneogo/utils/hashing"
 )
 
 const (
@@ -57,13 +57,13 @@ type fullVM struct {
 	*block.TestStateSyncableVM
 }
 
-func buildTestPeers(t *testing.T, subnetID ids.ID) validators.Manager {
+func buildTestPeers(t *testing.T, supernetID ids.ID) validators.Manager {
 	// We consider more than maxOutstandingBroadcastRequests peers to test
 	// capping the number of requests sent out.
 	vdrs := validators.NewManager()
 	for idx := 0; idx < 2*maxOutstandingBroadcastRequests; idx++ {
 		beaconID := ids.GenerateTestNodeID()
-		require.NoError(t, vdrs.AddStaker(subnetID, beaconID, nil, ids.Empty, 1))
+		require.NoError(t, vdrs.AddStaker(supernetID, beaconID, nil, ids.Empty, 1))
 	}
 	return vdrs
 }
@@ -106,7 +106,7 @@ func buildTestsObjects(
 		startupTracker,
 		sender,
 		beacons,
-		beacons.Count(ctx.SubnetID),
+		beacons.Count(ctx.SupernetID),
 		alpha,
 		nil,
 		fullVM,

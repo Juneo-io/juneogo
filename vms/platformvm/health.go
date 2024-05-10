@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/ava-labs/avalanchego/database"
-	"github.com/ava-labs/avalanchego/utils/constants"
+	"github.com/Juneo-io/juneogo/database"
+	"github.com/Juneo-io/juneogo/utils/constants"
 )
 
 func (vm *VM) HealthCheck(context.Context) (interface{}, error) {
@@ -26,18 +26,18 @@ func (vm *VM) HealthCheck(context.Context) (interface{}, error) {
 		return nil, fmt.Errorf("couldn't get current local validator: %w", err)
 	}
 
-	for subnetID := range vm.TrackedSubnets {
-		localSubnetValidator, err := vm.state.GetCurrentValidator(
-			subnetID,
+	for supernetID := range vm.TrackedSupernets {
+		localSupernetValidator, err := vm.state.GetCurrentValidator(
+			supernetID,
 			vm.ctx.NodeID,
 		)
 		switch err {
 		case nil:
-			vm.metrics.SetTimeUntilSubnetUnstake(subnetID, time.Until(localSubnetValidator.EndTime))
+			vm.metrics.SetTimeUntilSupernetUnstake(supernetID, time.Until(localSupernetValidator.EndTime))
 		case database.ErrNotFound:
-			vm.metrics.SetTimeUntilSubnetUnstake(subnetID, 0)
+			vm.metrics.SetTimeUntilSupernetUnstake(supernetID, 0)
 		default:
-			return nil, fmt.Errorf("couldn't get current subnet validator of %q: %w", subnetID, err)
+			return nil, fmt.Errorf("couldn't get current supernet validator of %q: %w", supernetID, err)
 		}
 	}
 	return nil, nil

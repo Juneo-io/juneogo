@@ -6,12 +6,12 @@ package builder
 import (
 	"context"
 
-	"github.com/ava-labs/avalanchego/api/info"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/logging"
-	"github.com/ava-labs/avalanchego/vms/avm"
+	"github.com/Juneo-io/juneogo/api/info"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/logging"
+	"github.com/Juneo-io/juneogo/vms/avm"
 )
 
 const Alias = "P"
@@ -20,13 +20,13 @@ type Context struct {
 	NetworkID                     uint32
 	AVAXAssetID                   ids.ID
 	BaseTxFee                     uint64
-	CreateSubnetTxFee             uint64
-	TransformSubnetTxFee          uint64
+	CreateSupernetTxFee             uint64
+	TransformSupernetTxFee          uint64
 	CreateBlockchainTxFee         uint64
 	AddPrimaryNetworkValidatorFee uint64
 	AddPrimaryNetworkDelegatorFee uint64
-	AddSubnetValidatorFee         uint64
-	AddSubnetDelegatorFee         uint64
+	AddSupernetValidatorFee         uint64
+	AddSupernetDelegatorFee         uint64
 }
 
 func NewContextFromURI(ctx context.Context, uri string) (*Context, error) {
@@ -59,13 +59,13 @@ func NewContextFromClients(
 		NetworkID:                     networkID,
 		AVAXAssetID:                   asset.AssetID,
 		BaseTxFee:                     uint64(txFees.TxFee),
-		CreateSubnetTxFee:             uint64(txFees.CreateSubnetTxFee),
-		TransformSubnetTxFee:          uint64(txFees.TransformSubnetTxFee),
+		CreateSupernetTxFee:             uint64(txFees.CreateSupernetTxFee),
+		TransformSupernetTxFee:          uint64(txFees.TransformSupernetTxFee),
 		CreateBlockchainTxFee:         uint64(txFees.CreateBlockchainTxFee),
 		AddPrimaryNetworkValidatorFee: uint64(txFees.AddPrimaryNetworkValidatorFee),
 		AddPrimaryNetworkDelegatorFee: uint64(txFees.AddPrimaryNetworkDelegatorFee),
-		AddSubnetValidatorFee:         uint64(txFees.AddSubnetValidatorFee),
-		AddSubnetDelegatorFee:         uint64(txFees.AddSubnetDelegatorFee),
+		AddSupernetValidatorFee:         uint64(txFees.AddSupernetValidatorFee),
+		AddSupernetDelegatorFee:         uint64(txFees.AddSupernetDelegatorFee),
 	}, nil
 }
 
@@ -73,7 +73,7 @@ func NewSnowContext(networkID uint32, avaxAssetID ids.ID) (*snow.Context, error)
 	lookup := ids.NewAliaser()
 	return &snow.Context{
 		NetworkID:   networkID,
-		SubnetID:    constants.PrimaryNetworkID,
+		SupernetID:    constants.PrimaryNetworkID,
 		ChainID:     constants.PlatformChainID,
 		AVAXAssetID: avaxAssetID,
 		Log:         logging.NoLog{},

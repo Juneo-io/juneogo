@@ -7,8 +7,8 @@ import (
 	"errors"
 	"sync"
 
-	"github.com/ava-labs/avalanchego/utils/linked"
-	"github.com/ava-labs/avalanchego/utils/wrappers"
+	"github.com/Juneo-io/juneogo/utils/linked"
+	"github.com/Juneo-io/juneogo/utils/wrappers"
 )
 
 var errEmptyCacheTooLarge = errors.New("cache is empty yet still too large")

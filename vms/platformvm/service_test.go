@@ -16,38 +16,38 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
-	"github.com/ava-labs/avalanchego/api"
-	"github.com/ava-labs/avalanchego/api/keystore"
-	"github.com/ava-labs/avalanchego/cache"
-	"github.com/ava-labs/avalanchego/chains/atomic"
-	"github.com/ava-labs/avalanchego/database"
-	"github.com/ava-labs/avalanchego/database/memdb"
-	"github.com/ava-labs/avalanchego/database/prefixdb"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/snow/consensus/snowman"
-	"github.com/ava-labs/avalanchego/snow/validators"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/crypto/bls"
-	"github.com/ava-labs/avalanchego/utils/crypto/secp256k1"
-	"github.com/ava-labs/avalanchego/utils/formatting"
-	"github.com/ava-labs/avalanchego/utils/logging"
-	"github.com/ava-labs/avalanchego/vms/components/avax"
-	"github.com/ava-labs/avalanchego/vms/platformvm/block"
-	"github.com/ava-labs/avalanchego/vms/platformvm/block/builder"
-	"github.com/ava-labs/avalanchego/vms/platformvm/signer"
-	"github.com/ava-labs/avalanchego/vms/platformvm/state"
-	"github.com/ava-labs/avalanchego/vms/platformvm/status"
-	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
-	"github.com/ava-labs/avalanchego/vms/platformvm/txs/txstest"
-	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
-	"github.com/ava-labs/avalanchego/wallet/subnet/primary/common"
+	"github.com/Juneo-io/juneogo/api"
+	"github.com/Juneo-io/juneogo/api/keystore"
+	"github.com/Juneo-io/juneogo/cache"
+	"github.com/Juneo-io/juneogo/chains/atomic"
+	"github.com/Juneo-io/juneogo/database"
+	"github.com/Juneo-io/juneogo/database/memdb"
+	"github.com/Juneo-io/juneogo/database/prefixdb"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/snow/consensus/snowman"
+	"github.com/Juneo-io/juneogo/snow/validators"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/crypto/bls"
+	"github.com/Juneo-io/juneogo/utils/crypto/secp256k1"
+	"github.com/Juneo-io/juneogo/utils/formatting"
+	"github.com/Juneo-io/juneogo/utils/logging"
+	"github.com/Juneo-io/juneogo/vms/components/avax"
+	"github.com/Juneo-io/juneogo/vms/platformvm/block"
+	"github.com/Juneo-io/juneogo/vms/platformvm/block/builder"
+	"github.com/Juneo-io/juneogo/vms/platformvm/signer"
+	"github.com/Juneo-io/juneogo/vms/platformvm/state"
+	"github.com/Juneo-io/juneogo/vms/platformvm/status"
+	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
+	"github.com/Juneo-io/juneogo/vms/platformvm/txs/txstest"
+	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
+	"github.com/Juneo-io/juneogo/wallet/supernet/primary/common"
 
-	avajson "github.com/ava-labs/avalanchego/utils/json"
-	vmkeystore "github.com/ava-labs/avalanchego/vms/components/keystore"
-	pchainapi "github.com/ava-labs/avalanchego/vms/platformvm/api"
-	blockexecutor "github.com/ava-labs/avalanchego/vms/platformvm/block/executor"
-	txexecutor "github.com/ava-labs/avalanchego/vms/platformvm/txs/executor"
+	avajson "github.com/Juneo-io/juneogo/utils/json"
+	vmkeystore "github.com/Juneo-io/juneogo/vms/components/keystore"
+	pchainapi "github.com/Juneo-io/juneogo/vms/platformvm/api"
+	blockexecutor "github.com/Juneo-io/juneogo/vms/platformvm/block/executor"
+	txexecutor "github.com/Juneo-io/juneogo/vms/platformvm/txs/executor"
 )
 
 var (
@@ -218,12 +218,12 @@ func TestGetTx(t *testing.T) {
 			"standard block",
 			func(_ *Service, builder *txstest.Builder) (*txs.Tx, error) {
 				return builder.NewCreateChainTx( // Test GetTx works for standard blocks
-					testSubnet1.ID(),
+					testSupernet1.ID(),
 					[]byte{},
 					constants.AVMID,
 					[]ids.ID{},
 					"chain name",
-					[]*secp256k1.PrivateKey{testSubnet1ControlKeys[0], testSubnet1ControlKeys[1]},
+					[]*secp256k1.PrivateKey{testSupernet1ControlKeys[0], testSupernet1ControlKeys[1]},
 					common.WithChangeOwner(&secp256k1fx.OutputOwners{
 						Threshold: 1,
 						Addrs:     []ids.ShortID{keys[0].PublicKey().Address()},
@@ -243,14 +243,14 @@ func TestGetTx(t *testing.T) {
 				}
 
 				return builder.NewAddPermissionlessValidatorTx( // Test GetTx works for proposal blocks
-					&txs.SubnetValidator{
+					&txs.SupernetValidator{
 						Validator: txs.Validator{
 							NodeID: ids.GenerateTestNodeID(),
 							Start:  uint64(service.vm.clock.Time().Add(txexecutor.SyncBound).Unix()),
 							End:    uint64(service.vm.clock.Time().Add(txexecutor.SyncBound).Add(defaultMinStakingDuration).Unix()),
 							Wght:   service.vm.MinValidatorStake,
 						},
-						Subnet: constants.PrimaryNetworkID,
+						Supernet: constants.PrimaryNetworkID,
 					},
 					signer.NewProofOfPossession(sk),
 					service.vm.ctx.AVAXAssetID,
@@ -378,9 +378,9 @@ func TestGetBalance(t *testing.T) {
 		require.NoError(service.GetBalance(nil, &request, &reply))
 		balance := defaultBalance
 		if idx == 0 {
-			// we use the first key to fund a subnet creation in [defaultGenesis].
-			// As such we need to account for the subnet creation fee
-			balance = defaultBalance - service.vm.Config.GetCreateSubnetTxFee(service.vm.clock.Time())
+			// we use the first key to fund a supernet creation in [defaultGenesis].
+			// As such we need to account for the supernet creation fee
+			balance = defaultBalance - service.vm.Config.GetCreateSupernetTxFee(service.vm.clock.Time())
 		}
 		require.Equal(avajson.Uint64(balance), reply.Balance)
 		require.Equal(avajson.Uint64(balance), reply.Unlocked)
@@ -582,7 +582,7 @@ func TestGetCurrentValidators(t *testing.T) {
 	genesis, _ := defaultGenesis(t, service.vm.ctx.AVAXAssetID)
 
 	// Call getValidators
-	args := GetCurrentValidatorsArgs{SubnetID: constants.PrimaryNetworkID}
+	args := GetCurrentValidatorsArgs{SupernetID: constants.PrimaryNetworkID}
 	response := GetCurrentValidatorsReply{}
 
 	require.NoError(service.GetCurrentValidators(nil, &args, &response))
@@ -646,7 +646,7 @@ func TestGetCurrentValidators(t *testing.T) {
 	service.vm.ctx.Lock.Unlock()
 
 	// Call getCurrentValidators
-	args = GetCurrentValidatorsArgs{SubnetID: constants.PrimaryNetworkID}
+	args = GetCurrentValidatorsArgs{SupernetID: constants.PrimaryNetworkID}
 	require.NoError(service.GetCurrentValidators(nil, &args, &response))
 	require.Len(response.Validators, len(genesis.Validators))
 
@@ -662,7 +662,7 @@ func TestGetCurrentValidators(t *testing.T) {
 		require.Nil(vdr.Delegators)
 
 		innerArgs := GetCurrentValidatorsArgs{
-			SubnetID: constants.PrimaryNetworkID,
+			SupernetID: constants.PrimaryNetworkID,
 			NodeIDs:  []ids.NodeID{vdr.NodeID},
 		}
 		innerResponse := GetCurrentValidatorsReply{}
@@ -689,7 +689,7 @@ func TestGetCurrentValidators(t *testing.T) {
 	require.NoError(err)
 	service.vm.state.AddTx(tx, status.Committed)
 	service.vm.state.DeleteCurrentDelegator(staker)
-	require.NoError(service.vm.state.SetDelegateeReward(staker.SubnetID, staker.NodeID, 100000))
+	require.NoError(service.vm.state.SetDelegateeReward(staker.SupernetID, staker.NodeID, 100000))
 	require.NoError(service.vm.state.Commit())
 
 	service.vm.ctx.Lock.Unlock()
@@ -753,12 +753,12 @@ func TestGetBlock(t *testing.T) {
 
 			// Make a block an accept it, then check we can get it.
 			tx, err := txBuilder.NewCreateChainTx( // Test GetTx works for standard blocks
-				testSubnet1.ID(),
+				testSupernet1.ID(),
 				[]byte{},
 				constants.AVMID,
 				[]ids.ID{},
 				"chain name",
-				[]*secp256k1.PrivateKey{testSubnet1ControlKeys[0], testSubnet1ControlKeys[1]},
+				[]*secp256k1.PrivateKey{testSupernet1ControlKeys[0], testSupernet1ControlKeys[1]},
 				common.WithChangeOwner(&secp256k1fx.OutputOwners{
 					Threshold: 1,
 					Addrs:     []ids.ShortID{keys[0].PublicKey().Address()},

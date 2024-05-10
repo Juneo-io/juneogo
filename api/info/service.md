@@ -407,25 +407,25 @@ info.getTxFee() ->
 {
     txFee: uint64,
     createAssetTxFee: uint64,
-    createSubnetTxFee: uint64,
-    transformSubnetTxFee: uint64,
+    createSupernetTxFee: uint64,
+    transformSupernetTxFee: uint64,
     createBlockchainTxFee: uint64,
     addPrimaryNetworkValidatorFee: uint64,
     addPrimaryNetworkDelegatorFee: uint64,
-    addSubnetValidatorFee: uint64,
-    addSubnetDelegatorFee: uint64
+    addSupernetValidatorFee: uint64,
+    addSupernetDelegatorFee: uint64
 }
 ```
 
 - `txFee` is the default fee for making transactions.
 - `createAssetTxFee` is the fee for creating a new asset.
-- `createSubnetTxFee` is the fee for creating a new Subnet.
-- `transformSubnetTxFee` is the fee for converting a PoA Subnet into a PoS Subnet.
+- `createSupernetTxFee` is the fee for creating a new Supernet.
+- `transformSupernetTxFee` is the fee for converting a PoA Supernet into a PoS Supernet.
 - `createBlockchainTxFee` is the fee for creating a new blockchain.
 - `addPrimaryNetworkValidatorFee` is the fee for adding a new primary network validator.
 - `addPrimaryNetworkDelegatorFee` is the fee for adding a new primary network delegator.
-- `addSubnetValidatorFee` is the fee for adding a new Subnet validator.
-- `addSubnetDelegatorFee` is the fee for adding a new Subnet delegator.
+- `addSupernetValidatorFee` is the fee for adding a new Supernet validator.
+- `addSupernetDelegatorFee` is the fee for adding a new Supernet delegator.
 
 All fees are denominated in nAVAX.
 
@@ -448,13 +448,13 @@ curl -X POST --data '{
   "result": {
     "txFee": "1000000",
     "createAssetTxFee": "10000000",
-    "createSubnetTxFee": "1000000000",
-    "transformSubnetTxFee": "10000000000",
+    "createSupernetTxFee": "1000000000",
+    "transformSupernetTxFee": "10000000000",
     "createBlockchainTxFee": "1000000000",
     "addPrimaryNetworkValidatorFee": "0",
     "addPrimaryNetworkDelegatorFee": "0",
-    "addSubnetValidatorFee": "1000000",
-    "addSubnetDelegatorFee": "1000000"
+    "addSupernetValidatorFee": "1000000",
+    "addSupernetDelegatorFee": "1000000"
   }
 }
 ```
@@ -526,7 +526,7 @@ info.peers({
         lastReceived: string,
         benched: string[],
         observedUptime: int,
-        observedSubnetUptime: map[string]int,
+        observedSupernetUptime: map[string]int,
     }
 }
 ```
@@ -542,7 +542,7 @@ info.peers({
 - `lastReceived` is the timestamp of last message received from the peer.
 - `benched` shows chain IDs that the peer is being benched.
 - `observedUptime` is this node's primary network uptime, observed by the peer.
-- `observedSubnetUptime` is a map of Subnet IDs to this node's Subnet uptimes, observed by the peer.
+- `observedSupernetUptime` is a map of Supernet IDs to this node's Supernet uptimes, observed by the peer.
 
 **Example Call:**
 
@@ -575,8 +575,8 @@ curl -X POST --data '{
         "lastReceived": "2020-06-01T15:22:57Z",
         "benched": [],
         "observedUptime": "99",
-        "observedSubnetUptimes": {},
-        "trackedSubnets": [],
+        "observedSupernetUptimes": {},
+        "trackedSupernets": [],
         "benched": []
       },
       {
@@ -588,10 +588,10 @@ curl -X POST --data '{
         "lastReceived": "2020-06-01T15:22:34Z",
         "benched": [],
         "observedUptime": "75",
-        "observedSubnetUptimes": {
+        "observedSupernetUptimes": {
           "29uVeLPJB1eQJkzRemU8g8wZDw5uJRqpab5U2mX9euieVwiEbL": "100"
         },
-        "trackedSubnets": [
+        "trackedSupernets": [
           "29uVeLPJB1eQJkzRemU8g8wZDw5uJRqpab5U2mX9euieVwiEbL"
         ],
         "benched": []
@@ -605,8 +605,8 @@ curl -X POST --data '{
         "lastReceived": "2020-06-01T15:22:55Z",
         "benched": [],
         "observedUptime": "95",
-        "observedSubnetUptimes": {},
-        "trackedSubnets": [],
+        "observedSupernetUptimes": {},
+        "trackedSupernets": [],
         "benched": []
       }
     ]
@@ -624,7 +624,7 @@ Other sources may be using data gathered with incomplete (limited) information.
 
 ```sh
 info.uptime({
-    subnetID: string // optional
+    supernetID: string // optional
 }) ->
 {
     rewardingStakePercentage: float64,
@@ -632,7 +632,7 @@ info.uptime({
 }
 ```
 
-- `subnetID` is the Subnet to get the uptime of. If not provided, returns the uptime of the node on
+- `supernetID` is the Supernet to get the uptime of. If not provided, returns the uptime of the node on
   the primary network.
 
 - `rewardingStakePercentage` is the percent of stake which thinks this node is above the uptime
@@ -662,7 +662,7 @@ curl -X POST --data '{
 }
 ```
 
-#### **Example Subnet Call**
+#### **Example Supernet Call**
 
 ```sh
 curl -X POST --data '{
@@ -670,12 +670,12 @@ curl -X POST --data '{
     "id"     :1,
     "method" :"info.uptime",
     "params" :{
-        "subnetID":"29uVeLPJB1eQJkzRemU8g8wZDw5uJRqpab5U2mX9euieVwiEbL"
+        "supernetID":"29uVeLPJB1eQJkzRemU8g8wZDw5uJRqpab5U2mX9euieVwiEbL"
     }
 }' -H 'content-type:application/json;' 127.0.0.1:9650/ext/info
 ```
 
-#### **Example Subnet Response**
+#### **Example Supernet Response**
 
 ```json
 {

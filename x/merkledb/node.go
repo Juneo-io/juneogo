@@ -6,8 +6,8 @@ package merkledb
 import (
 	"slices"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils/maybe"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils/maybe"
 )
 
 // Representation of a node stored in the database.

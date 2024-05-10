@@ -12,11 +12,11 @@ package sender
 import (
 	reflect "reflect"
 
-	ids "github.com/ava-labs/avalanchego/ids"
-	message "github.com/ava-labs/avalanchego/message"
-	common "github.com/ava-labs/avalanchego/snow/engine/common"
-	subnets "github.com/ava-labs/avalanchego/subnets"
-	set "github.com/ava-labs/avalanchego/utils/set"
+	ids "github.com/Juneo-io/juneogo/ids"
+	message "github.com/Juneo-io/juneogo/message"
+	common "github.com/Juneo-io/juneogo/snow/engine/common"
+	supernets "github.com/Juneo-io/juneogo/supernets"
+	set "github.com/Juneo-io/juneogo/utils/set"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -44,15 +44,15 @@ func (m *MockExternalSender) EXPECT() *MockExternalSenderMockRecorder {
 }
 
 // Send mocks base method.
-func (m *MockExternalSender) Send(msg message.OutboundMessage, config common.SendConfig, subnetID ids.ID, allower subnets.Allower) set.Set[ids.NodeID] {
+func (m *MockExternalSender) Send(msg message.OutboundMessage, config common.SendConfig, supernetID ids.ID, allower supernets.Allower) set.Set[ids.NodeID] {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Send", msg, config, subnetID, allower)
+	ret := m.ctrl.Call(m, "Send", msg, config, supernetID, allower)
 	ret0, _ := ret[0].(set.Set[ids.NodeID])
 	return ret0
 }
 
 // Send indicates an expected call of Send.
-func (mr *MockExternalSenderMockRecorder) Send(msg, config, subnetID, allower any) *gomock.Call {
+func (mr *MockExternalSenderMockRecorder) Send(msg, config, supernetID, allower any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Send", reflect.TypeOf((*MockExternalSender)(nil).Send), msg, config, subnetID, allower)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Send", reflect.TypeOf((*MockExternalSender)(nil).Send), msg, config, supernetID, allower)
 }

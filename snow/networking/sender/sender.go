@@ -10,16 +10,16 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"go.uber.org/zap"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/message"
-	"github.com/ava-labs/avalanchego/proto/pb/p2p"
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/snow/engine/common"
-	"github.com/ava-labs/avalanchego/snow/networking/router"
-	"github.com/ava-labs/avalanchego/snow/networking/timeout"
-	"github.com/ava-labs/avalanchego/subnets"
-	"github.com/ava-labs/avalanchego/utils/logging"
-	"github.com/ava-labs/avalanchego/utils/set"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/message"
+	"github.com/Juneo-io/juneogo/proto/pb/p2p"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/snow/engine/common"
+	"github.com/Juneo-io/juneogo/snow/networking/router"
+	"github.com/Juneo-io/juneogo/snow/networking/timeout"
+	"github.com/Juneo-io/juneogo/supernets"
+	"github.com/Juneo-io/juneogo/utils/logging"
+	"github.com/Juneo-io/juneogo/utils/set"
 )
 
 var _ common.Sender = (*sender)(nil)
@@ -41,7 +41,7 @@ type sender struct {
 	// have failed because the node was benched
 	failedDueToBench map[message.Op]prometheus.Counter
 	engineType       p2p.EngineType
-	subnet           subnets.Subnet
+	supernet           supernets.Supernet
 }
 
 func New(
@@ -51,7 +51,7 @@ func New(
 	router router.Router,
 	timeouts timeout.Manager,
 	engineType p2p.EngineType,
-	subnet subnets.Subnet,
+	supernet supernets.Supernet,
 ) (common.Sender, error) {
 	s := &sender{
 		ctx:              ctx,
@@ -61,7 +61,7 @@ func New(
 		timeouts:         timeouts,
 		failedDueToBench: make(map[message.Op]prometheus.Counter, len(message.ConsensusRequestOps)),
 		engineType:       engineType,
-		subnet:           subnet,
+		supernet:           supernet,
 	}
 
 	for _, op := range message.ConsensusRequestOps {
@@ -148,8 +148,8 @@ func (s *sender) SendGetStateSummaryFrontier(ctx context.Context, nodeIDs set.Se
 			common.SendConfig{
 				NodeIDs: nodeIDs,
 			},
-			s.ctx.SubnetID,
-			s.subnet,
+			s.ctx.SupernetID,
+			s.supernet,
 		)
 	} else {
 		s.ctx.Log.Error("failed to build message",
@@ -212,8 +212,8 @@ func (s *sender) SendStateSummaryFrontier(ctx context.Context, nodeID ids.NodeID
 		common.SendConfig{
 			NodeIDs: nodeIDs,
 		},
-		s.ctx.SubnetID,
-		s.subnet,
+		s.ctx.SupernetID,
+		s.supernet,
 	)
 	if sentTo.Len() == 0 {
 		if s.ctx.Log.Enabled(logging.Verbo) {
@@ -295,8 +295,8 @@ func (s *sender) SendGetAcceptedStateSummary(ctx context.Context, nodeIDs set.Se
 			common.SendConfig{
 				NodeIDs: nodeIDs,
 			},
-			s.ctx.SubnetID,
-			s.subnet,
+			s.ctx.SupernetID,
+			s.supernet,
 		)
 	} else {
 		s.ctx.Log.Error("failed to build message",
@@ -359,8 +359,8 @@ func (s *sender) SendAcceptedStateSummary(ctx context.Context, nodeID ids.NodeID
 		common.SendConfig{
 			NodeIDs: nodeIDs,
 		},
-		s.ctx.SubnetID,
-		s.subnet,
+		s.ctx.SupernetID,
+		s.supernet,
 	)
 	if sentTo.Len() == 0 {
 		s.ctx.Log.Debug("failed to send message",
@@ -431,8 +431,8 @@ func (s *sender) SendGetAcceptedFrontier(ctx context.Context, nodeIDs set.Set[id
 			common.SendConfig{
 				NodeIDs: nodeIDs,
 			},
-			s.ctx.SubnetID,
-			s.subnet,
+			s.ctx.SupernetID,
+			s.supernet,
 		)
 	} else {
 		s.ctx.Log.Error("failed to build message",
@@ -495,8 +495,8 @@ func (s *sender) SendAcceptedFrontier(ctx context.Context, nodeID ids.NodeID, re
 		common.SendConfig{
 			NodeIDs: nodeIDs,
 		},
-		s.ctx.SubnetID,
-		s.subnet,
+		s.ctx.SupernetID,
+		s.supernet,
 	)
 	if sentTo.Len() == 0 {
 		s.ctx.Log.Debug("failed to send message",
@@ -569,8 +569,8 @@ func (s *sender) SendGetAccepted(ctx context.Context, nodeIDs set.Set[ids.NodeID
 			common.SendConfig{
 				NodeIDs: nodeIDs,
 			},
-			s.ctx.SubnetID,
-			s.subnet,
+			s.ctx.SupernetID,
+			s.supernet,
 		)
 	} else {
 		s.ctx.Log.Error("failed to build message",
@@ -629,8 +629,8 @@ func (s *sender) SendAccepted(ctx context.Context, nodeID ids.NodeID, requestID 
 		common.SendConfig{
 			NodeIDs: nodeIDs,
 		},
-		s.ctx.SubnetID,
-		s.subnet,
+		s.ctx.SupernetID,
+		s.supernet,
 	)
 	if sentTo.Len() == 0 {
 		s.ctx.Log.Debug("failed to send message",
@@ -712,8 +712,8 @@ func (s *sender) SendGetAncestors(ctx context.Context, nodeID ids.NodeID, reques
 		common.SendConfig{
 			NodeIDs: nodeIDs,
 		},
-		s.ctx.SubnetID,
-		s.subnet,
+		s.ctx.SupernetID,
+		s.supernet,
 	)
 	if sentTo.Len() == 0 {
 		s.ctx.Log.Debug("failed to send message",
@@ -750,8 +750,8 @@ func (s *sender) SendAncestors(_ context.Context, nodeID ids.NodeID, requestID u
 		common.SendConfig{
 			NodeIDs: nodeIDs,
 		},
-		s.ctx.SubnetID,
-		s.subnet,
+		s.ctx.SupernetID,
+		s.supernet,
 	)
 	if sentTo.Len() == 0 {
 		s.ctx.Log.Debug("failed to send message",
@@ -820,8 +820,8 @@ func (s *sender) SendGet(ctx context.Context, nodeID ids.NodeID, requestID uint3
 			common.SendConfig{
 				NodeIDs: nodeIDs,
 			},
-			s.ctx.SubnetID,
-			s.subnet,
+			s.ctx.SupernetID,
+			s.supernet,
 		)
 	} else {
 		s.ctx.Log.Error("failed to build message",
@@ -869,8 +869,8 @@ func (s *sender) SendPut(_ context.Context, nodeID ids.NodeID, requestID uint32,
 		common.SendConfig{
 			NodeIDs: nodeIDs,
 		},
-		s.ctx.SubnetID,
-		s.subnet,
+		s.ctx.SupernetID,
+		s.supernet,
 	)
 	if sentTo.Len() == 0 {
 		if s.ctx.Log.Enabled(logging.Verbo) {
@@ -981,8 +981,8 @@ func (s *sender) SendPushQuery(
 			common.SendConfig{
 				NodeIDs: nodeIDs,
 			},
-			s.ctx.SubnetID,
-			s.subnet,
+			s.ctx.SupernetID,
+			s.supernet,
 		)
 	} else {
 		s.ctx.Log.Error("failed to build message",
@@ -1115,8 +1115,8 @@ func (s *sender) SendPullQuery(
 			common.SendConfig{
 				NodeIDs: nodeIDs,
 			},
-			s.ctx.SubnetID,
-			s.subnet,
+			s.ctx.SupernetID,
+			s.supernet,
 		)
 	} else {
 		s.ctx.Log.Error("failed to build message",
@@ -1200,8 +1200,8 @@ func (s *sender) SendChits(
 		common.SendConfig{
 			NodeIDs: nodeIDs,
 		},
-		s.ctx.SubnetID,
-		s.subnet,
+		s.ctx.SupernetID,
+		s.supernet,
 	)
 	if sentTo.Len() == 0 {
 		s.ctx.Log.Debug("failed to send message",
@@ -1365,8 +1365,8 @@ func (s *sender) SendAppRequest(ctx context.Context, nodeIDs set.Set[ids.NodeID]
 			common.SendConfig{
 				NodeIDs: nodeIDs,
 			},
-			s.ctx.SubnetID,
-			s.subnet,
+			s.ctx.SupernetID,
+			s.supernet,
 		)
 	} else {
 		s.ctx.Log.Error("failed to build message",
@@ -1450,8 +1450,8 @@ func (s *sender) SendAppResponse(ctx context.Context, nodeID ids.NodeID, request
 		common.SendConfig{
 			NodeIDs: nodeIDs,
 		},
-		s.ctx.SubnetID,
-		s.subnet,
+		s.ctx.SupernetID,
+		s.supernet,
 	)
 	if sentTo.Len() == 0 {
 		if s.ctx.Log.Enabled(logging.Verbo) {
@@ -1515,8 +1515,8 @@ func (s *sender) SendAppError(ctx context.Context, nodeID ids.NodeID, requestID 
 		common.SendConfig{
 			NodeIDs: set.Of(nodeID),
 		},
-		s.ctx.SubnetID,
-		s.subnet,
+		s.ctx.SupernetID,
+		s.supernet,
 	)
 	if sentTo.Len() == 0 {
 		if s.ctx.Log.Enabled(logging.Verbo) {
@@ -1562,8 +1562,8 @@ func (s *sender) SendAppGossip(
 	sentTo := s.sender.Send(
 		outMsg,
 		config,
-		s.ctx.SubnetID,
-		s.subnet,
+		s.ctx.SupernetID,
+		s.supernet,
 	)
 	if sentTo.Len() == 0 {
 		if s.ctx.Log.Enabled(logging.Verbo) {

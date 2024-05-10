@@ -19,10 +19,10 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/ava-labs/avalanchego/api/health"
-	"github.com/ava-labs/avalanchego/config"
-	"github.com/ava-labs/avalanchego/node"
-	"github.com/ava-labs/avalanchego/utils/perms"
+	"github.com/Juneo-io/juneogo/api/health"
+	"github.com/Juneo-io/juneogo/config"
+	"github.com/Juneo-io/juneogo/node"
+	"github.com/Juneo-io/juneogo/utils/perms"
 )
 
 const (

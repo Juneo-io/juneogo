@@ -13,22 +13,22 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/cache"
-	"github.com/ava-labs/avalanchego/database"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/snow/choices"
-	"github.com/ava-labs/avalanchego/snow/consensus/snowball"
-	"github.com/ava-labs/avalanchego/snow/consensus/snowman"
-	"github.com/ava-labs/avalanchego/snow/consensus/snowman/snowmantest"
-	"github.com/ava-labs/avalanchego/snow/engine/common"
-	"github.com/ava-labs/avalanchego/snow/engine/snowman/ancestor"
-	"github.com/ava-labs/avalanchego/snow/engine/snowman/block"
-	"github.com/ava-labs/avalanchego/snow/engine/snowman/getter"
-	"github.com/ava-labs/avalanchego/snow/snowtest"
-	"github.com/ava-labs/avalanchego/snow/validators"
-	"github.com/ava-labs/avalanchego/utils/set"
-	"github.com/ava-labs/avalanchego/version"
+	"github.com/Juneo-io/juneogo/cache"
+	"github.com/Juneo-io/juneogo/database"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/snow/choices"
+	"github.com/Juneo-io/juneogo/snow/consensus/snowball"
+	"github.com/Juneo-io/juneogo/snow/consensus/snowman"
+	"github.com/Juneo-io/juneogo/snow/consensus/snowman/snowmantest"
+	"github.com/Juneo-io/juneogo/snow/engine/common"
+	"github.com/Juneo-io/juneogo/snow/engine/snowman/ancestor"
+	"github.com/Juneo-io/juneogo/snow/engine/snowman/block"
+	"github.com/Juneo-io/juneogo/snow/engine/snowman/getter"
+	"github.com/Juneo-io/juneogo/snow/snowtest"
+	"github.com/Juneo-io/juneogo/snow/validators"
+	"github.com/Juneo-io/juneogo/utils/set"
+	"github.com/Juneo-io/juneogo/version"
 )
 
 var (
@@ -85,9 +85,9 @@ func setup(t *testing.T, config Config) (ids.NodeID, validators.Manager, *common
 	require := require.New(t)
 
 	vdr := ids.GenerateTestNodeID()
-	require.NoError(config.Validators.AddStaker(config.Ctx.SubnetID, vdr, nil, ids.Empty, 1))
+	require.NoError(config.Validators.AddStaker(config.Ctx.SupernetID, vdr, nil, ids.Empty, 1))
 	require.NoError(config.ConnectedValidators.Connected(context.Background(), vdr, version.CurrentApp))
-	config.Validators.RegisterSetCallbackListener(config.Ctx.SubnetID, config.ConnectedValidators)
+	config.Validators.RegisterSetCallbackListener(config.Ctx.SupernetID, config.ConnectedValidators)
 
 	sender := &common.SenderTest{T: t}
 	config.Sender = sender
@@ -340,9 +340,9 @@ func TestEngineMultipleQuery(t *testing.T) {
 	vdr1 := ids.GenerateTestNodeID()
 	vdr2 := ids.GenerateTestNodeID()
 
-	require.NoError(vals.AddStaker(engCfg.Ctx.SubnetID, vdr0, nil, ids.Empty, 1))
-	require.NoError(vals.AddStaker(engCfg.Ctx.SubnetID, vdr1, nil, ids.Empty, 1))
-	require.NoError(vals.AddStaker(engCfg.Ctx.SubnetID, vdr2, nil, ids.Empty, 1))
+	require.NoError(vals.AddStaker(engCfg.Ctx.SupernetID, vdr0, nil, ids.Empty, 1))
+	require.NoError(vals.AddStaker(engCfg.Ctx.SupernetID, vdr1, nil, ids.Empty, 1))
+	require.NoError(vals.AddStaker(engCfg.Ctx.SupernetID, vdr2, nil, ids.Empty, 1))
 
 	sender := &common.SenderTest{T: t}
 	engCfg.Sender = sender
@@ -664,9 +664,9 @@ func TestVoteCanceling(t *testing.T) {
 	vdr1 := ids.GenerateTestNodeID()
 	vdr2 := ids.GenerateTestNodeID()
 
-	require.NoError(vals.AddStaker(engCfg.Ctx.SubnetID, vdr0, nil, ids.Empty, 1))
-	require.NoError(vals.AddStaker(engCfg.Ctx.SubnetID, vdr1, nil, ids.Empty, 1))
-	require.NoError(vals.AddStaker(engCfg.Ctx.SubnetID, vdr2, nil, ids.Empty, 1))
+	require.NoError(vals.AddStaker(engCfg.Ctx.SupernetID, vdr0, nil, ids.Empty, 1))
+	require.NoError(vals.AddStaker(engCfg.Ctx.SupernetID, vdr1, nil, ids.Empty, 1))
+	require.NoError(vals.AddStaker(engCfg.Ctx.SupernetID, vdr2, nil, ids.Empty, 1))
 
 	sender := &common.SenderTest{T: t}
 	engCfg.Sender = sender
@@ -1259,7 +1259,7 @@ func TestEngineInvalidBlockIgnoredFromUnexpectedPeer(t *testing.T) {
 	vdr, vdrs, sender, vm, te := setup(t, DefaultConfig(t))
 
 	secondVdr := ids.GenerateTestNodeID()
-	require.NoError(vdrs.AddStaker(te.Ctx.SubnetID, secondVdr, nil, ids.Empty, 1))
+	require.NoError(vdrs.AddStaker(te.Ctx.SupernetID, secondVdr, nil, ids.Empty, 1))
 
 	sender.Default(true)
 
@@ -1416,7 +1416,7 @@ func TestEngineAggressivePolling(t *testing.T) {
 	engCfg.Validators = vals
 
 	vdr := ids.GenerateTestNodeID()
-	require.NoError(vals.AddStaker(engCfg.Ctx.SubnetID, vdr, nil, ids.Empty, 1))
+	require.NoError(vals.AddStaker(engCfg.Ctx.SupernetID, vdr, nil, ids.Empty, 1))
 
 	sender := &common.SenderTest{T: t}
 	engCfg.Sender = sender
@@ -1502,8 +1502,8 @@ func TestEngineDoubleChit(t *testing.T) {
 	vdr0 := ids.GenerateTestNodeID()
 	vdr1 := ids.GenerateTestNodeID()
 
-	require.NoError(vals.AddStaker(engCfg.Ctx.SubnetID, vdr0, nil, ids.Empty, 1))
-	require.NoError(vals.AddStaker(engCfg.Ctx.SubnetID, vdr1, nil, ids.Empty, 1))
+	require.NoError(vals.AddStaker(engCfg.Ctx.SupernetID, vdr0, nil, ids.Empty, 1))
+	require.NoError(vals.AddStaker(engCfg.Ctx.SupernetID, vdr1, nil, ids.Empty, 1))
 
 	sender := &common.SenderTest{T: t}
 	engCfg.Sender = sender
@@ -1590,7 +1590,7 @@ func TestEngineBuildBlockLimit(t *testing.T) {
 	engCfg.Validators = vals
 
 	vdr := ids.GenerateTestNodeID()
-	require.NoError(vals.AddStaker(engCfg.Ctx.SubnetID, vdr, nil, ids.Empty, 1))
+	require.NoError(vals.AddStaker(engCfg.Ctx.SupernetID, vdr, nil, ids.Empty, 1))
 
 	sender := &common.SenderTest{T: t}
 	engCfg.Sender = sender
@@ -2412,7 +2412,7 @@ func TestEngineApplyAcceptedFrontierInQueryFailed(t *testing.T) {
 	engCfg.Validators = vals
 
 	vdr := ids.GenerateTestNodeID()
-	require.NoError(vals.AddStaker(engCfg.Ctx.SubnetID, vdr, nil, ids.Empty, 1))
+	require.NoError(vals.AddStaker(engCfg.Ctx.SupernetID, vdr, nil, ids.Empty, 1))
 
 	sender := &common.SenderTest{T: t}
 	engCfg.Sender = sender
@@ -2488,7 +2488,7 @@ func TestEngineApplyAcceptedFrontierInQueryFailed(t *testing.T) {
 	require.Equal(choices.Accepted, blk.Status())
 }
 
-func TestEngineRepollsMisconfiguredSubnet(t *testing.T) {
+func TestEngineRepollsMisconfiguredSupernet(t *testing.T) {
 	require := require.New(t)
 
 	engCfg := DefaultConfig(t)
@@ -2550,9 +2550,9 @@ func TestEngineRepollsMisconfiguredSubnet(t *testing.T) {
 	// The block should have successfully been added into consensus.
 	require.Equal(1, te.Consensus.NumProcessing())
 
-	// Fix the subnet configuration by adding a validator.
+	// Fix the supernet configuration by adding a validator.
 	vdr := ids.GenerateTestNodeID()
-	require.NoError(vals.AddStaker(engCfg.Ctx.SubnetID, vdr, nil, ids.Empty, 1))
+	require.NoError(vals.AddStaker(engCfg.Ctx.SupernetID, vdr, nil, ids.Empty, 1))
 
 	var (
 		queryRequestID uint32
@@ -2643,9 +2643,9 @@ func TestEngineVoteStallRegression(t *testing.T) {
 	nodeID2 := ids.GenerateTestNodeID()
 	nodeIDs := []ids.NodeID{nodeID0, nodeID1, nodeID2}
 
-	require.NoError(config.Validators.AddStaker(config.Ctx.SubnetID, nodeID0, nil, ids.Empty, 1))
-	require.NoError(config.Validators.AddStaker(config.Ctx.SubnetID, nodeID1, nil, ids.Empty, 1))
-	require.NoError(config.Validators.AddStaker(config.Ctx.SubnetID, nodeID2, nil, ids.Empty, 1))
+	require.NoError(config.Validators.AddStaker(config.Ctx.SupernetID, nodeID0, nil, ids.Empty, 1))
+	require.NoError(config.Validators.AddStaker(config.Ctx.SupernetID, nodeID1, nil, ids.Empty, 1))
+	require.NoError(config.Validators.AddStaker(config.Ctx.SupernetID, nodeID2, nil, ids.Empty, 1))
 
 	sender := &common.SenderTest{
 		T:          t,

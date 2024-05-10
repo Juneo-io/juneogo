@@ -9,12 +9,12 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils/crypto/bls"
-	"github.com/ava-labs/avalanchego/utils/sampler"
-	"github.com/ava-labs/avalanchego/utils/set"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils/crypto/bls"
+	"github.com/Juneo-io/juneogo/utils/sampler"
+	"github.com/Juneo-io/juneogo/utils/set"
 
-	safemath "github.com/ava-labs/avalanchego/utils/math"
+	safemath "github.com/Juneo-io/juneogo/utils/math"
 )
 
 var _ ManagerCallbackListener = (*managerCallbackListener)(nil)
@@ -26,25 +26,25 @@ type managerCallbackListener struct {
 	onRemoved func(ids.ID, ids.NodeID, uint64)
 }
 
-func (c *managerCallbackListener) OnValidatorAdded(subnetID ids.ID, nodeID ids.NodeID, pk *bls.PublicKey, txID ids.ID, weight uint64) {
+func (c *managerCallbackListener) OnValidatorAdded(supernetID ids.ID, nodeID ids.NodeID, pk *bls.PublicKey, txID ids.ID, weight uint64) {
 	if c.onAdd != nil {
-		c.onAdd(subnetID, nodeID, pk, txID, weight)
+		c.onAdd(supernetID, nodeID, pk, txID, weight)
 	} else {
 		c.t.Fail()
 	}
 }
 
-func (c *managerCallbackListener) OnValidatorRemoved(subnetID ids.ID, nodeID ids.NodeID, weight uint64) {
+func (c *managerCallbackListener) OnValidatorRemoved(supernetID ids.ID, nodeID ids.NodeID, weight uint64) {
 	if c.onRemoved != nil {
-		c.onRemoved(subnetID, nodeID, weight)
+		c.onRemoved(supernetID, nodeID, weight)
 	} else {
 		c.t.Fail()
 	}
 }
 
-func (c *managerCallbackListener) OnValidatorWeightChanged(subnetID ids.ID, nodeID ids.NodeID, oldWeight, newWeight uint64) {
+func (c *managerCallbackListener) OnValidatorWeightChanged(supernetID ids.ID, nodeID ids.NodeID, oldWeight, newWeight uint64) {
 	if c.onWeight != nil {
-		c.onWeight(subnetID, nodeID, oldWeight, newWeight)
+		c.onWeight(supernetID, nodeID, oldWeight, newWeight)
 	} else {
 		c.t.Fail()
 	}
@@ -56,19 +56,19 @@ func TestAddZeroWeight(t *testing.T) {
 	m := NewManager().(*manager)
 	err := m.AddStaker(ids.GenerateTestID(), ids.GenerateTestNodeID(), nil, ids.Empty, 0)
 	require.ErrorIs(err, ErrZeroWeight)
-	require.Empty(m.subnetToVdrs)
+	require.Empty(m.supernetToVdrs)
 }
 
 func TestAddDuplicate(t *testing.T) {
 	require := require.New(t)
 
 	m := NewManager()
-	subnetID := ids.GenerateTestID()
+	supernetID := ids.GenerateTestID()
 
 	nodeID := ids.GenerateTestNodeID()
-	require.NoError(m.AddStaker(subnetID, nodeID, nil, ids.Empty, 1))
+	require.NoError(m.AddStaker(supernetID, nodeID, nil, ids.Empty, 1))
 
-	err := m.AddStaker(subnetID, nodeID, nil, ids.Empty, 1)
+	err := m.AddStaker(supernetID, nodeID, nil, ids.Empty, 1)
 	require.ErrorIs(err, errDuplicateValidator)
 }
 
@@ -76,18 +76,18 @@ func TestAddOverflow(t *testing.T) {
 	require := require.New(t)
 
 	m := NewManager()
-	subnetID := ids.GenerateTestID()
+	supernetID := ids.GenerateTestID()
 	nodeID1 := ids.GenerateTestNodeID()
 	nodeID2 := ids.GenerateTestNodeID()
-	require.NoError(m.AddStaker(subnetID, nodeID1, nil, ids.Empty, 1))
+	require.NoError(m.AddStaker(supernetID, nodeID1, nil, ids.Empty, 1))
 
-	require.NoError(m.AddStaker(subnetID, nodeID2, nil, ids.Empty, math.MaxUint64))
+	require.NoError(m.AddStaker(supernetID, nodeID2, nil, ids.Empty, math.MaxUint64))
 
-	_, err := m.TotalWeight(subnetID)
+	_, err := m.TotalWeight(supernetID)
 	require.ErrorIs(err, errTotalWeightNotUint64)
 
 	set := set.Of(nodeID1, nodeID2)
-	_, err = m.SubsetWeight(subnetID, set)
+	_, err = m.SubsetWeight(supernetID, set)
 	require.ErrorIs(err, safemath.ErrOverflow)
 }
 
@@ -95,12 +95,12 @@ func TestAddWeightZeroWeight(t *testing.T) {
 	require := require.New(t)
 
 	m := NewManager()
-	subnetID := ids.GenerateTestID()
+	supernetID := ids.GenerateTestID()
 
 	nodeID := ids.GenerateTestNodeID()
-	require.NoError(m.AddStaker(subnetID, nodeID, nil, ids.Empty, 1))
+	require.NoError(m.AddStaker(supernetID, nodeID, nil, ids.Empty, 1))
 
-	err := m.AddWeight(subnetID, nodeID, 0)
+	err := m.AddWeight(supernetID, nodeID, 0)
 	require.ErrorIs(err, ErrZeroWeight)
 }
 
@@ -108,15 +108,15 @@ func TestAddWeightOverflow(t *testing.T) {
 	require := require.New(t)
 
 	m := NewManager()
-	subnetID := ids.GenerateTestID()
-	require.NoError(m.AddStaker(subnetID, ids.GenerateTestNodeID(), nil, ids.Empty, 1))
+	supernetID := ids.GenerateTestID()
+	require.NoError(m.AddStaker(supernetID, ids.GenerateTestNodeID(), nil, ids.Empty, 1))
 
 	nodeID := ids.GenerateTestNodeID()
-	require.NoError(m.AddStaker(subnetID, nodeID, nil, ids.Empty, 1))
+	require.NoError(m.AddStaker(supernetID, nodeID, nil, ids.Empty, 1))
 
-	require.NoError(m.AddWeight(subnetID, nodeID, math.MaxUint64-1))
+	require.NoError(m.AddWeight(supernetID, nodeID, math.MaxUint64-1))
 
-	_, err := m.TotalWeight(subnetID)
+	_, err := m.TotalWeight(supernetID)
 	require.ErrorIs(err, errTotalWeightNotUint64)
 }
 
@@ -124,14 +124,14 @@ func TestGetWeight(t *testing.T) {
 	require := require.New(t)
 
 	m := NewManager()
-	subnetID := ids.GenerateTestID()
+	supernetID := ids.GenerateTestID()
 
 	nodeID := ids.GenerateTestNodeID()
-	require.Zero(m.GetWeight(subnetID, nodeID))
+	require.Zero(m.GetWeight(supernetID, nodeID))
 
-	require.NoError(m.AddStaker(subnetID, nodeID, nil, ids.Empty, 1))
+	require.NoError(m.AddStaker(supernetID, nodeID, nil, ids.Empty, 1))
 
-	totalWeight, err := m.TotalWeight(subnetID)
+	totalWeight, err := m.TotalWeight(supernetID)
 	require.NoError(err)
 	require.Equal(uint64(1), totalWeight)
 }
@@ -150,14 +150,14 @@ func TestSubsetWeight(t *testing.T) {
 	subset := set.Of(nodeID0, nodeID1)
 
 	m := NewManager()
-	subnetID := ids.GenerateTestID()
+	supernetID := ids.GenerateTestID()
 
-	require.NoError(m.AddStaker(subnetID, nodeID0, nil, ids.Empty, weight0))
-	require.NoError(m.AddStaker(subnetID, nodeID1, nil, ids.Empty, weight1))
-	require.NoError(m.AddStaker(subnetID, nodeID2, nil, ids.Empty, weight2))
+	require.NoError(m.AddStaker(supernetID, nodeID0, nil, ids.Empty, weight0))
+	require.NoError(m.AddStaker(supernetID, nodeID1, nil, ids.Empty, weight1))
+	require.NoError(m.AddStaker(supernetID, nodeID2, nil, ids.Empty, weight2))
 
 	expectedWeight := weight0 + weight1
-	subsetWeight, err := m.SubsetWeight(subnetID, subset)
+	subsetWeight, err := m.SubsetWeight(supernetID, subset)
 	require.NoError(err)
 	require.Equal(expectedWeight, subsetWeight)
 }
@@ -166,11 +166,11 @@ func TestRemoveWeightZeroWeight(t *testing.T) {
 	require := require.New(t)
 
 	m := NewManager()
-	subnetID := ids.GenerateTestID()
+	supernetID := ids.GenerateTestID()
 	nodeID := ids.GenerateTestNodeID()
-	require.NoError(m.AddStaker(subnetID, nodeID, nil, ids.Empty, 1))
+	require.NoError(m.AddStaker(supernetID, nodeID, nil, ids.Empty, 1))
 
-	err := m.RemoveWeight(subnetID, nodeID, 0)
+	err := m.RemoveWeight(supernetID, nodeID, 0)
 	require.ErrorIs(err, ErrZeroWeight)
 }
 
@@ -178,11 +178,11 @@ func TestRemoveWeightMissingValidator(t *testing.T) {
 	require := require.New(t)
 
 	m := NewManager()
-	subnetID := ids.GenerateTestID()
+	supernetID := ids.GenerateTestID()
 
-	require.NoError(m.AddStaker(subnetID, ids.GenerateTestNodeID(), nil, ids.Empty, 1))
+	require.NoError(m.AddStaker(supernetID, ids.GenerateTestNodeID(), nil, ids.Empty, 1))
 
-	err := m.RemoveWeight(subnetID, ids.GenerateTestNodeID(), 1)
+	err := m.RemoveWeight(supernetID, ids.GenerateTestNodeID(), 1)
 	require.ErrorIs(err, errMissingValidator)
 }
 
@@ -190,17 +190,17 @@ func TestRemoveWeightUnderflow(t *testing.T) {
 	require := require.New(t)
 
 	m := NewManager()
-	subnetID := ids.GenerateTestID()
+	supernetID := ids.GenerateTestID()
 
-	require.NoError(m.AddStaker(subnetID, ids.GenerateTestNodeID(), nil, ids.Empty, 1))
+	require.NoError(m.AddStaker(supernetID, ids.GenerateTestNodeID(), nil, ids.Empty, 1))
 
 	nodeID := ids.GenerateTestNodeID()
-	require.NoError(m.AddStaker(subnetID, nodeID, nil, ids.Empty, 1))
+	require.NoError(m.AddStaker(supernetID, nodeID, nil, ids.Empty, 1))
 
-	err := m.RemoveWeight(subnetID, nodeID, 2)
+	err := m.RemoveWeight(supernetID, nodeID, 2)
 	require.ErrorIs(err, safemath.ErrUnderflow)
 
-	totalWeight, err := m.TotalWeight(subnetID)
+	totalWeight, err := m.TotalWeight(supernetID)
 	require.NoError(err)
 	require.Equal(uint64(2), totalWeight)
 }
@@ -209,27 +209,27 @@ func TestGet(t *testing.T) {
 	require := require.New(t)
 
 	m := NewManager()
-	subnetID := ids.GenerateTestID()
+	supernetID := ids.GenerateTestID()
 
 	nodeID := ids.GenerateTestNodeID()
-	_, ok := m.GetValidator(subnetID, nodeID)
+	_, ok := m.GetValidator(supernetID, nodeID)
 	require.False(ok)
 
 	sk, err := bls.NewSecretKey()
 	require.NoError(err)
 
 	pk := bls.PublicFromSecretKey(sk)
-	require.NoError(m.AddStaker(subnetID, nodeID, pk, ids.Empty, 1))
+	require.NoError(m.AddStaker(supernetID, nodeID, pk, ids.Empty, 1))
 
-	vdr0, ok := m.GetValidator(subnetID, nodeID)
+	vdr0, ok := m.GetValidator(supernetID, nodeID)
 	require.True(ok)
 	require.Equal(nodeID, vdr0.NodeID)
 	require.Equal(pk, vdr0.PublicKey)
 	require.Equal(uint64(1), vdr0.Weight)
 
-	require.NoError(m.AddWeight(subnetID, nodeID, 1))
+	require.NoError(m.AddWeight(supernetID, nodeID, 1))
 
-	vdr1, ok := m.GetValidator(subnetID, nodeID)
+	vdr1, ok := m.GetValidator(supernetID, nodeID)
 	require.True(ok)
 	require.Equal(nodeID, vdr0.NodeID)
 	require.Equal(pk, vdr0.PublicKey)
@@ -238,8 +238,8 @@ func TestGet(t *testing.T) {
 	require.Equal(pk, vdr1.PublicKey)
 	require.Equal(uint64(2), vdr1.Weight)
 
-	require.NoError(m.RemoveWeight(subnetID, nodeID, 2))
-	_, ok = m.GetValidator(subnetID, nodeID)
+	require.NoError(m.RemoveWeight(supernetID, nodeID, 2))
+	_, ok = m.GetValidator(supernetID, nodeID)
 	require.False(ok)
 }
 
@@ -247,31 +247,31 @@ func TestLen(t *testing.T) {
 	require := require.New(t)
 
 	m := NewManager()
-	subnetID := ids.GenerateTestID()
+	supernetID := ids.GenerateTestID()
 
-	count := m.Count(subnetID)
+	count := m.Count(supernetID)
 	require.Zero(count)
 
 	nodeID0 := ids.GenerateTestNodeID()
-	require.NoError(m.AddStaker(subnetID, nodeID0, nil, ids.Empty, 1))
+	require.NoError(m.AddStaker(supernetID, nodeID0, nil, ids.Empty, 1))
 
-	count = m.Count(subnetID)
+	count = m.Count(supernetID)
 	require.Equal(1, count)
 
 	nodeID1 := ids.GenerateTestNodeID()
-	require.NoError(m.AddStaker(subnetID, nodeID1, nil, ids.Empty, 1))
+	require.NoError(m.AddStaker(supernetID, nodeID1, nil, ids.Empty, 1))
 
-	count = m.Count(subnetID)
+	count = m.Count(supernetID)
 	require.Equal(2, count)
 
-	require.NoError(m.RemoveWeight(subnetID, nodeID1, 1))
+	require.NoError(m.RemoveWeight(supernetID, nodeID1, 1))
 
-	count = m.Count(subnetID)
+	count = m.Count(supernetID)
 	require.Equal(1, count)
 
-	require.NoError(m.RemoveWeight(subnetID, nodeID0, 1))
+	require.NoError(m.RemoveWeight(supernetID, nodeID0, 1))
 
-	count = m.Count(subnetID)
+	count = m.Count(supernetID)
 	require.Zero(count)
 }
 
@@ -279,9 +279,9 @@ func TestGetMap(t *testing.T) {
 	require := require.New(t)
 
 	m := NewManager()
-	subnetID := ids.GenerateTestID()
+	supernetID := ids.GenerateTestID()
 
-	mp := m.GetMap(subnetID)
+	mp := m.GetMap(supernetID)
 	require.Empty(mp)
 
 	sk, err := bls.NewSecretKey()
@@ -289,9 +289,9 @@ func TestGetMap(t *testing.T) {
 
 	pk := bls.PublicFromSecretKey(sk)
 	nodeID0 := ids.GenerateTestNodeID()
-	require.NoError(m.AddStaker(subnetID, nodeID0, pk, ids.Empty, 2))
+	require.NoError(m.AddStaker(supernetID, nodeID0, pk, ids.Empty, 2))
 
-	mp = m.GetMap(subnetID)
+	mp = m.GetMap(supernetID)
 	require.Len(mp, 1)
 	require.Contains(mp, nodeID0)
 
@@ -301,9 +301,9 @@ func TestGetMap(t *testing.T) {
 	require.Equal(uint64(2), node0.Weight)
 
 	nodeID1 := ids.GenerateTestNodeID()
-	require.NoError(m.AddStaker(subnetID, nodeID1, nil, ids.Empty, 1))
+	require.NoError(m.AddStaker(supernetID, nodeID1, nil, ids.Empty, 1))
 
-	mp = m.GetMap(subnetID)
+	mp = m.GetMap(supernetID)
 	require.Len(mp, 2)
 	require.Contains(mp, nodeID0)
 	require.Contains(mp, nodeID1)
@@ -318,12 +318,12 @@ func TestGetMap(t *testing.T) {
 	require.Nil(node1.PublicKey)
 	require.Equal(uint64(1), node1.Weight)
 
-	require.NoError(m.RemoveWeight(subnetID, nodeID0, 1))
+	require.NoError(m.RemoveWeight(supernetID, nodeID0, 1))
 	require.Equal(nodeID0, node0.NodeID)
 	require.Equal(pk, node0.PublicKey)
 	require.Equal(uint64(2), node0.Weight)
 
-	mp = m.GetMap(subnetID)
+	mp = m.GetMap(supernetID)
 	require.Len(mp, 2)
 	require.Contains(mp, nodeID0)
 	require.Contains(mp, nodeID1)
@@ -338,9 +338,9 @@ func TestGetMap(t *testing.T) {
 	require.Nil(node1.PublicKey)
 	require.Equal(uint64(1), node1.Weight)
 
-	require.NoError(m.RemoveWeight(subnetID, nodeID0, 1))
+	require.NoError(m.RemoveWeight(supernetID, nodeID0, 1))
 
-	mp = m.GetMap(subnetID)
+	mp = m.GetMap(supernetID)
 	require.Len(mp, 1)
 	require.Contains(mp, nodeID1)
 
@@ -349,9 +349,9 @@ func TestGetMap(t *testing.T) {
 	require.Nil(node1.PublicKey)
 	require.Equal(uint64(1), node1.Weight)
 
-	require.NoError(m.RemoveWeight(subnetID, nodeID1, 1))
+	require.NoError(m.RemoveWeight(supernetID, nodeID1, 1))
 
-	require.Empty(m.GetMap(subnetID))
+	require.Empty(m.GetMap(supernetID))
 }
 
 func TestWeight(t *testing.T) {
@@ -363,12 +363,12 @@ func TestWeight(t *testing.T) {
 	weight1 := uint64(123)
 
 	m := NewManager()
-	subnetID := ids.GenerateTestID()
-	require.NoError(m.AddStaker(subnetID, vdr0, nil, ids.Empty, weight0))
+	supernetID := ids.GenerateTestID()
+	require.NoError(m.AddStaker(supernetID, vdr0, nil, ids.Empty, weight0))
 
-	require.NoError(m.AddStaker(subnetID, vdr1, nil, ids.Empty, weight1))
+	require.NoError(m.AddStaker(supernetID, vdr1, nil, ids.Empty, weight1))
 
-	setWeight, err := m.TotalWeight(subnetID)
+	setWeight, err := m.TotalWeight(supernetID)
 	require.NoError(err)
 	expectedWeight := weight0 + weight1
 	require.Equal(expectedWeight, setWeight)
@@ -378,9 +378,9 @@ func TestSample(t *testing.T) {
 	require := require.New(t)
 
 	m := NewManager()
-	subnetID := ids.GenerateTestID()
+	supernetID := ids.GenerateTestID()
 
-	sampled, err := m.Sample(subnetID, 0)
+	sampled, err := m.Sample(supernetID, 0)
 	require.NoError(err)
 	require.Empty(sampled)
 
@@ -389,27 +389,27 @@ func TestSample(t *testing.T) {
 
 	nodeID0 := ids.GenerateTestNodeID()
 	pk := bls.PublicFromSecretKey(sk)
-	require.NoError(m.AddStaker(subnetID, nodeID0, pk, ids.Empty, 1))
+	require.NoError(m.AddStaker(supernetID, nodeID0, pk, ids.Empty, 1))
 
-	sampled, err = m.Sample(subnetID, 1)
+	sampled, err = m.Sample(supernetID, 1)
 	require.NoError(err)
 	require.Equal([]ids.NodeID{nodeID0}, sampled)
 
-	_, err = m.Sample(subnetID, 2)
+	_, err = m.Sample(supernetID, 2)
 	require.ErrorIs(err, sampler.ErrOutOfRange)
 
 	nodeID1 := ids.GenerateTestNodeID()
-	require.NoError(m.AddStaker(subnetID, nodeID1, nil, ids.Empty, math.MaxInt64-1))
+	require.NoError(m.AddStaker(supernetID, nodeID1, nil, ids.Empty, math.MaxInt64-1))
 
-	sampled, err = m.Sample(subnetID, 1)
+	sampled, err = m.Sample(supernetID, 1)
 	require.NoError(err)
 	require.Equal([]ids.NodeID{nodeID1}, sampled)
 
-	sampled, err = m.Sample(subnetID, 2)
+	sampled, err = m.Sample(supernetID, 2)
 	require.NoError(err)
 	require.Equal([]ids.NodeID{nodeID1, nodeID1}, sampled)
 
-	sampled, err = m.Sample(subnetID, 3)
+	sampled, err = m.Sample(supernetID, 3)
 	require.NoError(err)
 	require.Equal([]ids.NodeID{nodeID1, nodeID1, nodeID1}, sampled)
 }
@@ -421,21 +421,21 @@ func TestString(t *testing.T) {
 	nodeID1, err := ids.NodeIDFromString("NodeID-QLbz7JHiBTspS962RLKV8GndWFwdYhk6V")
 	require.NoError(err)
 
-	subnetID0, err := ids.FromString("TtF4d2QWbk5vzQGTEPrN48x6vwgAoAmKQ9cbp79inpQmcRKES")
+	supernetID0, err := ids.FromString("TtF4d2QWbk5vzQGTEPrN48x6vwgAoAmKQ9cbp79inpQmcRKES")
 	require.NoError(err)
-	subnetID1, err := ids.FromString("2mcwQKiD8VEspmMJpL1dc7okQQ5dDVAWeCBZ7FWBFAbxpv3t7w")
+	supernetID1, err := ids.FromString("2mcwQKiD8VEspmMJpL1dc7okQQ5dDVAWeCBZ7FWBFAbxpv3t7w")
 	require.NoError(err)
 
 	m := NewManager()
-	require.NoError(m.AddStaker(subnetID0, nodeID0, nil, ids.Empty, 1))
-	require.NoError(m.AddStaker(subnetID0, nodeID1, nil, ids.Empty, math.MaxInt64-1))
-	require.NoError(m.AddStaker(subnetID1, nodeID1, nil, ids.Empty, 1))
+	require.NoError(m.AddStaker(supernetID0, nodeID0, nil, ids.Empty, 1))
+	require.NoError(m.AddStaker(supernetID0, nodeID1, nil, ids.Empty, math.MaxInt64-1))
+	require.NoError(m.AddStaker(supernetID1, nodeID1, nil, ids.Empty, 1))
 
 	expected := `Validator Manager: (Size = 2)
-    Subnet[TtF4d2QWbk5vzQGTEPrN48x6vwgAoAmKQ9cbp79inpQmcRKES]: Validator Set: (Size = 2, Weight = 9223372036854775807)
+    Supernet[TtF4d2QWbk5vzQGTEPrN48x6vwgAoAmKQ9cbp79inpQmcRKES]: Validator Set: (Size = 2, Weight = 9223372036854775807)
         Validator[0]: NodeID-111111111111111111116DBWJs, 1
         Validator[1]: NodeID-QLbz7JHiBTspS962RLKV8GndWFwdYhk6V, 9223372036854775806
-    Subnet[2mcwQKiD8VEspmMJpL1dc7okQQ5dDVAWeCBZ7FWBFAbxpv3t7w]: Validator Set: (Size = 1, Weight = 1)
+    Supernet[2mcwQKiD8VEspmMJpL1dc7okQQ5dDVAWeCBZ7FWBFAbxpv3t7w]: Validator Set: (Size = 1, Weight = 1)
         Validator[0]: NodeID-QLbz7JHiBTspS962RLKV8GndWFwdYhk6V, 1`
 	result := m.String()
 	require.Equal(expected, result)
@@ -452,8 +452,8 @@ func TestAddCallback(t *testing.T) {
 		expectedPK               = bls.PublicFromSecretKey(expectedSK)
 		expectedTxID             = ids.GenerateTestID()
 		expectedWeight    uint64 = 1
-		expectedSubnetID0        = ids.GenerateTestID()
-		expectedSubnetID1        = ids.GenerateTestID()
+		expectedSupernetID0        = ids.GenerateTestID()
+		expectedSupernetID1        = ids.GenerateTestID()
 
 		m                = NewManager()
 		managerCallCount = 0
@@ -461,8 +461,8 @@ func TestAddCallback(t *testing.T) {
 	)
 	m.RegisterCallbackListener(&managerCallbackListener{
 		t: t,
-		onAdd: func(subnetID ids.ID, nodeID ids.NodeID, pk *bls.PublicKey, txID ids.ID, weight uint64) {
-			require.Contains([]ids.ID{expectedSubnetID0, expectedSubnetID1}, subnetID)
+		onAdd: func(supernetID ids.ID, nodeID ids.NodeID, pk *bls.PublicKey, txID ids.ID, weight uint64) {
+			require.Contains([]ids.ID{expectedSupernetID0, expectedSupernetID1}, supernetID)
 			require.Equal(expectedNodeID, nodeID)
 			require.Equal(expectedPK, pk)
 			require.Equal(expectedTxID, txID)
@@ -470,7 +470,7 @@ func TestAddCallback(t *testing.T) {
 			managerCallCount++
 		},
 	})
-	m.RegisterSetCallbackListener(expectedSubnetID0, &setCallbackListener{
+	m.RegisterSetCallbackListener(expectedSupernetID0, &setCallbackListener{
 		t: t,
 		onAdd: func(nodeID ids.NodeID, pk *bls.PublicKey, txID ids.ID, weight uint64) {
 			require.Equal(expectedNodeID, nodeID)
@@ -480,13 +480,13 @@ func TestAddCallback(t *testing.T) {
 			setCallCount++
 		},
 	})
-	require.NoError(m.AddStaker(expectedSubnetID0, expectedNodeID, expectedPK, expectedTxID, expectedWeight))
-	require.Equal(1, managerCallCount) // should be called for expectedSubnetID0
-	require.Equal(1, setCallCount)     // should be called for expectedSubnetID0
+	require.NoError(m.AddStaker(expectedSupernetID0, expectedNodeID, expectedPK, expectedTxID, expectedWeight))
+	require.Equal(1, managerCallCount) // should be called for expectedSupernetID0
+	require.Equal(1, setCallCount)     // should be called for expectedSupernetID0
 
-	require.NoError(m.AddStaker(expectedSubnetID1, expectedNodeID, expectedPK, expectedTxID, expectedWeight))
-	require.Equal(2, managerCallCount) // should be called for expectedSubnetID1
-	require.Equal(1, setCallCount)     // should not be called for expectedSubnetID1
+	require.NoError(m.AddStaker(expectedSupernetID1, expectedNodeID, expectedPK, expectedTxID, expectedWeight))
+	require.Equal(2, managerCallCount) // should be called for expectedSupernetID1
+	require.Equal(1, setCallCount)     // should not be called for expectedSupernetID1
 }
 
 func TestAddWeightCallback(t *testing.T) {
@@ -502,8 +502,8 @@ func TestAddWeightCallback(t *testing.T) {
 		expectedOldWeight   uint64 = 1
 		expectedAddedWeight uint64 = 10
 		expectedNewWeight          = expectedOldWeight + expectedAddedWeight
-		expectedSubnetID0          = ids.GenerateTestID()
-		expectedSubnetID1          = ids.GenerateTestID()
+		expectedSupernetID0          = ids.GenerateTestID()
+		expectedSupernetID1          = ids.GenerateTestID()
 
 		m                      = NewManager()
 		managerAddCallCount    = 0
@@ -512,27 +512,27 @@ func TestAddWeightCallback(t *testing.T) {
 		setChangeCallCount     = 0
 	)
 
-	require.NoError(m.AddStaker(expectedSubnetID0, expectedNodeID, expectedPK, expectedTxID, expectedOldWeight))
+	require.NoError(m.AddStaker(expectedSupernetID0, expectedNodeID, expectedPK, expectedTxID, expectedOldWeight))
 
 	m.RegisterCallbackListener(&managerCallbackListener{
 		t: t,
-		onAdd: func(subnetID ids.ID, nodeID ids.NodeID, pk *bls.PublicKey, txID ids.ID, weight uint64) {
-			require.Contains([]ids.ID{expectedSubnetID0, expectedSubnetID1}, subnetID)
+		onAdd: func(supernetID ids.ID, nodeID ids.NodeID, pk *bls.PublicKey, txID ids.ID, weight uint64) {
+			require.Contains([]ids.ID{expectedSupernetID0, expectedSupernetID1}, supernetID)
 			require.Equal(expectedNodeID, nodeID)
 			require.Equal(expectedPK, pk)
 			require.Equal(expectedTxID, txID)
 			require.Equal(expectedOldWeight, weight)
 			managerAddCallCount++
 		},
-		onWeight: func(subnetID ids.ID, nodeID ids.NodeID, oldWeight, newWeight uint64) {
-			require.Contains([]ids.ID{expectedSubnetID0, expectedSubnetID1}, subnetID)
+		onWeight: func(supernetID ids.ID, nodeID ids.NodeID, oldWeight, newWeight uint64) {
+			require.Contains([]ids.ID{expectedSupernetID0, expectedSupernetID1}, supernetID)
 			require.Equal(expectedNodeID, nodeID)
 			require.Equal(expectedOldWeight, oldWeight)
 			require.Equal(expectedNewWeight, newWeight)
 			managerChangeCallCount++
 		},
 	})
-	m.RegisterSetCallbackListener(expectedSubnetID0, &setCallbackListener{
+	m.RegisterSetCallbackListener(expectedSupernetID0, &setCallbackListener{
 		t: t,
 		onAdd: func(nodeID ids.NodeID, pk *bls.PublicKey, txID ids.ID, weight uint64) {
 			require.Equal(expectedNodeID, nodeID)
@@ -553,19 +553,19 @@ func TestAddWeightCallback(t *testing.T) {
 	require.Equal(1, setAddCallCount)
 	require.Zero(setChangeCallCount)
 
-	require.NoError(m.AddWeight(expectedSubnetID0, expectedNodeID, expectedAddedWeight))
+	require.NoError(m.AddWeight(expectedSupernetID0, expectedNodeID, expectedAddedWeight))
 	require.Equal(1, managerAddCallCount)
 	require.Equal(1, managerChangeCallCount)
 	require.Equal(1, setAddCallCount)
 	require.Equal(1, setChangeCallCount)
 
-	require.NoError(m.AddStaker(expectedSubnetID1, expectedNodeID, expectedPK, expectedTxID, expectedOldWeight))
+	require.NoError(m.AddStaker(expectedSupernetID1, expectedNodeID, expectedPK, expectedTxID, expectedOldWeight))
 	require.Equal(2, managerAddCallCount)
 	require.Equal(1, managerChangeCallCount)
 	require.Equal(1, setAddCallCount)
 	require.Equal(1, setChangeCallCount)
 
-	require.NoError(m.AddWeight(expectedSubnetID1, expectedNodeID, expectedAddedWeight))
+	require.NoError(m.AddWeight(expectedSupernetID1, expectedNodeID, expectedAddedWeight))
 	require.Equal(2, managerAddCallCount)
 	require.Equal(2, managerChangeCallCount)
 	require.Equal(1, setAddCallCount)
@@ -585,8 +585,8 @@ func TestRemoveWeightCallback(t *testing.T) {
 		expectedNewWeight     uint64 = 1
 		expectedRemovedWeight uint64 = 10
 		expectedOldWeight            = expectedNewWeight + expectedRemovedWeight
-		expectedSubnetID0            = ids.GenerateTestID()
-		expectedSubnetID1            = ids.GenerateTestID()
+		expectedSupernetID0            = ids.GenerateTestID()
+		expectedSupernetID1            = ids.GenerateTestID()
 
 		m                      = NewManager()
 		managerAddCallCount    = 0
@@ -595,27 +595,27 @@ func TestRemoveWeightCallback(t *testing.T) {
 		setChangeCallCount     = 0
 	)
 
-	require.NoError(m.AddStaker(expectedSubnetID0, expectedNodeID, expectedPK, expectedTxID, expectedOldWeight))
+	require.NoError(m.AddStaker(expectedSupernetID0, expectedNodeID, expectedPK, expectedTxID, expectedOldWeight))
 
 	m.RegisterCallbackListener(&managerCallbackListener{
 		t: t,
-		onAdd: func(subnetID ids.ID, nodeID ids.NodeID, pk *bls.PublicKey, txID ids.ID, weight uint64) {
-			require.Contains([]ids.ID{expectedSubnetID0, expectedSubnetID1}, subnetID)
+		onAdd: func(supernetID ids.ID, nodeID ids.NodeID, pk *bls.PublicKey, txID ids.ID, weight uint64) {
+			require.Contains([]ids.ID{expectedSupernetID0, expectedSupernetID1}, supernetID)
 			require.Equal(expectedNodeID, nodeID)
 			require.Equal(expectedPK, pk)
 			require.Equal(expectedTxID, txID)
 			require.Equal(expectedOldWeight, weight)
 			managerAddCallCount++
 		},
-		onWeight: func(subnetID ids.ID, nodeID ids.NodeID, oldWeight, newWeight uint64) {
-			require.Contains([]ids.ID{expectedSubnetID0, expectedSubnetID1}, subnetID)
+		onWeight: func(supernetID ids.ID, nodeID ids.NodeID, oldWeight, newWeight uint64) {
+			require.Contains([]ids.ID{expectedSupernetID0, expectedSupernetID1}, supernetID)
 			require.Equal(expectedNodeID, nodeID)
 			require.Equal(expectedOldWeight, oldWeight)
 			require.Equal(expectedNewWeight, newWeight)
 			managerChangeCallCount++
 		},
 	})
-	m.RegisterSetCallbackListener(expectedSubnetID0, &setCallbackListener{
+	m.RegisterSetCallbackListener(expectedSupernetID0, &setCallbackListener{
 		t: t,
 		onAdd: func(nodeID ids.NodeID, pk *bls.PublicKey, txID ids.ID, weight uint64) {
 			require.Equal(expectedNodeID, nodeID)
@@ -636,19 +636,19 @@ func TestRemoveWeightCallback(t *testing.T) {
 	require.Equal(1, setAddCallCount)
 	require.Zero(setChangeCallCount)
 
-	require.NoError(m.RemoveWeight(expectedSubnetID0, expectedNodeID, expectedRemovedWeight))
+	require.NoError(m.RemoveWeight(expectedSupernetID0, expectedNodeID, expectedRemovedWeight))
 	require.Equal(1, managerAddCallCount)
 	require.Equal(1, managerChangeCallCount)
 	require.Equal(1, setAddCallCount)
 	require.Equal(1, setChangeCallCount)
 
-	require.NoError(m.AddStaker(expectedSubnetID1, expectedNodeID, expectedPK, expectedTxID, expectedOldWeight))
+	require.NoError(m.AddStaker(expectedSupernetID1, expectedNodeID, expectedPK, expectedTxID, expectedOldWeight))
 	require.Equal(2, managerAddCallCount)
 	require.Equal(1, managerChangeCallCount)
 	require.Equal(1, setAddCallCount)
 	require.Equal(1, setChangeCallCount)
 
-	require.NoError(m.RemoveWeight(expectedSubnetID1, expectedNodeID, expectedRemovedWeight))
+	require.NoError(m.RemoveWeight(expectedSupernetID1, expectedNodeID, expectedRemovedWeight))
 	require.Equal(2, managerAddCallCount)
 	require.Equal(2, managerChangeCallCount)
 	require.Equal(1, setAddCallCount)
@@ -666,8 +666,8 @@ func TestRemoveCallback(t *testing.T) {
 		expectedPK               = bls.PublicFromSecretKey(expectedSK)
 		expectedTxID             = ids.GenerateTestID()
 		expectedWeight    uint64 = 1
-		expectedSubnetID0        = ids.GenerateTestID()
-		expectedSubnetID1        = ids.GenerateTestID()
+		expectedSupernetID0        = ids.GenerateTestID()
+		expectedSupernetID1        = ids.GenerateTestID()
 
 		m                      = NewManager()
 		managerAddCallCount    = 0
@@ -676,26 +676,26 @@ func TestRemoveCallback(t *testing.T) {
 		setRemoveCallCount     = 0
 	)
 
-	require.NoError(m.AddStaker(expectedSubnetID0, expectedNodeID, expectedPK, expectedTxID, expectedWeight))
+	require.NoError(m.AddStaker(expectedSupernetID0, expectedNodeID, expectedPK, expectedTxID, expectedWeight))
 
 	m.RegisterCallbackListener(&managerCallbackListener{
 		t: t,
-		onAdd: func(subnetID ids.ID, nodeID ids.NodeID, pk *bls.PublicKey, txID ids.ID, weight uint64) {
-			require.Contains([]ids.ID{expectedSubnetID0, expectedSubnetID1}, subnetID)
+		onAdd: func(supernetID ids.ID, nodeID ids.NodeID, pk *bls.PublicKey, txID ids.ID, weight uint64) {
+			require.Contains([]ids.ID{expectedSupernetID0, expectedSupernetID1}, supernetID)
 			require.Equal(expectedNodeID, nodeID)
 			require.Equal(expectedPK, pk)
 			require.Equal(expectedTxID, txID)
 			require.Equal(expectedWeight, weight)
 			managerAddCallCount++
 		},
-		onRemoved: func(subnetID ids.ID, nodeID ids.NodeID, weight uint64) {
-			require.Contains([]ids.ID{expectedSubnetID0, expectedSubnetID1}, subnetID)
+		onRemoved: func(supernetID ids.ID, nodeID ids.NodeID, weight uint64) {
+			require.Contains([]ids.ID{expectedSupernetID0, expectedSupernetID1}, supernetID)
 			require.Equal(expectedNodeID, nodeID)
 			require.Equal(expectedWeight, weight)
 			managerRemoveCallCount++
 		},
 	})
-	m.RegisterSetCallbackListener(expectedSubnetID0, &setCallbackListener{
+	m.RegisterSetCallbackListener(expectedSupernetID0, &setCallbackListener{
 		t: t,
 		onAdd: func(nodeID ids.NodeID, pk *bls.PublicKey, txID ids.ID, weight uint64) {
 			require.Equal(expectedNodeID, nodeID)
@@ -715,19 +715,19 @@ func TestRemoveCallback(t *testing.T) {
 	require.Equal(1, setAddCallCount)
 	require.Zero(setRemoveCallCount)
 
-	require.NoError(m.RemoveWeight(expectedSubnetID0, expectedNodeID, expectedWeight))
+	require.NoError(m.RemoveWeight(expectedSupernetID0, expectedNodeID, expectedWeight))
 	require.Equal(1, managerAddCallCount)
 	require.Equal(1, managerRemoveCallCount)
 	require.Equal(1, setAddCallCount)
 	require.Equal(1, setRemoveCallCount)
 
-	require.NoError(m.AddStaker(expectedSubnetID1, expectedNodeID, expectedPK, expectedTxID, expectedWeight))
+	require.NoError(m.AddStaker(expectedSupernetID1, expectedNodeID, expectedPK, expectedTxID, expectedWeight))
 	require.Equal(2, managerAddCallCount)
 	require.Equal(1, managerRemoveCallCount)
 	require.Equal(1, setAddCallCount)
 	require.Equal(1, setRemoveCallCount)
 
-	require.NoError(m.RemoveWeight(expectedSubnetID1, expectedNodeID, expectedWeight))
+	require.NoError(m.RemoveWeight(expectedSupernetID1, expectedNodeID, expectedWeight))
 	require.Equal(2, managerAddCallCount)
 	require.Equal(2, managerRemoveCallCount)
 	require.Equal(1, setAddCallCount)

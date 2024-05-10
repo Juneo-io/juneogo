@@ -18,16 +18,16 @@ In order to specify a configuration for the PlatformVM, you need to define a `Co
   "UptimeLockedCalculator": null,
   "SybilProtectionEnabled": false,
   "PartialSyncPrimaryNetwork": false,
-  "TrackedSubnets": [],
+  "TrackedSupernets": [],
   "TxFee": 0,
   "CreateAssetTxFee": 0,
-  "CreateSubnetTxFee": 0,
-  "TransformSubnetTxFee": 0,
+  "CreateSupernetTxFee": 0,
+  "TransformSupernetTxFee": 0,
   "CreateBlockchainTxFee": 0,
   "AddPrimaryNetworkValidatorFee": 0,
   "AddPrimaryNetworkDelegatorFee": 0,
-  "AddSubnetValidatorFee": 0,
-  "AddSubnetDelegatorFee": 0,
+  "AddSupernetValidatorFee": 0,
+  "AddSupernetDelegatorFee": 0,
   "MinValidatorStake": 0,
   "MaxValidatorStake": 0,
   "MinDelegatorStake": 0,
@@ -58,7 +58,7 @@ The node's chain manager
 
 ### `Validators`
 
-Node's validator set maps SubnetID to validators of the Subnet
+Node's validator set maps SupernetID to validators of the Supernet
 
 - The primary network's validator set should have been added to the manager before calling VM.Initialize.
 - The primary network's validator set should be empty before calling VM.Initialize.
@@ -79,9 +79,9 @@ _Boolean_
 
 If true, only the P-chain will be instantiated on the primary network.
 
-### `TrackedSubnets`
+### `TrackedSupernets`
 
-Set of Subnets that this node is validating
+Set of Supernets that this node is validating
 
 ### `TxFee`
 
@@ -95,17 +95,17 @@ _Uint64_
 
 Fee that must be burned by every state creating transaction before AP3
 
-### `CreateSubnetTxFee`
+### `CreateSupernetTxFee`
 
 _Uint64_
 
-Fee that must be burned by every Subnet creating transaction after AP3
+Fee that must be burned by every Supernet creating transaction after AP3
 
-### `TransformSubnetTxFee`
+### `TransformSupernetTxFee`
 
 _Uint64_
 
-Fee that must be burned by every transform Subnet transaction
+Fee that must be burned by every transform Supernet transaction
 
 ### `CreateBlockchainTxFee`
 
@@ -125,17 +125,17 @@ _Uint64_
 
 Transaction fee for adding a primary network delegator
 
-### `AddSubnetValidatorFee`
+### `AddSupernetValidatorFee`
 
 _Uint64_
 
-Transaction fee for adding a Subnet validator
+Transaction fee for adding a Supernet validator
 
-### `AddSubnetDelegatorFee`
+### `AddSupernetDelegatorFee`
 
 _Uint64_
 
-Transaction fee for adding a Subnet delegator
+Transaction fee for adding a Supernet delegator
 
 ### `MinValidatorStake`
 
@@ -223,4 +223,4 @@ Time of the E network upgrade
 
 _Boolean_
 
-UseCurrentHeight forces `GetMinimumHeight` to return the current height of the P-Chain instead of the oldest block in the `recentlyAccepted` window. This config is particularly useful for triggering proposervm activation on recently created Subnets (without this, users need to wait for `recentlyAcceptedWindowTTL` to pass for activation to occur).
+UseCurrentHeight forces `GetMinimumHeight` to return the current height of the P-Chain instead of the oldest block in the `recentlyAccepted` window. This config is particularly useful for triggering proposervm activation on recently created Supernets (without this, users need to wait for `recentlyAcceptedWindowTTL` to pass for activation to occur).

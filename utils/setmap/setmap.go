@@ -4,8 +4,8 @@
 package setmap
 
 import (
-	"github.com/ava-labs/avalanchego/utils"
-	"github.com/ava-labs/avalanchego/utils/set"
+	"github.com/Juneo-io/juneogo/utils"
+	"github.com/Juneo-io/juneogo/utils/set"
 )
 
 type Entry[K any, V comparable] struct {

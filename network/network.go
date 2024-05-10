@@ -18,26 +18,26 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"go.uber.org/zap"
 
-	"github.com/ava-labs/avalanchego/api/health"
-	"github.com/ava-labs/avalanchego/genesis"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/message"
-	"github.com/ava-labs/avalanchego/network/dialer"
-	"github.com/ava-labs/avalanchego/network/peer"
-	"github.com/ava-labs/avalanchego/network/throttling"
-	"github.com/ava-labs/avalanchego/snow/engine/common"
-	"github.com/ava-labs/avalanchego/snow/networking/router"
-	"github.com/ava-labs/avalanchego/snow/networking/sender"
-	"github.com/ava-labs/avalanchego/subnets"
-	"github.com/ava-labs/avalanchego/utils/bloom"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/ips"
-	"github.com/ava-labs/avalanchego/utils/logging"
-	"github.com/ava-labs/avalanchego/utils/set"
-	"github.com/ava-labs/avalanchego/utils/wrappers"
-	"github.com/ava-labs/avalanchego/version"
+	"github.com/Juneo-io/juneogo/api/health"
+	"github.com/Juneo-io/juneogo/genesis"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/message"
+	"github.com/Juneo-io/juneogo/network/dialer"
+	"github.com/Juneo-io/juneogo/network/peer"
+	"github.com/Juneo-io/juneogo/network/throttling"
+	"github.com/Juneo-io/juneogo/snow/engine/common"
+	"github.com/Juneo-io/juneogo/snow/networking/router"
+	"github.com/Juneo-io/juneogo/snow/networking/sender"
+	"github.com/Juneo-io/juneogo/supernets"
+	"github.com/Juneo-io/juneogo/utils/bloom"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/ips"
+	"github.com/Juneo-io/juneogo/utils/logging"
+	"github.com/Juneo-io/juneogo/utils/set"
+	"github.com/Juneo-io/juneogo/utils/wrappers"
+	"github.com/Juneo-io/juneogo/version"
 
-	safemath "github.com/ava-labs/avalanchego/utils/math"
+	safemath "github.com/Juneo-io/juneogo/utils/math"
 )
 
 const (
@@ -51,7 +51,7 @@ var (
 	_ Network = (*network)(nil)
 
 	errNotValidator        = errors.New("node is not a validator")
-	errNotTracked          = errors.New("subnet is not tracked")
+	errNotTracked          = errors.New("supernet is not tracked")
 	errExpectedProxy       = errors.New("expected proxy")
 	errExpectedTCPProtocol = errors.New("expected TCP protocol")
 )
@@ -84,9 +84,9 @@ type Network interface {
 	// info about the peers in [nodeIDs] that have finished the handshake.
 	PeerInfo(nodeIDs []ids.NodeID) []peer.Info
 
-	// NodeUptime returns given node's [subnetID] UptimeResults in the view of
+	// NodeUptime returns given node's [supernetID] UptimeResults in the view of
 	// this node's peer validators.
-	NodeUptime(subnetID ids.ID) (UptimeResult, error)
+	NodeUptime(supernetID ids.ID) (UptimeResult, error)
 }
 
 type UptimeResult struct {
@@ -230,7 +230,7 @@ func NewNetwork(
 		return nil, fmt.Errorf("initializing peer metrics failed with: %w", err)
 	}
 
-	metrics, err := newMetrics(config.Namespace, metricsRegisterer, config.TrackedSubnets)
+	metrics, err := newMetrics(config.Namespace, metricsRegisterer, config.TrackedSupernets)
 	if err != nil {
 		return nil, fmt.Errorf("initializing network metrics failed with: %w", err)
 	}
@@ -263,7 +263,7 @@ func NewNetwork(
 		Network:              nil, // This is set below.
 		Router:               router,
 		VersionCompatibility: version.GetCompatibility(config.NetworkID),
-		MySubnets:            config.TrackedSubnets,
+		MySupernets:            config.TrackedSupernets,
 		Beacons:              config.Beacons,
 		Validators:           config.Validators,
 		NetworkID:            config.NetworkID,
@@ -312,17 +312,17 @@ func NewNetwork(
 func (n *network) Send(
 	msg message.OutboundMessage,
 	config common.SendConfig,
-	subnetID ids.ID,
-	allower subnets.Allower,
+	supernetID ids.ID,
+	allower supernets.Allower,
 ) set.Set[ids.NodeID] {
-	namedPeers := n.getPeers(config.NodeIDs, subnetID, allower)
+	namedPeers := n.getPeers(config.NodeIDs, supernetID, allower)
 	n.peerConfig.Metrics.MultipleSendsFailed(
 		msg.Op(),
 		config.NodeIDs.Len()-len(namedPeers),
 	)
 
 	var (
-		sampledPeers = n.samplePeers(config, subnetID, allower)
+		sampledPeers = n.samplePeers(config, supernetID, allower)
 		sentTo       = set.NewSet[ids.NodeID](len(namedPeers) + len(sampledPeers))
 		now          = n.peerConfig.Clock.Time()
 	)
@@ -460,8 +460,8 @@ func (n *network) Connected(nodeID ids.NodeID) {
 
 	peerVersion := peer.Version()
 	n.router.Connected(nodeID, peerVersion, constants.PrimaryNetworkID)
-	for subnetID := range peer.TrackedSubnets() {
-		n.router.Connected(nodeID, peerVersion, subnetID)
+	for supernetID := range peer.TrackedSupernets() {
+		n.router.Connected(nodeID, peerVersion, supernetID)
 	}
 }
 
@@ -674,14 +674,14 @@ func (n *network) track(ip *ips.ClaimedIPPort) error {
 //
 //   - [nodeIDs] the IDs of the peers that should be returned if they are
 //     connected.
-//   - [subnetID] the subnetID whose membership should be considered if
+//   - [supernetID] the supernetID whose membership should be considered if
 //     [validatorOnly] is set to true.
 //   - [validatorOnly] is the flag to drop any nodes from [nodeIDs] that are not
-//     validators in [subnetID].
+//     validators in [supernetID].
 func (n *network) getPeers(
 	nodeIDs set.Set[ids.NodeID],
-	subnetID ids.ID,
-	allower subnets.Allower,
+	supernetID ids.ID,
+	allower supernets.Allower,
 ) []peer.Peer {
 	peers := make([]peer.Peer, 0, nodeIDs.Len())
 
@@ -694,13 +694,13 @@ func (n *network) getPeers(
 			continue
 		}
 
-		trackedSubnets := peer.TrackedSubnets()
-		if subnetID != constants.PrimaryNetworkID && !trackedSubnets.Contains(subnetID) {
+		trackedSupernets := peer.TrackedSupernets()
+		if supernetID != constants.PrimaryNetworkID && !trackedSupernets.Contains(supernetID) {
 			continue
 		}
 
-		_, isValidator := n.config.Validators.GetValidator(subnetID, nodeID)
-		// check if the peer is allowed to connect to the subnet
+		_, isValidator := n.config.Validators.GetValidator(supernetID, nodeID)
+		// check if the peer is allowed to connect to the supernet
 		if !allower.IsAllowed(nodeID, isValidator) {
 			continue
 		}
@@ -716,13 +716,13 @@ func (n *network) getPeers(
 // explicitly ignore nodeIDs already included in the send config.
 func (n *network) samplePeers(
 	config common.SendConfig,
-	subnetID ids.ID,
-	allower subnets.Allower,
+	supernetID ids.ID,
+	allower supernets.Allower,
 ) []peer.Peer {
 	// As an optimization, if there are fewer validators than
 	// [numValidatorsToSample], only attempt to sample [numValidatorsToSample]
 	// validators to potentially avoid iterating over the entire peer set.
-	numValidatorsToSample := min(config.Validators, n.config.Validators.Count(subnetID))
+	numValidatorsToSample := min(config.Validators, n.config.Validators.Count(supernetID))
 
 	n.peersLock.RLock()
 	defer n.peersLock.RUnlock()
@@ -730,9 +730,9 @@ func (n *network) samplePeers(
 	return n.connectedPeers.Sample(
 		numValidatorsToSample+config.NonValidators+config.Peers,
 		func(p peer.Peer) bool {
-			// Only return peers that are tracking [subnetID]
-			trackedSubnets := p.TrackedSubnets()
-			if subnetID != constants.PrimaryNetworkID && !trackedSubnets.Contains(subnetID) {
+			// Only return peers that are tracking [supernetID]
+			trackedSupernets := p.TrackedSupernets()
+			if supernetID != constants.PrimaryNetworkID && !trackedSupernets.Contains(supernetID) {
 				return false
 			}
 
@@ -743,8 +743,8 @@ func (n *network) samplePeers(
 				return false
 			}
 
-			_, isValidator := n.config.Validators.GetValidator(subnetID, peerID)
-			// check if the peer is allowed to connect to the subnet
+			_, isValidator := n.config.Validators.GetValidator(supernetID, peerID)
+			// check if the peer is allowed to connect to the supernet
 			if !allower.IsAllowed(peerID, isValidator) {
 				return false
 			}
@@ -1097,19 +1097,19 @@ func (n *network) StartClose() {
 	})
 }
 
-func (n *network) NodeUptime(subnetID ids.ID) (UptimeResult, error) {
-	if subnetID != constants.PrimaryNetworkID && !n.config.TrackedSubnets.Contains(subnetID) {
+func (n *network) NodeUptime(supernetID ids.ID) (UptimeResult, error) {
+	if supernetID != constants.PrimaryNetworkID && !n.config.TrackedSupernets.Contains(supernetID) {
 		return UptimeResult{}, errNotTracked
 	}
 
-	myStake := n.config.Validators.GetWeight(subnetID, n.config.MyNodeID)
+	myStake := n.config.Validators.GetWeight(supernetID, n.config.MyNodeID)
 	if myStake == 0 {
 		return UptimeResult{}, errNotValidator
 	}
 
-	totalWeightInt, err := n.config.Validators.TotalWeight(subnetID)
+	totalWeightInt, err := n.config.Validators.TotalWeight(supernetID)
 	if err != nil {
-		return UptimeResult{}, fmt.Errorf("error while fetching weight for subnet %s: %w", subnetID, err)
+		return UptimeResult{}, fmt.Errorf("error while fetching weight for supernet %s: %w", supernetID, err)
 	}
 
 	var (
@@ -1125,13 +1125,13 @@ func (n *network) NodeUptime(subnetID ids.ID) (UptimeResult, error) {
 		peer, _ := n.connectedPeers.GetByIndex(i)
 
 		nodeID := peer.ID()
-		weight := n.config.Validators.GetWeight(subnetID, nodeID)
+		weight := n.config.Validators.GetWeight(supernetID, nodeID)
 		if weight == 0 {
 			// this is not a validator skip it.
 			continue
 		}
 
-		observedUptime, exist := peer.ObservedUptime(subnetID)
+		observedUptime, exist := peer.ObservedUptime(supernetID)
 		if !exist {
 			observedUptime = 0
 		}
@@ -1140,7 +1140,7 @@ func (n *network) NodeUptime(subnetID ids.ID) (UptimeResult, error) {
 		totalWeightedPercent += percent * weightFloat
 
 		// if this peer thinks we're above requirement add the weight
-		// TODO: use subnet-specific uptime requirements
+		// TODO: use supernet-specific uptime requirements
 		if percent/100 >= n.config.UptimeRequirement {
 			rewardingStake += weightFloat
 		}
@@ -1185,17 +1185,17 @@ func (n *network) runTimers() {
 			n.metrics.nodeUptimeWeightedAverage.Set(primaryUptime.WeightedAveragePercentage)
 			n.metrics.nodeUptimeRewardingStake.Set(primaryUptime.RewardingStakePercentage)
 
-			for subnetID := range n.config.TrackedSubnets {
-				result, err := n.NodeUptime(subnetID)
+			for supernetID := range n.config.TrackedSupernets {
+				result, err := n.NodeUptime(supernetID)
 				if err != nil {
-					n.peerConfig.Log.Debug("failed to get subnet uptime",
-						zap.Stringer("subnetID", subnetID),
+					n.peerConfig.Log.Debug("failed to get supernet uptime",
+						zap.Stringer("supernetID", supernetID),
 						zap.Error(err),
 					)
 				}
-				subnetIDStr := subnetID.String()
-				n.metrics.nodeSubnetUptimeWeightedAverage.WithLabelValues(subnetIDStr).Set(result.WeightedAveragePercentage)
-				n.metrics.nodeSubnetUptimeRewardingStake.WithLabelValues(subnetIDStr).Set(result.RewardingStakePercentage)
+				supernetIDStr := supernetID.String()
+				n.metrics.nodeSupernetUptimeWeightedAverage.WithLabelValues(supernetIDStr).Set(result.WeightedAveragePercentage)
+				n.metrics.nodeSupernetUptimeRewardingStake.WithLabelValues(supernetIDStr).Set(result.RewardingStakePercentage)
 			}
 		}
 	}
@@ -1208,7 +1208,7 @@ func (n *network) pullGossipPeerLists() {
 			Validators: 1,
 		},
 		constants.PrimaryNetworkID,
-		subnets.NoOpAllower,
+		supernets.NoOpAllower,
 	)
 
 	for _, p := range peers {

@@ -498,8 +498,8 @@ type Ping struct {
 
 	// Uptime percentage on the primary network [0, 100]
 	Uptime uint32 `protobuf:"varint,1,opt,name=uptime,proto3" json:"uptime,omitempty"`
-	// Uptime percentage on subnets
-	SubnetUptimes []*SubnetUptime `protobuf:"bytes,2,rep,name=subnet_uptimes,json=subnetUptimes,proto3" json:"subnet_uptimes,omitempty"`
+	// Uptime percentage on supernets
+	SupernetUptimes []*SupernetUptime `protobuf:"bytes,2,rep,name=supernet_uptimes,json=supernetUptimes,proto3" json:"supernet_uptimes,omitempty"`
 }
 
 func (x *Ping) Reset() {
@@ -541,27 +541,27 @@ func (x *Ping) GetUptime() uint32 {
 	return 0
 }
 
-func (x *Ping) GetSubnetUptimes() []*SubnetUptime {
+func (x *Ping) GetSupernetUptimes() []*SupernetUptime {
 	if x != nil {
-		return x.SubnetUptimes
+		return x.SupernetUptimes
 	}
 	return nil
 }
 
-// SubnetUptime is a descriptor for a peer's perceived uptime on a subnet.
-type SubnetUptime struct {
+// SupernetUptime is a descriptor for a peer's perceived uptime on a supernet.
+type SupernetUptime struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// Subnet the peer is validating
-	SubnetId []byte `protobuf:"bytes,1,opt,name=subnet_id,json=subnetId,proto3" json:"subnet_id,omitempty"`
-	// Uptime percentage on the subnet [0, 100]
+	// Supernet the peer is validating
+	SupernetId []byte `protobuf:"bytes,1,opt,name=supernet_id,json=supernetId,proto3" json:"supernet_id,omitempty"`
+	// Uptime percentage on the supernet [0, 100]
 	Uptime uint32 `protobuf:"varint,2,opt,name=uptime,proto3" json:"uptime,omitempty"`
 }
 
-func (x *SubnetUptime) Reset() {
-	*x = SubnetUptime{}
+func (x *SupernetUptime) Reset() {
+	*x = SupernetUptime{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_p2p_p2p_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -569,13 +569,13 @@ func (x *SubnetUptime) Reset() {
 	}
 }
 
-func (x *SubnetUptime) String() string {
+func (x *SupernetUptime) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*SubnetUptime) ProtoMessage() {}
+func (*SupernetUptime) ProtoMessage() {}
 
-func (x *SubnetUptime) ProtoReflect() protoreflect.Message {
+func (x *SupernetUptime) ProtoReflect() protoreflect.Message {
 	mi := &file_p2p_p2p_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -587,19 +587,19 @@ func (x *SubnetUptime) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use SubnetUptime.ProtoReflect.Descriptor instead.
-func (*SubnetUptime) Descriptor() ([]byte, []int) {
+// Deprecated: Use SupernetUptime.ProtoReflect.Descriptor instead.
+func (*SupernetUptime) Descriptor() ([]byte, []int) {
 	return file_p2p_p2p_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *SubnetUptime) GetSubnetId() []byte {
+func (x *SupernetUptime) GetSupernetId() []byte {
 	if x != nil {
-		return x.SubnetId
+		return x.SupernetId
 	}
 	return nil
 }
 
-func (x *SubnetUptime) GetUptime() uint32 {
+func (x *SupernetUptime) GetUptime() uint32 {
 	if x != nil {
 		return x.Uptime
 	}
@@ -670,8 +670,8 @@ type Handshake struct {
 	// Signature of the peer IP port pair at a provided timestamp with the TLS
 	// key.
 	IpNodeIdSig []byte `protobuf:"bytes,7,opt,name=ip_node_id_sig,json=ipNodeIdSig,proto3" json:"ip_node_id_sig,omitempty"`
-	// Subnets the peer is tracking
-	TrackedSubnets [][]byte     `protobuf:"bytes,8,rep,name=tracked_subnets,json=trackedSubnets,proto3" json:"tracked_subnets,omitempty"`
+	// Supernets the peer is tracking
+	TrackedSupernets [][]byte     `protobuf:"bytes,8,rep,name=tracked_supernets,json=trackedSupernets,proto3" json:"tracked_supernets,omitempty"`
 	Client           *Client      `protobuf:"bytes,9,opt,name=client,proto3" json:"client,omitempty"`
 	SupportedAcps    []uint32     `protobuf:"varint,10,rep,packed,name=supported_acps,json=supportedAcps,proto3" json:"supported_acps,omitempty"`
 	ObjectedAcps     []uint32     `protobuf:"varint,11,rep,packed,name=objected_acps,json=objectedAcps,proto3" json:"objected_acps,omitempty"`
@@ -755,9 +755,9 @@ func (x *Handshake) GetIpNodeIdSig() []byte {
 	return nil
 }
 
-func (x *Handshake) GetTrackedSubnets() [][]byte {
+func (x *Handshake) GetTrackedSupernets() [][]byte {
 	if x != nil {
-		return x.TrackedSubnets
+		return x.TrackedSupernets
 	}
 	return nil
 }
@@ -2917,7 +2917,7 @@ var file_p2p_p2p_proto_goTypes = []interface{}{
 	(EngineType)(0),                 // 0: p2p.EngineType
 	(*Message)(nil),                 // 1: p2p.Message
 	(*Ping)(nil),                    // 2: p2p.Ping
-	(*SubnetUptime)(nil),          // 3: p2p.SubnetUptime
+	(*SupernetUptime)(nil),          // 3: p2p.SupernetUptime
 	(*Pong)(nil),                    // 4: p2p.Pong
 	(*Handshake)(nil),               // 5: p2p.Handshake
 	(*Client)(nil),                  // 6: p2p.Client
@@ -2970,7 +2970,7 @@ var file_p2p_p2p_proto_depIdxs = []int32{
 	27, // 21: p2p.Message.app_response:type_name -> p2p.AppResponse
 	29, // 22: p2p.Message.app_gossip:type_name -> p2p.AppGossip
 	28, // 23: p2p.Message.app_error:type_name -> p2p.AppError
-	3,  // 24: p2p.Ping.subnet_uptimes:type_name -> p2p.SubnetUptime
+	3,  // 24: p2p.Ping.supernet_uptimes:type_name -> p2p.SupernetUptime
 	6,  // 25: p2p.Handshake.client:type_name -> p2p.Client
 	7,  // 26: p2p.Handshake.known_peers:type_name -> p2p.BloomFilter
 	7,  // 27: p2p.GetPeerList.known_peers:type_name -> p2p.BloomFilter
@@ -3014,7 +3014,7 @@ func file_p2p_p2p_proto_init() {
 			}
 		}
 		file_p2p_p2p_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*SubnetUptime); i {
+			switch v := v.(*SupernetUptime); i {
 			case 0:
 				return &v.state
 			case 1:

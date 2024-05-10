@@ -7,7 +7,7 @@ import (
 	"bytes"
 	"slices"
 
-	"github.com/ava-labs/avalanchego/database"
+	"github.com/Juneo-io/juneogo/database"
 )
 
 func (v *view) NewIterator() database.Iterator {

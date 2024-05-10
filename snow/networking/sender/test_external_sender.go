@@ -7,11 +7,11 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/message"
-	"github.com/ava-labs/avalanchego/snow/engine/common"
-	"github.com/ava-labs/avalanchego/subnets"
-	"github.com/ava-labs/avalanchego/utils/set"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/message"
+	"github.com/Juneo-io/juneogo/snow/engine/common"
+	"github.com/Juneo-io/juneogo/supernets"
+	"github.com/Juneo-io/juneogo/utils/set"
 )
 
 var (
@@ -26,7 +26,7 @@ type ExternalSenderTest struct {
 
 	CantSend bool
 
-	SendF func(msg message.OutboundMessage, config common.SendConfig, subnetID ids.ID, allower subnets.Allower) set.Set[ids.NodeID]
+	SendF func(msg message.OutboundMessage, config common.SendConfig, supernetID ids.ID, allower supernets.Allower) set.Set[ids.NodeID]
 }
 
 // Default set the default callable value to [cant]
@@ -37,11 +37,11 @@ func (s *ExternalSenderTest) Default(cant bool) {
 func (s *ExternalSenderTest) Send(
 	msg message.OutboundMessage,
 	config common.SendConfig,
-	subnetID ids.ID,
-	allower subnets.Allower,
+	supernetID ids.ID,
+	allower supernets.Allower,
 ) set.Set[ids.NodeID] {
 	if s.SendF != nil {
-		return s.SendF(msg, config, subnetID, allower)
+		return s.SendF(msg, config, supernetID, allower)
 	}
 	if s.CantSend {
 		if s.TB != nil {

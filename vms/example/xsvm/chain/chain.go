@@ -4,13 +4,13 @@
 package chain
 
 import (
-	"github.com/ava-labs/avalanchego/database"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/snow/choices"
-	"github.com/ava-labs/avalanchego/vms/example/xsvm/state"
+	"github.com/Juneo-io/juneogo/database"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/snow/choices"
+	"github.com/Juneo-io/juneogo/vms/example/xsvm/state"
 
-	xsblock "github.com/ava-labs/avalanchego/vms/example/xsvm/block"
+	xsblock "github.com/Juneo-io/juneogo/vms/example/xsvm/block"
 )
 
 var _ Chain = (*chain)(nil)

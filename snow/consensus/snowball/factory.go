@@ -3,7 +3,7 @@
 
 package snowball
 
-import "github.com/ava-labs/avalanchego/ids"
+import "github.com/Juneo-io/juneogo/ids"
 
 var (
 	SnowballFactory  Factory = snowballFactory{}

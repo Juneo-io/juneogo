@@ -11,8 +11,8 @@ import (
 	"github.com/stretchr/testify/require"
 	"gonum.org/v1/gonum/mathext/prng"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils/bag"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils/bag"
 )
 
 const initialUnaryDescription = "SB(PreferenceStrength = 0, SF(Confidence = 0, Finalized = false)) Bits = [0, 256)"

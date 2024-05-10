@@ -7,24 +7,24 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/ava-labs/coreth/plugin/evm"
+	"github.com/Juneo-io/jeth/plugin/evm"
 	"github.com/spf13/cast"
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/api/info"
-	"github.com/ava-labs/avalanchego/config"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/tests/fixture/e2e"
-	"github.com/ava-labs/avalanchego/tests/fixture/tmpnet"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/crypto/secp256k1"
-	"github.com/ava-labs/avalanchego/utils/set"
-	"github.com/ava-labs/avalanchego/utils/units"
-	"github.com/ava-labs/avalanchego/vms/components/avax"
-	"github.com/ava-labs/avalanchego/vms/platformvm/reward"
-	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
-	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
-	"github.com/ava-labs/avalanchego/wallet/subnet/primary/common"
+	"github.com/Juneo-io/juneogo/api/info"
+	"github.com/Juneo-io/juneogo/config"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/tests/fixture/e2e"
+	"github.com/Juneo-io/juneogo/tests/fixture/tmpnet"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/crypto/secp256k1"
+	"github.com/Juneo-io/juneogo/utils/set"
+	"github.com/Juneo-io/juneogo/utils/units"
+	"github.com/Juneo-io/juneogo/vms/components/avax"
+	"github.com/Juneo-io/juneogo/vms/platformvm/reward"
+	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
+	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
+	"github.com/Juneo-io/juneogo/wallet/supernet/primary/common"
 
 	ginkgo "github.com/onsi/ginkgo/v2"
 )
@@ -110,13 +110,13 @@ var _ = e2e.DescribePChain("[Interchain Workflow]", ginkgo.Label(e2e.UsesCChainL
 			)
 
 			_, err = pWallet.IssueAddPermissionlessValidatorTx(
-				&txs.SubnetValidator{
+				&txs.SupernetValidator{
 					Validator: txs.Validator{
 						NodeID: nodeID,
 						End:    uint64(endTime.Unix()),
 						Wght:   weight,
 					},
-					Subnet: constants.PrimaryNetworkID,
+					Supernet: constants.PrimaryNetworkID,
 				},
 				nodePOP,
 				pContext.AVAXAssetID,
@@ -140,13 +140,13 @@ var _ = e2e.DescribePChain("[Interchain Workflow]", ginkgo.Label(e2e.UsesCChainL
 			require.NoError(err)
 
 			_, err = pWallet.IssueAddPermissionlessDelegatorTx(
-				&txs.SubnetValidator{
+				&txs.SupernetValidator{
 					Validator: txs.Validator{
 						NodeID: nodeID,
 						End:    uint64(endTime.Unix()),
 						Wght:   weight,
 					},
-					Subnet: constants.PrimaryNetworkID,
+					Supernet: constants.PrimaryNetworkID,
 				},
 				pContext.AVAXAssetID,
 				&secp256k1fx.OutputOwners{

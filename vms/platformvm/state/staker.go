@@ -9,9 +9,9 @@ import (
 
 	"github.com/google/btree"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils/crypto/bls"
-	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils/crypto/bls"
+	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
 )
 
 var _ btree.LessFunc[*Staker] = (*Staker).Less
@@ -38,7 +38,7 @@ type Staker struct {
 	TxID            ids.ID
 	NodeID          ids.NodeID
 	PublicKey       *bls.PublicKey
-	SubnetID        ids.ID
+	SupernetID        ids.ID
 	Weight          uint64
 	StartTime       time.Time
 	EndTime         time.Time
@@ -98,7 +98,7 @@ func NewCurrentStaker(
 		TxID:            txID,
 		NodeID:          staker.NodeID(),
 		PublicKey:       publicKey,
-		SubnetID:        staker.SubnetID(),
+		SupernetID:        staker.SupernetID(),
 		Weight:          staker.Weight(),
 		StartTime:       startTime,
 		EndTime:         endTime,
@@ -118,7 +118,7 @@ func NewPendingStaker(txID ids.ID, staker txs.ScheduledStaker) (*Staker, error) 
 		TxID:      txID,
 		NodeID:    staker.NodeID(),
 		PublicKey: publicKey,
-		SubnetID:  staker.SubnetID(),
+		SupernetID:  staker.SupernetID(),
 		Weight:    staker.Weight(),
 		StartTime: startTime,
 		EndTime:   staker.EndTime(),

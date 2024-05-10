@@ -6,15 +6,15 @@ package p
 import (
 	"time"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/vms/components/avax"
-	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
-	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
-	"github.com/ava-labs/avalanchego/wallet/chain/p/builder"
-	"github.com/ava-labs/avalanchego/wallet/subnet/primary/common"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/vms/components/avax"
+	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
+	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
+	"github.com/Juneo-io/juneogo/wallet/chain/p/builder"
+	"github.com/Juneo-io/juneogo/wallet/supernet/primary/common"
 
-	vmsigner "github.com/ava-labs/avalanchego/vms/platformvm/signer"
-	walletsigner "github.com/ava-labs/avalanchego/wallet/chain/p/signer"
+	vmsigner "github.com/Juneo-io/juneogo/vms/platformvm/signer"
+	walletsigner "github.com/Juneo-io/juneogo/wallet/chain/p/signer"
 )
 
 var _ Wallet = (*walletWithOptions)(nil)
@@ -69,24 +69,24 @@ func (w *walletWithOptions) IssueAddValidatorTx(
 	)
 }
 
-func (w *walletWithOptions) IssueAddSubnetValidatorTx(
-	vdr *txs.SubnetValidator,
+func (w *walletWithOptions) IssueAddSupernetValidatorTx(
+	vdr *txs.SupernetValidator,
 	options ...common.Option,
 ) (*txs.Tx, error) {
-	return w.wallet.IssueAddSubnetValidatorTx(
+	return w.wallet.IssueAddSupernetValidatorTx(
 		vdr,
 		common.UnionOptions(w.options, options)...,
 	)
 }
 
-func (w *walletWithOptions) IssueRemoveSubnetValidatorTx(
+func (w *walletWithOptions) IssueRemoveSupernetValidatorTx(
 	nodeID ids.NodeID,
-	subnetID ids.ID,
+	supernetID ids.ID,
 	options ...common.Option,
 ) (*txs.Tx, error) {
-	return w.wallet.IssueRemoveSubnetValidatorTx(
+	return w.wallet.IssueRemoveSupernetValidatorTx(
 		nodeID,
-		subnetID,
+		supernetID,
 		common.UnionOptions(w.options, options)...,
 	)
 }
@@ -104,7 +104,7 @@ func (w *walletWithOptions) IssueAddDelegatorTx(
 }
 
 func (w *walletWithOptions) IssueCreateChainTx(
-	subnetID ids.ID,
+	supernetID ids.ID,
 	genesis []byte,
 	vmID ids.ID,
 	fxIDs []ids.ID,
@@ -112,7 +112,7 @@ func (w *walletWithOptions) IssueCreateChainTx(
 	options ...common.Option,
 ) (*txs.Tx, error) {
 	return w.wallet.IssueCreateChainTx(
-		subnetID,
+		supernetID,
 		genesis,
 		vmID,
 		fxIDs,
@@ -121,23 +121,23 @@ func (w *walletWithOptions) IssueCreateChainTx(
 	)
 }
 
-func (w *walletWithOptions) IssueCreateSubnetTx(
+func (w *walletWithOptions) IssueCreateSupernetTx(
 	owner *secp256k1fx.OutputOwners,
 	options ...common.Option,
 ) (*txs.Tx, error) {
-	return w.wallet.IssueCreateSubnetTx(
+	return w.wallet.IssueCreateSupernetTx(
 		owner,
 		common.UnionOptions(w.options, options)...,
 	)
 }
 
-func (w *walletWithOptions) IssueTransferSubnetOwnershipTx(
-	subnetID ids.ID,
+func (w *walletWithOptions) IssueTransferSupernetOwnershipTx(
+	supernetID ids.ID,
 	owner *secp256k1fx.OutputOwners,
 	options ...common.Option,
 ) (*txs.Tx, error) {
-	return w.wallet.IssueTransferSubnetOwnershipTx(
-		subnetID,
+	return w.wallet.IssueTransferSupernetOwnershipTx(
+		supernetID,
 		owner,
 		common.UnionOptions(w.options, options)...,
 	)
@@ -167,8 +167,8 @@ func (w *walletWithOptions) IssueExportTx(
 	)
 }
 
-func (w *walletWithOptions) IssueTransformSubnetTx(
-	subnetID ids.ID,
+func (w *walletWithOptions) IssueTransformSupernetTx(
+	supernetID ids.ID,
 	assetID ids.ID,
 	initialSupply uint64,
 	maxSupply uint64,
@@ -184,8 +184,8 @@ func (w *walletWithOptions) IssueTransformSubnetTx(
 	uptimeRequirement uint32,
 	options ...common.Option,
 ) (*txs.Tx, error) {
-	return w.wallet.IssueTransformSubnetTx(
-		subnetID,
+	return w.wallet.IssueTransformSupernetTx(
+		supernetID,
 		assetID,
 		initialSupply,
 		maxSupply,
@@ -204,7 +204,7 @@ func (w *walletWithOptions) IssueTransformSubnetTx(
 }
 
 func (w *walletWithOptions) IssueAddPermissionlessValidatorTx(
-	vdr *txs.SubnetValidator,
+	vdr *txs.SupernetValidator,
 	signer vmsigner.Signer,
 	assetID ids.ID,
 	validationRewardsOwner *secp256k1fx.OutputOwners,
@@ -224,7 +224,7 @@ func (w *walletWithOptions) IssueAddPermissionlessValidatorTx(
 }
 
 func (w *walletWithOptions) IssueAddPermissionlessDelegatorTx(
-	vdr *txs.SubnetValidator,
+	vdr *txs.SupernetValidator,
 	assetID ids.ID,
 	rewardsOwner *secp256k1fx.OutputOwners,
 	options ...common.Option,

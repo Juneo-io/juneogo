@@ -10,16 +10,16 @@ import (
 	"github.com/stretchr/testify/require"
 
 	// ensure test packages are scanned by ginkgo
-	_ "github.com/ava-labs/avalanchego/tests/e2e/banff"
-	_ "github.com/ava-labs/avalanchego/tests/e2e/c"
-	_ "github.com/ava-labs/avalanchego/tests/e2e/faultinjection"
-	_ "github.com/ava-labs/avalanchego/tests/e2e/p"
-	_ "github.com/ava-labs/avalanchego/tests/e2e/x"
-	_ "github.com/ava-labs/avalanchego/tests/e2e/x/transfer"
+	_ "github.com/Juneo-io/juneogo/tests/e2e/banff"
+	_ "github.com/Juneo-io/juneogo/tests/e2e/c"
+	_ "github.com/Juneo-io/juneogo/tests/e2e/faultinjection"
+	_ "github.com/Juneo-io/juneogo/tests/e2e/p"
+	_ "github.com/Juneo-io/juneogo/tests/e2e/x"
+	_ "github.com/Juneo-io/juneogo/tests/e2e/x/transfer"
 
-	"github.com/ava-labs/avalanchego/tests/e2e/vms"
-	"github.com/ava-labs/avalanchego/tests/fixture/e2e"
-	"github.com/ava-labs/avalanchego/tests/fixture/tmpnet"
+	"github.com/Juneo-io/juneogo/tests/e2e/vms"
+	"github.com/Juneo-io/juneogo/tests/fixture/e2e"
+	"github.com/Juneo-io/juneogo/tests/fixture/tmpnet"
 
 	ginkgo "github.com/onsi/ginkgo/v2"
 )
@@ -41,14 +41,14 @@ var _ = ginkgo.SynchronizedBeforeSuite(func() []byte {
 	nodes, err := tmpnet.NewNodes(tmpnet.DefaultNodeCount)
 	require.NoError(ginkgo.GinkgoT(), err)
 
-	subnets := vms.XSVMSubnets(nodes...)
+	supernets := vms.XSVMSupernets(nodes...)
 
 	return e2e.NewTestEnvironment(
 		flagVars,
 		&tmpnet.Network{
 			Owner:   "avalanchego-e2e",
 			Nodes:   nodes,
-			Subnets: subnets,
+			Supernets: supernets,
 		},
 	).Marshal()
 }, func(envBytes []byte) {

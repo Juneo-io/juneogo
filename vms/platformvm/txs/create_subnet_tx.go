@@ -4,30 +4,30 @@
 package txs
 
 import (
-	"github.com/ava-labs/avalanchego/snow"
-	"github.com/ava-labs/avalanchego/vms/platformvm/fx"
+	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/vms/platformvm/fx"
 )
 
-var _ UnsignedTx = (*CreateSubnetTx)(nil)
+var _ UnsignedTx = (*CreateSupernetTx)(nil)
 
-// CreateSubnetTx is an unsigned proposal to create a new subnet
-type CreateSubnetTx struct {
+// CreateSupernetTx is an unsigned proposal to create a new supernet
+type CreateSupernetTx struct {
 	// Metadata, inputs and outputs
 	BaseTx `serialize:"true"`
-	// Who is authorized to manage this subnet
+	// Who is authorized to manage this supernet
 	Owner fx.Owner `serialize:"true" json:"owner"`
 }
 
 // InitCtx sets the FxID fields in the inputs and outputs of this
-// [CreateSubnetTx]. Also sets the [ctx] to the given [vm.ctx] so that
+// [CreateSupernetTx]. Also sets the [ctx] to the given [vm.ctx] so that
 // the addresses can be json marshalled into human readable format
-func (tx *CreateSubnetTx) InitCtx(ctx *snow.Context) {
+func (tx *CreateSupernetTx) InitCtx(ctx *snow.Context) {
 	tx.BaseTx.InitCtx(ctx)
 	tx.Owner.InitCtx(ctx)
 }
 
 // SyntacticVerify verifies that this transaction is well-formed
-func (tx *CreateSubnetTx) SyntacticVerify(ctx *snow.Context) error {
+func (tx *CreateSupernetTx) SyntacticVerify(ctx *snow.Context) error {
 	switch {
 	case tx == nil:
 		return ErrNilTx
@@ -46,6 +46,6 @@ func (tx *CreateSubnetTx) SyntacticVerify(ctx *snow.Context) error {
 	return nil
 }
 
-func (tx *CreateSubnetTx) Visit(visitor Visitor) error {
-	return visitor.CreateSubnetTx(tx)
+func (tx *CreateSupernetTx) Visit(visitor Visitor) error {
+	return visitor.CreateSupernetTx(tx)
 }

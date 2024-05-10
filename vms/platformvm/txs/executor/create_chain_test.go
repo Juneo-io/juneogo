@@ -9,18 +9,18 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ava-labs/avalanchego/database"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/crypto/secp256k1"
-	"github.com/ava-labs/avalanchego/utils/hashing"
-	"github.com/ava-labs/avalanchego/utils/set"
-	"github.com/ava-labs/avalanchego/utils/units"
-	"github.com/ava-labs/avalanchego/vms/platformvm/state"
-	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
-	"github.com/ava-labs/avalanchego/vms/platformvm/txs/txstest"
-	"github.com/ava-labs/avalanchego/vms/platformvm/utxo"
-	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
+	"github.com/Juneo-io/juneogo/database"
+	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils/constants"
+	"github.com/Juneo-io/juneogo/utils/crypto/secp256k1"
+	"github.com/Juneo-io/juneogo/utils/hashing"
+	"github.com/Juneo-io/juneogo/utils/set"
+	"github.com/Juneo-io/juneogo/utils/units"
+	"github.com/Juneo-io/juneogo/vms/platformvm/state"
+	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
+	"github.com/Juneo-io/juneogo/vms/platformvm/txs/txstest"
+	"github.com/Juneo-io/juneogo/vms/platformvm/utxo"
+	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
 )
 
 // Ensure Execute fails when there are not enough control sigs
@@ -31,7 +31,7 @@ func TestCreateChainTxInsufficientControlSigs(t *testing.T) {
 	defer env.ctx.Lock.Unlock()
 
 	tx, err := env.txBuilder.NewCreateChainTx(
-		testSubnet1.ID(),
+		testSupernet1.ID(),
 		nil,
 		constants.AVMID,
 		nil,
@@ -52,7 +52,7 @@ func TestCreateChainTxInsufficientControlSigs(t *testing.T) {
 		Tx:      tx,
 	}
 	err = tx.Unsigned.Visit(&executor)
-	require.ErrorIs(err, errUnauthorizedSubnetModification)
+	require.ErrorIs(err, errUnauthorizedSupernetModification)
 }
 
 // Ensure Execute fails when an incorrect control signature is given
@@ -63,12 +63,12 @@ func TestCreateChainTxWrongControlSig(t *testing.T) {
 	defer env.ctx.Lock.Unlock()
 
 	tx, err := env.txBuilder.NewCreateChainTx(
-		testSubnet1.ID(),
+		testSupernet1.ID(),
 		nil,
 		constants.AVMID,
 		nil,
 		"chain name",
-		[]*secp256k1.PrivateKey{testSubnet1ControlKeys[0], testSubnet1ControlKeys[1]},
+		[]*secp256k1.PrivateKey{testSupernet1ControlKeys[0], testSupernet1ControlKeys[1]},
 	)
 	require.NoError(err)
 
@@ -90,28 +90,28 @@ func TestCreateChainTxWrongControlSig(t *testing.T) {
 		Tx:      tx,
 	}
 	err = tx.Unsigned.Visit(&executor)
-	require.ErrorIs(err, errUnauthorizedSubnetModification)
+	require.ErrorIs(err, errUnauthorizedSupernetModification)
 }
 
-// Ensure Execute fails when the Subnet the blockchain specifies as
+// Ensure Execute fails when the Supernet the blockchain specifies as
 // its validator set doesn't exist
-func TestCreateChainTxNoSuchSubnet(t *testing.T) {
+func TestCreateChainTxNoSuchSupernet(t *testing.T) {
 	require := require.New(t)
 	env := newEnvironment(t, banff)
 	env.ctx.Lock.Lock()
 	defer env.ctx.Lock.Unlock()
 
 	tx, err := env.txBuilder.NewCreateChainTx(
-		testSubnet1.ID(),
+		testSupernet1.ID(),
 		nil,
 		constants.AVMID,
 		nil,
 		"chain name",
-		[]*secp256k1.PrivateKey{testSubnet1ControlKeys[0], testSubnet1ControlKeys[1]},
+		[]*secp256k1.PrivateKey{testSupernet1ControlKeys[0], testSupernet1ControlKeys[1]},
 	)
 	require.NoError(err)
 
-	tx.Unsigned.(*txs.CreateChainTx).SubnetID = ids.GenerateTestID()
+	tx.Unsigned.(*txs.CreateChainTx).SupernetID = ids.GenerateTestID()
 
 	stateDiff, err := state.NewDiff(lastAcceptedID, env)
 	require.NoError(err)
@@ -133,12 +133,12 @@ func TestCreateChainTxValid(t *testing.T) {
 	defer env.ctx.Lock.Unlock()
 
 	tx, err := env.txBuilder.NewCreateChainTx(
-		testSubnet1.ID(),
+		testSupernet1.ID(),
 		nil,
 		constants.AVMID,
 		nil,
 		"chain name",
-		[]*secp256k1.PrivateKey{testSubnet1ControlKeys[0], testSubnet1ControlKeys[1]},
+		[]*secp256k1.PrivateKey{testSupernet1ControlKeys[0], testSupernet1ControlKeys[1]},
 	)
 	require.NoError(err)
 
@@ -198,7 +198,7 @@ func TestCreateChainTxAP3FeeChange(t *testing.T) {
 			cfg.CreateBlockchainTxFee = test.fee
 			builder := txstest.NewBuilder(env.ctx, &cfg, env.state)
 			tx, err := builder.NewCreateChainTx(
-				testSubnet1.ID(),
+				testSupernet1.ID(),
 				nil,
 				ids.GenerateTestID(),
 				nil,

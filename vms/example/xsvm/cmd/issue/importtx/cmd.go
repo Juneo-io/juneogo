@@ -11,13 +11,13 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/ava-labs/avalanchego/api/info"
-	"github.com/ava-labs/avalanchego/utils/crypto/bls"
-	"github.com/ava-labs/avalanchego/utils/set"
-	"github.com/ava-labs/avalanchego/vms/example/xsvm/api"
-	"github.com/ava-labs/avalanchego/vms/example/xsvm/cmd/issue/status"
-	"github.com/ava-labs/avalanchego/vms/example/xsvm/tx"
-	"github.com/ava-labs/avalanchego/vms/platformvm/warp"
+	"github.com/Juneo-io/juneogo/api/info"
+	"github.com/Juneo-io/juneogo/utils/crypto/bls"
+	"github.com/Juneo-io/juneogo/utils/set"
+	"github.com/Juneo-io/juneogo/vms/example/xsvm/api"
+	"github.com/Juneo-io/juneogo/vms/example/xsvm/cmd/issue/status"
+	"github.com/Juneo-io/juneogo/vms/example/xsvm/tx"
+	"github.com/Juneo-io/juneogo/vms/platformvm/warp"
 )
 
 func Command() *cobra.Command {
@@ -52,7 +52,7 @@ func Import(ctx context.Context, config *Config) (*status.TxIssuance, error) {
 		// Note: here we assume the unsigned message is correct from the last
 		//       URI in sourceURIs. In practice this shouldn't be done.
 		unsignedMessage *warp.UnsignedMessage
-		// Note: assumes that sourceURIs are all of the validators of the subnet
+		// Note: assumes that sourceURIs are all of the validators of the supernet
 		//       and that they do not share public keys.
 		signatures = make([]*bls.Signature, len(config.SourceURIs))
 	)

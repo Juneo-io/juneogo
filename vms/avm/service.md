@@ -2225,8 +2225,8 @@ import (
     "net/http"
     "sync"
 
-    "github.com/ava-labs/avalanchego/api"
-    "github.com/ava-labs/avalanchego/pubsub"
+    "github.com/Juneo-io/juneogo/api"
+    "github.com/Juneo-io/juneogo/pubsub"
     "github.com/gorilla/websocket"
 )
 
