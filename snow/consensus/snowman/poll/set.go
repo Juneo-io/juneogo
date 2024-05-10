@@ -14,7 +14,7 @@ import (
 
 	"github.com/Juneo-io/juneogo/ids"
 	"github.com/Juneo-io/juneogo/utils/bag"
-	"github.com/Juneo-io/juneogo/utils/linkedhashmap"
+	"github.com/Juneo-io/juneogo/utils/linked"
 	"github.com/Juneo-io/juneogo/utils/logging"
 	"github.com/Juneo-io/juneogo/utils/metric"
 )
@@ -48,7 +48,7 @@ type set struct {
 	durPolls metric.Averager
 	factory  Factory
 	// maps requestID -> poll
-	polls linkedhashmap.LinkedHashmap[uint32, pollHolder]
+	polls *linked.Hashmap[uint32, pollHolder]
 }
 
 // NewSet returns a new empty set of polls
@@ -82,7 +82,7 @@ func NewSet(
 		numPolls: numPolls,
 		durPolls: durPolls,
 		factory:  factory,
-		polls:    linkedhashmap.New[uint32, pollHolder](),
+		polls:    linked.NewHashmap[uint32, pollHolder](),
 	}, nil
 }
 

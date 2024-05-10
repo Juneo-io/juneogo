@@ -12,6 +12,7 @@ import (
 	"github.com/Juneo-io/juneogo/utils/formatting/address"
 	"github.com/Juneo-io/juneogo/utils/set"
 	"github.com/Juneo-io/juneogo/wallet/chain/p"
+	"github.com/Juneo-io/juneogo/wallet/chain/p/builder"
 	"github.com/Juneo-io/juneogo/wallet/supernet/primary"
 	"github.com/Juneo-io/juneogo/wallet/supernet/primary/common"
 )
@@ -38,14 +39,14 @@ func main() {
 
 	pUTXOs := common.NewChainUTXOs(constants.PlatformChainID, state.UTXOs)
 	pBackend := p.NewBackend(state.PCTX, pUTXOs, nil)
-	pBuilder := p.NewBuilder(addresses, pBackend)
+	pBuilder := builder.New(addresses, state.PCTX, pBackend)
 
 	currentBalances, err := pBuilder.GetBalance()
 	if err != nil {
 		log.Fatalf("failed to get the balance: %s\n", err)
 	}
 
-	avaxID := state.PCTX.AVAXAssetID()
+	avaxID := state.PCTX.AVAXAssetID
 	avaxBalance := currentBalances[avaxID]
 	log.Printf("current AVAX balance of %s is %d nAVAX\n", addrStr, avaxBalance)
 }

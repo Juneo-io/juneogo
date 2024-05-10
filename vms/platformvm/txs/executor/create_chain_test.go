@@ -14,10 +14,11 @@ import (
 	"github.com/Juneo-io/juneogo/utils/constants"
 	"github.com/Juneo-io/juneogo/utils/crypto/secp256k1"
 	"github.com/Juneo-io/juneogo/utils/hashing"
+	"github.com/Juneo-io/juneogo/utils/set"
 	"github.com/Juneo-io/juneogo/utils/units"
-	"github.com/Juneo-io/juneogo/vms/components/avax"
 	"github.com/Juneo-io/juneogo/vms/platformvm/state"
 	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
+	"github.com/Juneo-io/juneogo/vms/platformvm/txs/txstest"
 	"github.com/Juneo-io/juneogo/vms/platformvm/utxo"
 	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
 )
@@ -36,8 +37,6 @@ func TestCreateChainTxInsufficientControlSigs(t *testing.T) {
 		nil,
 		"chain name",
 		[]*secp256k1.PrivateKey{preFundedKeys[0], preFundedKeys[1]},
-		ids.ShortEmpty,
-		nil,
 	)
 	require.NoError(err)
 
@@ -70,8 +69,6 @@ func TestCreateChainTxWrongControlSig(t *testing.T) {
 		nil,
 		"chain name",
 		[]*secp256k1.PrivateKey{testSupernet1ControlKeys[0], testSupernet1ControlKeys[1]},
-		ids.ShortEmpty,
-		nil,
 	)
 	require.NoError(err)
 
@@ -111,8 +108,6 @@ func TestCreateChainTxNoSuchSupernet(t *testing.T) {
 		nil,
 		"chain name",
 		[]*secp256k1.PrivateKey{testSupernet1ControlKeys[0], testSupernet1ControlKeys[1]},
-		ids.ShortEmpty,
-		nil,
 	)
 	require.NoError(err)
 
@@ -144,8 +139,6 @@ func TestCreateChainTxValid(t *testing.T) {
 		nil,
 		"chain name",
 		[]*secp256k1.PrivateKey{testSupernet1ControlKeys[0], testSupernet1ControlKeys[1]},
-		ids.ShortEmpty,
-		nil,
 	)
 	require.NoError(err)
 
@@ -194,29 +187,25 @@ func TestCreateChainTxAP3FeeChange(t *testing.T) {
 			env := newEnvironment(t, banff)
 			env.config.ApricotPhase3Time = ap3Time
 
-			ins, outs, _, signers, err := env.utxosHandler.Spend(env.state, preFundedKeys, 0, test.fee, ids.ShortEmpty)
-			require.NoError(err)
-
-			supernetAuth, supernetSigners, err := env.utxosHandler.Authorize(env.state, testSupernet1.ID(), preFundedKeys)
-			require.NoError(err)
-
-			signers = append(signers, supernetSigners)
-
-			// Create the tx
-
-			utx := &txs.CreateChainTx{
-				BaseTx: txs.BaseTx{BaseTx: avax.BaseTx{
-					NetworkID:    env.ctx.NetworkID,
-					BlockchainID: env.ctx.ChainID,
-					Ins:          ins,
-					Outs:         outs,
-				}},
-				SupernetID:   testSupernet1.ID(),
-				VMID:       constants.AVMID,
-				SupernetAuth: supernetAuth,
+			addrs := set.NewSet[ids.ShortID](len(preFundedKeys))
+			for _, key := range preFundedKeys {
+				addrs.Add(key.Address())
 			}
-			tx := &txs.Tx{Unsigned: utx}
-			require.NoError(tx.Sign(txs.Codec, signers))
+
+			env.state.SetTimestamp(test.time) // to duly set fee
+
+			cfg := *env.config
+			cfg.CreateBlockchainTxFee = test.fee
+			builder := txstest.NewBuilder(env.ctx, &cfg, env.state)
+			tx, err := builder.NewCreateChainTx(
+				testSupernet1.ID(),
+				nil,
+				ids.GenerateTestID(),
+				nil,
+				"",
+				preFundedKeys,
+			)
+			require.NoError(err)
 
 			stateDiff, err := state.NewDiff(lastAcceptedID, env)
 			require.NoError(err)

@@ -14,7 +14,7 @@ import (
 	"github.com/Juneo-io/juneogo/database/memdb"
 	"github.com/Juneo-io/juneogo/ids"
 	"github.com/Juneo-io/juneogo/snow/choices"
-	"github.com/Juneo-io/juneogo/snow/consensus/snowman"
+	"github.com/Juneo-io/juneogo/snow/consensus/snowman/snowmantest"
 	"github.com/Juneo-io/juneogo/snow/engine/snowman/block"
 	"github.com/Juneo-io/juneogo/snow/snowtest"
 	"github.com/Juneo-io/juneogo/vms/components/chain"
@@ -43,8 +43,8 @@ func batchedParseBlockCachingTestPlugin(t *testing.T, loadExpectations bool) blo
 	vm := block.NewMockChainVM(ctrl)
 
 	if loadExpectations {
-		blk1 := snowman.NewMockBlock(ctrl)
-		blk2 := snowman.NewMockBlock(ctrl)
+		blk1 := snowmantest.NewMockBlock(ctrl)
+		blk2 := snowmantest.NewMockBlock(ctrl)
 		gomock.InOrder(
 			// Initialize
 			vm.EXPECT().Initialize(

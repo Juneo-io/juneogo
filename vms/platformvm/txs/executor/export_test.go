@@ -11,7 +11,9 @@ import (
 
 	"github.com/Juneo-io/juneogo/ids"
 	"github.com/Juneo-io/juneogo/utils/crypto/secp256k1"
+	"github.com/Juneo-io/juneogo/vms/components/avax"
 	"github.com/Juneo-io/juneogo/vms/platformvm/state"
+	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
 )
 
 func TestNewExportTx(t *testing.T) {
@@ -49,12 +51,19 @@ func TestNewExportTx(t *testing.T) {
 			require := require.New(t)
 
 			tx, err := env.txBuilder.NewExportTx(
-				defaultBalance-defaultTxFee, // Amount of tokens to export
 				tt.destinationChainID,
-				to,
+				[]*avax.TransferableOutput{{
+					Asset: avax.Asset{ID: env.ctx.AVAXAssetID},
+					Out: &secp256k1fx.TransferOutput{
+						Amt: defaultBalance - defaultTxFee,
+						OutputOwners: secp256k1fx.OutputOwners{
+							Locktime:  0,
+							Threshold: 1,
+							Addrs:     []ids.ShortID{to},
+						},
+					},
+				}},
 				tt.sourceKeys,
-				ids.ShortEmpty, // Change address
-				nil,
 			)
 			require.NoError(err)
 

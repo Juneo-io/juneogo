@@ -68,8 +68,6 @@ type Client interface {
 	GetStakingAssetID(ctx context.Context, supernetID ids.ID, options ...rpc.Option) (ids.ID, error)
 	// GetCurrentValidators returns the list of current validators for supernet with ID [supernetID]
 	GetCurrentValidators(ctx context.Context, supernetID ids.ID, nodeIDs []ids.NodeID, options ...rpc.Option) ([]ClientPermissionlessValidator, error)
-	// GetPendingValidators returns the list of pending validators for supernet with ID [supernetID]
-	GetPendingValidators(ctx context.Context, supernetID ids.ID, nodeIDs []ids.NodeID, options ...rpc.Option) ([]interface{}, []interface{}, error)
 	// GetCurrentSupply returns an upper bound on the supply of AVAX in the system along with the P-chain height
 	GetCurrentSupply(ctx context.Context, supernetID ids.ID, options ...rpc.Option) (uint64, uint64, error)
 	// GetRewardPoolSupply returns the current supply in the reward pool
@@ -107,8 +105,7 @@ type Client interface {
 	// GetStake returns the amount of nAVAX that [addrs] have cumulatively
 	// staked on the Primary Network.
 	//
-	// Deprecated: Stake should be calculated using GetTx, GetCurrentValidators,
-	// and GetPendingValidators.
+	// Deprecated: Stake should be calculated using GetTx and GetCurrentValidators.
 	GetStake(
 		ctx context.Context,
 		addrs []ids.ShortID,
@@ -120,19 +117,6 @@ type Client interface {
 	GetMinStake(ctx context.Context, supernetID ids.ID, options ...rpc.Option) (uint64, uint64, error)
 	// GetTotalStake returns the total amount (in nAVAX) staked on the network
 	GetTotalStake(ctx context.Context, supernetID ids.ID, options ...rpc.Option) (uint64, error)
-	// GetMaxStakeAmount returns the maximum amount of nAVAX staking to the named
-	// node during the time period.
-	//
-	// Deprecated: The MaxStakeAmount should be calculated using
-	// GetCurrentValidators, and GetPendingValidators.
-	GetMaxStakeAmount(
-		ctx context.Context,
-		supernetID ids.ID,
-		nodeID ids.NodeID,
-		startTime uint64,
-		endTime uint64,
-		options ...rpc.Option,
-	) (uint64, error)
 	// GetRewardUTXOs returns the reward UTXOs for a transaction
 	//
 	// Deprecated: GetRewardUTXOs should be fetched from a dedicated indexer.
@@ -342,20 +326,6 @@ func (c *client) GetCurrentValidators(
 	return getClientPermissionlessValidators(res.Validators)
 }
 
-func (c *client) GetPendingValidators(
-	ctx context.Context,
-	supernetID ids.ID,
-	nodeIDs []ids.NodeID,
-	options ...rpc.Option,
-) ([]interface{}, []interface{}, error) {
-	res := &GetPendingValidatorsReply{}
-	err := c.requester.SendRequest(ctx, "platform.getPendingValidators", &GetPendingValidatorsArgs{
-		SupernetID: supernetID,
-		NodeIDs:  nodeIDs,
-	}, res, options...)
-	return res.Validators, res.Delegators, err
-}
-
 func (c *client) GetCurrentSupply(ctx context.Context, supernetID ids.ID, options ...rpc.Option) (uint64, uint64, error) {
 	res := &GetCurrentSupplyReply{}
 	err := c.requester.SendRequest(ctx, "platform.getCurrentSupply", &GetCurrentSupplyArgs{
@@ -532,17 +502,6 @@ func (c *client) GetTotalStake(ctx context.Context, supernetID ids.ID, options .
 		amount = res.Weight
 	}
 	return uint64(amount), err
-}
-
-func (c *client) GetMaxStakeAmount(ctx context.Context, supernetID ids.ID, nodeID ids.NodeID, startTime, endTime uint64, options ...rpc.Option) (uint64, error) {
-	res := &GetMaxStakeAmountReply{}
-	err := c.requester.SendRequest(ctx, "platform.getMaxStakeAmount", &GetMaxStakeAmountArgs{
-		SupernetID:  supernetID,
-		NodeID:    nodeID,
-		StartTime: json.Uint64(startTime),
-		EndTime:   json.Uint64(endTime),
-	}, res, options...)
-	return uint64(res.Amount), err
 }
 
 func (c *client) GetRewardUTXOs(ctx context.Context, args *api.GetTxArgs, options ...rpc.Option) ([][]byte, error) {

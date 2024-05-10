@@ -13,7 +13,7 @@ import (
 	"github.com/Juneo-io/juneogo/ids"
 	"github.com/Juneo-io/juneogo/snow/validators"
 	"github.com/Juneo-io/juneogo/utils/constants"
-	"github.com/Juneo-io/juneogo/utils/linkedhashmap"
+	"github.com/Juneo-io/juneogo/utils/linked"
 	"github.com/Juneo-io/juneogo/utils/logging"
 	"github.com/Juneo-io/juneogo/utils/metric"
 	"github.com/Juneo-io/juneogo/utils/wrappers"
@@ -39,7 +39,7 @@ func newInboundMsgByteThrottler(
 			nodeToVdrBytesUsed:     make(map[ids.NodeID]uint64),
 			nodeToAtLargeBytesUsed: make(map[ids.NodeID]uint64),
 		},
-		waitingToAcquire:   linkedhashmap.New[uint64, *msgMetadata](),
+		waitingToAcquire:   linked.NewHashmap[uint64, *msgMetadata](),
 		nodeToWaitingMsgID: make(map[ids.NodeID]uint64),
 	}
 	return t, t.metrics.initialize(namespace, registerer)
@@ -67,7 +67,7 @@ type inboundMsgByteThrottler struct {
 	// Node ID --> Msg ID for a message this node is waiting to acquire
 	nodeToWaitingMsgID map[ids.NodeID]uint64
 	// Msg ID --> *msgMetadata
-	waitingToAcquire linkedhashmap.LinkedHashmap[uint64, *msgMetadata]
+	waitingToAcquire *linked.Hashmap[uint64, *msgMetadata]
 	// Invariant: The node is only waiting on a single message at a time
 	//
 	// Invariant: waitingToAcquire.Get(nodeToWaitingMsgIDs[nodeID])

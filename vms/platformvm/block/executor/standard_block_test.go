@@ -509,14 +509,16 @@ func TestBanffStandardBlockUpdateStakers(t *testing.T) {
 
 			for _, staker := range test.supernetStakers {
 				tx, err := env.txBuilder.NewAddSupernetValidatorTx(
-					10, // Weight
-					uint64(staker.startTime.Unix()),
-					uint64(staker.endTime.Unix()),
-					staker.nodeID, // validator ID
-					supernetID,      // Supernet ID
+					&txs.SupernetValidator{
+						Validator: txs.Validator{
+							NodeID: staker.nodeID,
+							Start:  uint64(staker.startTime.Unix()),
+							End:    uint64(staker.endTime.Unix()),
+							Wght:   10,
+						},
+						Supernet: supernetID,
+					},
 					[]*secp256k1.PrivateKey{preFundedKeys[0], preFundedKeys[1]},
-					ids.ShortEmpty,
-					nil,
 				)
 				require.NoError(err)
 
@@ -599,14 +601,16 @@ func TestBanffStandardBlockRemoveSupernetValidator(t *testing.T) {
 	supernetVdr1StartTime := defaultValidateStartTime
 	supernetVdr1EndTime := defaultValidateStartTime.Add(defaultMinStakingDuration)
 	tx, err := env.txBuilder.NewAddSupernetValidatorTx(
-		1,                                  // Weight
-		uint64(supernetVdr1StartTime.Unix()), // Start time
-		uint64(supernetVdr1EndTime.Unix()),   // end time
-		supernetValidatorNodeID,              // Node ID
-		supernetID,                           // Supernet ID
+		&txs.SupernetValidator{
+			Validator: txs.Validator{
+				NodeID: supernetValidatorNodeID,
+				Start:  uint64(supernetVdr1StartTime.Unix()),
+				End:    uint64(supernetVdr1EndTime.Unix()),
+				Wght:   1,
+			},
+			Supernet: supernetID,
+		},
 		[]*secp256k1.PrivateKey{preFundedKeys[0], preFundedKeys[1]},
-		ids.ShortEmpty,
-		nil,
 	)
 	require.NoError(err)
 
@@ -628,14 +632,16 @@ func TestBanffStandardBlockRemoveSupernetValidator(t *testing.T) {
 	// Queue a staker that joins the staker set after the above validator leaves
 	supernetVdr2NodeID := genesisNodeIDs[1]
 	tx, err = env.txBuilder.NewAddSupernetValidatorTx(
-		1, // Weight
-		uint64(supernetVdr1EndTime.Add(time.Second).Unix()),                                // Start time
-		uint64(supernetVdr1EndTime.Add(time.Second).Add(defaultMinStakingDuration).Unix()), // end time
-		supernetVdr2NodeID, // Node ID
-		supernetID,         // Supernet ID
+		&txs.SupernetValidator{
+			Validator: txs.Validator{
+				NodeID: supernetVdr2NodeID,
+				Start:  uint64(supernetVdr1EndTime.Add(time.Second).Unix()),
+				End:    uint64(supernetVdr1EndTime.Add(time.Second).Add(defaultMinStakingDuration).Unix()),
+				Wght:   1,
+			},
+			Supernet: supernetID,
+		},
 		[]*secp256k1.PrivateKey{preFundedKeys[0], preFundedKeys[1]},
-		ids.ShortEmpty,
-		nil,
 	)
 	require.NoError(err)
 
@@ -698,14 +704,16 @@ func TestBanffStandardBlockTrackedSupernet(t *testing.T) {
 			supernetVdr1StartTime := defaultGenesisTime.Add(1 * time.Minute)
 			supernetVdr1EndTime := defaultGenesisTime.Add(10 * defaultMinStakingDuration).Add(1 * time.Minute)
 			tx, err := env.txBuilder.NewAddSupernetValidatorTx(
-				1,                                  // Weight
-				uint64(supernetVdr1StartTime.Unix()), // Start time
-				uint64(supernetVdr1EndTime.Unix()),   // end time
-				supernetValidatorNodeID,              // Node ID
-				supernetID,                           // Supernet ID
+				&txs.SupernetValidator{
+					Validator: txs.Validator{
+						NodeID: supernetValidatorNodeID,
+						Start:  uint64(supernetVdr1StartTime.Unix()),
+						End:    uint64(supernetVdr1EndTime.Unix()),
+						Wght:   1,
+					},
+					Supernet: supernetID,
+				},
 				[]*secp256k1.PrivateKey{preFundedKeys[0], preFundedKeys[1]},
-				ids.ShortEmpty,
-				nil,
 			)
 			require.NoError(err)
 
@@ -789,18 +797,21 @@ func TestBanffStandardBlockDelegatorStakerWeight(t *testing.T) {
 	pendingDelegatorEndTime := pendingDelegatorStartTime.Add(1 * time.Second)
 
 	addDelegatorTx, err := env.txBuilder.NewAddDelegatorTx(
-		env.config.MinDelegatorStake,
-		uint64(pendingDelegatorStartTime.Unix()),
-		uint64(pendingDelegatorEndTime.Unix()),
-		nodeID,
-		preFundedKeys[0].PublicKey().Address(),
+		&txs.Validator{
+			NodeID: nodeID,
+			Start:  uint64(pendingDelegatorStartTime.Unix()),
+			End:    uint64(pendingDelegatorEndTime.Unix()),
+			Wght:   env.config.MinDelegatorStake,
+		},
+		&secp256k1fx.OutputOwners{
+			Threshold: 1,
+			Addrs:     []ids.ShortID{preFundedKeys[0].PublicKey().Address()},
+		},
 		[]*secp256k1.PrivateKey{
 			preFundedKeys[0],
 			preFundedKeys[1],
 			preFundedKeys[4],
 		},
-		ids.ShortEmpty,
-		nil,
 	)
 	require.NoError(err)
 

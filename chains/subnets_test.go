@@ -117,16 +117,12 @@ func TestSupernetConfigs(t *testing.T) {
 			config: map[ids.ID]supernets.Config{
 				constants.PrimaryNetworkID: {},
 				testSupernetID: {
-					GossipConfig: supernets.GossipConfig{
-						AcceptedFrontierValidatorSize: 123456789,
-					},
+					ValidatorOnly: true,
 				},
 			},
 			supernetID: testSupernetID,
 			want: supernets.Config{
-				GossipConfig: supernets.GossipConfig{
-					AcceptedFrontierValidatorSize: 123456789,
-				},
+				ValidatorOnly: true,
 			},
 		},
 	}

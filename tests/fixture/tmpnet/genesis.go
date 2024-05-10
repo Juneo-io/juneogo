@@ -10,9 +10,9 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/ava-labs/coreth/core"
-	"github.com/ava-labs/coreth/params"
-	"github.com/ava-labs/coreth/plugin/evm"
+	"github.com/Juneo-io/jeth/core"
+	"github.com/Juneo-io/jeth/params"
+	"github.com/Juneo-io/jeth/plugin/evm"
 
 	"github.com/Juneo-io/juneogo/genesis"
 	"github.com/Juneo-io/juneogo/ids"

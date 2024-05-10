@@ -53,32 +53,14 @@ const (
 	chainUpgradeFileName = "upgrade"
 	supernetConfigFileExt  = ".json"
 
-	keystoreDeprecationMsg               = "keystore API is deprecated"
-	acceptedFrontierGossipDeprecationMsg = "push-based accepted frontier gossip is deprecated"
-	peerListPushGossipDeprecationMsg     = "push-based peer list gossip is deprecated"
+	keystoreDeprecationMsg = "keystore API is deprecated"
 )
 
 var (
 	// Deprecated key --> deprecation message (i.e. which key replaces it)
 	// TODO: deprecate "BootstrapIDsKey" and "BootstrapIPsKey"
-	commitThresholdDeprecationMsg = fmt.Sprintf("use --%s instead", SnowCommitThresholdKey)
-	deprecatedKeys                = map[string]string{
+	deprecatedKeys = map[string]string{
 		KeystoreAPIEnabledKey: keystoreDeprecationMsg,
-
-		ConsensusGossipAcceptedFrontierValidatorSizeKey:    acceptedFrontierGossipDeprecationMsg,
-		ConsensusGossipAcceptedFrontierNonValidatorSizeKey: acceptedFrontierGossipDeprecationMsg,
-		ConsensusGossipAcceptedFrontierPeerSizeKey:         acceptedFrontierGossipDeprecationMsg,
-		ConsensusGossipOnAcceptValidatorSizeKey:            acceptedFrontierGossipDeprecationMsg,
-		ConsensusGossipOnAcceptNonValidatorSizeKey:         acceptedFrontierGossipDeprecationMsg,
-		ConsensusGossipOnAcceptPeerSizeKey:                 acceptedFrontierGossipDeprecationMsg,
-
-		NetworkPeerListValidatorGossipSizeKey:    peerListPushGossipDeprecationMsg,
-		NetworkPeerListNonValidatorGossipSizeKey: peerListPushGossipDeprecationMsg,
-		NetworkPeerListPeersGossipSizeKey:        peerListPushGossipDeprecationMsg,
-		NetworkPeerListGossipFreqKey:             peerListPushGossipDeprecationMsg,
-
-		SnowRogueCommitThresholdKey:    commitThresholdDeprecationMsg,
-		SnowVirtuousCommitThresholdKey: commitThresholdDeprecationMsg,
 	}
 
 	errConflictingACPOpinion                  = errors.New("supporting and objecting to the same ACP")
@@ -108,7 +90,6 @@ var (
 	errCannotReadDirectory                    = errors.New("cannot read directory")
 	errUnmarshalling                          = errors.New("unmarshalling failed")
 	errFileDoesNotExist                       = errors.New("file does not exist")
-	errGzipDeprecatedMsg                      = errors.New("gzip compression is not supported, use zstd or no compression")
 )
 
 func getConsensusConfig(v *viper.Viper) snowball.Parameters {
@@ -116,8 +97,7 @@ func getConsensusConfig(v *viper.Viper) snowball.Parameters {
 		K:                     v.GetInt(SnowSampleSizeKey),
 		AlphaPreference:       v.GetInt(SnowPreferenceQuorumSizeKey),
 		AlphaConfidence:       v.GetInt(SnowConfidenceQuorumSizeKey),
-		BetaVirtuous:          v.GetInt(SnowCommitThresholdKey),
-		BetaRogue:             v.GetInt(SnowCommitThresholdKey),
+		Beta:                  v.GetInt(SnowCommitThresholdKey),
 		ConcurrentRepolls:     v.GetInt(SnowConcurrentRepollsKey),
 		OptimalProcessing:     v.GetInt(SnowOptimalProcessingKey),
 		MaxOutstandingItems:   v.GetInt(SnowMaxProcessingKey),
@@ -126,10 +106,6 @@ func getConsensusConfig(v *viper.Viper) snowball.Parameters {
 	if v.IsSet(SnowQuorumSizeKey) {
 		p.AlphaPreference = v.GetInt(SnowQuorumSizeKey)
 		p.AlphaConfidence = p.AlphaPreference
-	}
-	if v.IsSet(SnowRogueCommitThresholdKey) {
-		p.BetaVirtuous = v.GetInt(SnowRogueCommitThresholdKey)
-		p.BetaRogue = v.GetInt(SnowRogueCommitThresholdKey)
 	}
 	return p
 }
@@ -269,17 +245,6 @@ func getAdaptiveTimeoutConfig(v *viper.Viper) (timer.AdaptiveTimeoutConfig, erro
 	return config, nil
 }
 
-func getGossipConfig(v *viper.Viper) supernets.GossipConfig {
-	return supernets.GossipConfig{
-		AcceptedFrontierValidatorSize:    uint(v.GetUint32(ConsensusGossipAcceptedFrontierValidatorSizeKey)),
-		AcceptedFrontierNonValidatorSize: uint(v.GetUint32(ConsensusGossipAcceptedFrontierNonValidatorSizeKey)),
-		AcceptedFrontierPeerSize:         uint(v.GetUint32(ConsensusGossipAcceptedFrontierPeerSizeKey)),
-		OnAcceptValidatorSize:            uint(v.GetUint32(ConsensusGossipOnAcceptValidatorSizeKey)),
-		OnAcceptNonValidatorSize:         uint(v.GetUint32(ConsensusGossipOnAcceptNonValidatorSizeKey)),
-		OnAcceptPeerSize:                 uint(v.GetUint32(ConsensusGossipOnAcceptPeerSizeKey)),
-	}
-}
-
 func getNetworkConfig(
 	v *viper.Viper,
 	networkID uint32,
@@ -296,9 +261,6 @@ func getNetworkConfig(
 	compressionType, err := compression.TypeFromString(v.GetString(NetworkCompressionTypeKey))
 	if err != nil {
 		return network.Config{}, err
-	}
-	if compressionType == compression.TypeGzip {
-		return network.Config{}, errGzipDeprecatedMsg
 	}
 
 	allowPrivateIPs := !constants.ProductionNetworkIDs.Contains(networkID)
@@ -392,13 +354,9 @@ func getNetworkConfig(
 		},
 
 		PeerListGossipConfig: network.PeerListGossipConfig{
-			PeerListNumValidatorIPs:        v.GetUint32(NetworkPeerListNumValidatorIPsKey),
-			PeerListValidatorGossipSize:    v.GetUint32(NetworkPeerListValidatorGossipSizeKey),
-			PeerListNonValidatorGossipSize: v.GetUint32(NetworkPeerListNonValidatorGossipSizeKey),
-			PeerListPeersGossipSize:        v.GetUint32(NetworkPeerListPeersGossipSizeKey),
-			PeerListGossipFreq:             v.GetDuration(NetworkPeerListGossipFreqKey),
-			PeerListPullGossipFreq:         v.GetDuration(NetworkPeerListPullGossipFreqKey),
-			PeerListBloomResetFreq:         v.GetDuration(NetworkPeerListBloomResetFreqKey),
+			PeerListNumValidatorIPs: v.GetUint32(NetworkPeerListNumValidatorIPsKey),
+			PeerListPullGossipFreq:  v.GetDuration(NetworkPeerListPullGossipFreqKey),
+			PeerListBloomResetFreq:  v.GetDuration(NetworkPeerListBloomResetFreqKey),
 		},
 
 		DelayConfig: network.DelayConfig{
@@ -432,8 +390,6 @@ func getNetworkConfig(
 		return network.Config{}, fmt.Errorf("%s must be in [0,1]", NetworkHealthMaxPortionSendQueueFillKey)
 	case config.DialerConfig.ConnectionTimeout < 0:
 		return network.Config{}, fmt.Errorf("%q must be >= 0", NetworkOutboundConnectionTimeoutKey)
-	case config.PeerListGossipFreq < 0:
-		return network.Config{}, fmt.Errorf("%s must be >= 0", NetworkPeerListGossipFreqKey)
 	case config.PeerListPullGossipFreq < 0:
 		return network.Config{}, fmt.Errorf("%s must be >= 0", NetworkPeerListPullGossipFreqKey)
 	case config.PeerListBloomResetFreq < 0:
@@ -1004,7 +960,7 @@ func getChainConfigs(v *viper.Viper) (map[string]chains.ChainConfig, error) {
 	return getChainConfigsFromDir(v)
 }
 
-// ReadsChainConfigs reads chain config files from static directories and returns map with contents,
+// readChainConfigPath reads chain config files from static directories and returns map with contents,
 // if successful.
 func readChainConfigPath(chainConfigPath string) (map[string]chains.ChainConfig, error) {
 	chainDirs, err := filepath.Glob(filepath.Join(chainConfigPath, "*"))
@@ -1042,7 +998,7 @@ func readChainConfigPath(chainConfigPath string) (map[string]chains.ChainConfig,
 	return chainConfigMap, nil
 }
 
-// getSupernetConfigsFromFlags reads supernet configs from the correct place
+// getSupernetConfigs reads supernet configs from the correct place
 // (flag or file) and returns a non-nil map.
 func getSupernetConfigs(v *viper.Viper, supernetIDs []ids.ID) (map[ids.ID]supernets.Config, error) {
 	if v.IsSet(SupernetConfigContentKey) {
@@ -1144,7 +1100,6 @@ func getDefaultSupernetConfig(v *viper.Viper) supernets.Config {
 	return supernets.Config{
 		ConsensusParameters:         getConsensusConfig(v),
 		ValidatorOnly:               false,
-		GossipConfig:                getGossipConfig(v),
 		ProposerMinBlockDelay:       proposervm.DefaultMinBlockDelay,
 		ProposerNumHistoricalBlocks: proposervm.DefaultNumHistoricalBlocks,
 	}

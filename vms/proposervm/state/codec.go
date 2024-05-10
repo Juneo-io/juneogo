@@ -5,7 +5,6 @@ package state
 
 import (
 	"math"
-	"time"
 
 	"github.com/Juneo-io/juneogo/codec"
 	"github.com/Juneo-io/juneogo/codec/linearcodec"
@@ -16,7 +15,7 @@ const CodecVersion = 0
 var Codec codec.Manager
 
 func init() {
-	lc := linearcodec.NewDefault(time.Time{})
+	lc := linearcodec.NewDefault()
 	Codec = codec.NewManager(math.MaxInt32)
 
 	err := Codec.RegisterCodec(CodecVersion, lc)

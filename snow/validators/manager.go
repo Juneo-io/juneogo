@@ -24,6 +24,12 @@ var (
 	ErrMissingValidators = errors.New("missing validators")
 )
 
+type ManagerCallbackListener interface {
+	OnValidatorAdded(supernetID ids.ID, nodeID ids.NodeID, pk *bls.PublicKey, txID ids.ID, weight uint64)
+	OnValidatorRemoved(supernetID ids.ID, nodeID ids.NodeID, weight uint64)
+	OnValidatorWeightChanged(supernetID ids.ID, nodeID ids.NodeID, oldWeight, newWeight uint64)
+}
+
 type SetCallbackListener interface {
 	OnValidatorAdded(nodeID ids.NodeID, pk *bls.PublicKey, txID ids.ID, weight uint64)
 	OnValidatorRemoved(nodeID ids.NodeID, weight uint64)
@@ -88,9 +94,13 @@ type Manager interface {
 	// Map of the validators in this supernet
 	GetMap(supernetID ids.ID) map[ids.NodeID]*GetValidatorOutput
 
-	// When a validator's weight changes, or a validator is added/removed,
-	// this listener is called.
-	RegisterCallbackListener(supernetID ids.ID, listener SetCallbackListener)
+	// When a validator is added, removed, or its weight changes, the listener
+	// will be notified of the event.
+	RegisterCallbackListener(listener ManagerCallbackListener)
+
+	// When a validator is added, removed, or its weight changes on [supernetID],
+	// the listener will be notified of the event.
+	RegisterSetCallbackListener(supernetID ids.ID, listener SetCallbackListener)
 }
 
 // NewManager returns a new, empty manager
@@ -105,7 +115,8 @@ type manager struct {
 
 	// Key: Supernet ID
 	// Value: The validators that validate the supernet
-	supernetToVdrs map[ids.ID]*vdrSet
+	supernetToVdrs      map[ids.ID]*vdrSet
+	callbackListeners []ManagerCallbackListener
 }
 
 func (m *manager) AddStaker(supernetID ids.ID, nodeID ids.NodeID, pk *bls.PublicKey, txID ids.ID, weight uint64) error {
@@ -118,7 +129,7 @@ func (m *manager) AddStaker(supernetID ids.ID, nodeID ids.NodeID, pk *bls.Public
 
 	set, exists := m.supernetToVdrs[supernetID]
 	if !exists {
-		set = newSet()
+		set = newSet(supernetID, m.callbackListeners)
 		m.supernetToVdrs[supernetID] = set
 	}
 
@@ -264,13 +275,23 @@ func (m *manager) GetMap(supernetID ids.ID) map[ids.NodeID]*GetValidatorOutput {
 	return set.Map()
 }
 
-func (m *manager) RegisterCallbackListener(supernetID ids.ID, listener SetCallbackListener) {
+func (m *manager) RegisterCallbackListener(listener ManagerCallbackListener) {
+	m.lock.Lock()
+	defer m.lock.Unlock()
+
+	m.callbackListeners = append(m.callbackListeners, listener)
+	for _, set := range m.supernetToVdrs {
+		set.RegisterManagerCallbackListener(listener)
+	}
+}
+
+func (m *manager) RegisterSetCallbackListener(supernetID ids.ID, listener SetCallbackListener) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
 	set, exists := m.supernetToVdrs[supernetID]
 	if !exists {
-		set = newSet()
+		set = newSet(supernetID, m.callbackListeners)
 		m.supernetToVdrs[supernetID] = set
 	}
 

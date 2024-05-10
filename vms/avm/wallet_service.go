@@ -14,7 +14,7 @@ import (
 	"github.com/Juneo-io/juneogo/api"
 	"github.com/Juneo-io/juneogo/ids"
 	"github.com/Juneo-io/juneogo/utils/formatting"
-	"github.com/Juneo-io/juneogo/utils/linkedhashmap"
+	"github.com/Juneo-io/juneogo/utils/linked"
 	"github.com/Juneo-io/juneogo/utils/logging"
 	"github.com/Juneo-io/juneogo/utils/math"
 	"github.com/Juneo-io/juneogo/vms/avm/txs"
@@ -27,7 +27,7 @@ var errMissingUTXO = errors.New("missing utxo")
 
 type WalletService struct {
 	vm         *VM
-	pendingTxs linkedhashmap.LinkedHashmap[ids.ID, *txs.Tx]
+	pendingTxs *linked.Hashmap[ids.ID, *txs.Tx]
 }
 
 func (w *WalletService) decided(txID ids.ID) {

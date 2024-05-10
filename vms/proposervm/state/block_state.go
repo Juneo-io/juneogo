@@ -17,7 +17,6 @@ import (
 	"github.com/Juneo-io/juneogo/utils/metric"
 	"github.com/Juneo-io/juneogo/utils/units"
 	"github.com/Juneo-io/juneogo/utils/wrappers"
-	"github.com/Juneo-io/juneogo/version"
 	"github.com/Juneo-io/juneogo/vms/proposervm/block"
 )
 
@@ -110,11 +109,7 @@ func (s *blockState) GetBlock(blkID ids.ID) (block.Block, choices.Status, error)
 	}
 
 	// The key was in the database
-	//
-	// Invariant: Blocks stored on disk were previously accepted by this node.
-	// Because the durango activation relaxes TLS cert parsing rules, we assume
-	// it is always activated here.
-	blk, err := block.Parse(blkWrapper.Block, version.DefaultUpgradeTime)
+	blk, err := block.Parse(blkWrapper.Block)
 	if err != nil {
 		return nil, choices.Unknown, err
 	}

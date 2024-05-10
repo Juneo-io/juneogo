@@ -4,11 +4,11 @@
 package x
 
 import (
+	"context"
+
 	"github.com/Juneo-io/juneogo/ids"
 	"github.com/Juneo-io/juneogo/vms/avm/txs"
 	"github.com/Juneo-io/juneogo/vms/components/avax"
-
-	stdcontext "context"
 )
 
 var _ txs.Visitor = (*backendVisitor)(nil)
@@ -16,7 +16,7 @@ var _ txs.Visitor = (*backendVisitor)(nil)
 // backendVisitor handles accepting of transactions for the backend
 type backendVisitor struct {
 	b    *backend
-	ctx  stdcontext.Context
+	ctx  context.Context
 	txID ids.ID
 }
 

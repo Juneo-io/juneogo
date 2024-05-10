@@ -7,7 +7,6 @@ import (
 	"math"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/require"
 
@@ -15,6 +14,7 @@ import (
 	"github.com/Juneo-io/juneogo/snow/snowtest"
 	"github.com/Juneo-io/juneogo/utils/constants"
 	"github.com/Juneo-io/juneogo/utils/crypto/secp256k1"
+	"github.com/Juneo-io/juneogo/utils/timer/mockable"
 	"github.com/Juneo-io/juneogo/vms/avm/config"
 	"github.com/Juneo-io/juneogo/vms/avm/fxs"
 	"github.com/Juneo-io/juneogo/vms/avm/txs"
@@ -30,6 +30,7 @@ var (
 	feeConfig = config.Config{
 		TxFee:            2,
 		CreateAssetTxFee: 3,
+		EUpgradeTime:     mockable.MaxTime,
 	}
 )
 
@@ -38,7 +39,6 @@ func TestSyntacticVerifierBaseTx(t *testing.T) {
 
 	fx := &secp256k1fx.Fx{}
 	parser, err := txs.NewParser(
-		time.Time{},
 		[]fxs.Fx{
 			fx,
 		},
@@ -411,7 +411,6 @@ func TestSyntacticVerifierCreateAssetTx(t *testing.T) {
 
 	fx := &secp256k1fx.Fx{}
 	parser, err := txs.NewParser(
-		time.Time{},
 		[]fxs.Fx{
 			fx,
 		},
@@ -1021,7 +1020,6 @@ func TestSyntacticVerifierOperationTx(t *testing.T) {
 
 	fx := &secp256k1fx.Fx{}
 	parser, err := txs.NewParser(
-		time.Time{},
 		[]fxs.Fx{
 			fx,
 		},
@@ -1511,7 +1509,6 @@ func TestSyntacticVerifierImportTx(t *testing.T) {
 
 	fx := &secp256k1fx.Fx{}
 	parser, err := txs.NewParser(
-		time.Time{},
 		[]fxs.Fx{
 			fx,
 		},
@@ -1912,7 +1909,6 @@ func TestSyntacticVerifierExportTx(t *testing.T) {
 
 	fx := &secp256k1fx.Fx{}
 	parser, err := txs.NewParser(
-		time.Time{},
 		[]fxs.Fx{
 			fx,
 		},

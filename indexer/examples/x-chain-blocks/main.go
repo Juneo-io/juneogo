@@ -9,9 +9,8 @@ import (
 	"time"
 
 	"github.com/Juneo-io/juneogo/indexer"
-	"github.com/Juneo-io/juneogo/version"
 	"github.com/Juneo-io/juneogo/vms/proposervm/block"
-	"github.com/Juneo-io/juneogo/wallet/chain/x"
+	"github.com/Juneo-io/juneogo/wallet/chain/x/builder"
 	"github.com/Juneo-io/juneogo/wallet/supernet/primary"
 )
 
@@ -28,17 +27,17 @@ func main() {
 		container, err := client.GetContainerByIndex(ctx, nextIndex)
 		if err != nil {
 			time.Sleep(time.Second)
-			log.Printf("polling for next accepted block\n")
+			log.Println("polling for next accepted block")
 			continue
 		}
 
-		proposerVMBlock, err := block.Parse(container.Bytes, version.DefaultUpgradeTime)
+		proposerVMBlock, err := block.Parse(container.Bytes)
 		if err != nil {
 			log.Fatalf("failed to parse proposervm block: %s\n", err)
 		}
 
 		avmBlockBytes := proposerVMBlock.Block()
-		avmBlock, err := x.Parser.ParseBlock(avmBlockBytes)
+		avmBlock, err := builder.Parser.ParseBlock(avmBlockBytes)
 		if err != nil {
 			log.Fatalf("failed to parse avm block: %s\n", err)
 		}

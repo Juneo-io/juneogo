@@ -7,7 +7,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/ava-labs/coreth/plugin/evm"
+	"github.com/Juneo-io/jeth/plugin/evm"
 	"github.com/ethereum/go-ethereum/common"
 
 	"github.com/Juneo-io/juneogo/database"

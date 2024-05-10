@@ -11,7 +11,7 @@ import (
 	"github.com/Juneo-io/juneogo/ids"
 	"github.com/Juneo-io/juneogo/snow"
 	"github.com/Juneo-io/juneogo/snow/engine/common"
-	"github.com/Juneo-io/juneogo/utils/linkedhashmap"
+	"github.com/Juneo-io/juneogo/utils/linked"
 	"github.com/Juneo-io/juneogo/vms/example/xsvm/chain"
 	"github.com/Juneo-io/juneogo/vms/example/xsvm/execute"
 	"github.com/Juneo-io/juneogo/vms/example/xsvm/tx"
@@ -35,7 +35,7 @@ type builder struct {
 	engineChan   chan<- common.Message
 	chain        chain.Chain
 
-	pendingTxs linkedhashmap.LinkedHashmap[ids.ID, *tx.Tx]
+	pendingTxs *linked.Hashmap[ids.ID, *tx.Tx]
 	preference ids.ID
 }
 
@@ -45,7 +45,7 @@ func New(chainContext *snow.Context, engineChan chan<- common.Message, chain cha
 		engineChan:   engineChan,
 		chain:        chain,
 
-		pendingTxs: linkedhashmap.New[ids.ID, *tx.Tx](),
+		pendingTxs: linked.NewHashmap[ids.ID, *tx.Tx](),
 		preference: chain.LastAccepted(),
 	}
 }

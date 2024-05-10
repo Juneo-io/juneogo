@@ -27,7 +27,6 @@ var (
 	ErrStakeTooShort                   = errors.New("staking period is too short")
 	ErrStakeTooLong                    = errors.New("staking period is too long")
 	ErrFlowCheckFailed                 = errors.New("flow check failed")
-	ErrFutureStakeTime                 = fmt.Errorf("staker is attempting to start staking more than %s ahead of the current chain time", MaxFutureStartTime)
 	ErrNotValidator                    = errors.New("isn't a current or pending validator")
 	ErrRemovePermissionlessValidator   = errors.New("attempting to remove permissionless validator")
 	ErrStakeOverflow                   = errors.New("validator stake exceeds limit")
@@ -182,9 +181,7 @@ func verifyAddValidatorTx(
 		return nil, fmt.Errorf("%w: %w", ErrFlowCheckFailed, err)
 	}
 
-	// verifyStakerStartsSoon is checked last to allow
-	// the verifier visitor to explicitly check for this error.
-	return outs, verifyStakerStartsSoon(false /*=isDurangoActive*/, currentTimestamp, startTime)
+	return outs, nil
 }
 
 // verifyAddSupernetValidatorTx carries out the validation for an
@@ -272,9 +269,7 @@ func verifyAddSupernetValidatorTx(
 		return fmt.Errorf("%w: %w", ErrFlowCheckFailed, err)
 	}
 
-	// verifyStakerStartsSoon is checked last to allow
-	// the verifier visitor to explicitly check for this error.
-	return verifyStakerStartsSoon(isDurangoActive, currentTimestamp, startTime)
+	return nil
 }
 
 // Returns the representation of [tx.NodeID] validating [tx.Supernet].
@@ -464,9 +459,7 @@ func verifyAddDelegatorTx(
 		return nil, fmt.Errorf("%w: %w", ErrFlowCheckFailed, err)
 	}
 
-	// verifyStakerStartsSoon is checked last to allow
-	// the verifier visitor to explicitly check for this error.
-	return outs, verifyStakerStartsSoon(false /*=isDurangoActive*/, currentTimestamp, startTime)
+	return outs, nil
 }
 
 // verifyAddPermissionlessValidatorTx carries out the validation for an
@@ -592,9 +585,7 @@ func verifyAddPermissionlessValidatorTx(
 		return fmt.Errorf("%w: %w", ErrFlowCheckFailed, err)
 	}
 
-	// verifyStakerStartsSoon is checked last to allow
-	// the verifier visitor to explicitly check for this error.
-	return verifyStakerStartsSoon(isDurangoActive, currentTimestamp, startTime)
+	return nil
 }
 
 // verifyAddPermissionlessDelegatorTx carries out the validation for an
@@ -741,9 +732,7 @@ func verifyAddPermissionlessDelegatorTx(
 		return fmt.Errorf("%w: %w", ErrFlowCheckFailed, err)
 	}
 
-	// verifyStakerStartsSoon is checked last to allow
-	// the verifier visitor to explicitly check for this error.
-	return verifyStakerStartsSoon(isDurangoActive, currentTimestamp, startTime)
+	return nil
 }
 
 // Returns an error if the given tx is invalid.
@@ -812,20 +801,6 @@ func verifyStakerStartTime(isDurangoActive bool, chainTime, stakerTime time.Time
 			chainTime,
 			stakerTime,
 		)
-	}
-	return nil
-}
-
-func verifyStakerStartsSoon(isDurangoActive bool, chainTime, stakerStartTime time.Time) error {
-	if isDurangoActive {
-		return nil
-	}
-
-	// Make sure the tx doesn't start too far in the future. This is done last
-	// to allow the verifier visitor to explicitly check for this error.
-	maxStartTime := chainTime.Add(MaxFutureStartTime)
-	if stakerStartTime.After(maxStartTime) {
-		return ErrFutureStakeTime
 	}
 	return nil
 }

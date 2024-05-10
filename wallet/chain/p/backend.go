@@ -4,6 +4,7 @@
 package p
 
 import (
+	"context"
 	"sync"
 
 	"github.com/Juneo-io/juneogo/database"
@@ -13,31 +14,31 @@ import (
 	"github.com/Juneo-io/juneogo/vms/components/avax"
 	"github.com/Juneo-io/juneogo/vms/platformvm/fx"
 	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
+	"github.com/Juneo-io/juneogo/wallet/chain/p/builder"
+	"github.com/Juneo-io/juneogo/wallet/chain/p/signer"
 	"github.com/Juneo-io/juneogo/wallet/supernet/primary/common"
-
-	stdcontext "context"
 )
 
 var _ Backend = (*backend)(nil)
 
 // Backend defines the full interface required to support a P-chain wallet.
 type Backend interface {
-	common.ChainUTXOs
-	BuilderBackend
-	SignerBackend
+	builder.Backend
+	signer.Backend
 
-	AcceptTx(ctx stdcontext.Context, tx *txs.Tx) error
+	AcceptTx(ctx context.Context, tx *txs.Tx) error
 }
 
 type backend struct {
-	Context
 	common.ChainUTXOs
+
+	context *builder.Context
 
 	supernetOwnerLock sync.RWMutex
 	supernetOwner     map[ids.ID]fx.Owner // supernetID -> owner
 }
 
-func NewBackend(ctx Context, utxos common.ChainUTXOs, supernetTxs map[ids.ID]*txs.Tx) Backend {
+func NewBackend(context *builder.Context, utxos common.ChainUTXOs, supernetTxs map[ids.ID]*txs.Tx) Backend {
 	supernetOwner := make(map[ids.ID]fx.Owner)
 	for txID, tx := range supernetTxs { // first get owners from the CreateSupernetTx
 		createSupernetTx, ok := tx.Unsigned.(*txs.CreateSupernetTx)
@@ -54,13 +55,13 @@ func NewBackend(ctx Context, utxos common.ChainUTXOs, supernetTxs map[ids.ID]*tx
 		supernetOwner[transferSupernetOwnershipTx.Supernet] = transferSupernetOwnershipTx.Owner
 	}
 	return &backend{
-		Context:     ctx,
 		ChainUTXOs:  utxos,
+		context:     context,
 		supernetOwner: supernetOwner,
 	}
 }
 
-func (b *backend) AcceptTx(ctx stdcontext.Context, tx *txs.Tx) error {
+func (b *backend) AcceptTx(ctx context.Context, tx *txs.Tx) error {
 	txID := tx.ID()
 	err := tx.Unsigned.Visit(&backendVisitor{
 		b:    b,
@@ -75,7 +76,7 @@ func (b *backend) AcceptTx(ctx stdcontext.Context, tx *txs.Tx) error {
 	return b.addUTXOs(ctx, constants.PlatformChainID, producedUTXOSlice)
 }
 
-func (b *backend) addUTXOs(ctx stdcontext.Context, destinationChainID ids.ID, utxos []*avax.UTXO) error {
+func (b *backend) addUTXOs(ctx context.Context, destinationChainID ids.ID, utxos []*avax.UTXO) error {
 	for _, utxo := range utxos {
 		if err := b.AddUTXO(ctx, destinationChainID, utxo); err != nil {
 			return err
@@ -84,7 +85,7 @@ func (b *backend) addUTXOs(ctx stdcontext.Context, destinationChainID ids.ID, ut
 	return nil
 }
 
-func (b *backend) removeUTXOs(ctx stdcontext.Context, sourceChain ids.ID, utxoIDs set.Set[ids.ID]) error {
+func (b *backend) removeUTXOs(ctx context.Context, sourceChain ids.ID, utxoIDs set.Set[ids.ID]) error {
 	for utxoID := range utxoIDs {
 		if err := b.RemoveUTXO(ctx, sourceChain, utxoID); err != nil {
 			return err
@@ -93,7 +94,7 @@ func (b *backend) removeUTXOs(ctx stdcontext.Context, sourceChain ids.ID, utxoID
 	return nil
 }
 
-func (b *backend) GetSupernetOwner(_ stdcontext.Context, supernetID ids.ID) (fx.Owner, error) {
+func (b *backend) GetSupernetOwner(_ context.Context, supernetID ids.ID) (fx.Owner, error) {
 	b.supernetOwnerLock.RLock()
 	defer b.supernetOwnerLock.RUnlock()
 

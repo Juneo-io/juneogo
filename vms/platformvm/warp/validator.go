@@ -55,7 +55,7 @@ func GetCanonicalValidatorSet(
 	// Get the validator set at the given height.
 	vdrSet, err := pChainState.GetValidatorSet(ctx, pChainHeight, supernetID)
 	if err != nil {
-		return nil, 0, fmt.Errorf("failed to fetch validator set (P-Chain Height: %d, SupernetID: %s): %w", pChainHeight, supernetID, err)
+		return nil, 0, err
 	}
 
 	var (
@@ -72,7 +72,7 @@ func GetCanonicalValidatorSet(
 			continue
 		}
 
-		pkBytes := bls.SerializePublicKey(vdr.PublicKey)
+		pkBytes := bls.PublicKeyToUncompressedBytes(vdr.PublicKey)
 		uniqueVdr, ok := vdrs[string(pkBytes)]
 		if !ok {
 			uniqueVdr = &Validator{

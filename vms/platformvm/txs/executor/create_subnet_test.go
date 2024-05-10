@@ -10,10 +10,10 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/Juneo-io/juneogo/ids"
+	"github.com/Juneo-io/juneogo/utils/set"
 	"github.com/Juneo-io/juneogo/utils/units"
-	"github.com/Juneo-io/juneogo/vms/components/avax"
 	"github.com/Juneo-io/juneogo/vms/platformvm/state"
-	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
+	"github.com/Juneo-io/juneogo/vms/platformvm/txs/txstest"
 	"github.com/Juneo-io/juneogo/vms/platformvm/utxo"
 	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
 )
@@ -54,21 +54,21 @@ func TestCreateSupernetTxAP3FeeChange(t *testing.T) {
 			env.ctx.Lock.Lock()
 			defer env.ctx.Lock.Unlock()
 
-			ins, outs, _, signers, err := env.utxosHandler.Spend(env.state, preFundedKeys, 0, test.fee, ids.ShortEmpty)
-			require.NoError(err)
+			env.state.SetTimestamp(test.time) // to duly set fee
 
-			// Create the tx
-			utx := &txs.CreateSupernetTx{
-				BaseTx: txs.BaseTx{BaseTx: avax.BaseTx{
-					NetworkID:    env.ctx.NetworkID,
-					BlockchainID: env.ctx.ChainID,
-					Ins:          ins,
-					Outs:         outs,
-				}},
-				Owner: &secp256k1fx.OutputOwners{},
+			addrs := set.NewSet[ids.ShortID](len(preFundedKeys))
+			for _, key := range preFundedKeys {
+				addrs.Add(key.Address())
 			}
-			tx := &txs.Tx{Unsigned: utx}
-			require.NoError(tx.Sign(txs.Codec, signers))
+
+			cfg := *env.config
+			cfg.CreateSupernetTxFee = test.fee
+			builder := txstest.NewBuilder(env.ctx, &cfg, env.state)
+			tx, err := builder.NewCreateSupernetTx(
+				&secp256k1fx.OutputOwners{},
+				preFundedKeys,
+			)
+			require.NoError(err)
 
 			stateDiff, err := state.NewDiff(lastAcceptedID, env)
 			require.NoError(err)

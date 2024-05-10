@@ -12,7 +12,6 @@ import (
 	"github.com/Juneo-io/juneogo/ids"
 	"github.com/Juneo-io/juneogo/utils/constants"
 	"github.com/Juneo-io/juneogo/utils/crypto/secp256k1"
-	"github.com/Juneo-io/juneogo/vms/avm/config"
 	"github.com/Juneo-io/juneogo/vms/avm/txs"
 	"github.com/Juneo-io/juneogo/vms/components/avax"
 	"github.com/Juneo-io/juneogo/vms/components/verify"
@@ -24,7 +23,7 @@ func TestVerifyFxUsage(t *testing.T) {
 	require := require.New(t)
 
 	env := setup(t, &envConfig{
-		vmStaticConfig: &config.Config{},
+		vmStaticConfig: noFeesTestConfig,
 	})
 	env.vm.ctx.Lock.Unlock()
 	defer func() {

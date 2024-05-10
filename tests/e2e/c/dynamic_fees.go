@@ -7,9 +7,9 @@ import (
 	"math/big"
 	"strings"
 
-	"github.com/ava-labs/coreth/core/types"
-	"github.com/ava-labs/coreth/params"
-	"github.com/ava-labs/coreth/plugin/evm"
+	"github.com/Juneo-io/jeth/core/types"
+	"github.com/Juneo-io/jeth/params"
+	"github.com/Juneo-io/jeth/plugin/evm"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/require"
@@ -37,7 +37,10 @@ var _ = e2e.DescribeCChain("[Dynamic Fees]", func() {
 
 	ginkgo.It("should ensure that the gas price is affected by load", func() {
 		ginkgo.By("creating a new private network to ensure isolation from other tests")
-		privateNetwork := e2e.Env.NewPrivateNetwork()
+		privateNetwork := &tmpnet.Network{
+			Owner: "avalanchego-e2e-dynamic-fees",
+		}
+		e2e.Env.StartPrivateNetwork(privateNetwork)
 
 		ginkgo.By("allocating a pre-funded key")
 		key := privateNetwork.PreFundedKeys[0]

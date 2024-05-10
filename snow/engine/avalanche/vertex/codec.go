@@ -4,8 +4,6 @@
 package vertex
 
 import (
-	"time"
-
 	"github.com/Juneo-io/juneogo/codec"
 	"github.com/Juneo-io/juneogo/codec/linearcodec"
 	"github.com/Juneo-io/juneogo/codec/reflectcodec"
@@ -24,8 +22,8 @@ const (
 var Codec codec.Manager
 
 func init() {
-	lc0 := linearcodec.New(time.Time{}, []string{reflectcodec.DefaultTagName + "V0"}, maxSize)
-	lc1 := linearcodec.New(time.Time{}, []string{reflectcodec.DefaultTagName + "V1"}, maxSize)
+	lc0 := linearcodec.New([]string{reflectcodec.DefaultTagName + "V0"})
+	lc1 := linearcodec.New([]string{reflectcodec.DefaultTagName + "V1"})
 
 	Codec = codec.NewManager(maxSize)
 	err := utils.Err(

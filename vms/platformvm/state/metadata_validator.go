@@ -6,6 +6,7 @@ package state
 import (
 	"time"
 
+	"github.com/Juneo-io/juneogo/codec"
 	"github.com/Juneo-io/juneogo/database"
 	"github.com/Juneo-io/juneogo/ids"
 	"github.com/Juneo-io/juneogo/utils/constants"
@@ -17,7 +18,7 @@ import (
 // [preDelegateeRewardMetadata].
 //
 // CodecVersionLen + UpDurationLen + LastUpdatedLen + PotentialRewardLen
-const preDelegateeRewardSize = wrappers.ShortLen + 3*wrappers.LongLen
+const preDelegateeRewardSize = codec.VersionSize + 3*wrappers.LongLen
 
 var _ validatorState = (*metadata)(nil)
 

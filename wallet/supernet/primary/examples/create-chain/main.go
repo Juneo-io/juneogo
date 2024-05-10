@@ -5,15 +5,18 @@ package main
 
 import (
 	"context"
-	"encoding/hex"
 	"log"
+	"math"
 	"time"
 
 	"github.com/Juneo-io/juneogo/genesis"
 	"github.com/Juneo-io/juneogo/ids"
 	"github.com/Juneo-io/juneogo/utils/set"
+	"github.com/Juneo-io/juneogo/vms/example/xsvm"
 	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
 	"github.com/Juneo-io/juneogo/wallet/supernet/primary"
+
+	xsgenesis "github.com/Juneo-io/juneogo/vms/example/xsvm/genesis"
 )
 
 func main() {
@@ -21,8 +24,16 @@ func main() {
 	uri := primary.LocalAPIURI
 	kc := secp256k1fx.NewKeychain(key)
 	supernetIDStr := "29uVeLPJB1eQJkzRemU8g8wZDw5uJRqpab5U2mX9euieVwiEbL"
-	genesisHex := "00000000000000000000000000017b5490493f8a2fff444ac8b54e27b3339d7c60dcffffffffffffffff"
-	vmID := ids.ID{'x', 's', 'v', 'm'}
+	genesis := &xsgenesis.Genesis{
+		Timestamp: time.Now().Unix(),
+		Allocations: []xsgenesis.Allocation{
+			{
+				Address: genesis.EWOQKey.Address(),
+				Balance: math.MaxUint64,
+			},
+		},
+	}
+	vmID := xsvm.ID
 	name := "let there"
 
 	supernetID, err := ids.FromString(supernetIDStr)
@@ -30,9 +41,9 @@ func main() {
 		log.Fatalf("failed to parse supernet ID: %s\n", err)
 	}
 
-	genesisBytes, err := hex.DecodeString(genesisHex)
+	genesisBytes, err := xsgenesis.Codec.Marshal(xsgenesis.CodecVersion, genesis)
 	if err != nil {
-		log.Fatalf("failed to parse genesis bytes: %s\n", err)
+		log.Fatalf("failed to create genesis bytes: %s\n", err)
 	}
 
 	ctx := context.Background()

@@ -7,8 +7,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/ava-labs/coreth/ethclient"
-	"github.com/ava-labs/coreth/plugin/evm"
+	"github.com/Juneo-io/jeth/ethclient"
+	"github.com/Juneo-io/jeth/plugin/evm"
 
 	"github.com/Juneo-io/juneogo/api/info"
 	"github.com/Juneo-io/juneogo/codec"
@@ -21,9 +21,10 @@ import (
 	"github.com/Juneo-io/juneogo/vms/platformvm"
 	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
 	"github.com/Juneo-io/juneogo/wallet/chain/c"
-	"github.com/Juneo-io/juneogo/wallet/chain/p"
 	"github.com/Juneo-io/juneogo/wallet/chain/x"
 
+	pbuilder "github.com/Juneo-io/juneogo/wallet/chain/p/builder"
+	xbuilder "github.com/Juneo-io/juneogo/wallet/chain/x/builder"
 	walletcommon "github.com/Juneo-io/juneogo/wallet/supernet/primary/common"
 	ethcommon "github.com/ethereum/go-ethereum/common"
 )
@@ -57,9 +58,9 @@ type UTXOClient interface {
 
 type AVAXState struct {
 	PClient platformvm.Client
-	PCTX    p.Context
+	PCTX    *pbuilder.Context
 	XClient avm.Client
-	XCTX    x.Context
+	XCTX    *xbuilder.Context
 	CClient evm.Client
 	CCTX    c.Context
 	UTXOs   walletcommon.UTXOs
@@ -78,7 +79,7 @@ func FetchState(
 	xClient := avm.NewClient(uri, "X")
 	cClient := evm.NewCChainClient(uri)
 
-	pCTX, err := p.NewContextFromClients(ctx, infoClient, xClient)
+	pCTX, err := pbuilder.NewContextFromClients(ctx, infoClient, xClient)
 	if err != nil {
 		return nil, err
 	}
@@ -106,9 +107,9 @@ func FetchState(
 			codec:  txs.Codec,
 		},
 		{
-			id:     xCTX.BlockchainID(),
+			id:     xCTX.BlockchainID,
 			client: xClient,
-			codec:  x.Parser.Codec(),
+			codec:  xbuilder.Parser.Codec(),
 		},
 		{
 			id:     cCTX.BlockchainID(),

@@ -24,9 +24,10 @@ import (
 	"github.com/Juneo-io/juneogo/utils/crypto/secp256k1"
 	"github.com/Juneo-io/juneogo/utils/formatting"
 	"github.com/Juneo-io/juneogo/utils/formatting/address"
-	"github.com/Juneo-io/juneogo/utils/linkedhashmap"
+	"github.com/Juneo-io/juneogo/utils/linked"
 	"github.com/Juneo-io/juneogo/utils/logging"
 	"github.com/Juneo-io/juneogo/utils/sampler"
+	"github.com/Juneo-io/juneogo/utils/timer/mockable"
 	"github.com/Juneo-io/juneogo/vms/avm/block/executor"
 	"github.com/Juneo-io/juneogo/vms/avm/config"
 	"github.com/Juneo-io/juneogo/vms/avm/fxs"
@@ -39,7 +40,14 @@ import (
 	keystoreutils "github.com/Juneo-io/juneogo/vms/components/keystore"
 )
 
+type fork uint8
+
 const (
+	durango fork = iota
+	eUpgrade
+
+	latest = durango
+
 	testTxFee    uint64 = 1000
 	startBalance uint64 = 50000
 
@@ -69,6 +77,12 @@ var (
 
 	keys  = secp256k1.TestKeys()[:3] // TODO: Remove [:3]
 	addrs []ids.ShortID              // addrs[i] corresponds to keys[i]
+
+	noFeesTestConfig = &config.Config{
+		EUpgradeTime:     mockable.MaxTime,
+		TxFee:            0,
+		CreateAssetTxFee: 0,
+	}
 )
 
 func init() {
@@ -85,6 +99,7 @@ type user struct {
 }
 
 type envConfig struct {
+	fork             fork
 	isCustomFeeAsset bool
 	keystoreUsers    []*user
 	vmStaticConfig   *config.Config
@@ -145,10 +160,7 @@ func setup(tb testing.TB, c *envConfig) *environment {
 		require.NoError(keystoreUser.Close())
 	}
 
-	vmStaticConfig := config.Config{
-		TxFee:            testTxFee,
-		CreateAssetTxFee: testTxFee,
-	}
+	vmStaticConfig := staticConfig(tb, c.fork)
 	if c.vmStaticConfig != nil {
 		vmStaticConfig = *c.vmStaticConfig
 	}
@@ -203,7 +215,7 @@ func setup(tb testing.TB, c *envConfig) *environment {
 		},
 		walletService: &WalletService{
 			vm:         vm,
-			pendingTxs: linkedhashmap.New[ids.ID, *txs.Tx](),
+			pendingTxs: linked.NewHashmap[ids.ID, *txs.Tx](),
 		},
 	}
 
@@ -221,6 +233,24 @@ func setup(tb testing.TB, c *envConfig) *environment {
 	return env
 }
 
+func staticConfig(tb testing.TB, f fork) config.Config {
+	c := config.Config{
+		TxFee:            testTxFee,
+		CreateAssetTxFee: testTxFee,
+		EUpgradeTime:     mockable.MaxTime,
+	}
+
+	switch f {
+	case eUpgrade:
+		c.EUpgradeTime = time.Time{}
+	case durango:
+	default:
+		require.FailNow(tb, "unhandled fork", f)
+	}
+
+	return c
+}
+
 // Returns:
 //
 //  1. tx in genesis that creates asset
@@ -229,7 +259,6 @@ func getCreateTxFromGenesisTest(tb testing.TB, genesisBytes []byte, assetName st
 	require := require.New(tb)
 
 	parser, err := txs.NewParser(
-		time.Time{},
 		[]fxs.Fx{
 			&secp256k1fx.Fx{},
 		},

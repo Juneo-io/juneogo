@@ -11,6 +11,7 @@ import (
 	"github.com/Juneo-io/juneogo/utils/formatting/address"
 	"github.com/Juneo-io/juneogo/utils/set"
 	"github.com/Juneo-io/juneogo/wallet/chain/x"
+	"github.com/Juneo-io/juneogo/wallet/chain/x/builder"
 	"github.com/Juneo-io/juneogo/wallet/supernet/primary"
 	"github.com/Juneo-io/juneogo/wallet/supernet/primary/common"
 )
@@ -35,18 +36,18 @@ func main() {
 	}
 	log.Printf("fetched state of %s in %s\n", addrStr, time.Since(fetchStartTime))
 
-	xChainID := state.XCTX.BlockchainID()
+	xChainID := state.XCTX.BlockchainID
 
 	xUTXOs := common.NewChainUTXOs(xChainID, state.UTXOs)
 	xBackend := x.NewBackend(state.XCTX, xUTXOs)
-	xBuilder := x.NewBuilder(addresses, xBackend)
+	xBuilder := builder.New(addresses, state.XCTX, xBackend)
 
 	currentBalances, err := xBuilder.GetFTBalance()
 	if err != nil {
 		log.Fatalf("failed to get the balance: %s\n", err)
 	}
 
-	avaxID := state.XCTX.AVAXAssetID()
+	avaxID := state.XCTX.AVAXAssetID
 	avaxBalance := currentBalances[avaxID]
 	log.Printf("current AVAX balance of %s is %d nAVAX\n", addrStr, avaxBalance)
 }

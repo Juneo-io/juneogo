@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/Juneo-io/juneogo/ids"
-	"github.com/Juneo-io/juneogo/proto/pb/p2p"
+	"github.com/Juneo-io/juneogo/network/p2p"
 	"github.com/Juneo-io/juneogo/snow"
 	"github.com/Juneo-io/juneogo/snow/consensus/snowball"
 	"github.com/Juneo-io/juneogo/snow/engine/common"
@@ -20,10 +20,13 @@ import (
 	"github.com/Juneo-io/juneogo/snow/snowtest"
 	"github.com/Juneo-io/juneogo/snow/validators"
 	"github.com/Juneo-io/juneogo/supernets"
+	"github.com/Juneo-io/juneogo/utils/logging"
 	"github.com/Juneo-io/juneogo/utils/math/meter"
 	"github.com/Juneo-io/juneogo/utils/resource"
 	"github.com/Juneo-io/juneogo/utils/set"
+	"github.com/Juneo-io/juneogo/version"
 
+	p2ppb "github.com/Juneo-io/juneogo/proto/pb/p2p"
 	commontracker "github.com/Juneo-io/juneogo/snow/engine/common/tracker"
 )
 
@@ -61,7 +64,7 @@ func TestHealthCheckSupernet(t *testing.T) {
 			require.NoError(err)
 
 			peerTracker := commontracker.NewPeers()
-			vdrs.RegisterCallbackListener(ctx.SupernetID, peerTracker)
+			vdrs.RegisterSetCallbackListener(ctx.SupernetID, peerTracker)
 
 			sb := supernets.New(
 				ctx.NodeID,
@@ -69,6 +72,16 @@ func TestHealthCheckSupernet(t *testing.T) {
 					ConsensusParameters: test.consensusParams,
 				},
 			)
+
+			p2pTracker, err := p2p.NewPeerTracker(
+				logging.NoLog{},
+				"",
+				prometheus.NewRegistry(),
+				nil,
+				version.CurrentApp,
+			)
+			require.NoError(err)
+
 			handlerIntf, err := New(
 				ctx,
 				vdrs,
@@ -79,6 +92,7 @@ func TestHealthCheckSupernet(t *testing.T) {
 				validators.UnhandledSupernetConnector,
 				sb,
 				peerTracker,
+				p2pTracker,
 			)
 			require.NoError(err)
 
@@ -103,7 +117,7 @@ func TestHealthCheckSupernet(t *testing.T) {
 			})
 
 			ctx.State.Set(snow.EngineState{
-				Type:  p2p.EngineType_ENGINE_TYPE_SNOWMAN,
+				Type:  p2ppb.EngineType_ENGINE_TYPE_SNOWMAN,
 				State: snow.NormalOp, // assumed bootstrap is done
 			})
 

@@ -72,8 +72,12 @@ func (o *overriddenManager) GetMap(ids.ID) map[ids.NodeID]*validators.GetValidat
 	return o.manager.GetMap(o.supernetID)
 }
 
-func (o *overriddenManager) RegisterCallbackListener(_ ids.ID, listener validators.SetCallbackListener) {
-	o.manager.RegisterCallbackListener(o.supernetID, listener)
+func (o *overriddenManager) RegisterCallbackListener(listener validators.ManagerCallbackListener) {
+	o.manager.RegisterCallbackListener(listener)
+}
+
+func (o *overriddenManager) RegisterSetCallbackListener(_ ids.ID, listener validators.SetCallbackListener) {
+	o.manager.RegisterSetCallbackListener(o.supernetID, listener)
 }
 
 func (o *overriddenManager) String() string {

@@ -9,7 +9,7 @@ import (
 	"math/big"
 	"sync"
 
-	"github.com/ava-labs/coreth/plugin/evm"
+	"github.com/Juneo-io/jeth/plugin/evm"
 
 	"github.com/Juneo-io/juneogo/database"
 	"github.com/Juneo-io/juneogo/utils/math"

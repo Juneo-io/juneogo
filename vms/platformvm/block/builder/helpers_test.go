@@ -5,7 +5,6 @@ package builder
 
 import (
 	"context"
-	"fmt"
 	"testing"
 	"time"
 
@@ -35,7 +34,6 @@ import (
 	"github.com/Juneo-io/juneogo/utils/logging"
 	"github.com/Juneo-io/juneogo/utils/timer/mockable"
 	"github.com/Juneo-io/juneogo/utils/units"
-	"github.com/Juneo-io/juneogo/vms/components/avax"
 	"github.com/Juneo-io/juneogo/vms/platformvm/api"
 	"github.com/Juneo-io/juneogo/vms/platformvm/config"
 	"github.com/Juneo-io/juneogo/vms/platformvm/fx"
@@ -46,13 +44,14 @@ import (
 	"github.com/Juneo-io/juneogo/vms/platformvm/status"
 	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
 	"github.com/Juneo-io/juneogo/vms/platformvm/txs/mempool"
+	"github.com/Juneo-io/juneogo/vms/platformvm/txs/txstest"
 	"github.com/Juneo-io/juneogo/vms/platformvm/utxo"
 	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
 
 	blockexecutor "github.com/Juneo-io/juneogo/vms/platformvm/block/executor"
-	txbuilder "github.com/Juneo-io/juneogo/vms/platformvm/txs/builder"
 	txexecutor "github.com/Juneo-io/juneogo/vms/platformvm/txs/executor"
 	pvalidators "github.com/Juneo-io/juneogo/vms/platformvm/validators"
+	walletcommon "github.com/Juneo-io/juneogo/wallet/supernet/primary/common"
 )
 
 const (
@@ -64,6 +63,7 @@ const (
 	banff
 	cortina
 	durango
+	eUpgrade
 
 	latestFork = durango
 )
@@ -114,10 +114,9 @@ type environment struct {
 	msm            *mutableSharedMemory
 	fx             fx.Fx
 	state          state.State
-	atomicUTXOs    avax.AtomicUTXOManager
 	uptimes        uptime.Manager
-	utxosHandler   utxo.Handler
-	txBuilder      txbuilder.Builder
+	utxosVerifier  utxo.Verifier
+	txBuilder      *txstest.Builder
 	backend        txexecutor.Backend
 }
 
@@ -149,18 +148,13 @@ func newEnvironment(t *testing.T, f fork) *environment { //nolint:unparam
 	rewardsCalc := reward.NewCalculator(res.config.RewardConfig)
 	res.state = defaultState(t, res.config, res.ctx, res.baseDB, rewardsCalc)
 
-	res.atomicUTXOs = avax.NewAtomicUTXOManager(res.ctx.SharedMemory, txs.Codec)
 	res.uptimes = uptime.NewManager(res.state, res.clk)
-	res.utxosHandler = utxo.NewHandler(res.ctx, res.clk, res.fx)
+	res.utxosVerifier = utxo.NewVerifier(res.ctx, res.clk, res.fx)
 
-	res.txBuilder = txbuilder.New(
+	res.txBuilder = txstest.NewBuilder(
 		res.ctx,
 		res.config,
-		res.clk,
-		res.fx,
 		res.state,
-		res.atomicUTXOs,
-		res.utxosHandler,
 	)
 
 	genesisID := res.state.GetLastAccepted()
@@ -170,14 +164,14 @@ func newEnvironment(t *testing.T, f fork) *environment { //nolint:unparam
 		Clk:          res.clk,
 		Bootstrapped: res.isBootstrapped,
 		Fx:           res.fx,
-		FlowChecker:  res.utxosHandler,
+		FlowChecker:  res.utxosVerifier,
 		Uptimes:      res.uptimes,
 		Rewards:      rewardsCalc,
 	}
 
 	registerer := prometheus.NewRegistry()
 	res.sender = &common.SenderTest{T: t}
-	res.sender.SendAppGossipF = func(context.Context, []byte, int, int, int) error {
+	res.sender.SendAppGossipF = func(context.Context, common.SendConfig, []byte) error {
 		return nil
 	}
 
@@ -247,15 +241,19 @@ func addSupernet(t *testing.T, env *environment) {
 	// Create a supernet
 	var err error
 	testSupernet1, err = env.txBuilder.NewCreateSupernetTx(
-		2, // threshold; 2 sigs from keys[0], keys[1], keys[2] needed to add validator to this supernet
-		[]ids.ShortID{ // control keys
-			preFundedKeys[0].PublicKey().Address(),
-			preFundedKeys[1].PublicKey().Address(),
-			preFundedKeys[2].PublicKey().Address(),
+		&secp256k1fx.OutputOwners{
+			Threshold: 2,
+			Addrs: []ids.ShortID{
+				preFundedKeys[0].PublicKey().Address(),
+				preFundedKeys[1].PublicKey().Address(),
+				preFundedKeys[2].PublicKey().Address(),
+			},
 		},
 		[]*secp256k1.PrivateKey{preFundedKeys[0]},
-		preFundedKeys[0].PublicKey().Address(),
-		nil,
+		walletcommon.WithChangeOwner(&secp256k1fx.OutputOwners{
+			Threshold: 1,
+			Addrs:     []ids.ShortID{preFundedKeys[0].PublicKey().Address()},
+		}),
 	)
 	require.NoError(err)
 
@@ -305,34 +303,7 @@ func defaultState(
 }
 
 func defaultConfig(t *testing.T, f fork) *config.Config {
-	var (
-		apricotPhase3Time = mockable.MaxTime
-		apricotPhase5Time = mockable.MaxTime
-		banffTime         = mockable.MaxTime
-		cortinaTime       = mockable.MaxTime
-		durangoTime       = mockable.MaxTime
-	)
-
-	switch f {
-	case durango:
-		durangoTime = time.Time{} // neglecting fork ordering for this package's tests
-		fallthrough
-	case cortina:
-		cortinaTime = time.Time{} // neglecting fork ordering for this package's tests
-		fallthrough
-	case banff:
-		banffTime = time.Time{} // neglecting fork ordering for this package's tests
-		fallthrough
-	case apricotPhase5:
-		apricotPhase5Time = defaultValidateEndTime
-		fallthrough
-	case apricotPhase3:
-		apricotPhase3Time = defaultValidateEndTime
-	default:
-		require.NoError(t, fmt.Errorf("unhandled fork %d", f))
-	}
-
-	return &config.Config{
+	c := &config.Config{
 		Chains:                 chains.TestManager,
 		UptimeLockedCalculator: uptime.NewLockedCalculator(),
 		Validators:             validators.NewManager(),
@@ -350,12 +321,37 @@ func defaultConfig(t *testing.T, f fork) *config.Config {
 			MintingPeriod:      365 * 24 * time.Hour,
 			SupplyCap:          720 * units.MegaAvax,
 		},
-		ApricotPhase3Time: apricotPhase3Time,
-		ApricotPhase5Time: apricotPhase5Time,
-		BanffTime:         banffTime,
-		CortinaTime:       cortinaTime,
-		DurangoTime:       durangoTime,
+		ApricotPhase3Time: mockable.MaxTime,
+		ApricotPhase5Time: mockable.MaxTime,
+		BanffTime:         mockable.MaxTime,
+		CortinaTime:       mockable.MaxTime,
+		DurangoTime:       mockable.MaxTime,
+		EUpgradeTime:      mockable.MaxTime,
 	}
+
+	switch f {
+	case eUpgrade:
+		c.EUpgradeTime = time.Time{} // neglecting fork ordering this for package tests
+		fallthrough
+	case durango:
+		c.DurangoTime = time.Time{} // neglecting fork ordering for this package's tests
+		fallthrough
+	case cortina:
+		c.CortinaTime = time.Time{} // neglecting fork ordering for this package's tests
+		fallthrough
+	case banff:
+		c.BanffTime = time.Time{} // neglecting fork ordering for this package's tests
+		fallthrough
+	case apricotPhase5:
+		c.ApricotPhase5Time = defaultValidateEndTime
+		fallthrough
+	case apricotPhase3:
+		c.ApricotPhase3Time = defaultValidateEndTime
+	default:
+		require.FailNow(t, "unhandled fork", f)
+	}
+
+	return c
 }
 
 func defaultClock() *mockable.Clock {
@@ -387,7 +383,7 @@ func defaultFx(t *testing.T, clk *mockable.Clock, log logging.Logger, isBootstra
 	require := require.New(t)
 
 	fxVMInt := &fxVMInt{
-		registry: linearcodec.NewDefault(time.Time{}),
+		registry: linearcodec.NewDefault(),
 		clk:      clk,
 		log:      log,
 	}

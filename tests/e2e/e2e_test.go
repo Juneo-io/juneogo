@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/onsi/gomega"
+	"github.com/stretchr/testify/require"
 
 	// ensure test packages are scanned by ginkgo
 	_ "github.com/Juneo-io/juneogo/tests/e2e/banff"
@@ -16,6 +17,7 @@ import (
 	_ "github.com/Juneo-io/juneogo/tests/e2e/x"
 	_ "github.com/Juneo-io/juneogo/tests/e2e/x/transfer"
 
+	"github.com/Juneo-io/juneogo/tests/e2e/vms"
 	"github.com/Juneo-io/juneogo/tests/fixture/e2e"
 	"github.com/Juneo-io/juneogo/tests/fixture/tmpnet"
 
@@ -35,7 +37,20 @@ func init() {
 
 var _ = ginkgo.SynchronizedBeforeSuite(func() []byte {
 	// Run only once in the first ginkgo process
-	return e2e.NewTestEnvironment(flagVars, &tmpnet.Network{}).Marshal()
+
+	nodes, err := tmpnet.NewNodes(tmpnet.DefaultNodeCount)
+	require.NoError(ginkgo.GinkgoT(), err)
+
+	supernets := vms.XSVMSupernets(nodes...)
+
+	return e2e.NewTestEnvironment(
+		flagVars,
+		&tmpnet.Network{
+			Owner:   "avalanchego-e2e",
+			Nodes:   nodes,
+			Supernets: supernets,
+		},
+	).Marshal()
 }, func(envBytes []byte) {
 	// Run in every ginkgo process
 

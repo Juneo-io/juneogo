@@ -5,11 +5,11 @@ package validators
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
 	"github.com/Juneo-io/juneogo/cache"
-	"github.com/Juneo-io/juneogo/database"
 	"github.com/Juneo-io/juneogo/ids"
 	"github.com/Juneo-io/juneogo/snow/validators"
 	"github.com/Juneo-io/juneogo/utils/constants"
@@ -30,7 +30,11 @@ const (
 	recentlyAcceptedWindowTTL     = 2 * time.Minute
 )
 
-var _ validators.State = (*manager)(nil)
+var (
+	_ validators.State = (*manager)(nil)
+
+	errUnfinalizedHeight = errors.New("failed to fetch validator set at unfinalized height")
+)
 
 // Manager adds the ability to introduce newly accepted blocks IDs to the State
 // interface.
@@ -247,7 +251,12 @@ func (m *manager) makePrimaryNetworkValidatorSet(
 		return nil, 0, err
 	}
 	if currentHeight < targetHeight {
-		return nil, 0, database.ErrNotFound
+		return nil, 0, fmt.Errorf("%w with SupernetID = %s: current P-chain height (%d) < requested P-Chain height (%d)",
+			errUnfinalizedHeight,
+			constants.PrimaryNetworkID,
+			currentHeight,
+			targetHeight,
+		)
 	}
 
 	// Rebuild primary network validators at [targetHeight]
@@ -295,7 +304,12 @@ func (m *manager) makeSupernetValidatorSet(
 		return nil, 0, err
 	}
 	if currentHeight < targetHeight {
-		return nil, 0, database.ErrNotFound
+		return nil, 0, fmt.Errorf("%w with SupernetID = %s: current P-chain height (%d) < requested P-Chain height (%d)",
+			errUnfinalizedHeight,
+			supernetID,
+			currentHeight,
+			targetHeight,
+		)
 	}
 
 	// Rebuild supernet validators at [targetHeight]

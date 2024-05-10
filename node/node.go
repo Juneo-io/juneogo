@@ -74,13 +74,10 @@ import (
 	"github.com/Juneo-io/juneogo/vms"
 	"github.com/Juneo-io/juneogo/vms/avm"
 	"github.com/Juneo-io/juneogo/vms/platformvm"
-	"github.com/Juneo-io/juneogo/vms/platformvm/block"
 	"github.com/Juneo-io/juneogo/vms/platformvm/signer"
-	"github.com/Juneo-io/juneogo/vms/platformvm/txs"
 	"github.com/Juneo-io/juneogo/vms/registry"
 	"github.com/Juneo-io/juneogo/vms/rpcchainvm/runtime"
 
-	coreth "github.com/Juneo-io/jeth/plugin/evm"
 	avmconfig "github.com/Juneo-io/juneogo/vms/avm/config"
 	platformconfig "github.com/Juneo-io/juneogo/vms/platformvm/config"
 )
@@ -110,16 +107,18 @@ func New(
 	logger logging.Logger,
 ) (*Node, error) {
 	tlsCert := config.StakingTLSCert.Leaf
-	stakingCert := staking.CertificateFromX509(tlsCert)
-	if err := staking.ValidateCertificate(stakingCert); err != nil {
+	stakingCert, err := staking.ParseCertificate(tlsCert.Raw)
+	if err != nil {
 		return nil, fmt.Errorf("invalid staking certificate: %w", err)
 	}
 
 	n := &Node{
-		Log:        logger,
-		LogFactory: logFactory,
-		ID:         ids.NodeIDFromCert(stakingCert),
-		Config:     config,
+		Log:              logger,
+		LogFactory:       logFactory,
+		StakingTLSSigner: config.StakingTLSCert.PrivateKey.(crypto.Signer),
+		StakingTLSCert:   stakingCert,
+		ID:               ids.NodeIDFromCert(stakingCert),
+		Config:           config,
 	}
 
 	n.DoneShuttingDown.Add(1)
@@ -134,7 +133,6 @@ func New(
 		zap.Reflect("config", n.Config),
 	)
 
-	var err error
 	n.VMFactoryLog, err = logFactory.Make("vm-factory")
 	if err != nil {
 		return nil, fmt.Errorf("problem creating vm logger: %w", err)
@@ -262,6 +260,9 @@ type Node struct {
 	// This node's unique ID used when communicating with other nodes
 	// (in consensus, for example)
 	ID ids.NodeID
+
+	StakingTLSSigner crypto.Signer
+	StakingTLSCert   *staking.Certificate
 
 	// Storage for this node
 	DB database.Database
@@ -863,7 +864,7 @@ func (n *Node) initChains(genesisBytes []byte) error {
 
 	platformChain := chains.ChainParameters{
 		ID:            constants.PlatformChainID,
-		SupernetID:    constants.PrimaryNetworkID,
+		SupernetID:      constants.PrimaryNetworkID,
 		GenesisData:   genesisBytes, // Specifies other chains to create
 		VMID:          constants.PlatformVMID,
 		ChainAssetID:  n.Config.AvaxAssetID,
@@ -1073,7 +1074,8 @@ func (n *Node) initChainManager(avaxAssetID ids.ID) error {
 	n.chainManager = chains.New(
 		&chains.ManagerConfig{
 			SybilProtectionEnabled:                  n.Config.SybilProtectionEnabled,
-			StakingTLSCert:                          n.Config.StakingTLSCert,
+			StakingTLSSigner:                        n.StakingTLSSigner,
+			StakingTLSCert:                          n.StakingTLSCert,
 			StakingBLSKey:                           n.Config.StakingSigningKey,
 			Log:                                     n.Log,
 			LogFactory:                              n.LogFactory,
@@ -1101,7 +1103,7 @@ func (n *Node) initChainManager(avaxAssetID ids.ID) error {
 			ShutdownNodeFunc:                        n.Shutdown,
 			MeterVMEnabled:                          n.Config.MeterVMEnabled,
 			Metrics:                                 n.MetricsGatherer,
-			SupernetConfigs:                         n.Config.SupernetConfigs,
+			SupernetConfigs:                           n.Config.SupernetConfigs,
 			ChainConfigs:                            n.Config.ChainConfigs,
 			FrontierPollFrequency:                   n.Config.FrontierPollFrequency,
 			ConsensusAppConcurrency:                 n.Config.ConsensusAppConcurrency,
@@ -1115,7 +1117,7 @@ func (n *Node) initChainManager(avaxAssetID ids.ID) error {
 			TracingEnabled:                          n.Config.TraceConfig.Enabled,
 			Tracer:                                  n.tracer,
 			ChainDataDir:                            n.Config.ChainDataDir,
-			Supernets:                               supernets,
+			Supernets:                                 supernets,
 		},
 	)
 
@@ -1137,18 +1139,8 @@ func (n *Node) initVMs() error {
 		vdrs = validators.NewManager()
 	}
 
-	durangoTime := version.GetDurangoTime(n.Config.NetworkID)
-	if err := txs.InitCodec(durangoTime); err != nil {
-		return err
-	}
-	if err := block.InitCodec(durangoTime); err != nil {
-		return err
-	}
-	if err := coreth.InitCodec(durangoTime); err != nil {
-		return err
-	}
-
 	// Register the VMs that Avalanche supports
+	eUpgradeTime := version.GetEUpgradeTime(n.Config.NetworkID)
 	err := utils.Err(
 		n.VMManager.RegisterFactory(context.TODO(), constants.PlatformVMID, &platformvm.Factory{
 			Config: platformconfig.Config{
@@ -1157,16 +1149,16 @@ func (n *Node) initVMs() error {
 				UptimeLockedCalculator:        n.uptimeCalculator,
 				SybilProtectionEnabled:        n.Config.SybilProtectionEnabled,
 				PartialSyncPrimaryNetwork:     n.Config.PartialSyncPrimaryNetwork,
-				TrackedSupernets:              n.Config.TrackedSupernets,
+				TrackedSupernets:                n.Config.TrackedSupernets,
 				TxFee:                         n.Config.TxFee,
 				CreateAssetTxFee:              n.Config.CreateAssetTxFee,
-				CreateSupernetTxFee:           n.Config.CreateSupernetTxFee,
-				TransformSupernetTxFee:        n.Config.TransformSupernetTxFee,
+				CreateSupernetTxFee:             n.Config.CreateSupernetTxFee,
+				TransformSupernetTxFee:          n.Config.TransformSupernetTxFee,
 				CreateBlockchainTxFee:         n.Config.CreateBlockchainTxFee,
 				AddPrimaryNetworkValidatorFee: n.Config.AddPrimaryNetworkValidatorFee,
 				AddPrimaryNetworkDelegatorFee: n.Config.AddPrimaryNetworkDelegatorFee,
-				AddSupernetValidatorFee:       n.Config.AddSupernetValidatorFee,
-				AddSupernetDelegatorFee:       n.Config.AddSupernetDelegatorFee,
+				AddSupernetValidatorFee:         n.Config.AddSupernetValidatorFee,
+				AddSupernetDelegatorFee:         n.Config.AddSupernetDelegatorFee,
 				UptimePercentage:              n.Config.UptimeRequirement,
 				MinValidatorStake:             n.Config.MinValidatorStake,
 				MaxValidatorStake:             n.Config.MaxValidatorStake,
@@ -1180,7 +1172,8 @@ func (n *Node) initVMs() error {
 				ApricotPhase5Time:             version.GetApricotPhase5Time(n.Config.NetworkID),
 				BanffTime:                     version.GetBanffTime(n.Config.NetworkID),
 				CortinaTime:                   version.GetCortinaTime(n.Config.NetworkID),
-				DurangoTime:                   durangoTime,
+				DurangoTime:                   version.GetDurangoTime(n.Config.NetworkID),
+				EUpgradeTime:                  eUpgradeTime,
 				UseCurrentHeight:              n.Config.UseCurrentHeight,
 			},
 		}),
@@ -1188,7 +1181,7 @@ func (n *Node) initVMs() error {
 			Config: avmconfig.Config{
 				TxFee:            n.Config.TxFee,
 				CreateAssetTxFee: n.Config.CreateAssetTxFee,
-				DurangoTime:      durangoTime,
+				EUpgradeTime:     eUpgradeTime,
 			},
 		}),
 	)
@@ -1353,13 +1346,13 @@ func (n *Node) initInfoAPI() error {
 			NetworkID:                     n.Config.NetworkID,
 			TxFee:                         n.Config.TxFee,
 			CreateAssetTxFee:              n.Config.CreateAssetTxFee,
-			CreateSupernetTxFee:           n.Config.CreateSupernetTxFee,
-			TransformSupernetTxFee:        n.Config.TransformSupernetTxFee,
+			CreateSupernetTxFee:             n.Config.CreateSupernetTxFee,
+			TransformSupernetTxFee:          n.Config.TransformSupernetTxFee,
 			CreateBlockchainTxFee:         n.Config.CreateBlockchainTxFee,
 			AddPrimaryNetworkValidatorFee: n.Config.AddPrimaryNetworkValidatorFee,
 			AddPrimaryNetworkDelegatorFee: n.Config.AddPrimaryNetworkDelegatorFee,
-			AddSupernetValidatorFee:       n.Config.AddSupernetValidatorFee,
-			AddSupernetDelegatorFee:       n.Config.AddSupernetDelegatorFee,
+			AddSupernetValidatorFee:         n.Config.AddSupernetValidatorFee,
+			AddSupernetDelegatorFee:         n.Config.AddSupernetDelegatorFee,
 			VMManager:                     n.VMManager,
 		},
 		n.Log,

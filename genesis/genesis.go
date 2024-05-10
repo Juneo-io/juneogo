@@ -710,7 +710,6 @@ func VMGenesis(genesisBytes []byte, vmID ids.ID) ([]*pchaintxs.CreateChainTx, er
 
 func GenesisAssetsIDs(jvmGenesisBytes []byte, assetsCount int) (map[string]ids.ID, error) {
 	parser, err := xchaintxs.NewParser(
-		time.Time{},
 		[]fxs.Fx{
 			&secp256k1fx.Fx{},
 		},

@@ -9,67 +9,44 @@ import (
 
 	"github.com/Juneo-io/juneogo/ids"
 	"github.com/Juneo-io/juneogo/message"
+	"github.com/Juneo-io/juneogo/snow/engine/common"
 	"github.com/Juneo-io/juneogo/supernets"
 	"github.com/Juneo-io/juneogo/utils/set"
 )
 
 var (
-	errSend   = errors.New("unexpectedly called Send")
-	errGossip = errors.New("unexpectedly called Gossip")
+	_ ExternalSender = (*ExternalSenderTest)(nil)
+
+	errSend = errors.New("unexpectedly called Send")
 )
 
 // ExternalSenderTest is a test sender
 type ExternalSenderTest struct {
 	TB testing.TB
 
-	CantSend, CantGossip bool
+	CantSend bool
 
-	SendF   func(msg message.OutboundMessage, nodeIDs set.Set[ids.NodeID], supernetID ids.ID, allower supernets.Allower) set.Set[ids.NodeID]
-	GossipF func(msg message.OutboundMessage, supernetID ids.ID, numValidatorsToSend, numNonValidatorsToSend, numPeersToSend int, allower supernets.Allower) set.Set[ids.NodeID]
+	SendF func(msg message.OutboundMessage, config common.SendConfig, supernetID ids.ID, allower supernets.Allower) set.Set[ids.NodeID]
 }
 
 // Default set the default callable value to [cant]
 func (s *ExternalSenderTest) Default(cant bool) {
 	s.CantSend = cant
-	s.CantGossip = cant
 }
 
 func (s *ExternalSenderTest) Send(
 	msg message.OutboundMessage,
-	nodeIDs set.Set[ids.NodeID],
+	config common.SendConfig,
 	supernetID ids.ID,
 	allower supernets.Allower,
 ) set.Set[ids.NodeID] {
 	if s.SendF != nil {
-		return s.SendF(msg, nodeIDs, supernetID, allower)
+		return s.SendF(msg, config, supernetID, allower)
 	}
 	if s.CantSend {
 		if s.TB != nil {
 			s.TB.Helper()
 			s.TB.Fatal(errSend)
-		}
-	}
-	return nil
-}
-
-// Given a msg type, the corresponding mock function is called if it was initialized.
-// If it wasn't initialized and this function shouldn't be called and testing was
-// initialized, then testing will fail.
-func (s *ExternalSenderTest) Gossip(
-	msg message.OutboundMessage,
-	supernetID ids.ID,
-	numValidatorsToSend int,
-	numNonValidatorsToSend int,
-	numPeersToSend int,
-	allower supernets.Allower,
-) set.Set[ids.NodeID] {
-	if s.GossipF != nil {
-		return s.GossipF(msg, supernetID, numValidatorsToSend, numNonValidatorsToSend, numPeersToSend, allower)
-	}
-	if s.CantGossip {
-		if s.TB != nil {
-			s.TB.Helper()
-			s.TB.Fatal(errGossip)
 		}
 	}
 	return nil

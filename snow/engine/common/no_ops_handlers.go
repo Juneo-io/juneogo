@@ -11,7 +11,6 @@ import (
 
 	"github.com/Juneo-io/juneogo/ids"
 	"github.com/Juneo-io/juneogo/message"
-	"github.com/Juneo-io/juneogo/utils/constants"
 	"github.com/Juneo-io/juneogo/utils/logging"
 	"github.com/Juneo-io/juneogo/utils/set"
 	"github.com/Juneo-io/juneogo/version"
@@ -180,21 +179,12 @@ func NewNoOpPutHandler(log logging.Logger) PutHandler {
 }
 
 func (nop *noOpPutHandler) Put(_ context.Context, nodeID ids.NodeID, requestID uint32, _ []byte) error {
-	if requestID == constants.GossipMsgRequestID {
-		nop.log.Verbo("dropping request",
-			zap.String("reason", "unhandled by this gear"),
-			zap.Stringer("messageOp", message.PutOp),
-			zap.Stringer("nodeID", nodeID),
-			zap.Uint32("requestID", requestID),
-		)
-	} else {
-		nop.log.Debug("dropping request",
-			zap.String("reason", "unhandled by this gear"),
-			zap.Stringer("messageOp", message.PutOp),
-			zap.Stringer("nodeID", nodeID),
-			zap.Uint32("requestID", requestID),
-		)
-	}
+	nop.log.Debug("dropping request",
+		zap.String("reason", "unhandled by this gear"),
+		zap.Stringer("messageOp", message.PutOp),
+		zap.Stringer("nodeID", nodeID),
+		zap.Uint32("requestID", requestID),
+	)
 	return nil
 }
 

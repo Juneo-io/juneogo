@@ -6,7 +6,7 @@ package c
 import (
 	"math/big"
 
-	"github.com/ava-labs/coreth/plugin/evm"
+	"github.com/Juneo-io/jeth/plugin/evm"
 
 	"github.com/Juneo-io/juneogo/ids"
 	"github.com/Juneo-io/juneogo/vms/secp256k1fx"
