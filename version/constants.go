@@ -26,7 +26,7 @@ var (
 	Current = &Semantic{
 		Major: 0,
 		Minor: 3,
-		Patch: 0,
+		Patch: 1,
 	}
 	CurrentApp = &Application{
 		Name:  Client,
@@ -37,13 +37,13 @@ var (
 	MinimumCompatibleVersion = &Application{
 		Name:  Client,
 		Major: 0,
-		Minor: 2,
+		Minor: 3,
 		Patch: 0,
 	}
 	PrevMinimumCompatibleVersion = &Application{
 		Name:  Client,
 		Major: 0,
-		Minor: 1,
+		Minor: 2,
 		Patch: 0,
 	}
 
@@ -135,8 +135,8 @@ var (
 	}
 
 	FeeUpdate1Times = map[uint32]time.Time{
-		constants.MainnetID: time.Date(2024, time.May, 11, 12, 0, 0, 0, time.UTC),
-		constants.TestnetID: time.Date(2024, time.May, 11, 12, 0, 0, 0, time.UTC),
+		constants.MainnetID: time.Date(2024, time.May, 11, 14, 0, 0, 0, time.UTC),
+		constants.TestnetID: time.Date(2024, time.May, 11, 14, 0, 0, 0, time.UTC),
 	}
 
 	EUpgradeTimes = map[uint32]time.Time{
