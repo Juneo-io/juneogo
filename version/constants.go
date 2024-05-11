@@ -135,8 +135,8 @@ var (
 	}
 
 	FeeUpdate1Times = map[uint32]time.Time{
-		constants.MainnetID: time.Date(2024, time.May, 10, 17, 0, 0, 0, time.UTC),
-		constants.TestnetID: time.Date(2024, time.May, 10, 17, 0, 0, 0, time.UTC),
+		constants.MainnetID: time.Date(2024, time.May, 11, 12, 0, 0, 0, time.UTC),
+		constants.TestnetID: time.Date(2024, time.May, 11, 12, 0, 0, 0, time.UTC),
 	}
 
 	EUpgradeTimes = map[uint32]time.Time{
