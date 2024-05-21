@@ -22,21 +22,21 @@ var (
 	// MainnetParams are the params used for mainnet
 	MainnetParams = Params{
 		TxFeeConfig: TxFeeConfig{
-			TxFee:                         10 * units.MilliAvax,
+			TxFee:                         3 * units.MilliAvax,
 			CreateAssetTxFee:              100 * units.MilliAvax,
-			CreateSupernetTxFee:             100 * units.MilliAvax,
-			TransformSupernetTxFee:          10 * units.Avax,
+			CreateSupernetTxFee:           100 * units.MilliAvax,
+			TransformSupernetTxFee:        10 * units.Avax,
 			CreateBlockchainTxFee:         100 * units.MilliAvax,
 			AddPrimaryNetworkValidatorFee: 0,
 			AddPrimaryNetworkDelegatorFee: 0,
-			AddSupernetValidatorFee:         100 * units.MilliAvax,
-			AddSupernetDelegatorFee:         100 * units.MilliAvax,
+			AddSupernetValidatorFee:       100 * units.MilliAvax,
+			AddSupernetDelegatorFee:       100 * units.MilliAvax,
 		},
 		StakingConfig: StakingConfig{
 			UptimeRequirement: .8, // 80%
-			MinValidatorStake: 1 * units.Avax,
-			MaxValidatorStake: 1 * units.MegaAvax,
-			MinDelegatorStake: 100 * units.MilliAvax,
+			MinValidatorStake: 100 * units.Avax,
+			MaxValidatorStake: 30 * units.KiloAvax,
+			MinDelegatorStake: 10 * units.MilliAvax,
 			MinDelegationFee:  120000, // 12%
 			MaxDelegationFee:  120000,
 			MinStakeDuration:  mainnetMinStakeDuration,
@@ -44,11 +44,13 @@ var (
 			RewardConfig: reward.Config{
 				MinStakePeriod:         mainnetMinStakeDuration,
 				MaxStakePeriod:         mainnetMaxStakeDuration,
-				StakePeriodRewardShare: 2_0000,                                                             // 2%
-				StartRewardShare:       21_5000,                                                            // 21.5%
-				StartRewardTime:        uint64(time.Date(2023, time.June, 1, 0, 0, 0, 0, time.UTC).Unix()), // 1st June 2023
-				TargetRewardShare:      6_7000,                                                             // 6.7%
-				TargetRewardTime:       uint64(time.Date(2028, time.June, 21, 0, 0, 0, 0, time.UTC).Unix()),
+				StakePeriodRewardShare: 2_0000,  // 2%
+				StartRewardShare:       21_5000, // 21.5%
+				StartRewardTime:        uint64(time.Date(2024, time.July, 15, 0, 0, 0, 0, time.UTC).Unix()),
+				DiminishingRewardShare: 19_0000, // 19%
+				DiminishingRewardTime:  uint64(time.Date(2029, time.July, 15, 0, 0, 0, 0, time.UTC).Unix()),
+				TargetRewardShare:      6_6000, // 6.6%
+				TargetRewardTime:       uint64(time.Date(2030, time.July, 15, 0, 0, 0, 0, time.UTC).Unix()),
 			},
 		},
 	}
