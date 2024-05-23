@@ -3,22 +3,321 @@
 	"rewardPoolSupply": 25000000000000000,
 	"allocations": [
 		{
-			"ethAddr": "0xb3d82b1367d362de99ab59a658165aff520cbd4d",
-			"avaxAddr": "X-local1g65uqn6t77p656w64023nh8nd9updzmxyymev2",
+			"ethAddr": "0xDaB7C2d3a4CD7fb852775b586fc7D2bcc43d55FE",
+			"avaxAddr": "JVM-june1cp22zk3n5rerwsy4kyv764ffm45l53f60xwj6s",
+			"initialAmount": 1750000000000000,
+			"unlockSchedule": []
+		},
+		{
+			"ethAddr": "0xcEe021AFC7015039F24218Fe7a156B442F896E51",
+			"avaxAddr": "JVM-june1vls5vahajsuxvkvnaqqn78xancg4lskdxd5m0l",
+			"initialAmount": 3700000000000000,
+			"unlockSchedule": []
+		},
+		{
+			"ethAddr": "0xdB6b44853170b887470F2f9Bb72b5Dc05D5cCF97",
+			"avaxAddr": "JVM-june1gguc7cljzn808pwyfpw86q5gksgnwqwff6slag",
+			"initialAmount": 2050000000000000,
+			"unlockSchedule": []
+		},
+		{
+			"ethAddr": "0x836Cb1BD5F360186ACC9B121f8ACfb26b6e11357",
+			"avaxAddr": "JVM-june1lnhqnv0vn0rq6y4m2t3nj7usnqv3qdylyvap6v",
+			"initialAmount": 3000000000000000,
+			"unlockSchedule": []
+		},
+		{
+			"ethAddr": "0xCC3173f633ECA02e101Fcce7c691DB68f9F8DEf0",
+			"avaxAddr": "JVM-june1jkswxam4py3zdgg4qctmgckcuz8q0u7vse9rlx",
+			"initialAmount": 2750000000000000,
+			"unlockSchedule": []
+		},
+		{
+			"ethAddr": "0x43961287191CDE2B19B0f530f997B6a670a438F1",
+			"avaxAddr": "JVM-june1z6rzcpdq0lh2esf3j6ndtzzrqmxdvfz56p60va",
+			"initialAmount": 6000000000000000,
+			"unlockSchedule": []
+		},
+		{
+			"ethAddr": "0xde02cB8aB126E70Ae880F432664293bdC8ac38B4",
+			"avaxAddr": "JVM-june19u9aktkdd4n9h2rkel0u059fjwrynwwk8fnclv",
 			"initialAmount": 0,
 			"unlockSchedule": [
 				{
-					"amount": 19250000000000000,
-					"locktime": 1633824000
+					"amount": 30000000000000
+				}
+			]
+		},
+		{
+			"ethAddr": "0x02EF8599CBB5152489f592199189c60052867B49",
+			"avaxAddr": "JVM-june1ul2z7mmx4wlp6yjvnelwwyzt7dv0dvzr26gpvl",
+			"initialAmount": 0,
+			"unlockSchedule": [
+				{
+					"amount": 30000000000000
+				}
+			]
+		},
+		{
+			"ethAddr": "0x2e634C573745E7a210527F7E9211D5C3D3E2b977",
+			"avaxAddr": "JVM-june14f746x0yljymlydrupza3yeryuu7rwng3x36cn",
+			"initialAmount": 0,
+			"unlockSchedule": [
+				{
+					"amount": 30000000000000
+				}
+			]
+		},
+		{
+			"ethAddr": "0x7aB84CE3678303dE5DB76005144AEB0BAf4D18dB",
+			"avaxAddr": "JVM-june17yafg6wd0d26n3qlv82nfs2a6va3p4e49rd9vh",
+			"initialAmount": 0,
+			"unlockSchedule": [
+				{
+					"amount": 30000000000000
+				}
+			]
+		},
+		{
+			"ethAddr": "0x4CFa86246e82D808ccA054C62C7608d4923120D5",
+			"avaxAddr": "JVM-june1gvgyrsehwe69fmkpz95asezcqepgfgwqftdwrm",
+			"initialAmount": 0,
+			"unlockSchedule": [
+				{
+					"amount": 30000000000000
+				}
+			]
+		},
+		{
+			"ethAddr": "0xc75b8584f1ed667EF9A3b95991F1778c04D3ae47",
+			"avaxAddr": "JVM-june15k0k70qac2l86nu8qpd4ya280aamqee23766dl",
+			"initialAmount": 0,
+			"unlockSchedule": [
+				{
+					"amount": 30000000000000
+				}
+			]
+		},
+		{
+			"ethAddr": "0xa61EA403Fc4393b0F38ceFBe996Abb1c6B11cDe6",
+			"avaxAddr": "JVM-june19z6dqygxx20gxsw7sqmwempmy0kpsmxpu9hz0d",
+			"initialAmount": 0,
+			"unlockSchedule": [
+				{
+					"amount": 30000000000000
+				}
+			]
+		},
+		{
+			"ethAddr": "0xE6D8aCf738dE337952bc4577535991dB6Ec7197A",
+			"avaxAddr": "JVM-june1jklttd5dadm0cr38vmkkmnzhjthxsd52hhv4s9",
+			"initialAmount": 0,
+			"unlockSchedule": [
+				{
+					"amount": 30000000000000
+				}
+			]
+		},
+		{
+			"ethAddr": "0x030ccBD6D096e42E06383C4A8A1ed056716E2907",
+			"avaxAddr": "JVM-june1tkra6aur3fjdx3kmm3wjedfs9n6tmauuf2g58v",
+			"initialAmount": 0,
+			"unlockSchedule": [
+				{
+					"amount": 30000000000000
+				}
+			]
+		},
+		{
+			"ethAddr": "0xE3D40D71b42ba437EB8c8577426D6f94eeF8972e",
+			"avaxAddr": "JVM-june1xygp5zp5ehwwrmmkx6xgn9szru3fzpjr04haew",
+			"initialAmount": 0,
+			"unlockSchedule": [
+				{
+					"amount": 30000000000000
+				}
+			]
+		},
+		{
+			"ethAddr": "0x61938a35f5094cB6A8467fB942b1257CC55f40a6",
+			"avaxAddr": "JVM-june1aj48yg9sqlczyfqyfhh7n24n59cpx28h5u6d34",
+			"initialAmount": 0,
+			"unlockSchedule": [
+				{
+					"amount": 30000000000000
+				}
+			]
+		},
+		{
+			"ethAddr": "0x3628bcD8E9CA031d2bEdc07817275B236a0a71E7",
+			"avaxAddr": "JVM-june13hhe24lnh32jzjekxqf6ekhdg03v6g9n4dvvs6",
+			"initialAmount": 0,
+			"unlockSchedule": [
+				{
+					"amount": 30000000000000
+				}
+			]
+		},
+		{
+			"ethAddr": "0x8469444FC8A7f9bd75857655E7048475b67c9547",
+			"avaxAddr": "JVM-june18s8at6hl24u4zskp9t0cmy9armvadapqpkqqhy",
+			"initialAmount": 0,
+			"unlockSchedule": [
+				{
+					"amount": 30000000000000
+				}
+			]
+		},
+		{
+			"ethAddr": "0x66830AF0acAf110Aba6ddCCD67e5B702C1dB3360",
+			"avaxAddr": "JVM-june1es5p40rlc82sl8kj9kdtqcqu4882q594wkpct4",
+			"initialAmount": 0,
+			"unlockSchedule": [
+				{
+					"amount": 30000000000000
+				}
+			]
+		},
+		{
+			"ethAddr": "0x8304830BD14118047254eDa4863CFA3611DbD656",
+			"avaxAddr": "JVM-june1tjeef8t6dpxg55qd7mjyk2tqwhl79w0xywvsjt",
+			"initialAmount": 0,
+			"unlockSchedule": [
+				{
+					"amount": 30000000000000
+				}
+			]
+		},
+		{
+			"ethAddr": "0xba79De865C852852f011fEA0BFA1ff9a4410CbB1",
+			"avaxAddr": "JVM-june1ylqrv58g0lf45rw4tnaq0vsh6z97gqh42n6kk9",
+			"initialAmount": 0,
+			"unlockSchedule": [
+				{
+					"amount": 30000000000000
+				}
+			]
+		},
+		{
+			"ethAddr": "0x5f4b25B30792acab0F76FDD724F2Eb2535aE3A57",
+			"avaxAddr": "JVM-june1vd8tj903055s9srmfpgyl727ufh2zfs0vp22f9",
+			"initialAmount": 0,
+			"unlockSchedule": [
+				{
+					"amount": 30000000000000
+				}
+			]
+		},
+		{
+			"ethAddr": "0x8c409bE5a828b9a3fF6b546CB64D56651d0f2c86",
+			"avaxAddr": "JVM-june1zgphkkrmavwd49pqs5r4qt9096d0q9tvp870z6",
+			"initialAmount": 0,
+			"unlockSchedule": [
+				{
+					"amount": 30000000000000
+				}
+			]
+		},
+		{
+			"ethAddr": "0x21BA6Cd6449fa83f17F30c898dbafCfCC26d7a87",
+			"avaxAddr": "JVM-june1vy3cvjc7gs4jg4lpnaj8n82kynh4daxu6qgtw9",
+			"initialAmount": 0,
+			"unlockSchedule": [
+				{
+					"amount": 30000000000000
+				}
+			]
+		},
+		{
+			"ethAddr": "0x6f27b25159865aaB859Efbc41eee1bBae9f62Aa8",
+			"avaxAddr": "JVM-june1h97ca8uemey3744zqkv9aflghcj6qmkv85auwh",
+			"initialAmount": 0,
+			"unlockSchedule": [
+				{
+					"amount": 30000000000000
+				}
+			]
+		},
+		{
+			"ethAddr": "0xBb7A17Caa224C5822D92831D4D08a2cB008DD40E",
+			"avaxAddr": "JVM-june18muue4qg5eg4yc9hpc4tfkvlntpvkeyxvmptde",
+			"initialAmount": 0,
+			"unlockSchedule": [
+				{
+					"amount": 30000000000000
+				}
+			]
+		},
+		{
+			"ethAddr": "0x9CFB6Ed37Bf245BcBECA84eF7957C7d72E8cd5eA",
+			"avaxAddr": "JVM-june1ns58sna9ymzkmde89n6hvk647dkk4qs0phsllx",
+			"initialAmount": 0,
+			"unlockSchedule": [
+				{
+					"amount": 30000000000000
+				}
+			]
+		},
+		{
+			"ethAddr": "0xf64624a8320e0b13C44Ab0E84ff5d4a8070A2c76",
+			"avaxAddr": "JVM-june1p9ptjvlrnwee22n0lkfhq40jvwjhgr6nw93e78",
+			"initialAmount": 0,
+			"unlockSchedule": [
+				{
+					"amount": 30000000000000
+				}
+			]
+		},
+		{
+			"ethAddr": "0xC5fE9f8ba918F9662d0FF887AFF7cdE092bED599",
+			"avaxAddr": "JVM-june1xvta60s995czuys622ru0rpz9jkruk4dk3smqp",
+			"initialAmount": 0,
+			"unlockSchedule": [
+				{
+					"amount": 30000000000000
+				}
+			]
+		},
+		{
+			"ethAddr": "0x2211Ccac743e3803f34fbC1fFeE182940fd7157E",
+			"avaxAddr": "JVM-june1wljh3rhhc33d0j5xepuldzl27edddqmxuh93s0",
+			"initialAmount": 0,
+			"unlockSchedule": [
+				{
+					"amount": 30000000000000
 				}
 			]
 		}
 	],
-	"startTime": 1664575200,
+	"startTime": 1700213660,
 	"initialStakeDuration": 31536000,
 	"initialStakeDurationOffset": 5400,
 	"initialStakedFunds": [
-		"JVM-june17qytasnj7ev2kcneszw0gczwaxwyp6ky7x5qqa"
+		"JVM-june19u9aktkdd4n9h2rkel0u059fjwrynwwk8fnclv",
+		"JVM-june1ul2z7mmx4wlp6yjvnelwwyzt7dv0dvzr26gpvl",
+		"JVM-june14f746x0yljymlydrupza3yeryuu7rwng3x36cn",
+		"JVM-june17yafg6wd0d26n3qlv82nfs2a6va3p4e49rd9vh",
+		"JVM-june1gvgyrsehwe69fmkpz95asezcqepgfgwqftdwrm",
+		"JVM-june15k0k70qac2l86nu8qpd4ya280aamqee23766dl",
+		"JVM-june19z6dqygxx20gxsw7sqmwempmy0kpsmxpu9hz0d",
+		"JVM-june1jklttd5dadm0cr38vmkkmnzhjthxsd52hhv4s9",
+		"JVM-june1tkra6aur3fjdx3kmm3wjedfs9n6tmauuf2g58v",
+		"JVM-june1xygp5zp5ehwwrmmkx6xgn9szru3fzpjr04haew",
+		"JVM-june1aj48yg9sqlczyfqyfhh7n24n59cpx28h5u6d34",
+		"JVM-june13hhe24lnh32jzjekxqf6ekhdg03v6g9n4dvvs6",
+		"JVM-june18s8at6hl24u4zskp9t0cmy9armvadapqpkqqhy",
+		"JVM-june1es5p40rlc82sl8kj9kdtqcqu4882q594wkpct4",
+		"JVM-june1tjeef8t6dpxg55qd7mjyk2tqwhl79w0xywvsjt",
+		"JVM-june1ylqrv58g0lf45rw4tnaq0vsh6z97gqh42n6kk9",
+		"JVM-june1vd8tj903055s9srmfpgyl727ufh2zfs0vp22f9",
+		"JVM-june1zgphkkrmavwd49pqs5r4qt9096d0q9tvp870z6",
+		"JVM-june1vy3cvjc7gs4jg4lpnaj8n82kynh4daxu6qgtw9",
+		"JVM-june1h97ca8uemey3744zqkv9aflghcj6qmkv85auwh",
+		"JVM-june18muue4qg5eg4yc9hpc4tfkvlntpvkeyxvmptde",
+		"JVM-june1ns58sna9ymzkmde89n6hvk647dkk4qs0phsllx",
+		"JVM-june1p9ptjvlrnwee22n0lkfhq40jvwjhgr6nw93e78",
+		"JVM-june1xvta60s995czuys622ru0rpz9jkruk4dk3smqp",
+		"JVM-june1wljh3rhhc33d0j5xepuldzl27edddqmxuh93s0"
 	],
 	"initialStakers": [
 		{
