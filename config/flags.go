@@ -51,7 +51,7 @@ var (
 	defaultVMConfigDir          = filepath.Join(defaultConfigDir, "vms")
 	defaultVMAliasFilePath      = filepath.Join(defaultVMConfigDir, "aliases.json")
 	defaultChainAliasFilePath   = filepath.Join(defaultChainConfigDir, "aliases.json")
-	defaultSupernetConfigDir      = filepath.Join(defaultConfigDir, "supernets")
+	defaultSupernetConfigDir    = filepath.Join(defaultConfigDir, "supernets")
 	defaultPluginDir            = filepath.Join(defaultUnexpandedDataDir, "plugins")
 	defaultChainDataDir         = filepath.Join(defaultUnexpandedDataDir, "chainData")
 	defaultProcessContextPath   = filepath.Join(defaultUnexpandedDataDir, DefaultProcessContextFilename)
@@ -91,7 +91,7 @@ func addNodeFlags(fs *pflag.FlagSet) {
 	fs.String(GenesisFileContentKey, "", "Specifies base64 encoded genesis content")
 
 	// Network ID
-	fs.String(NetworkNameKey, constants.TestnetName, "Network ID this node will connect to")
+	fs.String(NetworkNameKey, constants.MainnetName, "Network ID this node will connect to")
 
 	// ACP flagging
 	fs.IntSlice(ACPSupportKey, nil, "ACPs to support adoption")
