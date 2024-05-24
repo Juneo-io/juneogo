@@ -125,7 +125,7 @@ var (
 		constants.TestnetID: time.Date(2023, time.April, 6, 15, 0, 0, 0, time.UTC),
 	}
 	CortinaXChainStopVertexID = map[uint32]ids.ID{
-		constants.MainnetID: ids.FromStringOrPanic("jrGWDh5Po9FMj54depyunNixpia5PN4aAYxfmNzU8n752Rjga"),
+		constants.MainnetID: ids.FromStringOrPanic("ejqSBwWAzAY7jfzYcwaGfQDfcX37Bvv62pPuXMCNauxFadBJu"),
 		constants.TestnetID: ids.FromStringOrPanic("qXsVYV9eBiZFUSYdCw5MALrebD92LJcvvZHCvCEHCorJHyaPL"),
 	}
 
