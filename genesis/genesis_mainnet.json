@@ -5,38 +5,68 @@
     {
       "ethAddr": "0xDaB7C2d3a4CD7fb852775b586fc7D2bcc43d55FE",
       "avaxAddr": "JVM-june1cp22zk3n5rerwsy4kyv764ffm45l53f60xwj6s",
-      "initialAmount": 1750000000000000,
-      "unlockSchedule": []
+      "initialAmount": 0,
+      "unlockSchedule": [
+        {
+          "amount": 1750000000000000,
+          "locktime": 1718481600
+        }
+      ]
     },
     {
       "ethAddr": "0xcEe021AFC7015039F24218Fe7a156B442F896E51",
       "avaxAddr": "JVM-june1vls5vahajsuxvkvnaqqn78xancg4lskdxd5m0l",
-      "initialAmount": 3700000000000000,
-      "unlockSchedule": []
+      "initialAmount": 0,
+      "unlockSchedule": [
+        {
+          "amount": 3700000000000000,
+          "locktime": 1718481600
+        }
+      ]
     },
     {
       "ethAddr": "0xdB6b44853170b887470F2f9Bb72b5Dc05D5cCF97",
       "avaxAddr": "JVM-june1gguc7cljzn808pwyfpw86q5gksgnwqwff6slag",
-      "initialAmount": 2050000000000000,
-      "unlockSchedule": []
+      "initialAmount": 250000000000000,
+      "unlockSchedule": [
+        {
+          "amount": 1800000000000000,
+          "locktime": 1718481600
+        }
+      ]
     },
     {
       "ethAddr": "0x836Cb1BD5F360186ACC9B121f8ACfb26b6e11357",
       "avaxAddr": "JVM-june1lnhqnv0vn0rq6y4m2t3nj7usnqv3qdylyvap6v",
-      "initialAmount": 3000000000000000,
-      "unlockSchedule": []
+      "initialAmount": 0,
+      "unlockSchedule": [
+        {
+          "amount": 3000000000000000,
+          "locktime": 1718481600
+        }
+      ]
     },
     {
       "ethAddr": "0xCC3173f633ECA02e101Fcce7c691DB68f9F8DEf0",
       "avaxAddr": "JVM-june1jkswxam4py3zdgg4qctmgckcuz8q0u7vse9rlx",
-      "initialAmount": 2750000000000000,
-      "unlockSchedule": []
+      "initialAmount": 0,
+      "unlockSchedule": [
+        {
+          "amount": 2750000000000000,
+          "locktime": 1718481600
+        }
+      ]
     },
     {
       "ethAddr": "0x43961287191CDE2B19B0f530f997B6a670a438F1",
       "avaxAddr": "JVM-june1z6rzcpdq0lh2esf3j6ndtzzrqmxdvfz56p60va",
-      "initialAmount": 6000000000000000,
-      "unlockSchedule": []
+      "initialAmount": 0,
+      "unlockSchedule": [
+        {
+          "amount": 6000000000000000,
+          "locktime": 1718481600
+        }
+      ]
     },
     {
       "ethAddr": "0xde02cB8aB126E70Ae880F432664293bdC8ac38B4",
@@ -289,8 +319,8 @@
       ]
     }
   ],
-  "startTime": 1700213660,
-  "initialStakeDuration": 31536000,
+  "startTime": 1717873200,
+  "initialStakeDuration": 20912400,
   "initialStakeDurationOffset": 5400,
   "initialStakedFunds": [
     "JVM-june19u9aktkdd4n9h2rkel0u059fjwrynwwk8fnclv",
