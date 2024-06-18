@@ -24,9 +24,9 @@ const (
 // These are globals that describe network upgrades and node versions
 var (
 	Current = &Semantic{
-		Major: 0,
-		Minor: 3,
-		Patch: 1,
+		Major: 1,
+		Minor: 0,
+		Patch: 0,
 	}
 	CurrentApp = &Application{
 		Name:  Client,
@@ -36,14 +36,14 @@ var (
 	}
 	MinimumCompatibleVersion = &Application{
 		Name:  Client,
-		Major: 0,
-		Minor: 3,
+		Major: 1,
+		Minor: 0,
 		Patch: 0,
 	}
 	PrevMinimumCompatibleVersion = &Application{
 		Name:  Client,
 		Major: 0,
-		Minor: 2,
+		Minor: 3,
 		Patch: 0,
 	}
 
