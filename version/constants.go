@@ -36,14 +36,14 @@ var (
 	}
 	MinimumCompatibleVersion = &Application{
 		Name:  Client,
-		Major: 1,
-		Minor: 0,
+		Major: 0,
+		Minor: 3,
 		Patch: 0,
 	}
 	PrevMinimumCompatibleVersion = &Application{
 		Name:  Client,
 		Major: 0,
-		Minor: 3,
+		Minor: 2,
 		Patch: 0,
 	}
 
