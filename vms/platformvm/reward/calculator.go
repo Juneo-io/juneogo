@@ -13,8 +13,7 @@ import (
 var _ Calculator = (*calculator)(nil)
 
 type Calculator interface {
-	Calculate(stakedDuration time.Duration, currentTime time.Time, stakedAmount uint64, rewardPoolSupply uint64) uint64
-	CalculatePrimary(stakedDuration time.Duration, currentTime time.Time, stakedAmount uint64) uint64
+	Calculate(stakedDuration time.Duration, currentTime time.Time, stakedAmount uint64) uint64
 }
 
 type calculator struct {
@@ -43,22 +42,9 @@ func NewCalculator(c Config) Calculator {
 	}
 }
 
-func (c *calculator) Calculate(stakedDuration time.Duration, currentTime time.Time, stakeAmount uint64, rewardPoolSupply uint64) uint64 {
-	boundsPercentage := getRemainingTimeBoundsPercentage(c.startRewardTime, c.targetRewardTime, uint64(currentTime.Unix()))
-	reward := getReward(c.targetRewardShare, c.startRewardShare, boundsPercentage)
-	effectiveReward := c.getEffectiveReward(uint64(stakedDuration), stakeAmount, reward)
-	if effectiveReward > rewardPoolSupply {
-		return rewardPoolSupply
-	}
-	return effectiveReward
-}
-
-func (c *calculator) CalculatePrimary(stakedDuration time.Duration, currentTime time.Time, stakeAmount uint64) uint64 {
-	reward := c.getCurrentPrimaryReward(uint64(currentTime.Unix()))
-	return c.getEffectiveReward(uint64(stakedDuration), stakeAmount, reward)
-}
-
-func (c *calculator) getEffectiveReward(stakePeriod uint64, stakeAmount uint64, reward *big.Int) uint64 {
+func (c *calculator) Calculate(stakedDuration time.Duration, currentTime time.Time, stakeAmount uint64) uint64 {
+	reward := c.getCurrentReward(uint64(currentTime.Unix()))
+	stakePeriod := uint64(stakedDuration)
 	reward.Add(reward, c.getStakePeriodReward(stakePeriod))
 	stakePeriodRatio := new(big.Int).SetUint64(stakePeriod)
 	stakePeriodRatio.Mul(stakePeriodRatio, rewardShareDenominator)
@@ -86,7 +72,7 @@ func (c *calculator) getStakePeriodReward(stakePeriod uint64) *big.Int {
 	return reward
 }
 
-func (c *calculator) getCurrentPrimaryReward(currentTime uint64) *big.Int {
+func (c *calculator) getCurrentReward(currentTime uint64) *big.Int {
 	if currentTime >= c.targetRewardTime {
 		return new(big.Int).SetUint64(c.targetRewardShare)
 	}

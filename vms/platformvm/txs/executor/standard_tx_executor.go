@@ -622,43 +622,33 @@ func (e *StandardTxExecutor) putStaker(stakerTx txs.Staker) error {
 			// set. Their [StartTime] is the current chain time.
 			stakeDuration := stakerTx.EndTime().Sub(chainTime)
 
-			if supernetID == constants.PrimaryNetworkID {
-				potentialReward = rewards.CalculatePrimary(
-					stakeDuration,
-					chainTime,
-					stakerTx.Weight(),
-				)
-			} else {
-				potentialReward = rewards.Calculate(
-					stakeDuration,
-					chainTime,
-					stakerTx.Weight(),
-					rewardPoolSupply,
-				)
-			}
+			potentialReward = rewards.Calculate(
+				stakeDuration,
+				chainTime,
+				stakerTx.Weight(),
+			)
 
-			// Reward value above reward pool supply.
-			extraValue := uint64(0)
-			if supernetID == constants.PrimaryNetworkID {
-				if potentialReward > rewardPoolSupply {
-					extraValue = potentialReward - rewardPoolSupply
-				}
-				if extraValue > 0 {
-					// Extra value will be minted update supply accordingly.
-					currentSupply, err = math.Add64(currentSupply, extraValue)
+			mintedAmount := uint64(0)
+			if potentialReward > rewardPoolSupply {
+				mintedAmount = potentialReward - rewardPoolSupply
+				// Primary is the only one that can mint new tokens.
+				if supernetID == constants.PrimaryNetworkID {
+					currentSupply, err = math.Add64(currentSupply, mintedAmount)
 					if err != nil {
 						return err
 					}
+				// Non-Primary should never mint because of potential malicious parameters.
+				} else {
+					potentialReward = rewardPoolSupply
 				}
 			}
 
-			rewardPoolSupply, err = math.Sub(rewardPoolSupply, potentialReward-extraValue)
+			rewardPoolSupply, err = math.Sub(rewardPoolSupply, potentialReward-mintedAmount)
 			if err != nil {
 				return err
 			}
 
 			e.State.SetRewardPoolSupply(supernetID, rewardPoolSupply)
-
 			e.State.SetCurrentSupply(supernetID, currentSupply)
 		}
 

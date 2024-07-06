@@ -1307,7 +1307,7 @@ func (s *state) syncGenesis(genesisBlk block.Block, genesis *genesis.Genesis) er
 		startTime := validatorTx.StartTime()
 		stakeDuration := validatorTx.EndTime().Sub(startTime)
 
-		potentialReward := s.rewards.CalculatePrimary(
+		potentialReward := s.rewards.Calculate(
 			stakeDuration,
 			genesisTimestamp,
 			stakeAmount,

@@ -144,45 +144,34 @@ func AdvanceTimeTo(
 			return false, err
 		}
 
-		potentialReward := uint64(0)
-		if stakerToRemove.SupernetID == constants.PrimaryNetworkID {
-			potentialReward = rewards.CalculatePrimary(
-				stakerToRemove.EndTime.Sub(stakerToRemove.StartTime),
-				stakerToRemove.StartTime,
-				stakerToRemove.Weight,
-			)
-		} else {
-			potentialReward = rewards.Calculate(
-				stakerToRemove.EndTime.Sub(stakerToRemove.StartTime),
-				stakerToRemove.StartTime,
-				stakerToRemove.Weight,
-				rewardPoolSupply,
-			)
-		}
+		potentialReward := rewards.Calculate(
+			stakerToRemove.EndTime.Sub(stakerToRemove.StartTime),
+			stakerToRemove.StartTime,
+			stakerToRemove.Weight,
+		)
 		stakerToAdd.PotentialReward = potentialReward
 
-		// Reward value above reward pool supply.
-		extraValue := uint64(0)
-
-		if stakerToRemove.SupernetID == constants.PrimaryNetworkID {
-			if potentialReward > rewardPoolSupply {
-				extraValue = potentialReward - rewardPoolSupply
-			}
-			if extraValue > 0 {
-				// Extra value will be minted update supply accordingly.
-				supply, err = math.Add64(supply, extraValue)
+		mintedAmount := uint64(0)
+		if potentialReward > rewardPoolSupply {
+			mintedAmount = potentialReward - rewardPoolSupply
+			// Primary is the only one that can mint new tokens.
+			if stakerToAdd.SupernetID == constants.PrimaryNetworkID {
+				supply, err = math.Add64(supply, mintedAmount)
 				if err != nil {
 					return false, err
 				}
+			// Non-Primary should never mint because of potential malicious parameters.
+			} else {
+				potentialReward = rewardPoolSupply
 			}
 		}
 
-		rewardPoolSupply, err = math.Sub(rewardPoolSupply, potentialReward-extraValue)
+		rewardPoolSupply, err = math.Sub(rewardPoolSupply, potentialReward-mintedAmount)
 		if err != nil {
 			return false, err
 		}
-		changes.SetRewardPoolSupply(stakerToRemove.SupernetID, rewardPoolSupply)
 
+		changes.SetRewardPoolSupply(stakerToRemove.SupernetID, rewardPoolSupply)
 		changes.SetCurrentSupply(stakerToRemove.SupernetID, supply)
 
 		switch stakerToRemove.Priority {
