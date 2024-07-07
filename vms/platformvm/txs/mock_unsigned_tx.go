@@ -56,6 +56,20 @@ func (mr *MockUnsignedTxMockRecorder) Bytes() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Bytes", reflect.TypeOf((*MockUnsignedTx)(nil).Bytes))
 }
 
+// ConsumedValue mocks base method.
+func (m *MockUnsignedTx) ConsumedValue(assetID ids.ID) uint64 {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConsumedValue", assetID)
+	ret0, _ := ret[0].(uint64)
+	return ret0
+}
+
+// ConsumedValue indicates an expected call of ConsumedValue.
+func (mr *MockUnsignedTxMockRecorder) ConsumedValue(assetID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConsumedValue", reflect.TypeOf((*MockUnsignedTx)(nil).ConsumedValue), assetID)
+}
+
 // InitCtx mocks base method.
 func (m *MockUnsignedTx) InitCtx(ctx *snow.Context) {
 	m.ctrl.T.Helper()
