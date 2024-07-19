@@ -136,7 +136,7 @@ func TestAddPermissionlessPrimaryValidator(t *testing.T) {
 	avax.SortTransferableOutputs(simpleAddPrimaryTx.StakeOuts, Codec)
 	utils.Sort(simpleAddPrimaryTx.Ins)
 	require.NoError(simpleAddPrimaryTx.SyntacticVerify(&snow.Context{
-		NetworkID:   1,
+		NetworkID:   45,
 		ChainID:     constants.PlatformChainID,
 		AVAXAssetID: avaxAssetID,
 	}))
@@ -147,7 +147,7 @@ func TestAddPermissionlessPrimaryValidator(t *testing.T) {
 		// AddPermissionlessValidatorTx type ID
 		0x00, 0x00, 0x00, 0x19,
 		// Mainnet network ID
-		0x00, 0x00, 0x00, 0x01,
+		0x00, 0x00, 0x00, 0x2d,
 		// P-chain blockchain ID
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -435,7 +435,7 @@ func TestAddPermissionlessPrimaryValidator(t *testing.T) {
 		DelegationShares: reward.PercentDenominator,
 	}
 	require.NoError(complexAddPrimaryTx.SyntacticVerify(&snow.Context{
-		NetworkID:   1,
+		NetworkID:   45,
 		ChainID:     constants.PlatformChainID,
 		AVAXAssetID: avaxAssetID,
 	}))
@@ -446,7 +446,7 @@ func TestAddPermissionlessPrimaryValidator(t *testing.T) {
 		// AddPermissionlessValidatorTx type ID
 		0x00, 0x00, 0x00, 0x19,
 		// Mainnet network ID
-		0x00, 0x00, 0x00, 0x01,
+		0x00, 0x00, 0x00, 0x2d,
 		// P-chain blockchain ID
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -822,7 +822,7 @@ func TestAddPermissionlessSupernetValidator(t *testing.T) {
 	avax.SortTransferableOutputs(simpleAddSupernetTx.StakeOuts, Codec)
 	utils.Sort(simpleAddSupernetTx.Ins)
 	require.NoError(simpleAddSupernetTx.SyntacticVerify(&snow.Context{
-		NetworkID:   1,
+		NetworkID:   45,
 		ChainID:     constants.PlatformChainID,
 		AVAXAssetID: avaxAssetID,
 	}))
@@ -833,7 +833,7 @@ func TestAddPermissionlessSupernetValidator(t *testing.T) {
 		// AddPermissionlessValidatorTx type ID
 		0x00, 0x00, 0x00, 0x19,
 		// Mainnet network ID
-		0x00, 0x00, 0x00, 0x01,
+		0x00, 0x00, 0x00, 0x2d,
 		// P-chain blockchain ID
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -1122,7 +1122,7 @@ func TestAddPermissionlessSupernetValidator(t *testing.T) {
 		DelegationShares: reward.PercentDenominator,
 	}
 	require.NoError(complexAddSupernetTx.SyntacticVerify(&snow.Context{
-		NetworkID:   1,
+		NetworkID:   45,
 		ChainID:     constants.PlatformChainID,
 		AVAXAssetID: avaxAssetID,
 	}))
@@ -1133,7 +1133,7 @@ func TestAddPermissionlessSupernetValidator(t *testing.T) {
 		// AddPermissionlessValidatorTx type ID
 		0x00, 0x00, 0x00, 0x19,
 		// Mainnet network ID
-		0x00, 0x00, 0x00, 0x01,
+		0x00, 0x00, 0x00, 0x2d,
 		// P-chain blockchain ID
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,

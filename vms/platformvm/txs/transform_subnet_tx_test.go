@@ -6,6 +6,7 @@ package txs
 import (
 	"encoding/json"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
@@ -32,7 +33,7 @@ func TestTransformSupernetTxSerialization(t *testing.T) {
 		0x44, 0x55, 0x66, 0x77,
 	}
 
-	avaxAssetID, err := ids.FromString("FvwEAhmxKfeiG8SnEvq42hc6whRyY3EFYAvebMqDNDGCgxN5Z")
+	avaxAssetID, err := ids.FromString("3WWxh5JEz7zu1RWdRxS6xugusNWzFFPwPw1xnZfAGzaAj8sTp")
 	require.NoError(err)
 
 	customAssetID := ids.ID{
@@ -98,15 +99,20 @@ func TestTransformSupernetTxSerialization(t *testing.T) {
 		},
 		Supernet:                   supernetID,
 		AssetID:                  customAssetID,
-		InitialSupply:            0x1000000000000000,
-		MaximumSupply:            0xffffffffffffffff,
-		MinConsumptionRate:       1_000,
-		MaxConsumptionRate:       1_000_000,
+		InitialRewardPoolSupply:  0x1000000000000000,
+		StartRewardShare:         1_0000,
+		StartRewardTime:          uint64(time.Date(2000, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()),
+		DiminishingRewardShare:   8000,
+		DiminishingRewardTime:    uint64(time.Date(2001, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()),
+		TargetRewardShare:        6000,
+		TargetRewardTime:         uint64(time.Date(2002, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()),
 		MinValidatorStake:        1,
 		MaxValidatorStake:        0xffffffffffffffff,
 		MinStakeDuration:         1,
 		MaxStakeDuration:         365 * 24 * 60 * 60,
+		StakePeriodRewardShare:   2_0000,
 		MinDelegationFee:         reward.PercentDenominator,
+		MaxDelegationFee:         reward.PercentDenominator,
 		MinDelegatorStake:        1,
 		MaxValidatorWeightFactor: 1,
 		UptimeRequirement:        .95 * reward.PercentDenominator,
@@ -115,7 +121,7 @@ func TestTransformSupernetTxSerialization(t *testing.T) {
 		},
 	}
 	require.NoError(simpleTransformTx.SyntacticVerify(&snow.Context{
-		NetworkID:   1,
+		NetworkID:   45,
 		ChainID:     constants.PlatformChainID,
 		AVAXAssetID: avaxAssetID,
 	}))
@@ -126,7 +132,7 @@ func TestTransformSupernetTxSerialization(t *testing.T) {
 		// TransformSupernetTx type ID
 		0x00, 0x00, 0x00, 0x18,
 		// Mainnet network ID
-		0x00, 0x00, 0x00, 0x01,
+		0x00, 0x00, 0x00, 0x2d,
 		// P-chain blockchain ID
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -145,10 +151,10 @@ func TestTransformSupernetTxSerialization(t *testing.T) {
 		// Tx output index
 		0x00, 0x00, 0x00, 0x01,
 		// Mainnet AVAX assetID
-		0x21, 0xe6, 0x73, 0x17, 0xcb, 0xc4, 0xbe, 0x2a,
-		0xeb, 0x00, 0x67, 0x7a, 0xd6, 0x46, 0x27, 0x78,
-		0xa8, 0xf5, 0x22, 0x74, 0xb9, 0xd6, 0x05, 0xdf,
-		0x25, 0x91, 0xb2, 0x30, 0x27, 0xa8, 0x7d, 0xff,
+		0x05, 0xb2, 0x60, 0x0f, 0x82, 0x23, 0x20, 0x10,
+		0x2b, 0x93, 0x80, 0x82, 0x65, 0x6f, 0xce, 0x4f,
+		0x45, 0x9b, 0x62, 0x34, 0x6d, 0x60, 0x6a, 0x5c,
+		0x50, 0x88, 0xbe, 0x89, 0x46, 0xde, 0xd8, 0x3a,
 		// secp256k1fx transfer input type ID
 		0x00, 0x00, 0x00, 0x05,
 		// input amount = 10 AVAX
@@ -190,14 +196,20 @@ func TestTransformSupernetTxSerialization(t *testing.T) {
 		0x99, 0x77, 0x55, 0x77, 0x11, 0x33, 0x55, 0x31,
 		0x99, 0x77, 0x55, 0x77, 0x11, 0x33, 0x55, 0x31,
 		0x99, 0x77, 0x55, 0x77, 0x11, 0x33, 0x55, 0x31,
-		// initial supply
+		// initial reward pool supply
 		0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-		// maximum supply
-		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-		// minimum consumption rate
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0xe8,
-		// maximum consumption rate
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x0f, 0x42, 0x40,
+		// start reward share
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x27, 0x10,
+		// start reward time
+		0x00, 0x00, 0x00, 0x00, 0x38, 0x6d, 0x43, 0x80,
+		// diminishing reward share
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1f, 0x40,
+		// diminishing reward time
+		0x00, 0x00, 0x00, 0x00, 0x3a, 0x4f, 0xc8, 0x80,
+		// target reward share
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x17, 0x70,
+		// target reward time
+		0x00, 0x00, 0x00, 0x00, 0x3c, 0x30, 0xfc, 0x00,
 		// minimum staking amount
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01,
 		// maximum staking amount
@@ -206,7 +218,11 @@ func TestTransformSupernetTxSerialization(t *testing.T) {
 		0x00, 0x00, 0x00, 0x01,
 		// maximum staking duration
 		0x01, 0xe1, 0x33, 0x80,
+		// stake period reward share
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x4e, 0x20,
 		// minimum delegation fee
+		0x00, 0x0f, 0x42, 0x40,
+		// maximum delegation fee
 		0x00, 0x0f, 0x42, 0x40,
 		// minimum delegation amount
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01,
@@ -320,17 +336,22 @@ func TestTransformSupernetTxSerialization(t *testing.T) {
 				Memo: types.JSONByteSlice("😅\nwell that's\x01\x23\x45!"),
 			},
 		},
-		Supernet:                   supernetID,
+		Supernet:                 supernetID,
 		AssetID:                  customAssetID,
-		InitialSupply:            0x1000000000000000,
-		MaximumSupply:            0x1000000000000000,
-		MinConsumptionRate:       0,
-		MaxConsumptionRate:       0,
+		InitialRewardPoolSupply:  0x1000000000000000,
+		StartRewardShare:         1_0000,
+		StartRewardTime:          uint64(time.Date(2000, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()),
+		DiminishingRewardShare:   8000,
+		DiminishingRewardTime:    uint64(time.Date(2001, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()),
+		TargetRewardShare:        6000,
+		TargetRewardTime:         uint64(time.Date(2002, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()),
 		MinValidatorStake:        1,
 		MaxValidatorStake:        0x1000000000000000,
 		MinStakeDuration:         1,
 		MaxStakeDuration:         1,
+		StakePeriodRewardShare:   2_0000,
 		MinDelegationFee:         0,
+		MaxDelegationFee:         0,
 		MinDelegatorStake:        0xffffffffffffffff,
 		MaxValidatorWeightFactor: 255,
 		UptimeRequirement:        0,
@@ -341,7 +362,7 @@ func TestTransformSupernetTxSerialization(t *testing.T) {
 	avax.SortTransferableOutputs(complexTransformTx.Outs, Codec)
 	utils.Sort(complexTransformTx.Ins)
 	require.NoError(complexTransformTx.SyntacticVerify(&snow.Context{
-		NetworkID:   1,
+		NetworkID:   45,
 		ChainID:     constants.PlatformChainID,
 		AVAXAssetID: avaxAssetID,
 	}))
@@ -352,7 +373,7 @@ func TestTransformSupernetTxSerialization(t *testing.T) {
 		// TransformSupernetTx type ID
 		0x00, 0x00, 0x00, 0x18,
 		// Mainnet network ID
-		0x00, 0x00, 0x00, 0x01,
+		0x00, 0x00, 0x00, 0x2d,
 		// P-chain blockchain ID
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -362,10 +383,10 @@ func TestTransformSupernetTxSerialization(t *testing.T) {
 		0x00, 0x00, 0x00, 0x02,
 		// outputs[0]
 		// Mainnet AVAX asset ID
-		0x21, 0xe6, 0x73, 0x17, 0xcb, 0xc4, 0xbe, 0x2a,
-		0xeb, 0x00, 0x67, 0x7a, 0xd6, 0x46, 0x27, 0x78,
-		0xa8, 0xf5, 0x22, 0x74, 0xb9, 0xd6, 0x05, 0xdf,
-		0x25, 0x91, 0xb2, 0x30, 0x27, 0xa8, 0x7d, 0xff,
+		0x05, 0xb2, 0x60, 0x0f, 0x82, 0x23, 0x20, 0x10,
+		0x2b, 0x93, 0x80, 0x82, 0x65, 0x6f, 0xce, 0x4f,
+		0x45, 0x9b, 0x62, 0x34, 0x6d, 0x60, 0x6a, 0x5c,
+		0x50, 0x88, 0xbe, 0x89, 0x46, 0xde, 0xd8, 0x3a,
 		// Stakeable locked output type ID
 		0x00, 0x00, 0x00, 0x16,
 		// Locktime
@@ -415,10 +436,10 @@ func TestTransformSupernetTxSerialization(t *testing.T) {
 		// Tx output index
 		0x00, 0x00, 0x00, 0x01,
 		// Mainnet AVAX asset ID
-		0x21, 0xe6, 0x73, 0x17, 0xcb, 0xc4, 0xbe, 0x2a,
-		0xeb, 0x00, 0x67, 0x7a, 0xd6, 0x46, 0x27, 0x78,
-		0xa8, 0xf5, 0x22, 0x74, 0xb9, 0xd6, 0x05, 0xdf,
-		0x25, 0x91, 0xb2, 0x30, 0x27, 0xa8, 0x7d, 0xff,
+		0x05, 0xb2, 0x60, 0x0f, 0x82, 0x23, 0x20, 0x10,
+		0x2b, 0x93, 0x80, 0x82, 0x65, 0x6f, 0xce, 0x4f,
+		0x45, 0x9b, 0x62, 0x34, 0x6d, 0x60, 0x6a, 0x5c,
+		0x50, 0x88, 0xbe, 0x89, 0x46, 0xde, 0xd8, 0x3a,
 		// secp256k1fx transfer input type ID
 		0x00, 0x00, 0x00, 0x05,
 		// amount = 1,000 AVAX
@@ -489,14 +510,20 @@ func TestTransformSupernetTxSerialization(t *testing.T) {
 		0x99, 0x77, 0x55, 0x77, 0x11, 0x33, 0x55, 0x31,
 		0x99, 0x77, 0x55, 0x77, 0x11, 0x33, 0x55, 0x31,
 		0x99, 0x77, 0x55, 0x77, 0x11, 0x33, 0x55, 0x31,
-		// initial supply
+		// initial reward pool supply
 		0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-		// maximum supply
-		0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-		// minimum consumption rate
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-		// maximum consumption rate
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		// start reward share
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x27, 0x10,
+		// start reward time
+		0x00, 0x00, 0x00, 0x00, 0x38, 0x6d, 0x43, 0x80,
+		// diminishing reward share
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1f, 0x40,
+		// diminishing reward time
+		0x00, 0x00, 0x00, 0x00, 0x3a, 0x4f, 0xc8, 0x80,
+		// target reward share
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x17, 0x70,
+		// target reward time
+		0x00, 0x00, 0x00, 0x00, 0x3c, 0x30, 0xfc, 0x00,
 		// minimum staking amount
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01,
 		// maximum staking amount
@@ -505,7 +532,11 @@ func TestTransformSupernetTxSerialization(t *testing.T) {
 		0x00, 0x00, 0x00, 0x01,
 		// maximum staking duration
 		0x00, 0x00, 0x00, 0x01,
+		// stake period reward share
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x4e, 0x20,
 		// minimum delegation fee
+		0x00, 0x00, 0x00, 0x00,
+		// maximum delegation fee
 		0x00, 0x00, 0x00, 0x00,
 		// minimum delegation amount
 		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
@@ -527,7 +558,7 @@ func TestTransformSupernetTxSerialization(t *testing.T) {
 	require.NoError(aliaser.Alias(constants.PlatformChainID, "P"))
 
 	unsignedComplexTransformTx.InitCtx(&snow.Context{
-		NetworkID:   1,
+		NetworkID:   45,
 		ChainID:     constants.PlatformChainID,
 		AVAXAssetID: avaxAssetID,
 		BCLookup:    aliaser,
@@ -536,11 +567,11 @@ func TestTransformSupernetTxSerialization(t *testing.T) {
 	unsignedComplexTransformTxJSONBytes, err := json.MarshalIndent(unsignedComplexTransformTx, "", "\t")
 	require.NoError(err)
 	require.Equal(`{
-	"networkID": 1,
+	"networkID": 45,
 	"blockchainID": "11111111111111111111111111111111LpoYY",
 	"outputs": [
 		{
-			"assetID": "FvwEAhmxKfeiG8SnEvq42hc6whRyY3EFYAvebMqDNDGCgxN5Z",
+			"assetID": "3WWxh5JEz7zu1RWdRxS6xugusNWzFFPwPw1xnZfAGzaAj8sTp",
 			"fxID": "spdxUxVJQbX85MGxMHbKw1sHxMnSqJ3QBzDyDYEP3h6TLuxqQ",
 			"output": {
 				"locktime": 87654321,
@@ -559,7 +590,7 @@ func TestTransformSupernetTxSerialization(t *testing.T) {
 				"locktime": 876543210,
 				"output": {
 					"addresses": [
-						"P-avax1g32kvaugnx4tk3z4vemc3xd2hdz92enh972wxr"
+						"P-june1g32kvaugnx4tk3z4vemc3xd2hdz92enh6alq37"
 					],
 					"amount": 18446744073709551615,
 					"locktime": 0,
@@ -572,7 +603,7 @@ func TestTransformSupernetTxSerialization(t *testing.T) {
 		{
 			"txID": "2wiU5PnFTjTmoAXGZutHAsPF36qGGyLHYHj9G1Aucfmb3JFFGN",
 			"outputIndex": 1,
-			"assetID": "FvwEAhmxKfeiG8SnEvq42hc6whRyY3EFYAvebMqDNDGCgxN5Z",
+			"assetID": "3WWxh5JEz7zu1RWdRxS6xugusNWzFFPwPw1xnZfAGzaAj8sTp",
 			"fxID": "spdxUxVJQbX85MGxMHbKw1sHxMnSqJ3QBzDyDYEP3h6TLuxqQ",
 			"input": {
 				"amount": 1000000000000,
@@ -611,15 +642,20 @@ func TestTransformSupernetTxSerialization(t *testing.T) {
 	"memo": "0xf09f98850a77656c6c2074686174277301234521",
 	"supernetID": "SkB92YpWm4UpburLz9tEKZw2i67H3FF6YkjaU4BkFUDTG9Xm",
 	"assetID": "2Ab62uWwJw1T6VvmKD36ufsiuGZuX1pGykXAvPX1LtjTRHxwcc",
-	"initialSupply": 1152921504606846976,
-	"maximumSupply": 1152921504606846976,
-	"minConsumptionRate": 0,
-	"maxConsumptionRate": 0,
+	"initialRewardPoolSupply": 1152921504606846976,
+	"startRewardShare": 10000,
+	"startRewardTime": 946684800,
+	"diminishingRewardShare": 8000,
+	"diminishingRewardTime": 978307200,
+	"targetRewardShare": 6000,
+	"targetRewardTime": 1009843200,
 	"minValidatorStake": 1,
 	"maxValidatorStake": 1152921504606846976,
 	"minStakeDuration": 1,
 	"maxStakeDuration": 1,
+	"stakePeriodRewardShare": 20000,
 	"minDelegationFee": 0,
+	"maxDelegationFee": 0,
 	"minDelegatorStake": 18446744073709551615,
 	"maxValidatorWeightFactor": 255,
 	"uptimeRequirement": 0,
@@ -713,59 +749,146 @@ func TestTransformSupernetTxSyntacticVerify(t *testing.T) {
 			err: errAssetIDCantBeAVAX,
 		},
 		{
-			name: "initialSupply == 0",
+			name: "startRewardShare == 0",
 			txFunc: func(*gomock.Controller) *TransformSupernetTx {
 				return &TransformSupernetTx{
 					BaseTx:        validBaseTx,
 					Supernet:        ids.GenerateTestID(),
 					AssetID:       ids.GenerateTestID(),
-					InitialSupply: 0,
+					InitialRewardPoolSupply: 1,
+					StartRewardShare: 0,
 				}
 			},
-			err: errInitialSupplyZero,
+			err: errStartRewardShareZero,
 		},
 		{
-			name: "initialSupply > maximumSupply",
+			name: "startRewardShare > PercentDenominator",
 			txFunc: func(*gomock.Controller) *TransformSupernetTx {
 				return &TransformSupernetTx{
 					BaseTx:        validBaseTx,
 					Supernet:        ids.GenerateTestID(),
 					AssetID:       ids.GenerateTestID(),
-					InitialSupply: 2,
-					MaximumSupply: 1,
+					InitialRewardPoolSupply: 1,
+					StartRewardShare: reward.PercentDenominator + 1,
 				}
 			},
-			err: errInitialSupplyGreaterThanMaxSupply,
+			err: errStartRewardShareTooLarge,
 		},
 		{
-			name: "minConsumptionRate > maxConsumptionRate",
+			name: "startRewardTime == 0",
 			txFunc: func(*gomock.Controller) *TransformSupernetTx {
 				return &TransformSupernetTx{
-					BaseTx:             validBaseTx,
-					Supernet:             ids.GenerateTestID(),
-					AssetID:            ids.GenerateTestID(),
-					InitialSupply:      1,
-					MaximumSupply:      1,
-					MinConsumptionRate: 2,
-					MaxConsumptionRate: 1,
+					BaseTx:        validBaseTx,
+					Supernet:        ids.GenerateTestID(),
+					AssetID:       ids.GenerateTestID(),
+					InitialRewardPoolSupply: 1,
+					StartRewardShare: 10,
+					StartRewardTime: 0,
 				}
 			},
-			err: errMinConsumptionRateTooLarge,
+			err: errStartRewardTimeZero,
 		},
 		{
-			name: "maxConsumptionRate > 100%",
+			name: "startRewardTime > diminishingRewardTime",
 			txFunc: func(*gomock.Controller) *TransformSupernetTx {
 				return &TransformSupernetTx{
-					BaseTx:             validBaseTx,
-					Supernet:             ids.GenerateTestID(),
-					AssetID:            ids.GenerateTestID(),
-					InitialSupply:      1,
-					MaximumSupply:      1,
-					MinConsumptionRate: 0,
-					MaxConsumptionRate: reward.PercentDenominator + 1,
+					BaseTx:        validBaseTx,
+					Supernet:        ids.GenerateTestID(),
+					AssetID:       ids.GenerateTestID(),
+					InitialRewardPoolSupply: 1,
+					StartRewardShare: 10000,
+					StartRewardTime: 2,
+					DiminishingRewardShare: 9000,
+					DiminishingRewardTime: 1,
 				}
 			},
-			err: errMaxConsumptionRateTooLarge,
+			err: errStartRewardTimeTooLarge,
+		},
+		{
+			name: "diminishingRewardShare == 0",
+			txFunc: func(*gomock.Controller) *TransformSupernetTx {
+				return &TransformSupernetTx{
+					BaseTx:        validBaseTx,
+					Supernet:        ids.GenerateTestID(),
+					AssetID:       ids.GenerateTestID(),
+					InitialRewardPoolSupply: 1,
+					StartRewardShare: 10000,
+					StartRewardTime: 1,
+					DiminishingRewardShare: 0,
+					DiminishingRewardTime: 20000,
+				}
+			},
+			err: errDiminishingRewardShareZero,
+		},
+		{
+			name: "diminishingRewardShare > startRewardShare",
+			txFunc: func(*gomock.Controller) *TransformSupernetTx {
+				return &TransformSupernetTx{
+					BaseTx:        validBaseTx,
+					Supernet:        ids.GenerateTestID(),
+					AssetID:       ids.GenerateTestID(),
+					InitialRewardPoolSupply: 1,
+					StartRewardShare: 1,
+					StartRewardTime: 10000,
+					DiminishingRewardShare: 2,
+					DiminishingRewardTime: 20000,
+				}
+			},
+			err: errDiminishingRewardShareTooLarge,
+		},
+		{
+			name: "diminishingRewardTime > targetRewardTime",
+			txFunc: func(*gomock.Controller) *TransformSupernetTx {
+				return &TransformSupernetTx{
+					BaseTx:        validBaseTx,
+					Supernet:        ids.GenerateTestID(),
+					AssetID:       ids.GenerateTestID(),
+					InitialRewardPoolSupply: 1,
+					StartRewardShare: 30000,
+					StartRewardTime: 1,
+					DiminishingRewardShare: 20000,
+					DiminishingRewardTime: 3,
+					TargetRewardShare: 10000,
+					TargetRewardTime: 2,
+				}
+			},
+			err: errDiminishingRewardTimeTooLarge,
+		},
+		{
+			name: "targetRewardShare == 0",
+			txFunc: func(*gomock.Controller) *TransformSupernetTx {
+				return &TransformSupernetTx{
+					BaseTx:        validBaseTx,
+					Supernet:        ids.GenerateTestID(),
+					AssetID:       ids.GenerateTestID(),
+					InitialRewardPoolSupply: 1,
+					StartRewardShare: 3,
+					StartRewardTime: 10000,
+					DiminishingRewardShare: 2,
+					DiminishingRewardTime: 20000,
+					TargetRewardShare: 0,
+					TargetRewardTime: 30000,
+				}
+			},
+			err: errTargetRewardShareZero,
+		},
+		{
+			name: "targetRewardShare > diminishingRewardShare",
+			txFunc: func(*gomock.Controller) *TransformSupernetTx {
+				return &TransformSupernetTx{
+					BaseTx:        validBaseTx,
+					Supernet:        ids.GenerateTestID(),
+					AssetID:       ids.GenerateTestID(),
+					InitialRewardPoolSupply: 1,
+					StartRewardShare: 3,
+					StartRewardTime: 10000,
+					DiminishingRewardShare: 1,
+					DiminishingRewardTime: 20000,
+					TargetRewardShare: 2,
+					TargetRewardTime: 30000,
+				}
+			},
+			err: errTargetRewardShareTooLarge,
 		},
 		{
 			name: "minValidatorStake == 0",
@@ -774,30 +897,17 @@ func TestTransformSupernetTxSyntacticVerify(t *testing.T) {
 					BaseTx:             validBaseTx,
 					Supernet:             ids.GenerateTestID(),
 					AssetID:            ids.GenerateTestID(),
-					InitialSupply:      1,
-					MaximumSupply:      1,
-					MinConsumptionRate: 0,
-					MaxConsumptionRate: reward.PercentDenominator,
+					InitialRewardPoolSupply:  1,
+					StartRewardShare:         1_0000,
+					StartRewardTime:          uint64(time.Date(2000, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()),
+					DiminishingRewardShare:   8000,
+					DiminishingRewardTime:    uint64(time.Date(2001, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()),
+					TargetRewardShare:        6000,
+					TargetRewardTime:         uint64(time.Date(2002, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()),
 					MinValidatorStake:  0,
 				}
 			},
 			err: errMinValidatorStakeZero,
-		},
-		{
-			name: "minValidatorStake > initialSupply",
-			txFunc: func(*gomock.Controller) *TransformSupernetTx {
-				return &TransformSupernetTx{
-					BaseTx:             validBaseTx,
-					Supernet:             ids.GenerateTestID(),
-					AssetID:            ids.GenerateTestID(),
-					InitialSupply:      1,
-					MaximumSupply:      1,
-					MinConsumptionRate: 0,
-					MaxConsumptionRate: reward.PercentDenominator,
-					MinValidatorStake:  2,
-				}
-			},
-			err: errMinValidatorStakeAboveSupply,
 		},
 		{
 			name: "minValidatorStake > maxValidatorStake",
@@ -806,32 +916,18 @@ func TestTransformSupernetTxSyntacticVerify(t *testing.T) {
 					BaseTx:             validBaseTx,
 					Supernet:             ids.GenerateTestID(),
 					AssetID:            ids.GenerateTestID(),
-					InitialSupply:      10,
-					MaximumSupply:      10,
-					MinConsumptionRate: 0,
-					MaxConsumptionRate: reward.PercentDenominator,
+					InitialRewardPoolSupply:      10,
+					StartRewardShare:         1_0000,
+					StartRewardTime:          uint64(time.Date(2000, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()),
+					DiminishingRewardShare:   8000,
+					DiminishingRewardTime:    uint64(time.Date(2001, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()),
+					TargetRewardShare:        6000,
+					TargetRewardTime:         uint64(time.Date(2002, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()),
 					MinValidatorStake:  2,
 					MaxValidatorStake:  1,
 				}
 			},
 			err: errMinValidatorStakeAboveMax,
-		},
-		{
-			name: "maxValidatorStake > maximumSupply",
-			txFunc: func(*gomock.Controller) *TransformSupernetTx {
-				return &TransformSupernetTx{
-					BaseTx:             validBaseTx,
-					Supernet:             ids.GenerateTestID(),
-					AssetID:            ids.GenerateTestID(),
-					InitialSupply:      10,
-					MaximumSupply:      10,
-					MinConsumptionRate: 0,
-					MaxConsumptionRate: reward.PercentDenominator,
-					MinValidatorStake:  2,
-					MaxValidatorStake:  11,
-				}
-			},
-			err: errMaxValidatorStakeTooLarge,
 		},
 		{
 			name: "minStakeDuration == 0",
@@ -840,10 +936,13 @@ func TestTransformSupernetTxSyntacticVerify(t *testing.T) {
 					BaseTx:             validBaseTx,
 					Supernet:             ids.GenerateTestID(),
 					AssetID:            ids.GenerateTestID(),
-					InitialSupply:      10,
-					MaximumSupply:      10,
-					MinConsumptionRate: 0,
-					MaxConsumptionRate: reward.PercentDenominator,
+					InitialRewardPoolSupply:      10,
+					StartRewardShare:         1_0000,
+					StartRewardTime:          uint64(time.Date(2000, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()),
+					DiminishingRewardShare:   8000,
+					DiminishingRewardTime:    uint64(time.Date(2001, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()),
+					TargetRewardShare:        6000,
+					TargetRewardTime:         uint64(time.Date(2002, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()),
 					MinValidatorStake:  2,
 					MaxValidatorStake:  10,
 					MinStakeDuration:   0,
@@ -858,17 +957,67 @@ func TestTransformSupernetTxSyntacticVerify(t *testing.T) {
 					BaseTx:             validBaseTx,
 					Supernet:             ids.GenerateTestID(),
 					AssetID:            ids.GenerateTestID(),
-					InitialSupply:      10,
-					MaximumSupply:      10,
-					MinConsumptionRate: 0,
-					MaxConsumptionRate: reward.PercentDenominator,
+					InitialRewardPoolSupply:      10,
+					StartRewardShare:         1_0000,
+					StartRewardTime:          uint64(time.Date(2000, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()),
+					DiminishingRewardShare:   8000,
+					DiminishingRewardTime:    uint64(time.Date(2001, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()),
+					TargetRewardShare:        6000,
+					TargetRewardTime:         uint64(time.Date(2002, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()),
 					MinValidatorStake:  2,
 					MaxValidatorStake:  10,
+					MinDelegatorStake:  1,
 					MinStakeDuration:   2,
 					MaxStakeDuration:   1,
 				}
 			},
 			err: errMinStakeDurationTooLarge,
+		},
+		{
+			name: "stakePeriodRewardShare == 0",
+			txFunc: func(*gomock.Controller) *TransformSupernetTx {
+				return &TransformSupernetTx{
+					BaseTx:             validBaseTx,
+					Supernet:             ids.GenerateTestID(),
+					AssetID:            ids.GenerateTestID(),
+					InitialRewardPoolSupply:      10,
+					StartRewardShare:         1_0000,
+					StartRewardTime:          uint64(time.Date(2000, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()),
+					DiminishingRewardShare:   8000,
+					DiminishingRewardTime:    uint64(time.Date(2001, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()),
+					TargetRewardShare:        6000,
+					TargetRewardTime:         uint64(time.Date(2002, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()),
+					MinValidatorStake:  2,
+					MaxValidatorStake:  10,
+					MinStakeDuration:   1,
+					MaxStakeDuration:   1,
+					StakePeriodRewardShare: 0,
+				}
+			},
+			err: errStakePeriodRewardShareZero,
+		},
+		{
+			name: "stakePeriodRewardShare > PercentDenominator",
+			txFunc: func(*gomock.Controller) *TransformSupernetTx {
+				return &TransformSupernetTx{
+					BaseTx:             validBaseTx,
+					Supernet:             ids.GenerateTestID(),
+					AssetID:            ids.GenerateTestID(),
+					InitialRewardPoolSupply:      10,
+					StartRewardShare:         1_0000,
+					StartRewardTime:          uint64(time.Date(2000, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()),
+					DiminishingRewardShare:   8000,
+					DiminishingRewardTime:    uint64(time.Date(2001, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()),
+					TargetRewardShare:        6000,
+					TargetRewardTime:         uint64(time.Date(2002, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()),
+					MinValidatorStake:  2,
+					MaxValidatorStake:  10,
+					MinStakeDuration:   1,
+					MaxStakeDuration:   1,
+					StakePeriodRewardShare: reward.PercentDenominator + 1,
+				}
+			},
+			err: errStakePeriodRewardShareTooLarge,
 		},
 		{
 			name: "minDelegationFee > 100%",
@@ -877,18 +1026,47 @@ func TestTransformSupernetTxSyntacticVerify(t *testing.T) {
 					BaseTx:             validBaseTx,
 					Supernet:             ids.GenerateTestID(),
 					AssetID:            ids.GenerateTestID(),
-					InitialSupply:      10,
-					MaximumSupply:      10,
-					MinConsumptionRate: 0,
-					MaxConsumptionRate: reward.PercentDenominator,
+					InitialRewardPoolSupply:      10,
+					StartRewardShare:         1_0000,
+					StartRewardTime:          uint64(time.Date(2000, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()),
+					DiminishingRewardShare:   8000,
+					DiminishingRewardTime:    uint64(time.Date(2001, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()),
+					TargetRewardShare:        6000,
+					TargetRewardTime:         uint64(time.Date(2002, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()),
 					MinValidatorStake:  2,
 					MaxValidatorStake:  10,
 					MinStakeDuration:   1,
 					MaxStakeDuration:   2,
+					StakePeriodRewardShare:   2_0000,
 					MinDelegationFee:   reward.PercentDenominator + 1,
 				}
 			},
 			err: errMinDelegationFeeTooLarge,
+		},
+		{
+			name: "minDelegationFee > 100%",
+			txFunc: func(*gomock.Controller) *TransformSupernetTx {
+				return &TransformSupernetTx{
+					BaseTx:             validBaseTx,
+					Supernet:             ids.GenerateTestID(),
+					AssetID:            ids.GenerateTestID(),
+					InitialRewardPoolSupply:      10,
+					StartRewardShare:         1_0000,
+					StartRewardTime:          uint64(time.Date(2000, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()),
+					DiminishingRewardShare:   8000,
+					DiminishingRewardTime:    uint64(time.Date(2001, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()),
+					TargetRewardShare:        6000,
+					TargetRewardTime:         uint64(time.Date(2002, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()),
+					MinValidatorStake:  2,
+					MaxValidatorStake:  10,
+					MinStakeDuration:   1,
+					MaxStakeDuration:   2,
+					StakePeriodRewardShare:   2_0000,
+					MinDelegationFee:   reward.PercentDenominator,
+					MaxDelegationFee:   reward.PercentDenominator + 1,
+				}
+			},
+			err: errMaxDelegationFeeTooLarge,
 		},
 		{
 			name: "minDelegatorStake == 0",
@@ -897,15 +1075,20 @@ func TestTransformSupernetTxSyntacticVerify(t *testing.T) {
 					BaseTx:             validBaseTx,
 					Supernet:             ids.GenerateTestID(),
 					AssetID:            ids.GenerateTestID(),
-					InitialSupply:      10,
-					MaximumSupply:      10,
-					MinConsumptionRate: 0,
-					MaxConsumptionRate: reward.PercentDenominator,
+					InitialRewardPoolSupply:      10,
+					StartRewardShare:         1_0000,
+					StartRewardTime:          uint64(time.Date(2000, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()),
+					DiminishingRewardShare:   8000,
+					DiminishingRewardTime:    uint64(time.Date(2001, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()),
+					TargetRewardShare:        6000,
+					TargetRewardTime:         uint64(time.Date(2002, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()),
 					MinValidatorStake:  2,
 					MaxValidatorStake:  10,
 					MinStakeDuration:   1,
 					MaxStakeDuration:   2,
+					StakePeriodRewardShare:   2_0000,
 					MinDelegationFee:   reward.PercentDenominator,
+					MaxDelegationFee:   reward.PercentDenominator,
 					MinDelegatorStake:  0,
 				}
 			},
@@ -918,15 +1101,20 @@ func TestTransformSupernetTxSyntacticVerify(t *testing.T) {
 					BaseTx:                   validBaseTx,
 					Supernet:                   ids.GenerateTestID(),
 					AssetID:                  ids.GenerateTestID(),
-					InitialSupply:            10,
-					MaximumSupply:            10,
-					MinConsumptionRate:       0,
-					MaxConsumptionRate:       reward.PercentDenominator,
+					InitialRewardPoolSupply:            10,
+					StartRewardShare:         1_0000,
+					StartRewardTime:          uint64(time.Date(2000, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()),
+					DiminishingRewardShare:   8000,
+					DiminishingRewardTime:    uint64(time.Date(2001, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()),
+					TargetRewardShare:        6000,
+					TargetRewardTime:         uint64(time.Date(2002, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()),
 					MinValidatorStake:        2,
 					MaxValidatorStake:        10,
 					MinStakeDuration:         1,
 					MaxStakeDuration:         2,
+					StakePeriodRewardShare:   2_0000,
 					MinDelegationFee:         reward.PercentDenominator,
+					MaxDelegationFee:         reward.PercentDenominator,
 					MinDelegatorStake:        1,
 					MaxValidatorWeightFactor: 0,
 				}
@@ -940,15 +1128,20 @@ func TestTransformSupernetTxSyntacticVerify(t *testing.T) {
 					BaseTx:                   validBaseTx,
 					Supernet:                   ids.GenerateTestID(),
 					AssetID:                  ids.GenerateTestID(),
-					InitialSupply:            10,
-					MaximumSupply:            10,
-					MinConsumptionRate:       0,
-					MaxConsumptionRate:       reward.PercentDenominator,
+					InitialRewardPoolSupply:            10,
+					StartRewardShare:         1_0000,
+					StartRewardTime:          uint64(time.Date(2000, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()),
+					DiminishingRewardShare:   8000,
+					DiminishingRewardTime:    uint64(time.Date(2001, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()),
+					TargetRewardShare:        6000,
+					TargetRewardTime:         uint64(time.Date(2002, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()),
 					MinValidatorStake:        2,
 					MaxValidatorStake:        10,
 					MinStakeDuration:         1,
 					MaxStakeDuration:         2,
+					StakePeriodRewardShare:   2_0000,
 					MinDelegationFee:         reward.PercentDenominator,
+					MaxDelegationFee:         reward.PercentDenominator,
 					MinDelegatorStake:        1,
 					MaxValidatorWeightFactor: 1,
 					UptimeRequirement:        reward.PercentDenominator + 1,
@@ -966,15 +1159,20 @@ func TestTransformSupernetTxSyntacticVerify(t *testing.T) {
 					BaseTx:                   validBaseTx,
 					Supernet:                   ids.GenerateTestID(),
 					AssetID:                  ids.GenerateTestID(),
-					InitialSupply:            10,
-					MaximumSupply:            10,
-					MinConsumptionRate:       0,
-					MaxConsumptionRate:       reward.PercentDenominator,
+					InitialRewardPoolSupply:            10,
+					StartRewardShare:         1_0000,
+					StartRewardTime:          uint64(time.Date(2000, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()),
+					DiminishingRewardShare:   8000,
+					DiminishingRewardTime:    uint64(time.Date(2001, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()),
+					TargetRewardShare:        6000,
+					TargetRewardTime:         uint64(time.Date(2002, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()),
 					MinValidatorStake:        2,
 					MaxValidatorStake:        10,
 					MinStakeDuration:         1,
 					MaxStakeDuration:         2,
+					StakePeriodRewardShare:   2_0000,
 					MinDelegationFee:         reward.PercentDenominator,
+					MaxDelegationFee:         reward.PercentDenominator,
 					MinDelegatorStake:        1,
 					MaxValidatorWeightFactor: 1,
 					UptimeRequirement:        reward.PercentDenominator,
@@ -990,15 +1188,20 @@ func TestTransformSupernetTxSyntacticVerify(t *testing.T) {
 					BaseTx:                   invalidBaseTx,
 					Supernet:                   ids.GenerateTestID(),
 					AssetID:                  ids.GenerateTestID(),
-					InitialSupply:            10,
-					MaximumSupply:            10,
-					MinConsumptionRate:       0,
-					MaxConsumptionRate:       reward.PercentDenominator,
+					InitialRewardPoolSupply:            10,
+					StartRewardShare:         1_0000,
+					StartRewardTime:          uint64(time.Date(2000, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()),
+					DiminishingRewardShare:   8000,
+					DiminishingRewardTime:    uint64(time.Date(2001, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()),
+					TargetRewardShare:        6000,
+					TargetRewardTime:         uint64(time.Date(2002, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()),
 					MinValidatorStake:        2,
 					MaxValidatorStake:        10,
 					MinStakeDuration:         1,
 					MaxStakeDuration:         2,
+					StakePeriodRewardShare:   2_0000,
 					MinDelegationFee:         reward.PercentDenominator,
+					MaxDelegationFee:         reward.PercentDenominator,
 					MinDelegatorStake:        1,
 					MaxValidatorWeightFactor: 1,
 					UptimeRequirement:        reward.PercentDenominator,
@@ -1016,15 +1219,20 @@ func TestTransformSupernetTxSyntacticVerify(t *testing.T) {
 					BaseTx:                   validBaseTx,
 					Supernet:                   ids.GenerateTestID(),
 					AssetID:                  ids.GenerateTestID(),
-					InitialSupply:            10,
-					MaximumSupply:            10,
-					MinConsumptionRate:       0,
-					MaxConsumptionRate:       reward.PercentDenominator,
+					InitialRewardPoolSupply:            10,
+					StartRewardShare:         1_0000,
+					StartRewardTime:          uint64(time.Date(2000, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()),
+					DiminishingRewardShare:   8000,
+					DiminishingRewardTime:    uint64(time.Date(2001, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()),
+					TargetRewardShare:        6000,
+					TargetRewardTime:         uint64(time.Date(2002, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()),
 					MinValidatorStake:        2,
 					MaxValidatorStake:        10,
 					MinStakeDuration:         1,
 					MaxStakeDuration:         2,
+					StakePeriodRewardShare:   2_0000,
 					MinDelegationFee:         reward.PercentDenominator,
+					MaxDelegationFee:         reward.PercentDenominator,
 					MinDelegatorStake:        1,
 					MaxValidatorWeightFactor: 1,
 					UptimeRequirement:        reward.PercentDenominator,

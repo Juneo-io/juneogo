@@ -58,6 +58,7 @@ func TestApricotProposalBlockTimeVerification(t *testing.T) {
 	env.blkManager.(*manager).lastAccepted = parentID
 	chainTime := env.clk.Time().Truncate(time.Second)
 	env.mockedState.EXPECT().GetTimestamp().Return(chainTime).AnyTimes()
+	env.mockedState.EXPECT().GetFeePoolValue().Return(uint64(0)).AnyTimes()
 	env.mockedState.EXPECT().GetLastAccepted().Return(parentID).AnyTimes()
 
 	// create a proposal transaction to be included into proposal block
@@ -87,6 +88,7 @@ func TestApricotProposalBlockTimeVerification(t *testing.T) {
 
 	// setup state to validate proposal block transaction
 	onParentAccept.EXPECT().GetTimestamp().Return(chainTime).AnyTimes()
+	onParentAccept.EXPECT().GetFeePoolValue().Return(uint64(0)).AnyTimes()
 
 	currentStakersIt := state.NewMockStakerIterator(ctrl)
 	currentStakersIt.EXPECT().Next().Return(true)
@@ -99,9 +101,11 @@ func TestApricotProposalBlockTimeVerification(t *testing.T) {
 		EndTime:   chainTime,
 	}).Times(2)
 	currentStakersIt.EXPECT().Release()
+	onParentAccept.EXPECT().GetFeePoolValue().Return(uint64(0)).AnyTimes()
 	onParentAccept.EXPECT().GetCurrentStakerIterator().Return(currentStakersIt, nil)
 	onParentAccept.EXPECT().GetTx(addValTx.ID()).Return(addValTx, status.Committed, nil)
 	onParentAccept.EXPECT().GetCurrentSupply(constants.PrimaryNetworkID).Return(uint64(1000), nil).AnyTimes()
+	onParentAccept.EXPECT().GetRewardPoolSupply(constants.PrimaryNetworkID).Return(uint64(0), nil).AnyTimes()
 	onParentAccept.EXPECT().GetDelegateeReward(constants.PrimaryNetworkID, utx.NodeID()).Return(uint64(0), nil).AnyTimes()
 
 	env.mockedState.EXPECT().GetUptime(gomock.Any(), constants.PrimaryNetworkID).Return(
@@ -156,10 +160,13 @@ func TestBanffProposalBlockTimeVerification(t *testing.T) {
 	// store parent block, with relevant quantities
 	chainTime := parentTime
 	env.mockedState.EXPECT().GetTimestamp().Return(chainTime).AnyTimes()
+	env.mockedState.EXPECT().GetFeePoolValue().Return(uint64(0)).AnyTimes()
 
 	onParentAccept := state.NewMockDiff(ctrl)
 	onParentAccept.EXPECT().GetTimestamp().Return(parentTime).AnyTimes()
+	onParentAccept.EXPECT().GetFeePoolValue().Return(uint64(0)).AnyTimes()
 	onParentAccept.EXPECT().GetCurrentSupply(constants.PrimaryNetworkID).Return(uint64(1000), nil).AnyTimes()
+	onParentAccept.EXPECT().GetRewardPoolSupply(constants.PrimaryNetworkID).Return(uint64(0), nil).AnyTimes()
 
 	env.blkManager.(*manager).blkIDToState[parentID] = &blockState{
 		statelessBlock: banffParentBlk,
@@ -198,6 +205,7 @@ func TestBanffProposalBlockTimeVerification(t *testing.T) {
 	require.NoError(nextStakerTx.Initialize(txs.Codec))
 
 	nextStakerTxID := nextStakerTx.ID()
+	onParentAccept.EXPECT().GetFeePoolValue().Return(uint64(0)).AnyTimes()
 	onParentAccept.EXPECT().GetTx(nextStakerTxID).Return(nextStakerTx, status.Processing, nil)
 
 	currentStakersIt := state.NewMockStakerIterator(ctrl)
@@ -1385,7 +1393,7 @@ func TestAddValidatorProposalBlock(t *testing.T) {
 			Threshold: 1,
 			Addrs:     []ids.ShortID{preFundedKeys[0].PublicKey().Address()},
 		},
-		10000,
+		100000,
 		[]*secp256k1.PrivateKey{
 			preFundedKeys[0],
 			preFundedKeys[1],
@@ -1472,7 +1480,7 @@ func TestAddValidatorProposalBlock(t *testing.T) {
 			Threshold: 1,
 			Addrs:     []ids.ShortID{preFundedKeys[0].PublicKey().Address()},
 		},
-		10000,
+		100000,
 		[]*secp256k1.PrivateKey{
 			preFundedKeys[0],
 			preFundedKeys[1],

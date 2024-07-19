@@ -20,7 +20,7 @@ var (
 	errCantTransformPrimaryNetwork    = errors.New("cannot transform primary network")
 	errEmptyAssetID                   = errors.New("empty asset ID is not valid")
 	errAssetIDCantBeAVAX              = errors.New("asset ID can't be AVAX")
-	errInitialRewardPoolSupplyZero    = errors.New("initial reward pool supply must be non-0")
+	errStartRewardShareZero           = errors.New("start reward share must be non-0")
 	errStartRewardShareTooLarge       = fmt.Errorf("start reward share must be less than or equal to %d", reward.PercentDenominator)
 	errStartRewardTimeZero            = errors.New("start reward time must be non-0")
 	errStartRewardTimeTooLarge        = fmt.Errorf("start reward time must be less than or equal to diminishing reward time")
@@ -35,8 +35,8 @@ var (
 	errMinStakeDurationTooLarge       = errors.New("min stake duration must be less than or equal to max stake duration")
 	errStakePeriodRewardShareZero     = errors.New("stake period reward share must be non-0")
 	errStakePeriodRewardShareTooLarge = fmt.Errorf("stake period reward share must be less than or equal to %d", reward.PercentDenominator)
-	errMaxDelegationFeeTooLarge       = fmt.Errorf("max delegation fee must be less than or equal to %d", reward.PercentDenominator)
 	errMinDelegationFeeTooLarge       = errors.New("min delegation fee must be less than or equal to MaxDelegationFee")
+	errMaxDelegationFeeTooLarge       = fmt.Errorf("max delegation fee must be less than or equal to %d", reward.PercentDenominator)
 	errMinDelegatorStakeZero          = errors.New("min delegator stake must be non-0")
 	errMaxValidatorWeightFactorZero   = errors.New("max validator weight factor must be non-0")
 	errUptimeRequirementTooLarge      = fmt.Errorf("uptime requirement must be less than or equal to %d", reward.PercentDenominator)
@@ -57,8 +57,6 @@ type TransformSupernetTx struct {
 	AssetID ids.ID `serialize:"true" json:"assetID"`
 	// Amount to specify as the amount of rewards that will be initially
 	// available in the reward pool of the supernet.
-	// Restrictions:
-	// - Must be > 0
 	InitialRewardPoolSupply uint64 `serialize:"true" json:"initialRewardPoolSupply"`
 	// StartRewardShare is the starting share of rewards given to validators.
 	// Restrictions:
@@ -160,8 +158,8 @@ func (tx *TransformSupernetTx) SyntacticVerify(ctx *snow.Context) error {
 		return errEmptyAssetID
 	case tx.AssetID == ctx.AVAXAssetID:
 		return errAssetIDCantBeAVAX
-	case tx.InitialRewardPoolSupply == 0:
-		return errInitialRewardPoolSupplyZero
+	case tx.StartRewardShare == 0:
+		return errStartRewardShareZero
 	case tx.StartRewardShare > reward.PercentDenominator:
 		return errStartRewardShareTooLarge
 	case tx.StartRewardTime == 0:

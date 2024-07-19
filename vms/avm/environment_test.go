@@ -125,7 +125,7 @@ func setup(tb testing.TB, c *envConfig) *environment {
 
 	var (
 		genesisArgs *BuildGenesisArgs
-		assetName   = "AVAX"
+		assetName   = "JUNE"
 	)
 	if c.isCustomFeeAsset {
 		genesisArgs = makeCustomAssetGenesis(tb)
@@ -378,7 +378,7 @@ func makeDefaultGenesis(tb testing.TB) *BuildGenesisArgs {
 		Encoding: formatting.Hex,
 		GenesisData: map[string]AssetDefinition{
 			"asset1": {
-				Name:   "AVAX",
+				Name:   "JUNE",
 				Symbol: "SYMB",
 				InitialState: map[string][]interface{}{
 					"fixedCap": {

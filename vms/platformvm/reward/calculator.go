@@ -46,6 +46,14 @@ func (c *calculator) Calculate(stakedDuration time.Duration, currentTime time.Ti
 	reward := c.getCurrentReward(uint64(currentTime.Unix()))
 	stakePeriod := uint64(stakedDuration)
 	reward.Add(reward, c.getStakePeriodReward(stakePeriod))
+	if (c.maxStakePeriod == uint64(0)) {
+		reward.Mul(reward, new(big.Int).SetUint64(stakeAmount))
+		reward.Div(reward, rewardShareDenominator)
+		if !reward.IsUint64() {
+			return uint64(0)
+		}
+		return reward.Uint64()
+	}
 	stakePeriodRatio := new(big.Int).SetUint64(stakePeriod)
 	stakePeriodRatio.Mul(stakePeriodRatio, rewardShareDenominator)
 	stakePeriodRatio.Div(stakePeriodRatio, new(big.Int).SetUint64(c.maxStakePeriod))
@@ -60,6 +68,9 @@ func (c *calculator) Calculate(stakedDuration time.Duration, currentTime time.Ti
 }
 
 func (c *calculator) getStakePeriodReward(stakePeriod uint64) *big.Int {
+	if (c.maxStakePeriod == c.minStakePeriod) {
+		return new(big.Int).SetUint64(c.stakePeriodRewardShare)
+	}
 	minStakePeriodBig := new(big.Int).SetUint64(c.minStakePeriod)
 	adjustedStakePeriod := new(big.Int).SetUint64(stakePeriod)
 	adjustedStakePeriod.Sub(adjustedStakePeriod, minStakePeriodBig)

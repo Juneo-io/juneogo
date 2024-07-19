@@ -72,7 +72,7 @@ func TestBaseTxSerialization(t *testing.T) {
 		},
 	}
 	require.NoError(simpleBaseTx.SyntacticVerify(&snow.Context{
-		NetworkID:   1,
+		NetworkID:   45,
 		ChainID:     constants.PlatformChainID,
 		AVAXAssetID: avaxAssetID,
 	}))
@@ -83,7 +83,7 @@ func TestBaseTxSerialization(t *testing.T) {
 		// BaseTx Type ID
 		0x00, 0x00, 0x00, 0x22,
 		// Mainnet network ID
-		0x00, 0x00, 0x00, 0x01,
+		0x00, 0x00, 0x00, 0x2d,
 		// P-chain blockchain ID
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -218,7 +218,7 @@ func TestBaseTxSerialization(t *testing.T) {
 	avax.SortTransferableOutputs(complexBaseTx.Outs, Codec)
 	utils.Sort(complexBaseTx.Ins)
 	require.NoError(complexBaseTx.SyntacticVerify(&snow.Context{
-		NetworkID:   1,
+		NetworkID:   45,
 		ChainID:     constants.PlatformChainID,
 		AVAXAssetID: avaxAssetID,
 	}))
@@ -229,7 +229,7 @@ func TestBaseTxSerialization(t *testing.T) {
 		// BaseTx Type ID
 		0x00, 0x00, 0x00, 0x22,
 		// Mainnet network ID
-		0x00, 0x00, 0x00, 0x01,
+		0x00, 0x00, 0x00, 0x2d,
 		// P-chain blockchain ID
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -366,7 +366,7 @@ func TestBaseTxSerialization(t *testing.T) {
 	require.NoError(aliaser.Alias(constants.PlatformChainID, "P"))
 
 	unsignedComplexBaseTx.InitCtx(&snow.Context{
-		NetworkID:   1,
+		NetworkID:   45,
 		ChainID:     constants.PlatformChainID,
 		AVAXAssetID: avaxAssetID,
 		BCLookup:    aliaser,
@@ -375,7 +375,7 @@ func TestBaseTxSerialization(t *testing.T) {
 	unsignedComplexBaseTxJSONBytes, err := json.MarshalIndent(unsignedComplexBaseTx, "", "\t")
 	require.NoError(err)
 	require.Equal(`{
-	"networkID": 1,
+	"networkID": 45,
 	"blockchainID": "11111111111111111111111111111111LpoYY",
 	"outputs": [
 		{
@@ -398,7 +398,7 @@ func TestBaseTxSerialization(t *testing.T) {
 				"locktime": 876543210,
 				"output": {
 					"addresses": [
-						"P-avax1g32kvaugnx4tk3z4vemc3xd2hdz92enh972wxr"
+						"P-june1g32kvaugnx4tk3z4vemc3xd2hdz92enh6alq37"
 					],
 					"amount": 18446744073709551615,
 					"locktime": 0,

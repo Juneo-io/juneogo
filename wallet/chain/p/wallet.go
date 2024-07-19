@@ -102,12 +102,14 @@ type Wallet interface {
 	// - [fxIDs] specifies all the feature extensions that the vm should be
 	//   running with.
 	// - [chainName] specifies a human readable name for the chain.
+	// - [chainAssetID] specifies the main asset used by this chain to pay the fees
 	IssueCreateChainTx(
 		supernetID ids.ID,
 		genesis []byte,
 		vmID ids.ID,
 		fxIDs []ids.ID,
 		chainName string,
+		chainAssetID ids.ID,
 		options ...common.Option,
 	) (*txs.Tx, error)
 
@@ -158,18 +160,21 @@ type Wallet interface {
 	// IssueTransformSupernetTx creates a transform supernet transaction that attempts
 	// to convert the provided [supernetID] from a permissioned supernet to a
 	// permissionless supernet. This transaction will convert
-	// [maxSupply] - [initialSupply] of [assetID] to staking rewards.
+	// [initialRewardPoolSupply] of [assetID] to staking rewards.
 	//
 	// - [supernetID] specifies the supernet to transform.
 	// - [assetID] specifies the asset to use to reward stakers on the supernet.
-	// - [initialSupply] is the amount of [assetID] that will be in circulation
-	//   after this transaction is accepted.
-	// - [maxSupply] is the maximum total amount of [assetID] that should ever
-	//   exist.
-	// - [minConsumptionRate] is the rate that a staker will receive rewards
-	//   if they stake with a duration of 0.
-	// - [maxConsumptionRate] is the maximum rate that staking rewards should be
-	//   consumed from the reward pool per year.
+	// - [initialRewardPoolSupply] the amount of rewards that will be initially
+	//   available in the reward pool of the supernet.
+	// - [startRewardShare] starting share of rewards given to validators.
+	// - [startRewardTime] starting timestamp that will be used to calculate
+	//   the remaining percentage of rewards given to validators.
+	// - [diminishingRewardShare] share of rewards given to validators at the start of diminishing year.
+	// - [diminishingRewardTime] target timestamp that will be used to calculate
+	//   the remaining percentage of rewards given to validators.
+	// - [targetRewardShare] target final share of rewards given to validators.
+	// - [targetRewardTime] target timestamp that will be used to calculate
+	//   the remaining percentage of rewards given to validators.
 	// - [minValidatorStake] is the minimum amount of funds required to become a
 	//   validator.
 	// - [maxValidatorStake] is the maximum amount of funds a single validator
@@ -178,7 +183,13 @@ type Wallet interface {
 	//   for.
 	// - [maxStakeDuration] is the maximum number of seconds a staker can stake
 	//   for.
-	// - [minValidatorStake] is the minimum amount of funds required to become a
+	// - [stakePeriodRewardShare] the maximum period reward given for a
+	//   stake period equal to MaxStakePeriod.
+	// - [minDelegationFee] the minimum percentage a validator must charge a
+	//   delegator for delegating.
+	// - [maxDelegationFee] the maximum percentage a validator must charge a
+	//   delegator for delegating.
+	// - [minDelegatorStake] is the minimum amount of funds required to become a
 	//   delegator.
 	// - [maxValidatorWeightFactor] is the factor which calculates the maximum
 	//   amount of delegation a validator can receive. A value of 1 effectively
@@ -188,15 +199,20 @@ type Wallet interface {
 	IssueTransformSupernetTx(
 		supernetID ids.ID,
 		assetID ids.ID,
-		initialSupply uint64,
-		maxSupply uint64,
-		minConsumptionRate uint64,
-		maxConsumptionRate uint64,
+		initialRewardPoolSupply uint64,
+		startRewardShare uint64,
+		startRewardTime uint64,
+		diminishingRewardShare uint64,
+		diminishingRewardTime uint64,
+		targetRewardShare uint64,
+		targetRewardTime uint64,
 		minValidatorStake uint64,
 		maxValidatorStake uint64,
 		minStakeDuration time.Duration,
 		maxStakeDuration time.Duration,
+		stakePeriodRewardShare uint64,
 		minDelegationFee uint32,
+		maxDelegationFee uint32,
 		minDelegatorStake uint64,
 		maxValidatorWeightFactor byte,
 		uptimeRequirement uint32,
@@ -350,9 +366,10 @@ func (w *wallet) IssueCreateChainTx(
 	vmID ids.ID,
 	fxIDs []ids.ID,
 	chainName string,
+	chainAssetID ids.ID,
 	options ...common.Option,
 ) (*txs.Tx, error) {
-	utx, err := w.builder.NewCreateChainTx(supernetID, genesis, vmID, fxIDs, chainName, options...)
+	utx, err := w.builder.NewCreateChainTx(supernetID, genesis, vmID, fxIDs, chainName, chainAssetID, options...)
 	if err != nil {
 		return nil, err
 	}
@@ -409,15 +426,20 @@ func (w *wallet) IssueExportTx(
 func (w *wallet) IssueTransformSupernetTx(
 	supernetID ids.ID,
 	assetID ids.ID,
-	initialSupply uint64,
-	maxSupply uint64,
-	minConsumptionRate uint64,
-	maxConsumptionRate uint64,
+	initialRewardPoolSupply uint64,
+	startRewardShare uint64,
+	startRewardTime uint64,
+	diminishingRewardShare uint64,
+	diminishingRewardTime uint64,
+	targetRewardShare uint64,
+	targetRewardTime uint64,
 	minValidatorStake uint64,
 	maxValidatorStake uint64,
 	minStakeDuration time.Duration,
 	maxStakeDuration time.Duration,
+	stakePeriodRewardShare uint64,
 	minDelegationFee uint32,
+	maxDelegationFee uint32,
 	minDelegatorStake uint64,
 	maxValidatorWeightFactor byte,
 	uptimeRequirement uint32,
@@ -426,15 +448,20 @@ func (w *wallet) IssueTransformSupernetTx(
 	utx, err := w.builder.NewTransformSupernetTx(
 		supernetID,
 		assetID,
-		initialSupply,
-		maxSupply,
-		minConsumptionRate,
-		maxConsumptionRate,
+		initialRewardPoolSupply,
+		startRewardShare,
+		startRewardTime,
+		diminishingRewardShare,
+		diminishingRewardTime,
+		targetRewardShare,
+		targetRewardTime,
 		minValidatorStake,
 		maxValidatorStake,
 		minStakeDuration,
 		maxStakeDuration,
+		stakePeriodRewardShare,
 		minDelegationFee,
+		maxDelegationFee,
 		minDelegatorStake,
 		maxValidatorWeightFactor,
 		uptimeRequirement,

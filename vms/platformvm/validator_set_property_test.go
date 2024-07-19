@@ -319,7 +319,7 @@ func addPrimaryValidatorWithBLSKey(vm *VM, data *validatorInputData) (*state.Sta
 			Threshold: 1,
 			Addrs:     []ids.ShortID{addr},
 		},
-		reward.PercentDenominator,
+		vm.Config.MinDelegationFee,
 		[]*secp256k1.PrivateKey{keys[0], keys[1]},
 		walletcommon.WithChangeOwner(&secp256k1fx.OutputOwners{
 			Threshold: 1,

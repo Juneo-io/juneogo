@@ -94,7 +94,7 @@ func TestTransferSupernetOwnershipTxSerialization(t *testing.T) {
 		},
 	}
 	require.NoError(simpleTransferSupernetOwnershipTx.SyntacticVerify(&snow.Context{
-		NetworkID:   1,
+		NetworkID:   45,
 		ChainID:     constants.PlatformChainID,
 		AVAXAssetID: avaxAssetID,
 	}))
@@ -105,7 +105,7 @@ func TestTransferSupernetOwnershipTxSerialization(t *testing.T) {
 		// TransferSupernetOwnershipTx Type ID
 		0x00, 0x00, 0x00, 0x21,
 		// Mainnet network ID
-		0x00, 0x00, 0x00, 0x01,
+		0x00, 0x00, 0x00, 0x2d,
 		// P-chain blockchain ID
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -276,7 +276,7 @@ func TestTransferSupernetOwnershipTxSerialization(t *testing.T) {
 	avax.SortTransferableOutputs(complexTransferSupernetOwnershipTx.Outs, Codec)
 	utils.Sort(complexTransferSupernetOwnershipTx.Ins)
 	require.NoError(complexTransferSupernetOwnershipTx.SyntacticVerify(&snow.Context{
-		NetworkID:   1,
+		NetworkID:   45,
 		ChainID:     constants.PlatformChainID,
 		AVAXAssetID: avaxAssetID,
 	}))
@@ -287,7 +287,7 @@ func TestTransferSupernetOwnershipTxSerialization(t *testing.T) {
 		// TransferSupernetOwnershipTx Type ID
 		0x00, 0x00, 0x00, 0x21,
 		// Mainnet network ID
-		0x00, 0x00, 0x00, 0x01,
+		0x00, 0x00, 0x00, 0x2d,
 		// P-chain blockchain ID
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -445,7 +445,7 @@ func TestTransferSupernetOwnershipTxSerialization(t *testing.T) {
 	require.NoError(aliaser.Alias(constants.PlatformChainID, "P"))
 
 	unsignedComplexTransferSupernetOwnershipTx.InitCtx(&snow.Context{
-		NetworkID:   1,
+		NetworkID:   45,
 		ChainID:     constants.PlatformChainID,
 		AVAXAssetID: avaxAssetID,
 		BCLookup:    aliaser,
@@ -454,7 +454,7 @@ func TestTransferSupernetOwnershipTxSerialization(t *testing.T) {
 	unsignedComplexTransferSupernetOwnershipTxJSONBytes, err := json.MarshalIndent(unsignedComplexTransferSupernetOwnershipTx, "", "\t")
 	require.NoError(err)
 	require.Equal(`{
-	"networkID": 1,
+	"networkID": 45,
 	"blockchainID": "11111111111111111111111111111111LpoYY",
 	"outputs": [
 		{
@@ -477,7 +477,7 @@ func TestTransferSupernetOwnershipTxSerialization(t *testing.T) {
 				"locktime": 876543210,
 				"output": {
 					"addresses": [
-						"P-avax1g32kvaugnx4tk3z4vemc3xd2hdz92enh972wxr"
+						"P-june1g32kvaugnx4tk3z4vemc3xd2hdz92enh6alq37"
 					],
 					"amount": 18446744073709551615,
 					"locktime": 0,
@@ -533,7 +533,7 @@ func TestTransferSupernetOwnershipTxSerialization(t *testing.T) {
 	},
 	"newOwner": {
 		"addresses": [
-			"P-avax1g32kvaugnx4tk3z4vemc3xd2hdz92enh972wxr"
+			"P-june1g32kvaugnx4tk3z4vemc3xd2hdz92enh6alq37"
 		],
 		"locktime": 876543210,
 		"threshold": 1

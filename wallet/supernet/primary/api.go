@@ -77,7 +77,7 @@ func FetchState(
 	infoClient := info.NewClient(uri)
 	pClient := platformvm.NewClient(uri)
 	xClient := avm.NewClient(uri, "X")
-	cClient := evm.NewCChainClient(uri)
+	cClient := evm.NewClient(uri, "JUNE")
 
 	pCTX, err := pbuilder.NewContextFromClients(ctx, infoClient, xClient)
 	if err != nil {

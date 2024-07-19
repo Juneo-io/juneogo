@@ -15,14 +15,16 @@ import (
 	"github.com/Juneo-io/juneogo/vms/platformvm/reward"
 )
 
-// cushion valley very silver fragile car syrup slam army roast conduct jacket
-// PrivateKey-VWEazFMoKnnFQuHyTsZKZwmTxj7ocC5mwCF7Wtm6XehLFy3E => P-local1f7z7rcerz4s5t4luth53tfystzly040phf94nm
-// PrivateKey-VWEazFMoKnnFQuHyTsZKZwmTxj7ocC5mwCF7Wtm6XehLFy3E => JVM-local1f7z7rcerz4s5t4luth53tfystzly040phf94nm
-// 4a51d8e8baff7fb8d08ea07ff1e8a62f60f490d46e4f917433cfd43cd280315e => 0xb4a56D9dBaB331eF6983dE1E7702d650D0154A53
+// PrivateKey-vmRQiZeXEXYMyJhEiqdC2z5JhuDbxL8ix9UVvjgMu2Er1NepE => P-local1g65uqn6t77p656w64023nh8nd9updzmxyymev2
+// PrivateKey-ewoqjP7PxY4yr3iLTpLisriqt94hdyDFNgchSxGGztUrTXtNN => X-local18jma8ppw3nhx5r4ap8clazz0dps7rv5u00z96u
+// 56289e99c94b6912bfc12adc093c9b51124f0dc54ac7a766b2bc5ccf558d8027 => 0x8db97C7cEcE249c2b98bDC0226Cc4C2A57BF52FC
 
 const (
-	VWEAKeyStr          = "VWEazFMoKnnFQuHyTsZKZwmTxj7ocC5mwCF7Wtm6XehLFy3E"
-	VWEAKeyFormattedStr = secp256k1.PrivateKeyPrefix + VWEAKeyStr
+	VMRQKeyStr          = "vmRQiZeXEXYMyJhEiqdC2z5JhuDbxL8ix9UVvjgMu2Er1NepE"
+	VMRQKeyFormattedStr = secp256k1.PrivateKeyPrefix + VMRQKeyStr
+
+	EWOQKeyStr          = "ewoqjP7PxY4yr3iLTpLisriqt94hdyDFNgchSxGGztUrTXtNN"
+	EWOQKeyFormattedStr = secp256k1.PrivateKeyPrefix + EWOQKeyStr
 )
 
 var (
@@ -74,10 +76,14 @@ var (
 
 func init() {
 	errs := wrappers.Errs{}
-	vmrqBytes, err := cb58.Decode(VWEAKeyStr)
+	vmrqBytes, err := cb58.Decode(VMRQKeyStr)
+	errs.Add(err)
+	ewoqBytes, err := cb58.Decode(EWOQKeyStr)
 	errs.Add(err)
 
 	VMRQKey, err = secp256k1.ToPrivateKey(vmrqBytes)
+	errs.Add(err)
+	EWOQKey, err = secp256k1.ToPrivateKey(ewoqBytes)
 	errs.Add(err)
 
 	if errs.Err != nil {

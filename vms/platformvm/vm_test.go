@@ -90,10 +90,15 @@ var (
 	defaultMaxStakingDuration = 365 * 24 * time.Hour
 
 	defaultRewardConfig = reward.Config{
-		MaxConsumptionRate: .12 * reward.PercentDenominator,
-		MinConsumptionRate: .10 * reward.PercentDenominator,
-		MintingPeriod:      365 * 24 * time.Hour,
-		SupplyCap:          720 * units.MegaAvax,
+		MinStakePeriod:         defaultMinStakingDuration,
+		MaxStakePeriod:         defaultMaxStakingDuration,
+		StakePeriodRewardShare: 2_0000,
+		StartRewardShare:       12_0000,
+		StartRewardTime:        uint64(time.Date(2024, time.April, 1, 0, 0, 0, 0, time.UTC).Unix()),
+		DiminishingRewardShare: 8_0000,
+		DiminishingRewardTime:  uint64(time.Date(2029, time.April, 1, 0, 0, 0, 0, time.UTC).Unix()),
+		TargetRewardShare:      6_0000,
+		TargetRewardTime:       uint64(time.Date(2030, time.April, 1, 0, 0, 0, 0, time.UTC).Unix()),
 	}
 
 	defaultTxFee = uint64(100)
@@ -877,6 +882,7 @@ func TestCreateChain(t *testing.T) {
 		ids.ID{'t', 'e', 's', 't', 'v', 'm'},
 		nil,
 		"name",
+		ids.Empty,
 		[]*secp256k1.PrivateKey{testSupernet1ControlKeys[0], testSupernet1ControlKeys[1]},
 	)
 	require.NoError(err)

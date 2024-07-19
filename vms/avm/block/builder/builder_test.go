@@ -114,6 +114,7 @@ func TestBuilderBuildBlock(t *testing.T) {
 				preferredID := ids.GenerateTestID()
 				preferredHeight := uint64(1337)
 				preferredTimestamp := time.Now()
+				preferredFeePoolValue := uint64(0)
 				preferredBlock := block.NewMockBlock(ctrl)
 				preferredBlock.EXPECT().Height().Return(preferredHeight)
 				preferredBlock.EXPECT().Timestamp().Return(preferredTimestamp)
@@ -121,6 +122,7 @@ func TestBuilderBuildBlock(t *testing.T) {
 				preferredState := state.NewMockChain(ctrl)
 				preferredState.EXPECT().GetLastAccepted().Return(preferredID)
 				preferredState.EXPECT().GetTimestamp().Return(preferredTimestamp)
+				preferredState.EXPECT().GetFeePoolValue().Return(preferredFeePoolValue)
 
 				manager := blkexecutor.NewMockManager(ctrl)
 				manager.EXPECT().Preferred().Return(preferredID)
@@ -158,6 +160,7 @@ func TestBuilderBuildBlock(t *testing.T) {
 				preferredID := ids.GenerateTestID()
 				preferredHeight := uint64(1337)
 				preferredTimestamp := time.Now()
+				preferredFeePoolValue := uint64(0)
 				preferredBlock := block.NewMockBlock(ctrl)
 				preferredBlock.EXPECT().Height().Return(preferredHeight)
 				preferredBlock.EXPECT().Timestamp().Return(preferredTimestamp)
@@ -165,6 +168,7 @@ func TestBuilderBuildBlock(t *testing.T) {
 				preferredState := state.NewMockChain(ctrl)
 				preferredState.EXPECT().GetLastAccepted().Return(preferredID)
 				preferredState.EXPECT().GetTimestamp().Return(preferredTimestamp)
+				preferredState.EXPECT().GetFeePoolValue().Return(preferredFeePoolValue)
 
 				manager := blkexecutor.NewMockManager(ctrl)
 				manager.EXPECT().Preferred().Return(preferredID)
@@ -203,6 +207,7 @@ func TestBuilderBuildBlock(t *testing.T) {
 				preferredID := ids.GenerateTestID()
 				preferredHeight := uint64(1337)
 				preferredTimestamp := time.Now()
+				preferredFeePoolValue := uint64(0)
 				preferredBlock := block.NewMockBlock(ctrl)
 				preferredBlock.EXPECT().Height().Return(preferredHeight)
 				preferredBlock.EXPECT().Timestamp().Return(preferredTimestamp)
@@ -210,6 +215,7 @@ func TestBuilderBuildBlock(t *testing.T) {
 				preferredState := state.NewMockChain(ctrl)
 				preferredState.EXPECT().GetLastAccepted().Return(preferredID)
 				preferredState.EXPECT().GetTimestamp().Return(preferredTimestamp)
+				preferredState.EXPECT().GetFeePoolValue().Return(preferredFeePoolValue)
 
 				manager := blkexecutor.NewMockManager(ctrl)
 				manager.EXPECT().Preferred().Return(preferredID)
@@ -249,6 +255,7 @@ func TestBuilderBuildBlock(t *testing.T) {
 				preferredID := ids.GenerateTestID()
 				preferredHeight := uint64(1337)
 				preferredTimestamp := time.Now()
+				preferredFeePoolValue := uint64(0)
 				preferredBlock := block.NewMockBlock(ctrl)
 				preferredBlock.EXPECT().Height().Return(preferredHeight)
 				preferredBlock.EXPECT().Timestamp().Return(preferredTimestamp)
@@ -256,6 +263,7 @@ func TestBuilderBuildBlock(t *testing.T) {
 				preferredState := state.NewMockChain(ctrl)
 				preferredState.EXPECT().GetLastAccepted().Return(preferredID)
 				preferredState.EXPECT().GetTimestamp().Return(preferredTimestamp)
+				preferredState.EXPECT().GetFeePoolValue().Return(preferredFeePoolValue)
 
 				// tx1 and tx2 both consume [inputID].
 				// tx1 is added to the block first, so tx2 should be dropped.
@@ -342,6 +350,7 @@ func TestBuilderBuildBlock(t *testing.T) {
 				preferredID := ids.GenerateTestID()
 				preferredHeight := uint64(1337)
 				preferredTimestamp := time.Now()
+				preferredFeePoolValue := uint64(0)
 				preferredBlock := block.NewMockBlock(ctrl)
 				preferredBlock.EXPECT().Height().Return(preferredHeight)
 				preferredBlock.EXPECT().Timestamp().Return(preferredTimestamp)
@@ -354,6 +363,7 @@ func TestBuilderBuildBlock(t *testing.T) {
 				preferredState := state.NewMockChain(ctrl)
 				preferredState.EXPECT().GetLastAccepted().Return(preferredID)
 				preferredState.EXPECT().GetTimestamp().Return(preferredTimestamp)
+				preferredState.EXPECT().GetFeePoolValue().Return(preferredFeePoolValue)
 
 				manager := blkexecutor.NewMockManager(ctrl)
 				manager.EXPECT().Preferred().Return(preferredID)
@@ -416,6 +426,7 @@ func TestBuilderBuildBlock(t *testing.T) {
 				// preferred block's timestamp is after the time reported by clock
 				now := time.Now()
 				preferredTimestamp := now.Add(-2 * time.Second)
+				preferredFeePoolValue := uint64(0)
 				preferredBlock := block.NewMockBlock(ctrl)
 				preferredBlock.EXPECT().Height().Return(preferredHeight)
 				preferredBlock.EXPECT().Timestamp().Return(preferredTimestamp)
@@ -428,6 +439,7 @@ func TestBuilderBuildBlock(t *testing.T) {
 				preferredState := state.NewMockChain(ctrl)
 				preferredState.EXPECT().GetLastAccepted().Return(preferredID)
 				preferredState.EXPECT().GetTimestamp().Return(preferredTimestamp)
+				preferredState.EXPECT().GetFeePoolValue().Return(preferredFeePoolValue)
 
 				manager := blkexecutor.NewMockManager(ctrl)
 				manager.EXPECT().Preferred().Return(preferredID)

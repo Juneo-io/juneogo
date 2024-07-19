@@ -9,6 +9,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/Juneo-io/juneogo/ids"
 	"github.com/Juneo-io/juneogo/utils/set"
 	"github.com/Juneo-io/juneogo/vms/example/xsvm"
 	"github.com/Juneo-io/juneogo/vms/example/xsvm/genesis"
@@ -75,6 +76,7 @@ func createFunc(c *cobra.Command, args []string) error {
 		xsvm.ID,
 		nil,
 		config.Name,
+		ids.Empty,
 		common.WithContext(ctx),
 	)
 	if err != nil {

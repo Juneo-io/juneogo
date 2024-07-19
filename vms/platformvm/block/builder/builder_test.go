@@ -45,6 +45,7 @@ func TestBuildBlockBasic(t *testing.T) {
 		constants.AVMID,
 		nil,
 		"chain name",
+		ids.Empty,
 		[]*secp256k1.PrivateKey{testSupernet1ControlKeys[0], testSupernet1ControlKeys[1]},
 	)
 	require.NoError(err)
@@ -253,6 +254,7 @@ func TestBuildBlockForceAdvanceTime(t *testing.T) {
 		constants.AVMID,
 		nil,
 		"chain name",
+		ids.Empty,
 		[]*secp256k1.PrivateKey{testSupernet1ControlKeys[0], testSupernet1ControlKeys[1]},
 	)
 	require.NoError(err)
@@ -422,6 +424,7 @@ func TestPreviouslyDroppedTxsCannotBeReAddedToMempool(t *testing.T) {
 		constants.AVMID,
 		nil,
 		"chain name",
+		ids.Empty,
 		[]*secp256k1.PrivateKey{testSupernet1ControlKeys[0], testSupernet1ControlKeys[1]},
 	)
 	require.NoError(err)

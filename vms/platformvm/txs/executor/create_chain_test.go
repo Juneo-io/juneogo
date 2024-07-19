@@ -36,6 +36,7 @@ func TestCreateChainTxInsufficientControlSigs(t *testing.T) {
 		constants.AVMID,
 		nil,
 		"chain name",
+		ids.Empty,
 		[]*secp256k1.PrivateKey{preFundedKeys[0], preFundedKeys[1]},
 	)
 	require.NoError(err)
@@ -68,6 +69,7 @@ func TestCreateChainTxWrongControlSig(t *testing.T) {
 		constants.AVMID,
 		nil,
 		"chain name",
+		ids.Empty,
 		[]*secp256k1.PrivateKey{testSupernet1ControlKeys[0], testSupernet1ControlKeys[1]},
 	)
 	require.NoError(err)
@@ -107,6 +109,7 @@ func TestCreateChainTxNoSuchSupernet(t *testing.T) {
 		constants.AVMID,
 		nil,
 		"chain name",
+		ids.Empty,
 		[]*secp256k1.PrivateKey{testSupernet1ControlKeys[0], testSupernet1ControlKeys[1]},
 	)
 	require.NoError(err)
@@ -138,6 +141,7 @@ func TestCreateChainTxValid(t *testing.T) {
 		constants.AVMID,
 		nil,
 		"chain name",
+		ids.Empty,
 		[]*secp256k1.PrivateKey{testSupernet1ControlKeys[0], testSupernet1ControlKeys[1]},
 	)
 	require.NoError(err)
@@ -203,6 +207,7 @@ func TestCreateChainTxAP3FeeChange(t *testing.T) {
 				ids.GenerateTestID(),
 				nil,
 				"",
+				ids.Empty,
 				preFundedKeys,
 			)
 			require.NoError(err)

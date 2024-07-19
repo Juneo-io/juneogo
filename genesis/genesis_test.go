@@ -43,13 +43,13 @@ func TestValidateConfig(t *testing.T) {
 		expectedErr error
 	}{
 		"mainnet": {
-			networkID:   1,
+			networkID:   45,
 			config:      &MainnetConfig,
 			expectedErr: nil,
 		},
 		"fuji": {
-			networkID:   5,
-			config:      &FujiConfig,
+			networkID:   46,
+			config:      &SocotraConfig,
 			expectedErr: nil,
 		},
 		"local": {
@@ -76,6 +76,7 @@ func TestValidateConfig(t *testing.T) {
 			config: func() *Config {
 				thisConfig := LocalConfig
 				thisConfig.Allocations = []Allocation{}
+				thisConfig.RewardPoolSupply = uint64(0)
 				return &thisConfig
 			}(),
 			expectedErr: errNoSupply,
@@ -135,9 +136,9 @@ func TestValidateConfig(t *testing.T) {
 			expectedErr: errDuplicateInitiallyStakedAddress,
 		},
 		"initial staked funds not in allocations": {
-			networkID: 5,
+			networkID: 46,
 			config: func() *Config {
-				thisConfig := FujiConfig
+				thisConfig := SocotraConfig
 				thisConfig.InitialStakedFunds = append(thisConfig.InitialStakedFunds, LocalConfig.InitialStakedFunds[0])
 				return &thisConfig
 			}(),
@@ -147,10 +148,10 @@ func TestValidateConfig(t *testing.T) {
 			networkID: 12345,
 			config: func() *Config {
 				thisConfig := LocalConfig
-				thisConfig.CChainGenesis = ""
+				thisConfig.JUNEChainGenesis = ""
 				return &thisConfig
 			}(),
-			expectedErr: errNoCChainGenesis,
+			expectedErr: errNoEVMChainGenesis,
 		},
 		"empty message": {
 			networkID: 12345,
@@ -184,13 +185,13 @@ func TestGenesisFromFile(t *testing.T) {
 			customConfig: customGenesisConfigJSON,
 			expectedErr:  errOverridesStandardNetworkConfig,
 		},
-		"fuji": {
-			networkID:    constants.FujiID,
+		"socotra": {
+			networkID:    constants.SocotraID,
 			customConfig: customGenesisConfigJSON,
 			expectedErr:  errOverridesStandardNetworkConfig,
 		},
-		"fuji (with custom specified)": {
-			networkID:    constants.FujiID,
+		"socotra (with custom specified)": {
+			networkID:    constants.SocotraID,
 			customConfig: localGenesisConfigJSON, // won't load
 			expectedErr:  errOverridesStandardNetworkConfig,
 		},
@@ -208,7 +209,7 @@ func TestGenesisFromFile(t *testing.T) {
 			networkID:    9999,
 			customConfig: customGenesisConfigJSON,
 			expectedErr:  nil,
-			expectedHash: "a1d1838586db85fe94ab1143560c3356df9ba2445794b796bba050be89f4fcb4",
+			expectedHash: "771e9729679429016593237692d3121748ef6b57d1cd4b69d8e06dc98d620a30",
 		},
 		"custom (networkID mismatch)": {
 			networkID:    9999,
@@ -266,8 +267,8 @@ func TestGenesisFromFlag(t *testing.T) {
 			networkID:   constants.MainnetID,
 			expectedErr: errOverridesStandardNetworkConfig,
 		},
-		"fuji": {
-			networkID:   constants.FujiID,
+		"socotra": {
+			networkID:   constants.SocotraID,
 			expectedErr: errOverridesStandardNetworkConfig,
 		},
 		"local": {
@@ -283,7 +284,7 @@ func TestGenesisFromFlag(t *testing.T) {
 			networkID:    9999,
 			customConfig: customGenesisConfigJSON,
 			expectedErr:  nil,
-			expectedHash: "a1d1838586db85fe94ab1143560c3356df9ba2445794b796bba050be89f4fcb4",
+			expectedHash: "771e9729679429016593237692d3121748ef6b57d1cd4b69d8e06dc98d620a30",
 		},
 		"custom (networkID mismatch)": {
 			networkID:    9999,
@@ -315,7 +316,7 @@ func TestGenesisFromFlag(t *testing.T) {
 					genBytes, err = json.Marshal(&MainnetConfig)
 					require.NoError(err)
 				case constants.TestnetID:
-					genBytes, err = json.Marshal(&FujiConfig)
+					genBytes, err = json.Marshal(&SocotraConfig)
 					require.NoError(err)
 				case constants.LocalID:
 					genBytes, err = json.Marshal(&LocalConfig)
@@ -348,15 +349,15 @@ func TestGenesis(t *testing.T) {
 	}{
 		{
 			networkID:  constants.MainnetID,
-			expectedID: "UUvXi6j7QhVvgpbKM89MP5HdrxKm9CaJeHc187TsDNf8nZdLk",
+			expectedID: "2UXnTTaDfnz7nKz1NZnVXuy1ZTrKng7SnvrPjcHh952uTavw8D",
 		},
 		{
-			networkID:  constants.FujiID,
-			expectedID: "MSj6o9TpezwsQx4Tv7SHqpVvCbJ8of1ikjsqPZ1bKRjc9zBy3",
+			networkID:  constants.SocotraID,
+			expectedID: "2DRKE892VnynqDDkGpMHwcr5V5gzMeJeaVYGyYw5vSv5xxa9mP",
 		},
 		{
 			networkID:  constants.LocalID,
-			expectedID: "S4BvHv1XyihF9gXkJKXWWwQuuDWZqesRXz6wnqavQ9FrjGfAa",
+			expectedID: "2MM5d5KdezugXeNqbF7SVBxFKCDJEVxVp5CZ98xCHvGGE8GyQo",
 		},
 	}
 	for _, test := range tests {
@@ -376,6 +377,7 @@ func TestGenesis(t *testing.T) {
 func TestVMGenesis(t *testing.T) {
 	type vmTest struct {
 		vmID       ids.ID
+		chainName  string
 		expectedID string
 	}
 	tests := []struct {
@@ -387,24 +389,28 @@ func TestVMGenesis(t *testing.T) {
 			vmTest: []vmTest{
 				{
 					vmID:       constants.AVMID,
-					expectedID: "2oYMBNV4eNHyqk2fjjV5nVQLDbtmNJzq5s3qs3Lo6ftnC6FByM",
+					chainName:  "JVM-Chain",
+					expectedID: "TS7kcXZxCtW7aLYfRMj7oJHTq1BKyU8LRddvdPyM4gPQe3xYt",
 				},
 				{
 					vmID:       constants.EVMID,
-					expectedID: "2q9e4r6Mu3U68nU1fYjgbR6JvwrRx36CohpAX5UQxse55x1Q5",
+					chainName:  "JUNE-Chain",
+					expectedID: "2XjWAiAdw3BR56KhPSPxKJNzea2Ebvc67uhE1DTN9NsqCyP9eW",
 				},
 			},
 		},
 		{
-			networkID: constants.FujiID,
+			networkID: constants.SocotraID,
 			vmTest: []vmTest{
 				{
 					vmID:       constants.AVMID,
-					expectedID: "2JVSBoinj9C2J33VntvzYtVJNZdN2NKiwwKjcumHUWEb5DbBrm",
+					chainName:  "JVM-Chain",
+					expectedID: "267FL4rbQnXp6AmsSmQfyWwxi36VUKmE2tvAmfMLebB1kkVKyn",
 				},
 				{
 					vmID:       constants.EVMID,
-					expectedID: "yH8D7ThNJkxmtkuv2jgBa4P1Rn3Qpr4pPr7QYNfcdoS6k6HWp",
+					chainName:  "JUNE-Chain",
+					expectedID: "BUDQJ63154EiJZwwvukRB1tX3yQCDQdoEYYuCNKEruQ9MjRs4",
 				},
 			},
 		},
@@ -413,11 +419,13 @@ func TestVMGenesis(t *testing.T) {
 			vmTest: []vmTest{
 				{
 					vmID:       constants.AVMID,
-					expectedID: "2eNy1mUFdmaxXNj1eQHUe7Np4gju9sJsEtWQ4MX3ToiNKuADed",
+					chainName:  "JVM-Chain",
+					expectedID: "SLrnbhamm214BqWWHnirKjxDL8cYfGHHsCUidV6dAHkcexfNw",
 				},
 				{
 					vmID:       constants.EVMID,
-					expectedID: "2CA6j5zYzasynPsFeNoqWkmTCt3VScMvXUZHbfDJ8k3oGzAPtU",
+					chainName:  "JUNE-Chain",
+					expectedID: "qBfzzJDBas1VhntpN8tvVB9Qu3BFu4L1r4Djh4eWLngE9o9XK",
 				},
 			},
 		},
@@ -436,12 +444,20 @@ func TestVMGenesis(t *testing.T) {
 				genesisBytes, _, err := FromConfig(config)
 				require.NoError(err)
 
-				genesisTx, err := VMGenesis(genesisBytes, vmTest.vmID)
+				genesisTxs, err := VMGenesis(genesisBytes, vmTest.vmID)
 				require.NoError(err)
 
+				chainID := ids.Empty
+				for _, createChainTx := range genesisTxs {
+					if createChainTx.ChainName == vmTest.chainName {
+						chainID = createChainTx.BlockchainID
+						break
+					}
+				}
+				
 				require.Equal(
 					vmTest.expectedID,
-					genesisTx.ID().String(),
+					chainID.String(),
 					"%s genesisID with networkID %d mismatch",
 					vmTest.vmID,
 					test.networkID,
@@ -458,15 +474,15 @@ func TestAVAXAssetID(t *testing.T) {
 	}{
 		{
 			networkID:  constants.MainnetID,
-			expectedID: "FvwEAhmxKfeiG8SnEvq42hc6whRyY3EFYAvebMqDNDGCgxN5Z",
+			expectedID: "3WWxh5JEz7zu1RWdRxS6xugusNWzFFPwPw1xnZfAGzaAj8sTp",
 		},
 		{
-			networkID:  constants.FujiID,
-			expectedID: "U8iRqJoiJm8xZHAacmvYyZVwqQx6uDNtQeP3CQ6fcgQk3JqnK",
+			networkID:  constants.SocotraID,
+			expectedID: "HviVNFzh2nCqyi7bQxw6pt5fUPjZC8r3DCDrt7mRmScZS2zp5",
 		},
 		{
 			networkID:  constants.LocalID,
-			expectedID: "2fombhL7aGPwj3KH4bfrmJwW6PVnMobf9Y2fn9GwxiAAJyFDbe",
+			expectedID: "2Hs1Gchq79nsvNy1wGHGGfbP8XvUkLbVyDSWViW6WH2NvP9C1W",
 		},
 	}
 
