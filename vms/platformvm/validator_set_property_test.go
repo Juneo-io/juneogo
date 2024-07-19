@@ -310,7 +310,7 @@ func addPrimaryValidatorWithBLSKey(vm *VM, data *validatorInputData) (*state.Sta
 			Supernet: constants.PrimaryNetworkID,
 		},
 		signer.NewProofOfPossession(sk),
-		vm.ctx.AVAXAssetID,
+		vm.ctx.JUNEAssetID,
 		&secp256k1fx.OutputOwners{
 			Threshold: 1,
 			Addrs:     []ids.ShortID{addr},
@@ -687,7 +687,7 @@ func buildVM(t *testing.T) (*VM, ids.ID, error) {
 		return nil
 	}
 
-	genesisBytes, err := buildCustomGenesis(ctx.AVAXAssetID)
+	genesisBytes, err := buildCustomGenesis(ctx.JUNEAssetID)
 	if err != nil {
 		return nil, ids.Empty, err
 	}
@@ -759,7 +759,7 @@ func buildVM(t *testing.T) (*VM, ids.ID, error) {
 	return vm, testSupernet1.ID(), nil
 }
 
-func buildCustomGenesis(avaxAssetID ids.ID) ([]byte, error) {
+func buildCustomGenesis(juneAssetID ids.ID) ([]byte, error) {
 	genesisUTXOs := make([]api.UTXO, len(keys))
 	for i, key := range keys {
 		id := key.PublicKey().Address()
@@ -805,7 +805,7 @@ func buildCustomGenesis(avaxAssetID ids.ID) ([]byte, error) {
 	buildGenesisArgs := api.BuildGenesisArgs{
 		Encoding:      formatting.Hex,
 		NetworkID:     json.Uint32(constants.UnitTestID),
-		AvaxAssetID:   avaxAssetID,
+		AvaxAssetID:   juneAssetID,
 		UTXOs:         genesisUTXOs,
 		Validators:    []api.GenesisPermissionlessValidator{genesisValidator},
 		Chains:        nil,

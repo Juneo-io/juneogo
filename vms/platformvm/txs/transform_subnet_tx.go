@@ -156,7 +156,7 @@ func (tx *TransformSupernetTx) SyntacticVerify(ctx *snow.Context) error {
 		return errCantTransformPrimaryNetwork
 	case tx.AssetID == ids.Empty:
 		return errEmptyAssetID
-	case tx.AssetID == ctx.AVAXAssetID:
+	case tx.AssetID == ctx.JUNEAssetID:
 		return errAssetIDCantBeAVAX
 	case tx.StartRewardShare == 0:
 		return errStartRewardShareZero

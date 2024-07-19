@@ -152,11 +152,11 @@ func (b *builder) GetImportableBalance(
 	var (
 		addrs           = ops.Addresses(b.avaxAddrs)
 		minIssuanceTime = ops.MinIssuanceTime()
-		avaxAssetID     = b.backend.AVAXAssetID()
+		juneAssetID     = b.backend.JUNEAssetID()
 		balance         uint64
 	)
 	for _, utxo := range utxos {
-		amount, _, ok := getSpendableAmount(utxo, addrs, minIssuanceTime, avaxAssetID)
+		amount, _, ok := getSpendableAmount(utxo, addrs, minIssuanceTime, juneAssetID)
 		if !ok {
 			continue
 		}
@@ -186,13 +186,13 @@ func (b *builder) NewImportTx(
 	var (
 		addrs           = ops.Addresses(b.avaxAddrs)
 		minIssuanceTime = ops.MinIssuanceTime()
-		avaxAssetID     = b.backend.AVAXAssetID()
+		juneAssetID     = b.backend.JUNEAssetID()
 
 		importedInputs = make([]*avax.TransferableInput, 0, len(utxos))
 		importedAmount uint64
 	)
 	for _, utxo := range utxos {
-		amount, inputSigIndices, ok := getSpendableAmount(utxo, addrs, minIssuanceTime, avaxAssetID)
+		amount, inputSigIndices, ok := getSpendableAmount(utxo, addrs, minIssuanceTime, juneAssetID)
 		if !ok {
 			continue
 		}
@@ -248,7 +248,7 @@ func (b *builder) NewImportTx(
 	tx.Outs = []evm.EVMOutput{{
 		Address: to,
 		Amount:  importedAmount - txFee,
-		AssetID: avaxAssetID,
+		AssetID: juneAssetID,
 	}}
 	return tx, nil
 }
@@ -260,13 +260,13 @@ func (b *builder) NewExportTx(
 	options ...common.Option,
 ) (*evm.UnsignedExportTx, error) {
 	var (
-		avaxAssetID     = b.backend.AVAXAssetID()
+		juneAssetID     = b.backend.JUNEAssetID()
 		exportedOutputs = make([]*avax.TransferableOutput, len(outputs))
 		exportedAmount  uint64
 	)
 	for i, output := range outputs {
 		exportedOutputs[i] = &avax.TransferableOutput{
-			Asset: avax.Asset{ID: avaxAssetID},
+			Asset: avax.Asset{ID: juneAssetID},
 			FxID:  secp256k1fx.ID,
 			Out:   output,
 		}
@@ -365,7 +365,7 @@ func (b *builder) NewExportTx(
 		inputs = append(inputs, evm.EVMInput{
 			Address: addr,
 			Amount:  inputAmount,
-			AssetID: avaxAssetID,
+			AssetID: juneAssetID,
 			Nonce:   nonce,
 		})
 		amountToConsume -= inputAmount
@@ -392,9 +392,9 @@ func getSpendableAmount(
 	utxo *avax.UTXO,
 	addrs set.Set[ids.ShortID],
 	minIssuanceTime uint64,
-	avaxAssetID ids.ID,
+	juneAssetID ids.ID,
 ) (uint64, []uint32, bool) {
-	if utxo.Asset.ID != avaxAssetID {
+	if utxo.Asset.ID != juneAssetID {
 		// Only AVAX can be imported
 		return 0, nil, false
 	}

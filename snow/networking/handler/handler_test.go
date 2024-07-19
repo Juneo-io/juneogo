@@ -42,7 +42,7 @@ func TestHandlerDropsTimedOutMessages(t *testing.T) {
 
 	called := make(chan struct{})
 
-	snowCtx := snowtest.Context(t, snowtest.CChainID)
+	snowCtx := snowtest.Context(t, snowtest.JUNEChainID)
 	ctx := snowtest.ConsensusContext(snowCtx)
 
 	vdrs := validators.NewManager()
@@ -149,7 +149,7 @@ func TestHandlerClosesOnError(t *testing.T) {
 	require := require.New(t)
 
 	closed := make(chan struct{}, 1)
-	snowCtx := snowtest.Context(t, snowtest.CChainID)
+	snowCtx := snowtest.Context(t, snowtest.JUNEChainID)
 	ctx := snowtest.ConsensusContext(snowCtx)
 
 	vdrs := validators.NewManager()
@@ -252,7 +252,7 @@ func TestHandlerDropsGossipDuringBootstrapping(t *testing.T) {
 	require := require.New(t)
 
 	closed := make(chan struct{}, 1)
-	snowCtx := snowtest.Context(t, snowtest.CChainID)
+	snowCtx := snowtest.Context(t, snowtest.JUNEChainID)
 	ctx := snowtest.ConsensusContext(snowCtx)
 	vdrs := validators.NewManager()
 	require.NoError(vdrs.AddStaker(ctx.SupernetID, ids.GenerateTestNodeID(), nil, ids.Empty, 1))
@@ -341,7 +341,7 @@ func TestHandlerDropsGossipDuringBootstrapping(t *testing.T) {
 func TestHandlerDispatchInternal(t *testing.T) {
 	require := require.New(t)
 
-	snowCtx := snowtest.Context(t, snowtest.CChainID)
+	snowCtx := snowtest.Context(t, snowtest.JUNEChainID)
 	ctx := snowtest.ConsensusContext(snowCtx)
 	msgFromVMChan := make(chan common.Message)
 	vdrs := validators.NewManager()
@@ -422,7 +422,7 @@ func TestHandlerDispatchInternal(t *testing.T) {
 func TestHandlerSupernetConnector(t *testing.T) {
 	require := require.New(t)
 
-	snowCtx := snowtest.Context(t, snowtest.CChainID)
+	snowCtx := snowtest.Context(t, snowtest.JUNEChainID)
 	ctx := snowtest.ConsensusContext(snowCtx)
 	vdrs := validators.NewManager()
 	require.NoError(vdrs.AddStaker(ctx.SupernetID, ids.GenerateTestNodeID(), nil, ids.Empty, 1))
@@ -608,7 +608,7 @@ func TestDynamicEngineTypeDispatch(t *testing.T) {
 			require := require.New(t)
 
 			messageReceived := make(chan struct{})
-			snowCtx := snowtest.Context(t, snowtest.CChainID)
+			snowCtx := snowtest.Context(t, snowtest.JUNEChainID)
 			ctx := snowtest.ConsensusContext(snowCtx)
 			vdrs := validators.NewManager()
 			require.NoError(vdrs.AddStaker(ctx.SupernetID, ids.GenerateTestNodeID(), nil, ids.Empty, 1))
@@ -693,7 +693,7 @@ func TestDynamicEngineTypeDispatch(t *testing.T) {
 func TestHandlerStartError(t *testing.T) {
 	require := require.New(t)
 
-	snowCtx := snowtest.Context(t, snowtest.CChainID)
+	snowCtx := snowtest.Context(t, snowtest.JUNEChainID)
 	ctx := snowtest.ConsensusContext(snowCtx)
 	resourceTracker, err := tracker.NewResourceTracker(
 		prometheus.NewRegistry(),

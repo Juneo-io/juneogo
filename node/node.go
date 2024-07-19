@@ -1000,7 +1000,7 @@ func (n *Node) addDefaultVMAliases() error {
 // Create the chainManager and register the following VMs:
 // AVM, Simple Payments DAG, Simple Payments Chain, and Platform VM
 // Assumes n.DBManager, n.vdrs all initialized (non-nil)
-func (n *Node) initChainManager(avaxAssetID ids.ID) error {
+func (n *Node) initChainManager(juneAssetID ids.ID) error {
 	createJVMTxs, err := genesis.VMGenesis(n.Config.GenesisBytes, constants.AVMID)
 	if err != nil {
 		return err
@@ -1094,9 +1094,9 @@ func (n *Node) initChainManager(avaxAssetID ids.ID) error {
 			Server:                                  n.APIServer,
 			Keystore:                                n.keystore,
 			AtomicMemory:                            n.sharedMemory,
-			AVAXAssetID:                             avaxAssetID,
-			XChainID:                                jvmChainID,
-			CChainID:                                juneChainID,
+			JUNEAssetID:                             juneAssetID,
+			JVMChainID:                                jvmChainID,
+			JUNEChainID:                                juneChainID,
 			CriticalChains:                          criticalChains,
 			TimeoutManager:                          n.timeoutManager,
 			Health:                                  n.health,

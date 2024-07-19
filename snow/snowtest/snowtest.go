@@ -21,10 +21,10 @@ import (
 )
 
 var (
-	XChainID    = ids.GenerateTestID()
-	CChainID    = ids.GenerateTestID()
+	JVMChainID    = ids.GenerateTestID()
+	JUNEChainID    = ids.GenerateTestID()
 	PChainID    = constants.PlatformChainID
-	AVAXAssetID = ids.GenerateTestID()
+	JUNEAssetID = ids.GenerateTestID()
 
 	errMissing = errors.New("missing")
 
@@ -58,17 +58,17 @@ func Context(tb testing.TB, chainID ids.ID) *snow.Context {
 	aliaser := ids.NewAliaser()
 	require.NoError(aliaser.Alias(constants.PlatformChainID, "P"))
 	require.NoError(aliaser.Alias(constants.PlatformChainID, constants.PlatformChainID.String()))
-	require.NoError(aliaser.Alias(XChainID, "X"))
-	require.NoError(aliaser.Alias(XChainID, XChainID.String()))
-	require.NoError(aliaser.Alias(CChainID, "C"))
-	require.NoError(aliaser.Alias(CChainID, CChainID.String()))
+	require.NoError(aliaser.Alias(JVMChainID, "X"))
+	require.NoError(aliaser.Alias(JVMChainID, JVMChainID.String()))
+	require.NoError(aliaser.Alias(JUNEChainID, "C"))
+	require.NoError(aliaser.Alias(JUNEChainID, JUNEChainID.String()))
 
 	validatorState := &validators.TestState{
 		GetSupernetIDF: func(_ context.Context, chainID ids.ID) (ids.ID, error) {
 			supernetID, ok := map[ids.ID]ids.ID{
 				constants.PlatformChainID: constants.PrimaryNetworkID,
-				XChainID:                  constants.PrimaryNetworkID,
-				CChainID:                  constants.PrimaryNetworkID,
+				JVMChainID:                  constants.PrimaryNetworkID,
+				JUNEChainID:                  constants.PrimaryNetworkID,
 			}[chainID]
 			if !ok {
 				return ids.Empty, errMissing
@@ -84,9 +84,9 @@ func Context(tb testing.TB, chainID ids.ID) *snow.Context {
 		NodeID:    ids.EmptyNodeID,
 		PublicKey: publicKey,
 
-		XChainID:    XChainID,
-		CChainID:    CChainID,
-		AVAXAssetID: AVAXAssetID,
+		JVMChainID:    JVMChainID,
+		JUNEChainID:    JUNEChainID,
+		JUNEAssetID: JUNEAssetID,
 
 		Log:      logging.NoLog{},
 		BCLookup: aliaser,

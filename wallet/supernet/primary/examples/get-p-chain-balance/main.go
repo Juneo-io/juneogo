@@ -46,7 +46,7 @@ func main() {
 		log.Fatalf("failed to get the balance: %s\n", err)
 	}
 
-	avaxID := state.PCTX.AVAXAssetID
+	avaxID := state.PCTX.JUNEAssetID
 	avaxBalance := currentBalances[avaxID]
 	log.Printf("current AVAX balance of %s is %d nAVAX\n", addrStr, avaxBalance)
 }

@@ -564,7 +564,7 @@ func TestGetValidatorRules(t *testing.T) {
 			MaxStakeDuration:  2 * time.Second,
 			MinDelegationFee:  1337,
 		}
-		avaxAssetID   = ids.GenerateTestID()
+		juneAssetID   = ids.GenerateTestID()
 		customAssetID = ids.GenerateTestID()
 		supernetID      = ids.GenerateTestID()
 	)
@@ -576,14 +576,14 @@ func TestGetValidatorRules(t *testing.T) {
 			backend: &Backend{
 				Config: config,
 				Ctx: &snow.Context{
-					AVAXAssetID: avaxAssetID,
+					JUNEAssetID: juneAssetID,
 				},
 			},
 			chainStateF: func(*gomock.Controller) state.Chain {
 				return nil
 			},
 			expectedRules: &addValidatorRules{
-				assetID:           avaxAssetID,
+				assetID:           juneAssetID,
 				minValidatorStake: config.MinValidatorStake,
 				maxValidatorStake: config.MaxValidatorStake,
 				minStakeDuration:  config.MinStakeDuration,
@@ -682,7 +682,7 @@ func TestGetDelegatorRules(t *testing.T) {
 			MinStakeDuration:  time.Second,
 			MaxStakeDuration:  2 * time.Second,
 		}
-		avaxAssetID   = ids.GenerateTestID()
+		juneAssetID   = ids.GenerateTestID()
 		customAssetID = ids.GenerateTestID()
 		supernetID      = ids.GenerateTestID()
 	)
@@ -693,14 +693,14 @@ func TestGetDelegatorRules(t *testing.T) {
 			backend: &Backend{
 				Config: config,
 				Ctx: &snow.Context{
-					AVAXAssetID: avaxAssetID,
+					JUNEAssetID: juneAssetID,
 				},
 			},
 			chainStateF: func(*gomock.Controller) state.Chain {
 				return nil
 			},
 			expectedRules: &addDelegatorRules{
-				assetID:                  avaxAssetID,
+				assetID:                  juneAssetID,
 				minDelegatorStake:        config.MinDelegatorStake,
 				maxValidatorStake:        config.MaxValidatorStake,
 				minStakeDuration:         config.MinStakeDuration,

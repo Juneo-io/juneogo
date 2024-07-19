@@ -46,14 +46,14 @@ func TestAddDelegatorTxSyntacticVerify(t *testing.T) {
 			TxID:        ids.ID{'t', 'x', 'I', 'D'},
 			OutputIndex: 2,
 		},
-		Asset: avax.Asset{ID: ctx.AVAXAssetID},
+		Asset: avax.Asset{ID: ctx.JUNEAssetID},
 		In: &secp256k1fx.TransferInput{
 			Amt:   uint64(5678),
 			Input: secp256k1fx.Input{SigIndices: []uint32{0}},
 		},
 	}}
 	outputs := []*avax.TransferableOutput{{
-		Asset: avax.Asset{ID: ctx.AVAXAssetID},
+		Asset: avax.Asset{ID: ctx.JUNEAssetID},
 		Out: &secp256k1fx.TransferOutput{
 			Amt: uint64(1234),
 			OutputOwners: secp256k1fx.OutputOwners{
@@ -63,7 +63,7 @@ func TestAddDelegatorTxSyntacticVerify(t *testing.T) {
 		},
 	}}
 	stakes := []*avax.TransferableOutput{{
-		Asset: avax.Asset{ID: ctx.AVAXAssetID},
+		Asset: avax.Asset{ID: ctx.JUNEAssetID},
 		Out: &stakeable.LockOut{
 			Locktime: uint64(clk.Time().Add(time.Second).Unix()),
 			TransferableOut: &secp256k1fx.TransferOutput{

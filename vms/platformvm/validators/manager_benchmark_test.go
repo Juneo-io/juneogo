@@ -57,7 +57,7 @@ func BenchmarkGetValidatorSet(b *testing.B) {
 		require.NoError(db.Close())
 	}()
 
-	avaxAssetID := ids.GenerateTestID()
+	juneAssetID := ids.GenerateTestID()
 	genesisTime := time.Now().Truncate(time.Second)
 	genesisEndTime := genesisTime.Add(28 * 24 * time.Hour)
 
@@ -83,7 +83,7 @@ func BenchmarkGetValidatorSet(b *testing.B) {
 
 	buildGenesisArgs := api.BuildGenesisArgs{
 		NetworkID:     json.Uint32(constants.UnitTestID),
-		AvaxAssetID:   avaxAssetID,
+		AvaxAssetID:   juneAssetID,
 		UTXOs:         nil,
 		Validators:    genesisValidators,
 		Chains:        nil,

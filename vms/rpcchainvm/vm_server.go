@@ -112,15 +112,15 @@ func (vm *VMServer) Initialize(ctx context.Context, req *vmpb.InitializeRequest)
 	if err != nil {
 		return nil, err
 	}
-	xChainID, err := ids.ToID(req.XChainId)
+	jvmChainID, err := ids.ToID(req.XChainId)
 	if err != nil {
 		return nil, err
 	}
-	cChainID, err := ids.ToID(req.CChainId)
+	juneChainID, err := ids.ToID(req.CChainId)
 	if err != nil {
 		return nil, err
 	}
-	avaxAssetID, err := ids.ToID(req.AvaxAssetId)
+	juneAssetID, err := ids.ToID(req.AvaxAssetId)
 	if err != nil {
 		return nil, err
 	}
@@ -221,9 +221,9 @@ func (vm *VMServer) Initialize(ctx context.Context, req *vmpb.InitializeRequest)
 		NodeID:     nodeID,
 		PublicKey:  publicKey,
 
-		XChainID:     xChainID,
-		CChainID:     cChainID,
-		AVAXAssetID:  avaxAssetID,
+		JVMChainID:     jvmChainID,
+		JUNEChainID:     juneChainID,
+		JUNEAssetID:  juneAssetID,
 		ChainAssetID: chainAssetID,
 
 		Log:          vm.log,

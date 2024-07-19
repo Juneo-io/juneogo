@@ -121,7 +121,7 @@ func TestBuildBlockShouldReward(t *testing.T) {
 			Supernet: constants.PrimaryNetworkID,
 		},
 		signer.NewProofOfPossession(sk),
-		env.ctx.AVAXAssetID,
+		env.ctx.JUNEAssetID,
 		&secp256k1fx.OutputOwners{
 			Threshold: 1,
 			Addrs:     []ids.ShortID{preFundedKeys[0].PublicKey().Address()},
@@ -327,7 +327,7 @@ func TestBuildBlockInvalidStakingDurations(t *testing.T) {
 			Supernet: constants.PrimaryNetworkID,
 		},
 		signer.NewProofOfPossession(sk),
-		env.ctx.AVAXAssetID,
+		env.ctx.JUNEAssetID,
 		&secp256k1fx.OutputOwners{
 			Threshold: 1,
 			Addrs:     []ids.ShortID{preFundedKeys[0].PublicKey().Address()},
@@ -366,7 +366,7 @@ func TestBuildBlockInvalidStakingDurations(t *testing.T) {
 			Supernet: constants.PrimaryNetworkID,
 		},
 		signer.NewProofOfPossession(sk),
-		env.ctx.AVAXAssetID,
+		env.ctx.JUNEAssetID,
 		&secp256k1fx.OutputOwners{
 			Threshold: 1,
 			Addrs:     []ids.ShortID{preFundedKeys[2].PublicKey().Address()},

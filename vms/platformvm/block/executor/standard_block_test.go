@@ -142,7 +142,7 @@ func TestBanffStandardBlockTimeVerification(t *testing.T) {
 			TxID: txID,
 		},
 		Asset: avax.Asset{
-			ID: avaxAssetID,
+			ID: juneAssetID,
 		},
 		Out: &secp256k1fx.TransferOutput{
 			Amt: env.config.CreateSupernetTxFee,

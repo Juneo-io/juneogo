@@ -77,7 +77,7 @@ var (
 	defaultMinValidatorStake  = 5 * units.MilliAvax
 	defaultBalance            = 100 * defaultMinValidatorStake
 	preFundedKeys             = secp256k1.TestKeys()
-	avaxAssetID               = ids.ID{'y', 'e', 'e', 't'}
+	juneAssetID               = ids.ID{'y', 'e', 'e', 't'}
 	defaultTxFee              = uint64(100)
 
 	genesisBlkID ids.ID
@@ -145,7 +145,7 @@ func newEnvironment(t *testing.T, ctrl *gomock.Controller, f fork) *environment 
 	m := atomic.NewMemory(atomicDB)
 
 	res.ctx = snowtest.Context(t, snowtest.PChainID)
-	res.ctx.AVAXAssetID = avaxAssetID
+	res.ctx.JUNEAssetID = juneAssetID
 	res.ctx.SharedMemory = m.NewSharedMemory(res.ctx.ChainID)
 
 	res.fx = defaultFx(res.clk, res.ctx.Log, res.isBootstrapped.Get())
@@ -465,7 +465,7 @@ func buildGenesisTest(ctx *snow.Context) []byte {
 
 	buildGenesisArgs := api.BuildGenesisArgs{
 		NetworkID:     json.Uint32(constants.UnitTestID),
-		AvaxAssetID:   ctx.AVAXAssetID,
+		AvaxAssetID:   ctx.JUNEAssetID,
 		UTXOs:         genesisUTXOs,
 		Validators:    genesisValidators,
 		Chains:        nil,

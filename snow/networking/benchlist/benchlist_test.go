@@ -20,7 +20,7 @@ var minimumFailingDuration = 5 * time.Minute
 func TestBenchlistAdd(t *testing.T) {
 	require := require.New(t)
 
-	snowCtx := snowtest.Context(t, snowtest.CChainID)
+	snowCtx := snowtest.Context(t, snowtest.JUNEChainID)
 	ctx := snowtest.ConsensusContext(snowCtx)
 	vdrs := validators.NewManager()
 	vdrID0 := ids.GenerateTestNodeID()
@@ -145,7 +145,7 @@ func TestBenchlistAdd(t *testing.T) {
 func TestBenchlistMaxStake(t *testing.T) {
 	require := require.New(t)
 
-	snowCtx := snowtest.Context(t, snowtest.CChainID)
+	snowCtx := snowtest.Context(t, snowtest.JUNEChainID)
 	ctx := snowtest.ConsensusContext(snowCtx)
 	vdrs := validators.NewManager()
 	vdrID0 := ids.GenerateTestNodeID()
@@ -259,7 +259,7 @@ func TestBenchlistMaxStake(t *testing.T) {
 func TestBenchlistRemove(t *testing.T) {
 	require := require.New(t)
 
-	snowCtx := snowtest.Context(t, snowtest.CChainID)
+	snowCtx := snowtest.Context(t, snowtest.JUNEChainID)
 	ctx := snowtest.ConsensusContext(snowCtx)
 	vdrs := validators.NewManager()
 	vdrID0 := ids.GenerateTestNodeID()

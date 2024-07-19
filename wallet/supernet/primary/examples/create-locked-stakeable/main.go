@@ -50,13 +50,13 @@ func main() {
 	pWallet := wallet.P()
 	pBuilder := pWallet.Builder()
 	pContext := pBuilder.Context()
-	avaxAssetID := pContext.AVAXAssetID
+	juneAssetID := pContext.JUNEAssetID
 
 	issueTxStartTime := time.Now()
 	tx, err := pWallet.IssueBaseTx([]*avax.TransferableOutput{
 		{
 			Asset: avax.Asset{
-				ID: avaxAssetID,
+				ID: juneAssetID,
 			},
 			Out: &stakeable.LockOut{
 				Locktime: locktime,

@@ -146,7 +146,7 @@ func (b *Block) Verify(context.Context) error {
 			b.manager.mempool.MarkDropped(txID, err)
 			return err
 		}
-		newFeePoolValue, err := math.Add64(feePoolValue, tx.Unsigned.ConsumedValue(b.manager.backend.Ctx.AVAXAssetID))
+		newFeePoolValue, err := math.Add64(feePoolValue, tx.Unsigned.ConsumedValue(b.manager.backend.Ctx.JUNEAssetID))
 		if err != nil {
 			return err
 		}

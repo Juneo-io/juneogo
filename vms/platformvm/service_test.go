@@ -128,7 +128,7 @@ func TestGetTxStatus(t *testing.T) {
 	m := atomic.NewMemory(prefixdb.New([]byte{}, service.vm.db))
 
 	sm := m.NewSharedMemory(service.vm.ctx.ChainID)
-	peerSharedMemory := m.NewSharedMemory(service.vm.ctx.XChainID)
+	peerSharedMemory := m.NewSharedMemory(service.vm.ctx.JVMChainID)
 
 	// #nosec G404
 	utxo := &avax.UTXO{
@@ -136,7 +136,7 @@ func TestGetTxStatus(t *testing.T) {
 			TxID:        ids.GenerateTestID(),
 			OutputIndex: rand.Uint32(),
 		},
-		Asset: avax.Asset{ID: service.vm.ctx.AVAXAssetID},
+		Asset: avax.Asset{ID: service.vm.ctx.JUNEAssetID},
 		Out: &secp256k1fx.TransferOutput{
 			Amt: 1234567,
 			OutputOwners: secp256k1fx.OutputOwners{
@@ -167,7 +167,7 @@ func TestGetTxStatus(t *testing.T) {
 	mutableSharedMemory.SharedMemory = sm
 
 	tx, err := txBuilder.NewImportTx(
-		service.vm.ctx.XChainID,
+		service.vm.ctx.JVMChainID,
 		&secp256k1fx.OutputOwners{
 			Threshold: 1,
 			Addrs:     []ids.ShortID{ids.ShortEmpty},
@@ -254,7 +254,7 @@ func TestGetTx(t *testing.T) {
 						Supernet: constants.PrimaryNetworkID,
 					},
 					signer.NewProofOfPossession(sk),
-					service.vm.ctx.AVAXAssetID,
+					service.vm.ctx.JUNEAssetID,
 					rewardsOwner,
 					rewardsOwner,
 					0,
@@ -270,9 +270,9 @@ func TestGetTx(t *testing.T) {
 			"atomic block",
 			func(service *Service, builder *txstest.Builder) (*txs.Tx, error) {
 				return builder.NewExportTx( // Test GetTx works for proposal blocks
-					service.vm.ctx.XChainID,
+					service.vm.ctx.JVMChainID,
 					[]*avax.TransferableOutput{{
-						Asset: avax.Asset{ID: service.vm.ctx.AVAXAssetID},
+						Asset: avax.Asset{ID: service.vm.ctx.JUNEAssetID},
 						Out: &secp256k1fx.TransferOutput{
 							Amt: 100,
 							OutputOwners: secp256k1fx.OutputOwners{
@@ -367,7 +367,7 @@ func TestGetBalance(t *testing.T) {
 	service, _, _ := defaultService(t)
 
 	// Ensure GetStake is correct for each of the genesis validators
-	genesis, _ := defaultGenesis(t, service.vm.ctx.AVAXAssetID)
+	genesis, _ := defaultGenesis(t, service.vm.ctx.JUNEAssetID)
 	for idx, utxo := range genesis.UTXOs {
 		request := GetBalanceRequest{
 			Addresses: []string{
@@ -395,7 +395,7 @@ func TestGetStake(t *testing.T) {
 	service, _, txBuilder := defaultService(t)
 
 	// Ensure GetStake is correct for each of the genesis validators
-	genesis, _ := defaultGenesis(t, service.vm.ctx.AVAXAssetID)
+	genesis, _ := defaultGenesis(t, service.vm.ctx.JUNEAssetID)
 	addrsStrs := []string{}
 	for i, validator := range genesis.Validators {
 		addr := "P-" + validator.RewardOwner.Addresses[0]
@@ -580,7 +580,7 @@ func TestGetCurrentValidators(t *testing.T) {
 	require := require.New(t)
 	service, _, txBuilder := defaultService(t)
 
-	genesis, _ := defaultGenesis(t, service.vm.ctx.AVAXAssetID)
+	genesis, _ := defaultGenesis(t, service.vm.ctx.JUNEAssetID)
 
 	// Call getValidators
 	args := GetCurrentValidatorsArgs{SupernetID: constants.PrimaryNetworkID}

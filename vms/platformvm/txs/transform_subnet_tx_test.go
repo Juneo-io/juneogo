@@ -33,7 +33,7 @@ func TestTransformSupernetTxSerialization(t *testing.T) {
 		0x44, 0x55, 0x66, 0x77,
 	}
 
-	avaxAssetID, err := ids.FromString("3WWxh5JEz7zu1RWdRxS6xugusNWzFFPwPw1xnZfAGzaAj8sTp")
+	juneAssetID, err := ids.FromString("3WWxh5JEz7zu1RWdRxS6xugusNWzFFPwPw1xnZfAGzaAj8sTp")
 	require.NoError(err)
 
 	customAssetID := ids.ID{
@@ -69,7 +69,7 @@ func TestTransformSupernetTxSerialization(t *testing.T) {
 							OutputIndex: 1,
 						},
 						Asset: avax.Asset{
-							ID: avaxAssetID,
+							ID: juneAssetID,
 						},
 						In: &secp256k1fx.TransferInput{
 							Amt: 10 * units.Avax,
@@ -123,7 +123,7 @@ func TestTransformSupernetTxSerialization(t *testing.T) {
 	require.NoError(simpleTransformTx.SyntacticVerify(&snow.Context{
 		NetworkID:   45,
 		ChainID:     constants.PlatformChainID,
-		AVAXAssetID: avaxAssetID,
+		JUNEAssetID: juneAssetID,
 	}))
 
 	expectedUnsignedSimpleTransformTxBytes := []byte{
@@ -250,7 +250,7 @@ func TestTransformSupernetTxSerialization(t *testing.T) {
 				Outs: []*avax.TransferableOutput{
 					{
 						Asset: avax.Asset{
-							ID: avaxAssetID,
+							ID: juneAssetID,
 						},
 						Out: &stakeable.LockOut{
 							Locktime: 87654321,
@@ -290,7 +290,7 @@ func TestTransformSupernetTxSerialization(t *testing.T) {
 							OutputIndex: 1,
 						},
 						Asset: avax.Asset{
-							ID: avaxAssetID,
+							ID: juneAssetID,
 						},
 						In: &secp256k1fx.TransferInput{
 							Amt: units.KiloAvax,
@@ -364,7 +364,7 @@ func TestTransformSupernetTxSerialization(t *testing.T) {
 	require.NoError(complexTransformTx.SyntacticVerify(&snow.Context{
 		NetworkID:   45,
 		ChainID:     constants.PlatformChainID,
-		AVAXAssetID: avaxAssetID,
+		JUNEAssetID: juneAssetID,
 	}))
 
 	expectedUnsignedComplexTransformTxBytes := []byte{
@@ -560,7 +560,7 @@ func TestTransformSupernetTxSerialization(t *testing.T) {
 	unsignedComplexTransformTx.InitCtx(&snow.Context{
 		NetworkID:   45,
 		ChainID:     constants.PlatformChainID,
-		AVAXAssetID: avaxAssetID,
+		JUNEAssetID: juneAssetID,
 		BCLookup:    aliaser,
 	})
 
@@ -680,7 +680,7 @@ func TestTransformSupernetTxSyntacticVerify(t *testing.T) {
 	ctx := &snow.Context{
 		ChainID:     chainID,
 		NetworkID:   networkID,
-		AVAXAssetID: ids.GenerateTestID(),
+		JUNEAssetID: ids.GenerateTestID(),
 	}
 
 	// A BaseTx that already passed syntactic verification.
@@ -743,7 +743,7 @@ func TestTransformSupernetTxSyntacticVerify(t *testing.T) {
 				return &TransformSupernetTx{
 					BaseTx:  validBaseTx,
 					Supernet:  ids.GenerateTestID(),
-					AssetID: ctx.AVAXAssetID,
+					AssetID: ctx.JUNEAssetID,
 				}
 			},
 			err: errAssetIDCantBeAVAX,

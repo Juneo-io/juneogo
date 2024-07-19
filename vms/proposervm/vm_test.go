@@ -834,7 +834,7 @@ func TestExpiredBuildBlock(t *testing.T) {
 		}, nil
 	}
 
-	ctx := snowtest.Context(t, snowtest.CChainID)
+	ctx := snowtest.Context(t, snowtest.JUNEChainID)
 	ctx.NodeID = ids.NodeIDFromCert(pTestCert)
 	ctx.ValidatorState = valState
 
@@ -1098,7 +1098,7 @@ func TestInnerVMRollback(t *testing.T) {
 		}
 	}
 
-	ctx := snowtest.Context(t, snowtest.CChainID)
+	ctx := snowtest.Context(t, snowtest.JUNEChainID)
 	ctx.NodeID = ids.NodeIDFromCert(pTestCert)
 	ctx.ValidatorState = valState
 
@@ -1647,7 +1647,7 @@ func TestRejectedHeightNotIndexed(t *testing.T) {
 		}, nil
 	}
 
-	ctx := snowtest.Context(t, snowtest.CChainID)
+	ctx := snowtest.Context(t, snowtest.JUNEChainID)
 	ctx.NodeID = ids.NodeIDFromCert(pTestCert)
 	ctx.ValidatorState = valState
 
@@ -1818,7 +1818,7 @@ func TestRejectedOptionHeightNotIndexed(t *testing.T) {
 		}, nil
 	}
 
-	ctx := snowtest.Context(t, snowtest.CChainID)
+	ctx := snowtest.Context(t, snowtest.JUNEChainID)
 	ctx.NodeID = ids.NodeIDFromCert(pTestCert)
 	ctx.ValidatorState = valState
 
@@ -1936,7 +1936,7 @@ func TestVMInnerBlkCache(t *testing.T) {
 		innerVM.EXPECT().GetBlock(gomock.Any(), innerBlkID).Return(innerBlk, nil)
 	}
 
-	ctx := snowtest.Context(t, snowtest.CChainID)
+	ctx := snowtest.Context(t, snowtest.JUNEChainID)
 	ctx.NodeID = ids.NodeIDFromCert(pTestCert)
 
 	require.NoError(vm.Initialize(
@@ -2149,7 +2149,7 @@ func TestVM_VerifyBlockWithContext(t *testing.T) {
 		innerVM.EXPECT().GetBlock(gomock.Any(), innerBlkID).Return(innerBlk, nil)
 	}
 
-	snowCtx := snowtest.Context(t, snowtest.CChainID)
+	snowCtx := snowtest.Context(t, snowtest.JUNEChainID)
 	snowCtx.NodeID = ids.NodeIDFromCert(pTestCert)
 
 	require.NoError(vm.Initialize(
@@ -2296,7 +2296,7 @@ func TestHistoricalBlockDeletion(t *testing.T) {
 		},
 	}
 
-	ctx := snowtest.Context(t, snowtest.CChainID)
+	ctx := snowtest.Context(t, snowtest.JUNEChainID)
 	ctx.NodeID = ids.NodeIDFromCert(pTestCert)
 	ctx.ValidatorState = &validators.TestState{
 		T: t,

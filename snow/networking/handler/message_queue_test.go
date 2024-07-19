@@ -23,7 +23,7 @@ func TestQueue(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	require := require.New(t)
 	cpuTracker := tracker.NewMockTracker(ctrl)
-	snowCtx := snowtest.Context(t, snowtest.CChainID)
+	snowCtx := snowtest.Context(t, snowtest.JUNEChainID)
 	ctx := snowtest.ConsensusContext(snowCtx)
 	vdrs := validators.NewManager()
 	vdr1ID, vdr2ID := ids.GenerateTestNodeID(), ids.GenerateTestNodeID()

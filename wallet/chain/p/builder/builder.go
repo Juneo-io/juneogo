@@ -327,7 +327,7 @@ func (b *builder) NewBaseTx(
 	options ...common.Option,
 ) (*txs.BaseTx, error) {
 	toBurn := map[ids.ID]uint64{
-		b.context.AVAXAssetID: b.context.BaseTxFee,
+		b.context.JUNEAssetID: b.context.BaseTxFee,
 	}
 	for _, out := range outputs {
 		assetID := out.AssetID()
@@ -363,12 +363,12 @@ func (b *builder) NewAddValidatorTx(
 	shares uint32,
 	options ...common.Option,
 ) (*txs.AddValidatorTx, error) {
-	avaxAssetID := b.context.AVAXAssetID
+	juneAssetID := b.context.JUNEAssetID
 	toBurn := map[ids.ID]uint64{
-		avaxAssetID: b.context.AddPrimaryNetworkValidatorFee,
+		juneAssetID: b.context.AddPrimaryNetworkValidatorFee,
 	}
 	toStake := map[ids.ID]uint64{
-		avaxAssetID: vdr.Wght,
+		juneAssetID: vdr.Wght,
 	}
 	ops := common.NewOptions(options)
 	inputs, baseOutputs, stakeOutputs, err := b.spend(toBurn, toStake, ops)
@@ -398,7 +398,7 @@ func (b *builder) NewAddSupernetValidatorTx(
 	options ...common.Option,
 ) (*txs.AddSupernetValidatorTx, error) {
 	toBurn := map[ids.ID]uint64{
-		b.context.AVAXAssetID: b.context.AddSupernetValidatorFee,
+		b.context.JUNEAssetID: b.context.AddSupernetValidatorFee,
 	}
 	toStake := map[ids.ID]uint64{}
 	ops := common.NewOptions(options)
@@ -432,7 +432,7 @@ func (b *builder) NewRemoveSupernetValidatorTx(
 	options ...common.Option,
 ) (*txs.RemoveSupernetValidatorTx, error) {
 	toBurn := map[ids.ID]uint64{
-		b.context.AVAXAssetID: b.context.BaseTxFee,
+		b.context.JUNEAssetID: b.context.BaseTxFee,
 	}
 	toStake := map[ids.ID]uint64{}
 	ops := common.NewOptions(options)
@@ -466,12 +466,12 @@ func (b *builder) NewAddDelegatorTx(
 	rewardsOwner *secp256k1fx.OutputOwners,
 	options ...common.Option,
 ) (*txs.AddDelegatorTx, error) {
-	avaxAssetID := b.context.AVAXAssetID
+	juneAssetID := b.context.JUNEAssetID
 	toBurn := map[ids.ID]uint64{
-		avaxAssetID: b.context.AddPrimaryNetworkDelegatorFee,
+		juneAssetID: b.context.AddPrimaryNetworkDelegatorFee,
 	}
 	toStake := map[ids.ID]uint64{
-		avaxAssetID: vdr.Wght,
+		juneAssetID: vdr.Wght,
 	}
 	ops := common.NewOptions(options)
 	inputs, baseOutputs, stakeOutputs, err := b.spend(toBurn, toStake, ops)
@@ -505,7 +505,7 @@ func (b *builder) NewCreateChainTx(
 	options ...common.Option,
 ) (*txs.CreateChainTx, error) {
 	toBurn := map[ids.ID]uint64{
-		b.context.AVAXAssetID: b.context.CreateBlockchainTxFee,
+		b.context.JUNEAssetID: b.context.CreateBlockchainTxFee,
 	}
 	toStake := map[ids.ID]uint64{}
 	ops := common.NewOptions(options)
@@ -544,7 +544,7 @@ func (b *builder) NewCreateSupernetTx(
 	options ...common.Option,
 ) (*txs.CreateSupernetTx, error) {
 	toBurn := map[ids.ID]uint64{
-		b.context.AVAXAssetID: b.context.CreateSupernetTxFee,
+		b.context.JUNEAssetID: b.context.CreateSupernetTxFee,
 	}
 	toStake := map[ids.ID]uint64{}
 	ops := common.NewOptions(options)
@@ -573,7 +573,7 @@ func (b *builder) NewTransferSupernetOwnershipTx(
 	options ...common.Option,
 ) (*txs.TransferSupernetOwnershipTx, error) {
 	toBurn := map[ids.ID]uint64{
-		b.context.AVAXAssetID: b.context.BaseTxFee,
+		b.context.JUNEAssetID: b.context.BaseTxFee,
 	}
 	toStake := map[ids.ID]uint64{}
 	ops := common.NewOptions(options)
@@ -617,7 +617,7 @@ func (b *builder) NewImportTx(
 	var (
 		addrs           = ops.Addresses(b.addrs)
 		minIssuanceTime = ops.MinIssuanceTime()
-		avaxAssetID     = b.context.AVAXAssetID
+		juneAssetID     = b.context.JUNEAssetID
 		txFee           = b.context.BaseTxFee
 
 		importedInputs  = make([]*avax.TransferableInput, 0, len(utxos))
@@ -666,14 +666,14 @@ func (b *builder) NewImportTx(
 	var (
 		inputs       []*avax.TransferableInput
 		outputs      = make([]*avax.TransferableOutput, 0, len(importedAmounts))
-		importedAVAX = importedAmounts[avaxAssetID]
+		importedAVAX = importedAmounts[juneAssetID]
 	)
 	if importedAVAX > txFee {
-		importedAmounts[avaxAssetID] -= txFee
+		importedAmounts[juneAssetID] -= txFee
 	} else {
 		if importedAVAX < txFee { // imported amount goes toward paying tx fee
 			toBurn := map[ids.ID]uint64{
-				avaxAssetID: txFee - importedAVAX,
+				juneAssetID: txFee - importedAVAX,
 			}
 			toStake := map[ids.ID]uint64{}
 			var err error
@@ -682,7 +682,7 @@ func (b *builder) NewImportTx(
 				return nil, fmt.Errorf("couldn't generate tx inputs/outputs: %w", err)
 			}
 		}
-		delete(importedAmounts, avaxAssetID)
+		delete(importedAmounts, juneAssetID)
 	}
 
 	for assetID, amount := range importedAmounts {
@@ -716,7 +716,7 @@ func (b *builder) NewExportTx(
 	options ...common.Option,
 ) (*txs.ExportTx, error) {
 	toBurn := map[ids.ID]uint64{
-		b.context.AVAXAssetID: b.context.BaseTxFee,
+		b.context.JUNEAssetID: b.context.BaseTxFee,
 	}
 	for _, out := range outputs {
 		assetID := out.AssetID()
@@ -772,7 +772,7 @@ func (b *builder) NewTransformSupernetTx(
 	options ...common.Option,
 ) (*txs.TransformSupernetTx, error) {
 	toBurn := map[ids.ID]uint64{
-		b.context.AVAXAssetID: b.context.TransformSupernetTxFee,
+		b.context.JUNEAssetID: b.context.TransformSupernetTxFee,
 		assetID:               initialRewardPoolSupply,
 	}
 	toStake := map[ids.ID]uint64{}
@@ -828,12 +828,12 @@ func (b *builder) NewAddPermissionlessValidatorTx(
 	shares uint32,
 	options ...common.Option,
 ) (*txs.AddPermissionlessValidatorTx, error) {
-	avaxAssetID := b.context.AVAXAssetID
+	juneAssetID := b.context.JUNEAssetID
 	toBurn := map[ids.ID]uint64{}
 	if vdr.Supernet == constants.PrimaryNetworkID {
-		toBurn[avaxAssetID] = b.context.AddPrimaryNetworkValidatorFee
+		toBurn[juneAssetID] = b.context.AddPrimaryNetworkValidatorFee
 	} else {
-		toBurn[avaxAssetID] = b.context.AddSupernetValidatorFee
+		toBurn[juneAssetID] = b.context.AddSupernetValidatorFee
 	}
 	toStake := map[ids.ID]uint64{
 		assetID: vdr.Wght,
@@ -871,12 +871,12 @@ func (b *builder) NewAddPermissionlessDelegatorTx(
 	rewardsOwner *secp256k1fx.OutputOwners,
 	options ...common.Option,
 ) (*txs.AddPermissionlessDelegatorTx, error) {
-	avaxAssetID := b.context.AVAXAssetID
+	juneAssetID := b.context.JUNEAssetID
 	toBurn := map[ids.ID]uint64{}
 	if vdr.Supernet == constants.PrimaryNetworkID {
-		toBurn[avaxAssetID] = b.context.AddPrimaryNetworkDelegatorFee
+		toBurn[juneAssetID] = b.context.AddPrimaryNetworkDelegatorFee
 	} else {
-		toBurn[avaxAssetID] = b.context.AddSupernetDelegatorFee
+		toBurn[juneAssetID] = b.context.AddSupernetDelegatorFee
 	}
 	toStake := map[ids.ID]uint64{
 		assetID: vdr.Wght,
@@ -1214,7 +1214,7 @@ func (b *builder) authorizeSupernet(supernetID ids.ID, options *common.Options) 
 }
 
 func (b *builder) initCtx(tx txs.UnsignedTx) error {
-	ctx, err := NewSnowContext(b.context.NetworkID, b.context.AVAXAssetID)
+	ctx, err := NewSnowContext(b.context.NetworkID, b.context.JUNEAssetID)
 	if err != nil {
 		return err
 	}

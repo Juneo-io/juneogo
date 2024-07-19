@@ -44,7 +44,7 @@ const testThreadPoolSize = 2
 func TestTimeout(t *testing.T) {
 	require := require.New(t)
 
-	snowCtx := snowtest.Context(t, snowtest.CChainID)
+	snowCtx := snowtest.Context(t, snowtest.JUNEChainID)
 	ctx := snowtest.ConsensusContext(snowCtx)
 	vdrs := validators.NewManager()
 	require.NoError(vdrs.AddStaker(ctx.SupernetID, ids.GenerateTestNodeID(), nil, ids.Empty, 1))
@@ -320,7 +320,7 @@ func TestTimeout(t *testing.T) {
 func TestReliableMessages(t *testing.T) {
 	require := require.New(t)
 
-	snowCtx := snowtest.Context(t, snowtest.CChainID)
+	snowCtx := snowtest.Context(t, snowtest.JUNEChainID)
 	ctx := snowtest.ConsensusContext(snowCtx)
 	vdrs := validators.NewManager()
 	require.NoError(vdrs.AddStaker(ctx.SupernetID, ids.BuildTestNodeID([]byte{1}), nil, ids.Empty, 1))
@@ -478,7 +478,7 @@ func TestReliableMessagesToMyself(t *testing.T) {
 	require := require.New(t)
 
 	benchlist := benchlist.NewNoBenchlist()
-	snowCtx := snowtest.Context(t, snowtest.CChainID)
+	snowCtx := snowtest.Context(t, snowtest.JUNEChainID)
 	ctx := snowtest.ConsensusContext(snowCtx)
 	vdrs := validators.NewManager()
 	require.NoError(vdrs.AddStaker(ctx.SupernetID, ids.GenerateTestNodeID(), nil, ids.Empty, 1))

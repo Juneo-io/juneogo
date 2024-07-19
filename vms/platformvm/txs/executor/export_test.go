@@ -33,13 +33,13 @@ func TestNewExportTx(t *testing.T) {
 	tests := []test{
 		{
 			description:        "P->X export",
-			destinationChainID: env.ctx.XChainID,
+			destinationChainID: env.ctx.JVMChainID,
 			sourceKeys:         []*secp256k1.PrivateKey{sourceKey},
 			timestamp:          defaultValidateStartTime,
 		},
 		{
 			description:        "P->C export",
-			destinationChainID: env.ctx.CChainID,
+			destinationChainID: env.ctx.JUNEChainID,
 			sourceKeys:         []*secp256k1.PrivateKey{sourceKey},
 			timestamp:          env.config.ApricotPhase5Time,
 		},
@@ -53,7 +53,7 @@ func TestNewExportTx(t *testing.T) {
 			tx, err := env.txBuilder.NewExportTx(
 				tt.destinationChainID,
 				[]*avax.TransferableOutput{{
-					Asset: avax.Asset{ID: env.ctx.AVAXAssetID},
+					Asset: avax.Asset{ID: env.ctx.JUNEAssetID},
 					Out: &secp256k1fx.TransferOutput{
 						Amt: defaultBalance - defaultTxFee,
 						OutputOwners: secp256k1fx.OutputOwners{

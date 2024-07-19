@@ -35,7 +35,7 @@ func TestVerifyFxUsage(t *testing.T) {
 	createAssetTx := &txs.Tx{Unsigned: &txs.CreateAssetTx{
 		BaseTx: txs.BaseTx{BaseTx: avax.BaseTx{
 			NetworkID:    constants.UnitTestID,
-			BlockchainID: env.vm.ctx.XChainID,
+			BlockchainID: env.vm.ctx.JVMChainID,
 		}},
 		Name:         "Team Rocket",
 		Symbol:       "TR",
@@ -73,7 +73,7 @@ func TestVerifyFxUsage(t *testing.T) {
 	mintNFTTx := &txs.Tx{Unsigned: &txs.OperationTx{
 		BaseTx: txs.BaseTx{BaseTx: avax.BaseTx{
 			NetworkID:    constants.UnitTestID,
-			BlockchainID: env.vm.ctx.XChainID,
+			BlockchainID: env.vm.ctx.JVMChainID,
 		}},
 		Ops: []*txs.Operation{{
 			Asset: avax.Asset{ID: createAssetTx.ID()},
@@ -96,7 +96,7 @@ func TestVerifyFxUsage(t *testing.T) {
 
 	spendTx := &txs.Tx{Unsigned: &txs.BaseTx{BaseTx: avax.BaseTx{
 		NetworkID:    constants.UnitTestID,
-		BlockchainID: env.vm.ctx.XChainID,
+		BlockchainID: env.vm.ctx.JVMChainID,
 		Ins: []*avax.TransferableInput{{
 			UTXOID: avax.UTXOID{
 				TxID:        createAssetTx.ID(),

@@ -151,7 +151,7 @@ type mutableSharedMemory struct {
 // Returns:
 // 1) The genesis state
 // 2) The byte representation of the default genesis for tests
-func defaultGenesis(t *testing.T, avaxAssetID ids.ID) (*api.BuildGenesisArgs, []byte) {
+func defaultGenesis(t *testing.T, juneAssetID ids.ID) (*api.BuildGenesisArgs, []byte) {
 	require := require.New(t)
 
 	genesisUTXOs := make([]api.UTXO, len(keys))
@@ -190,7 +190,7 @@ func defaultGenesis(t *testing.T, avaxAssetID ids.ID) (*api.BuildGenesisArgs, []
 	buildGenesisArgs := api.BuildGenesisArgs{
 		Encoding:      formatting.Hex,
 		NetworkID:     json.Uint32(constants.UnitTestID),
-		AvaxAssetID:   avaxAssetID,
+		AvaxAssetID:   juneAssetID,
 		UTXOs:         genesisUTXOs,
 		Validators:    genesisValidators,
 		Chains:        nil,
@@ -283,7 +283,7 @@ func defaultVM(t *testing.T, f fork) (*VM, *txstest.Builder, database.Database, 
 
 	ctx.Lock.Lock()
 	defer ctx.Lock.Unlock()
-	_, genesisBytes := defaultGenesis(t, ctx.AVAXAssetID)
+	_, genesisBytes := defaultGenesis(t, ctx.JUNEAssetID)
 	appSender := &common.SenderTest{}
 	appSender.CantSendAppGossip = true
 	appSender.SendAppGossipF = func(context.Context, common.SendConfig, []byte) error {
@@ -368,7 +368,7 @@ func TestGenesis(t *testing.T) {
 	require.NoError(err)
 	require.Equal(choices.Accepted, genesisBlock.Status())
 
-	genesisState, _ := defaultGenesis(t, vm.ctx.AVAXAssetID)
+	genesisState, _ := defaultGenesis(t, vm.ctx.JUNEAssetID)
 	// Ensure all the genesis UTXOs are there
 	for _, utxo := range genesisState.UTXOs {
 		_, addrBytes, err := address.ParseBech32(utxo.Address)
@@ -435,7 +435,7 @@ func TestAddValidatorCommit(t *testing.T) {
 			Supernet: constants.PrimaryNetworkID,
 		},
 		signer.NewProofOfPossession(sk),
-		vm.ctx.AVAXAssetID,
+		vm.ctx.JUNEAssetID,
 		&secp256k1fx.OutputOwners{
 			Threshold: 1,
 			Addrs:     []ids.ShortID{rewardAddress},
@@ -600,7 +600,7 @@ func TestAddValidatorInvalidNotReissued(t *testing.T) {
 			Supernet: constants.PrimaryNetworkID,
 		},
 		signer.NewProofOfPossession(sk),
-		vm.ctx.AVAXAssetID,
+		vm.ctx.JUNEAssetID,
 		&secp256k1fx.OutputOwners{
 			Threshold: 1,
 			Addrs:     []ids.ShortID{ids.GenerateTestShortID()},
@@ -1041,10 +1041,10 @@ func TestAtomicImport(t *testing.T) {
 	m := atomic.NewMemory(prefixdb.New([]byte{5}, baseDB))
 
 	mutableSharedMemory.SharedMemory = m.NewSharedMemory(vm.ctx.ChainID)
-	peerSharedMemory := m.NewSharedMemory(vm.ctx.XChainID)
+	peerSharedMemory := m.NewSharedMemory(vm.ctx.JVMChainID)
 
 	_, err := txBuilder.NewImportTx(
-		vm.ctx.XChainID,
+		vm.ctx.JVMChainID,
 		&secp256k1fx.OutputOwners{
 			Threshold: 1,
 			Addrs:     []ids.ShortID{recipientKey.PublicKey().Address()},
@@ -1057,7 +1057,7 @@ func TestAtomicImport(t *testing.T) {
 
 	utxo := &avax.UTXO{
 		UTXOID: utxoID,
-		Asset:  avax.Asset{ID: vm.ctx.AVAXAssetID},
+		Asset:  avax.Asset{ID: vm.ctx.JUNEAssetID},
 		Out: &secp256k1fx.TransferOutput{
 			Amt: amount,
 			OutputOwners: secp256k1fx.OutputOwners{
@@ -1085,7 +1085,7 @@ func TestAtomicImport(t *testing.T) {
 	}))
 
 	tx, err := txBuilder.NewImportTx(
-		vm.ctx.XChainID,
+		vm.ctx.JVMChainID,
 		&secp256k1fx.OutputOwners{
 			Threshold: 1,
 			Addrs:     []ids.ShortID{recipientKey.PublicKey().Address()},
@@ -1110,7 +1110,7 @@ func TestAtomicImport(t *testing.T) {
 	require.Equal(status.Committed, txStatus)
 
 	inputID = utxoID.InputID()
-	_, err = vm.ctx.SharedMemory.Get(vm.ctx.XChainID, [][]byte{inputID[:]})
+	_, err = vm.ctx.SharedMemory.Get(vm.ctx.JVMChainID, [][]byte{inputID[:]})
 	require.ErrorIs(err, database.ErrNotFound)
 }
 
@@ -1126,13 +1126,13 @@ func TestOptimisticAtomicImport(t *testing.T) {
 			NetworkID:    vm.ctx.NetworkID,
 			BlockchainID: vm.ctx.ChainID,
 		}},
-		SourceChain: vm.ctx.XChainID,
+		SourceChain: vm.ctx.JVMChainID,
 		ImportedInputs: []*avax.TransferableInput{{
 			UTXOID: avax.UTXOID{
 				TxID:        ids.Empty.Prefix(1),
 				OutputIndex: 1,
 			},
-			Asset: avax.Asset{ID: vm.ctx.AVAXAssetID},
+			Asset: avax.Asset{ID: vm.ctx.JUNEAssetID},
 			In: &secp256k1fx.TransferInput{
 				Amt: 50000,
 			},
@@ -1192,7 +1192,7 @@ func TestRestartFullyAccepted(t *testing.T) {
 
 	firstCtx := snowtest.Context(t, snowtest.PChainID)
 
-	_, genesisBytes := defaultGenesis(t, firstCtx.AVAXAssetID)
+	_, genesisBytes := defaultGenesis(t, firstCtx.JUNEAssetID)
 
 	baseDB := memdb.New()
 	atomicDB := prefixdb.New([]byte{1}, baseDB)
@@ -1225,13 +1225,13 @@ func TestRestartFullyAccepted(t *testing.T) {
 			NetworkID:    firstVM.ctx.NetworkID,
 			BlockchainID: firstVM.ctx.ChainID,
 		}},
-		SourceChain: firstVM.ctx.XChainID,
+		SourceChain: firstVM.ctx.JVMChainID,
 		ImportedInputs: []*avax.TransferableInput{{
 			UTXOID: avax.UTXOID{
 				TxID:        ids.Empty.Prefix(1),
 				OutputIndex: 1,
 			},
-			Asset: avax.Asset{ID: firstVM.ctx.AVAXAssetID},
+			Asset: avax.Asset{ID: firstVM.ctx.JUNEAssetID},
 			In: &secp256k1fx.TransferInput{
 				Amt: 50000,
 			},
@@ -1331,7 +1331,7 @@ func TestBootstrapPartiallyAccepted(t *testing.T) {
 	vm.clock.Set(initialClkTime)
 	ctx := snowtest.Context(t, snowtest.PChainID)
 
-	_, genesisBytes := defaultGenesis(t, ctx.AVAXAssetID)
+	_, genesisBytes := defaultGenesis(t, ctx.JUNEAssetID)
 
 	atomicDB := prefixdb.New([]byte{1}, baseDB)
 	m := atomic.NewMemory(atomicDB)
@@ -1359,13 +1359,13 @@ func TestBootstrapPartiallyAccepted(t *testing.T) {
 			NetworkID:    vm.ctx.NetworkID,
 			BlockchainID: vm.ctx.ChainID,
 		}},
-		SourceChain: vm.ctx.XChainID,
+		SourceChain: vm.ctx.JVMChainID,
 		ImportedInputs: []*avax.TransferableInput{{
 			UTXOID: avax.UTXOID{
 				TxID:        ids.Empty.Prefix(1),
 				OutputIndex: 1,
 			},
-			Asset: avax.Asset{ID: vm.ctx.AVAXAssetID},
+			Asset: avax.Asset{ID: vm.ctx.JUNEAssetID},
 			In: &secp256k1fx.TransferInput{
 				Amt: 50000,
 			},
@@ -1683,7 +1683,7 @@ func TestUnverifiedParent(t *testing.T) {
 		ctx.Lock.Unlock()
 	}()
 
-	_, genesisBytes := defaultGenesis(t, ctx.AVAXAssetID)
+	_, genesisBytes := defaultGenesis(t, ctx.JUNEAssetID)
 
 	msgChan := make(chan common.Message, 1)
 	require.NoError(vm.Initialize(
@@ -1704,13 +1704,13 @@ func TestUnverifiedParent(t *testing.T) {
 			NetworkID:    vm.ctx.NetworkID,
 			BlockchainID: vm.ctx.ChainID,
 		}},
-		SourceChain: vm.ctx.XChainID,
+		SourceChain: vm.ctx.JVMChainID,
 		ImportedInputs: []*avax.TransferableInput{{
 			UTXOID: avax.UTXOID{
 				TxID:        ids.Empty.Prefix(1),
 				OutputIndex: 1,
 			},
-			Asset: avax.Asset{ID: vm.ctx.AVAXAssetID},
+			Asset: avax.Asset{ID: vm.ctx.JUNEAssetID},
 			In: &secp256k1fx.TransferInput{
 				Amt: 50000,
 			},
@@ -1741,13 +1741,13 @@ func TestUnverifiedParent(t *testing.T) {
 			NetworkID:    vm.ctx.NetworkID,
 			BlockchainID: vm.ctx.ChainID,
 		}},
-		SourceChain: vm.ctx.XChainID,
+		SourceChain: vm.ctx.JVMChainID,
 		ImportedInputs: []*avax.TransferableInput{{
 			UTXOID: avax.UTXOID{
 				TxID:        ids.Empty.Prefix(2),
 				OutputIndex: 2,
 			},
-			Asset: avax.Asset{ID: vm.ctx.AVAXAssetID},
+			Asset: avax.Asset{ID: vm.ctx.JUNEAssetID},
 			In: &secp256k1fx.TransferInput{
 				Amt: 50000,
 			},
@@ -1838,7 +1838,7 @@ func TestUptimeDisallowedWithRestart(t *testing.T) {
 	firstCtx := snowtest.Context(t, snowtest.PChainID)
 	firstCtx.Lock.Lock()
 
-	_, genesisBytes := defaultGenesis(t, firstCtx.AVAXAssetID)
+	_, genesisBytes := defaultGenesis(t, firstCtx.JUNEAssetID)
 
 	firstMsgChan := make(chan common.Message, 1)
 	require.NoError(firstVM.Initialize(
@@ -1987,7 +1987,7 @@ func TestUptimeDisallowedAfterNeverConnecting(t *testing.T) {
 	ctx := snowtest.Context(t, snowtest.PChainID)
 	ctx.Lock.Lock()
 
-	_, genesisBytes := defaultGenesis(t, ctx.AVAXAssetID)
+	_, genesisBytes := defaultGenesis(t, ctx.JUNEAssetID)
 
 	atomicDB := prefixdb.New([]byte{1}, db)
 	m := atomic.NewMemory(atomicDB)
@@ -2100,7 +2100,7 @@ func TestRemovePermissionedValidatorDuringAddPending(t *testing.T) {
 			Supernet: constants.PrimaryNetworkID,
 		},
 		signer.NewProofOfPossession(sk),
-		vm.ctx.AVAXAssetID,
+		vm.ctx.JUNEAssetID,
 		&secp256k1fx.OutputOwners{
 			Threshold: 1,
 			Addrs:     []ids.ShortID{id},
@@ -2248,7 +2248,7 @@ func TestTransferSupernetOwnershipTx(t *testing.T) {
 			keys[0].PublicKey().Address(),
 		},
 	}
-	ctx, err := walletbuilder.NewSnowContext(vm.ctx.NetworkID, vm.ctx.AVAXAssetID)
+	ctx, err := walletbuilder.NewSnowContext(vm.ctx.NetworkID, vm.ctx.JUNEAssetID)
 	require.NoError(err)
 	expectedOwner.InitCtx(ctx)
 	require.Equal(expectedOwner, supernetOwner)
@@ -2302,7 +2302,7 @@ func TestBaseTx(t *testing.T) {
 	baseTx, err := txBuilder.NewBaseTx(
 		[]*avax.TransferableOutput{
 			{
-				Asset: avax.Asset{ID: vm.ctx.AVAXAssetID},
+				Asset: avax.Asset{ID: vm.ctx.JUNEAssetID},
 				Out: &secp256k1fx.TransferOutput{
 					Amt: sendAmt,
 					OutputOwners: secp256k1fx.OutputOwners{
@@ -2387,7 +2387,7 @@ func TestPruneMempool(t *testing.T) {
 	baseTx, err := txBuilder.NewBaseTx(
 		[]*avax.TransferableOutput{
 			{
-				Asset: avax.Asset{ID: vm.ctx.AVAXAssetID},
+				Asset: avax.Asset{ID: vm.ctx.JUNEAssetID},
 				Out: &secp256k1fx.TransferOutput{
 					Amt: sendAmt,
 					OutputOwners: secp256k1fx.OutputOwners{
@@ -2436,7 +2436,7 @@ func TestPruneMempool(t *testing.T) {
 			Supernet: constants.PrimaryNetworkID,
 		},
 		signer.NewProofOfPossession(sk),
-		vm.ctx.AVAXAssetID,
+		vm.ctx.JUNEAssetID,
 		&secp256k1fx.OutputOwners{
 			Threshold: 1,
 			Addrs:     []ids.ShortID{keys[2].Address()},

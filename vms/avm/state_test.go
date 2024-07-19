@@ -52,7 +52,7 @@ func TestSetsAndGets(t *testing.T) {
 
 	tx := &txs.Tx{Unsigned: &txs.BaseTx{BaseTx: avax.BaseTx{
 		NetworkID:    constants.UnitTestID,
-		BlockchainID: env.vm.ctx.XChainID,
+		BlockchainID: env.vm.ctx.JVMChainID,
 		Ins: []*avax.TransferableInput{{
 			UTXOID: avax.UTXOID{
 				TxID:        ids.Empty,

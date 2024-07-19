@@ -37,9 +37,9 @@ type Context struct {
 	NodeID    ids.NodeID
 	PublicKey *bls.PublicKey
 
-	XChainID     ids.ID
-	CChainID     ids.ID
-	AVAXAssetID  ids.ID
+	JVMChainID     ids.ID
+	JUNEChainID     ids.ID
+	JUNEAssetID  ids.ID
 	ChainAssetID ids.ID
 
 	Log          logging.Logger

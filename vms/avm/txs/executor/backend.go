@@ -19,7 +19,7 @@ type Backend struct {
 	Fxs           []*fxs.ParsedFx
 	TypeToFxIndex map[reflect.Type]int
 	Codec         codec.Manager
-	// Note: FeeAssetID may be different than ctx.AVAXAssetID if this AVM is
+	// Note: FeeAssetID may be different than ctx.JUNEAssetID if this AVM is
 	// running in a supernet.
 	FeeAssetID   ids.ID
 	Bootstrapped bool

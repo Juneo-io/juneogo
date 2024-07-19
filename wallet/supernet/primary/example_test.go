@@ -45,7 +45,7 @@ func ExampleWallet() {
 	xContext := xBuilder.Context()
 
 	// Pull out useful constants to use when issuing transactions.
-	xChainID := xContext.BlockchainID
+	jvmChainID := xContext.BlockchainID
 	owner := &secp256k1fx.OutputOwners{
 		Threshold: 1,
 		Addrs: []ids.ShortID{
@@ -100,7 +100,7 @@ func ExampleWallet() {
 
 	// Import the 100 MegaAvax from the X-chain into the P-chain.
 	importStartTime := time.Now()
-	importTx, err := pWallet.IssueImportTx(xChainID, owner)
+	importTx, err := pWallet.IssueImportTx(jvmChainID, owner)
 	if err != nil {
 		log.Fatalf("failed to issue X->P import transaction with: %s\n", err)
 		return

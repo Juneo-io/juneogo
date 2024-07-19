@@ -21,13 +21,13 @@ var _ Context = (*context)(nil)
 type Context interface {
 	NetworkID() uint32
 	BlockchainID() ids.ID
-	AVAXAssetID() ids.ID
+	JUNEAssetID() ids.ID
 }
 
 type context struct {
 	networkID    uint32
 	blockchainID ids.ID
-	avaxAssetID  ids.ID
+	juneAssetID  ids.ID
 }
 
 func NewContextFromURI(ctx stdcontext.Context, uri string) (Context, error) {
@@ -66,12 +66,12 @@ func NewContextFromClients(
 func NewContext(
 	networkID uint32,
 	blockchainID ids.ID,
-	avaxAssetID ids.ID,
+	juneAssetID ids.ID,
 ) Context {
 	return &context{
 		networkID:    networkID,
 		blockchainID: blockchainID,
-		avaxAssetID:  avaxAssetID,
+		juneAssetID:  juneAssetID,
 	}
 }
 
@@ -83,8 +83,8 @@ func (c *context) BlockchainID() ids.ID {
 	return c.blockchainID
 }
 
-func (c *context) AVAXAssetID() ids.ID {
-	return c.avaxAssetID
+func (c *context) JUNEAssetID() ids.ID {
+	return c.juneAssetID
 }
 
 func newSnowContext(c Context) (*snow.Context, error) {
@@ -94,8 +94,8 @@ func newSnowContext(c Context) (*snow.Context, error) {
 		NetworkID:   c.NetworkID(),
 		SupernetID:    constants.PrimaryNetworkID,
 		ChainID:     chainID,
-		CChainID:    chainID,
-		AVAXAssetID: c.AVAXAssetID(),
+		JUNEChainID:    chainID,
+		JUNEAssetID: c.JUNEAssetID(),
 		Log:         logging.NoLog{},
 		BCLookup:    lookup,
 	}, lookup.Alias(chainID, Alias)

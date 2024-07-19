@@ -42,7 +42,7 @@ func main() {
 	cWallet := wallet.C()
 
 	// Pull out useful constants to use when issuing transactions.
-	cChainID := cWallet.BlockchainID()
+	juneChainID := cWallet.BlockchainID()
 	owner := secp256k1fx.OutputOwners{
 		Threshold: 1,
 		Addrs: []ids.ShortID{
@@ -64,7 +64,7 @@ func main() {
 	log.Printf("issued export %s in %s\n", exportTx.ID(), time.Since(exportStartTime))
 
 	importStartTime := time.Now()
-	importTx, err := pWallet.IssueImportTx(cChainID, &owner)
+	importTx, err := pWallet.IssueImportTx(juneChainID, &owner)
 	if err != nil {
 		log.Fatalf("failed to issue import transaction: %s\n", err)
 	}

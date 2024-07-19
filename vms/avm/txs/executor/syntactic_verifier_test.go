@@ -35,7 +35,7 @@ var (
 )
 
 func TestSyntacticVerifierBaseTx(t *testing.T) {
-	ctx := snowtest.Context(t, snowtest.XChainID)
+	ctx := snowtest.Context(t, snowtest.JVMChainID)
 
 	fx := &secp256k1fx.Fx{}
 	parser, err := txs.NewParser(
@@ -407,7 +407,7 @@ func TestSyntacticVerifierBaseTx(t *testing.T) {
 }
 
 func TestSyntacticVerifierCreateAssetTx(t *testing.T) {
-	ctx := snowtest.Context(t, snowtest.XChainID)
+	ctx := snowtest.Context(t, snowtest.JVMChainID)
 
 	fx := &secp256k1fx.Fx{}
 	parser, err := txs.NewParser(
@@ -1016,7 +1016,7 @@ func TestSyntacticVerifierCreateAssetTx(t *testing.T) {
 }
 
 func TestSyntacticVerifierOperationTx(t *testing.T) {
-	ctx := snowtest.Context(t, snowtest.XChainID)
+	ctx := snowtest.Context(t, snowtest.JVMChainID)
 
 	fx := &secp256k1fx.Fx{}
 	parser, err := txs.NewParser(
@@ -1505,7 +1505,7 @@ func TestSyntacticVerifierOperationTx(t *testing.T) {
 }
 
 func TestSyntacticVerifierImportTx(t *testing.T) {
-	ctx := snowtest.Context(t, snowtest.XChainID)
+	ctx := snowtest.Context(t, snowtest.JVMChainID)
 
 	fx := &secp256k1fx.Fx{}
 	parser, err := txs.NewParser(
@@ -1557,7 +1557,7 @@ func TestSyntacticVerifierImportTx(t *testing.T) {
 	}
 	tx := txs.ImportTx{
 		BaseTx:      txs.BaseTx{BaseTx: baseTx},
-		SourceChain: ctx.CChainID,
+		SourceChain: ctx.JUNEChainID,
 		ImportedIns: []*avax.TransferableInput{
 			&input,
 		},
@@ -1905,7 +1905,7 @@ func TestSyntacticVerifierImportTx(t *testing.T) {
 }
 
 func TestSyntacticVerifierExportTx(t *testing.T) {
-	ctx := snowtest.Context(t, snowtest.XChainID)
+	ctx := snowtest.Context(t, snowtest.JVMChainID)
 
 	fx := &secp256k1fx.Fx{}
 	parser, err := txs.NewParser(
@@ -1957,7 +1957,7 @@ func TestSyntacticVerifierExportTx(t *testing.T) {
 	}
 	tx := txs.ExportTx{
 		BaseTx:           txs.BaseTx{BaseTx: baseTx},
-		DestinationChain: ctx.CChainID,
+		DestinationChain: ctx.JUNEChainID,
 		ExportedOuts: []*avax.TransferableOutput{
 			&output,
 		},

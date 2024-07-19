@@ -59,7 +59,7 @@ func (t *testTx) Accept(ctx context.Context) error {
 func newConfig(t *testing.T) (Config, ids.NodeID, *common.SenderTest, *vertex.TestManager, *vertex.TestVM) {
 	require := require.New(t)
 
-	snowCtx := snowtest.Context(t, snowtest.CChainID)
+	snowCtx := snowtest.Context(t, snowtest.JUNEChainID)
 	ctx := snowtest.ConsensusContext(snowCtx)
 
 	vdrs := validators.NewManager()

@@ -198,9 +198,9 @@ type ManagerConfig struct {
 	Server                    server.Server // Handles HTTP API calls
 	Keystore                  keystore.Keystore
 	AtomicMemory              *atomic.Memory
-	AVAXAssetID               ids.ID
-	XChainID                  ids.ID          // ID of the X-Chain,
-	CChainID                  ids.ID          // ID of the C-Chain,
+	JUNEAssetID               ids.ID
+	JVMChainID                  ids.ID          // ID of the X-Chain,
+	JUNEChainID                  ids.ID          // ID of the C-Chain,
 	CriticalChains            set.Set[ids.ID] // Chains that can't exit gracefully
 	TimeoutManager            timeout.Manager // Manages request timeouts when sending messages to other validators
 	Health                    health.Registerer
@@ -451,9 +451,9 @@ func (m *manager) buildChain(chainParams ChainParameters, sb supernets.Supernet)
 			NodeID:     m.NodeID,
 			PublicKey:  bls.PublicFromSecretKey(m.StakingBLSKey),
 
-			XChainID:     m.XChainID,
-			CChainID:     m.CChainID,
-			AVAXAssetID:  m.AVAXAssetID,
+			JVMChainID:     m.JVMChainID,
+			JUNEChainID:     m.JUNEChainID,
+			JUNEAssetID:  m.JUNEAssetID,
 			ChainAssetID: chainParams.ChainAssetID,
 
 			Log:          chainLog,

@@ -68,7 +68,7 @@ func (n *Network) shuffleColors() {
 }
 
 func (n *Network) AddNode(t testing.TB, sm Consensus) error {
-	snowCtx := snowtest.Context(t, snowtest.CChainID)
+	snowCtx := snowtest.Context(t, snowtest.JUNEChainID)
 	ctx := snowtest.ConsensusContext(snowCtx)
 	if err := sm.Initialize(ctx, n.params, snowmantest.GenesisID, snowmantest.GenesisHeight, snowmantest.GenesisTimestamp); err != nil {
 		return err

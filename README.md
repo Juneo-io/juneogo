@@ -36,7 +36,7 @@ The binary to be executed is named `juneogo`.
 
 ### Docker Install
 
-To set up JuneoGo using docker, you can find all informations [here](https://github.com/Juneo-io/juneogo-docker)
+To set up JuneoGo using docker, please read [Set up and Connect a node using Docker](https://docs.juneo.com/intro/build/set-up-and-connect-a-node-with-docker)
 
 ## Running JuneoGo
 
@@ -56,19 +56,23 @@ If you are using a configuration file you can set it there instead of using flag
 
 ## Bootstrapping
 
-A node needs to catch up to the latest network state before it can participate in consensus and serve API calls. This process (called bootstrapping) currently takes several days for a new node connected to Mainnet.
+A node needs to catch up to the latest network state before it can participate in consensus and serve API calls.
 
 A node will not report healthy until it is done bootstrapping.
 
 To check if a node is healthy you can use health API:
-`curl -k -H 'Content-Type: application/json' --data '{
+
+```bash
+curl -k -H 'Content-Type: application/json' --data '{
     "jsonrpc":"2.0",
     "id"     :1,
     "method" :"health.health",
     "params": {
         "tags": ["11111111111111111111111111111111LpoYY"]
     }
-}' 'http://127.0.0.1:9650/ext/health'`
+}' 'http://127.0.0.1:9650/ext/health'
+```
+
 If you are using docker installation make sure to use docker ip instead of localhost.
 
 Improvements that reduce the amount of time it takes to bootstrap are under development.
@@ -76,8 +80,6 @@ Improvements that reduce the amount of time it takes to bootstrap are under deve
 The bottleneck during bootstrapping is typically database IO. Using a more powerful CPU or increasing the database IOPS on the computer running a node will decrease the amount of time bootstrapping takes.
 
 ## Generating Code
-
-JuneoGo uses multiple tools to generate efficient and boilerplate code.
 
 ### Running protobuf codegen
 

@@ -18,7 +18,7 @@ const Alias = "P"
 
 type Context struct {
 	NetworkID                     uint32
-	AVAXAssetID                   ids.ID
+	JUNEAssetID                   ids.ID
 	BaseTxFee                     uint64
 	CreateSupernetTxFee             uint64
 	TransformSupernetTxFee          uint64
@@ -57,7 +57,7 @@ func NewContextFromClients(
 
 	return &Context{
 		NetworkID:                     networkID,
-		AVAXAssetID:                   asset.AssetID,
+		JUNEAssetID:                   asset.AssetID,
 		BaseTxFee:                     uint64(txFees.TxFee),
 		CreateSupernetTxFee:             uint64(txFees.CreateSupernetTxFee),
 		TransformSupernetTxFee:          uint64(txFees.TransformSupernetTxFee),
@@ -69,13 +69,13 @@ func NewContextFromClients(
 	}, nil
 }
 
-func NewSnowContext(networkID uint32, avaxAssetID ids.ID) (*snow.Context, error) {
+func NewSnowContext(networkID uint32, juneAssetID ids.ID) (*snow.Context, error) {
 	lookup := ids.NewAliaser()
 	return &snow.Context{
 		NetworkID:   networkID,
 		SupernetID:    constants.PrimaryNetworkID,
 		ChainID:     constants.PlatformChainID,
-		AVAXAssetID: avaxAssetID,
+		JUNEAssetID: juneAssetID,
 		Log:         logging.NoLog{},
 		BCLookup:    lookup,
 	}, lookup.Alias(constants.PlatformChainID, Alias)

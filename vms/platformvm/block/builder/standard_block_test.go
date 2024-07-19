@@ -36,10 +36,10 @@ func TestAtomicTxImports(t *testing.T) {
 	m := atomic.NewMemory(prefixdb.New([]byte{5}, env.baseDB))
 
 	env.msm.SharedMemory = m.NewSharedMemory(env.ctx.ChainID)
-	peerSharedMemory := m.NewSharedMemory(env.ctx.XChainID)
+	peerSharedMemory := m.NewSharedMemory(env.ctx.JVMChainID)
 	utxo := &avax.UTXO{
 		UTXOID: utxoID,
-		Asset:  avax.Asset{ID: env.ctx.AVAXAssetID},
+		Asset:  avax.Asset{ID: env.ctx.JUNEAssetID},
 		Out: &secp256k1fx.TransferOutput{
 			Amt: amount,
 			OutputOwners: secp256k1fx.OutputOwners{
@@ -63,7 +63,7 @@ func TestAtomicTxImports(t *testing.T) {
 	}))
 
 	tx, err := env.txBuilder.NewImportTx(
-		env.ctx.XChainID,
+		env.ctx.JVMChainID,
 		&secp256k1fx.OutputOwners{
 			Threshold: 1,
 			Addrs:     []ids.ShortID{recipientKey.PublicKey().Address()},

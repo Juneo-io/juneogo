@@ -46,8 +46,8 @@ func main() {
 	cWallet := wallet.C()
 
 	// Pull out useful constants to use when issuing transactions.
-	cChainID := cWallet.BlockchainID()
-	avaxAssetID := cWallet.AVAXAssetID()
+	juneChainID := cWallet.BlockchainID()
+	juneAssetID := cWallet.JUNEAssetID()
 	owner := secp256k1fx.OutputOwners{
 		Threshold: 1,
 		Addrs: []ids.ShortID{
@@ -56,8 +56,8 @@ func main() {
 	}
 
 	exportStartTime := time.Now()
-	exportTx, err := pWallet.IssueExportTx(cChainID, []*avax.TransferableOutput{{
-		Asset: avax.Asset{ID: avaxAssetID},
+	exportTx, err := pWallet.IssueExportTx(juneChainID, []*avax.TransferableOutput{{
+		Asset: avax.Asset{ID: juneAssetID},
 		Out: &secp256k1fx.TransferOutput{
 			Amt:          units.Avax,
 			OutputOwners: owner,

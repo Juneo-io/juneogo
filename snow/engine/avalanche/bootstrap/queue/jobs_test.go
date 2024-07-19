@@ -115,7 +115,7 @@ func TestPushAndExecute(t *testing.T) {
 		return job, nil
 	}
 
-	snowCtx := snowtest.Context(t, snowtest.CChainID)
+	snowCtx := snowtest.Context(t, snowtest.JUNEChainID)
 	count, err := jobs.ExecuteAll(context.Background(), snowtest.ConsensusContext(snowCtx), &common.Halter{}, false)
 	require.NoError(err)
 	require.Equal(1, count)
@@ -182,7 +182,7 @@ func TestRemoveDependency(t *testing.T) {
 		}
 	}
 
-	snowCtx := snowtest.Context(t, snowtest.CChainID)
+	snowCtx := snowtest.Context(t, snowtest.JUNEChainID)
 	count, err := jobs.ExecuteAll(context.Background(), snowtest.ConsensusContext(snowCtx), &common.Halter{}, false)
 	require.NoError(err)
 	require.Equal(2, count)
@@ -356,7 +356,7 @@ func TestHandleJobWithMissingDependencyOnRunnableStack(t *testing.T) {
 		}
 	}
 
-	snowCtx := snowtest.Context(t, snowtest.CChainID)
+	snowCtx := snowtest.Context(t, snowtest.JUNEChainID)
 	_, err = jobs.ExecuteAll(context.Background(), snowtest.ConsensusContext(snowCtx), &common.Halter{}, false)
 	// Assert that the database closed error on job1 causes ExecuteAll
 	// to fail in the middle of execution.

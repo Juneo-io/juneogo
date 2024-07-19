@@ -180,7 +180,7 @@ type Chain struct {
 // [Chains] are the chains that exist at genesis.
 // [Time] is the Platform Chain's time at network genesis.
 type BuildGenesisArgs struct {
-	AvaxAssetID      ids.ID                           `json:"avaxAssetID"`
+	AvaxAssetID      ids.ID                           `json:"juneAssetID"`
 	NetworkID        json.Uint32                      `json:"networkID"`
 	RewardPoolSupply json.Uint64                      `json:"rewardPoolSupply"`
 	UTXOs            []UTXO                           `json:"utxos"`

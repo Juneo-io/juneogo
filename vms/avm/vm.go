@@ -534,7 +534,7 @@ func (vm *VM) initGenesis(genesisBytes []byte) error {
 	}
 
 	// secure this by defaulting to avaxAsset
-	vm.feeAssetID = vm.ctx.AVAXAssetID
+	vm.feeAssetID = vm.ctx.JUNEAssetID
 
 	for index, genesisTx := range genesis.Txs {
 		if len(genesisTx.Outs) != 0 {
@@ -558,7 +558,7 @@ func (vm *VM) initGenesis(genesisBytes []byte) error {
 		}
 		// update feeAssetID except for JVM Chain
 		// it is already using previously set default assetID
-		if index == 0 && vm.ctx.ChainID != vm.ctx.XChainID {
+		if index == 0 && vm.ctx.ChainID != vm.ctx.JVMChainID {
 			vm.ctx.Log.Info("fee asset is established",
 				zap.String("alias", genesisTx.Alias),
 				zap.Stringer("assetID", txID),

@@ -43,14 +43,14 @@ func TestNewImportTx(t *testing.T) {
 	tests := []test{
 		{
 			description:   "can't pay fee",
-			sourceChainID: env.ctx.XChainID,
+			sourceChainID: env.ctx.JVMChainID,
 			sharedMemory: fundedSharedMemory(
 				t,
 				env,
 				sourceKey,
-				env.ctx.XChainID,
+				env.ctx.JVMChainID,
 				map[ids.ID]uint64{
-					env.ctx.AVAXAssetID: env.config.TxFee - 1,
+					env.ctx.JUNEAssetID: env.config.TxFee - 1,
 				},
 			),
 			sourceKeys:  []*secp256k1.PrivateKey{sourceKey},
@@ -58,14 +58,14 @@ func TestNewImportTx(t *testing.T) {
 		},
 		{
 			description:   "can barely pay fee",
-			sourceChainID: env.ctx.XChainID,
+			sourceChainID: env.ctx.JVMChainID,
 			sharedMemory: fundedSharedMemory(
 				t,
 				env,
 				sourceKey,
-				env.ctx.XChainID,
+				env.ctx.JVMChainID,
 				map[ids.ID]uint64{
-					env.ctx.AVAXAssetID: env.config.TxFee,
+					env.ctx.JUNEAssetID: env.config.TxFee,
 				},
 			),
 			sourceKeys:  []*secp256k1.PrivateKey{sourceKey},
@@ -73,14 +73,14 @@ func TestNewImportTx(t *testing.T) {
 		},
 		{
 			description:   "attempting to import from C-chain",
-			sourceChainID: env.ctx.CChainID,
+			sourceChainID: env.ctx.JUNEChainID,
 			sharedMemory: fundedSharedMemory(
 				t,
 				env,
 				sourceKey,
-				env.ctx.CChainID,
+				env.ctx.JUNEChainID,
 				map[ids.ID]uint64{
-					env.ctx.AVAXAssetID: env.config.TxFee,
+					env.ctx.JUNEAssetID: env.config.TxFee,
 				},
 			),
 			sourceKeys:  []*secp256k1.PrivateKey{sourceKey},
@@ -89,14 +89,14 @@ func TestNewImportTx(t *testing.T) {
 		},
 		{
 			description:   "attempting to import non-avax from X-chain",
-			sourceChainID: env.ctx.XChainID,
+			sourceChainID: env.ctx.JVMChainID,
 			sharedMemory: fundedSharedMemory(
 				t,
 				env,
 				sourceKey,
-				env.ctx.XChainID,
+				env.ctx.JVMChainID,
 				map[ids.ID]uint64{
-					env.ctx.AVAXAssetID: env.config.TxFee,
+					env.ctx.JUNEAssetID: env.config.TxFee,
 					customAssetID:       1,
 				},
 			),

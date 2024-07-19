@@ -36,9 +36,9 @@ func main() {
 	}
 	log.Printf("fetched state of %s in %s\n", addrStr, time.Since(fetchStartTime))
 
-	xChainID := state.XCTX.BlockchainID
+	jvmChainID := state.XCTX.BlockchainID
 
-	xUTXOs := common.NewChainUTXOs(xChainID, state.UTXOs)
+	xUTXOs := common.NewChainUTXOs(jvmChainID, state.UTXOs)
 	xBackend := x.NewBackend(state.XCTX, xUTXOs)
 	xBuilder := builder.New(addresses, state.XCTX, xBackend)
 
@@ -47,7 +47,7 @@ func main() {
 		log.Fatalf("failed to get the balance: %s\n", err)
 	}
 
-	avaxID := state.XCTX.AVAXAssetID
+	avaxID := state.XCTX.JUNEAssetID
 	avaxBalance := currentBalances[avaxID]
 	log.Printf("current AVAX balance of %s is %d nAVAX\n", addrStr, avaxBalance)
 }

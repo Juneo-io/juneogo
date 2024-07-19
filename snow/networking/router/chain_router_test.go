@@ -47,7 +47,7 @@ const (
 func TestShutdown(t *testing.T) {
 	require := require.New(t)
 
-	snowCtx := snowtest.Context(t, snowtest.CChainID)
+	snowCtx := snowtest.Context(t, snowtest.JUNEChainID)
 	chainCtx := snowtest.ConsensusContext(snowCtx)
 	vdrs := validators.NewManager()
 	require.NoError(vdrs.AddStaker(chainCtx.SupernetID, ids.GenerateTestNodeID(), nil, ids.Empty, 1))
@@ -194,7 +194,7 @@ func TestShutdown(t *testing.T) {
 func TestShutdownTimesOut(t *testing.T) {
 	require := require.New(t)
 
-	snowCtx := snowtest.Context(t, snowtest.CChainID)
+	snowCtx := snowtest.Context(t, snowtest.JUNEChainID)
 	ctx := snowtest.ConsensusContext(snowCtx)
 	nodeID := ids.EmptyNodeID
 	vdrs := validators.NewManager()
@@ -400,7 +400,7 @@ func TestRouterTimeout(t *testing.T) {
 		wg = sync.WaitGroup{}
 	)
 
-	snowCtx := snowtest.Context(t, snowtest.CChainID)
+	snowCtx := snowtest.Context(t, snowtest.JUNEChainID)
 	ctx := snowtest.ConsensusContext(snowCtx)
 	vdrs := validators.NewManager()
 	require.NoError(vdrs.AddStaker(ctx.SupernetID, ids.GenerateTestNodeID(), nil, ids.Empty, 1))
@@ -756,7 +756,7 @@ func TestRouterHonorsRequestedEngine(t *testing.T) {
 
 	h := handler.NewMockHandler(ctrl)
 
-	snowCtx := snowtest.Context(t, snowtest.CChainID)
+	snowCtx := snowtest.Context(t, snowtest.JUNEChainID)
 	ctx := snowtest.ConsensusContext(snowCtx)
 	h.EXPECT().Context().Return(ctx).AnyTimes()
 	h.EXPECT().SetOnStopped(gomock.Any()).AnyTimes()
@@ -983,7 +983,7 @@ func TestValidatorOnlyMessageDrops(t *testing.T) {
 	calledF := false
 	wg := sync.WaitGroup{}
 
-	snowCtx := snowtest.Context(t, snowtest.CChainID)
+	snowCtx := snowtest.Context(t, snowtest.JUNEChainID)
 	ctx := snowtest.ConsensusContext(snowCtx)
 	sb := supernets.New(ctx.NodeID, supernets.Config{ValidatorOnly: true})
 	vdrs := validators.NewManager()
@@ -1261,7 +1261,7 @@ func TestValidatorOnlyAllowedNodeMessageDrops(t *testing.T) {
 	calledF := false
 	wg := sync.WaitGroup{}
 
-	snowCtx := snowtest.Context(t, snowtest.CChainID)
+	snowCtx := snowtest.Context(t, snowtest.JUNEChainID)
 	ctx := snowtest.ConsensusContext(snowCtx)
 	allowedID := ids.GenerateTestNodeID()
 	allowedSet := set.Of(allowedID)

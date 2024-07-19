@@ -29,7 +29,7 @@ func TestBaseTxSerialization(t *testing.T) {
 		0x44, 0x55, 0x66, 0x77,
 	}
 
-	avaxAssetID, err := ids.FromString("FvwEAhmxKfeiG8SnEvq42hc6whRyY3EFYAvebMqDNDGCgxN5Z")
+	juneAssetID, err := ids.FromString("FvwEAhmxKfeiG8SnEvq42hc6whRyY3EFYAvebMqDNDGCgxN5Z")
 	require.NoError(err)
 
 	customAssetID := ids.ID{
@@ -58,7 +58,7 @@ func TestBaseTxSerialization(t *testing.T) {
 						OutputIndex: 1,
 					},
 					Asset: avax.Asset{
-						ID: avaxAssetID,
+						ID: juneAssetID,
 					},
 					In: &secp256k1fx.TransferInput{
 						Amt: units.MilliAvax,
@@ -74,7 +74,7 @@ func TestBaseTxSerialization(t *testing.T) {
 	require.NoError(simpleBaseTx.SyntacticVerify(&snow.Context{
 		NetworkID:   45,
 		ChainID:     constants.PlatformChainID,
-		AVAXAssetID: avaxAssetID,
+		JUNEAssetID: juneAssetID,
 	}))
 
 	expectedUnsignedSimpleBaseTxBytes := []byte{
@@ -129,7 +129,7 @@ func TestBaseTxSerialization(t *testing.T) {
 			Outs: []*avax.TransferableOutput{
 				{
 					Asset: avax.Asset{
-						ID: avaxAssetID,
+						ID: juneAssetID,
 					},
 					Out: &stakeable.LockOut{
 						Locktime: 87654321,
@@ -169,7 +169,7 @@ func TestBaseTxSerialization(t *testing.T) {
 						OutputIndex: 1,
 					},
 					Asset: avax.Asset{
-						ID: avaxAssetID,
+						ID: juneAssetID,
 					},
 					In: &secp256k1fx.TransferInput{
 						Amt: units.Avax,
@@ -220,7 +220,7 @@ func TestBaseTxSerialization(t *testing.T) {
 	require.NoError(complexBaseTx.SyntacticVerify(&snow.Context{
 		NetworkID:   45,
 		ChainID:     constants.PlatformChainID,
-		AVAXAssetID: avaxAssetID,
+		JUNEAssetID: juneAssetID,
 	}))
 
 	expectedUnsignedComplexBaseTxBytes := []byte{
@@ -368,7 +368,7 @@ func TestBaseTxSerialization(t *testing.T) {
 	unsignedComplexBaseTx.InitCtx(&snow.Context{
 		NetworkID:   45,
 		ChainID:     constants.PlatformChainID,
-		AVAXAssetID: avaxAssetID,
+		JUNEAssetID: juneAssetID,
 		BCLookup:    aliaser,
 	})
 

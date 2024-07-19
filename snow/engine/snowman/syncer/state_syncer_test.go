@@ -36,7 +36,7 @@ func TestStateSyncerIsEnabledIfVMSupportsStateSyncing(t *testing.T) {
 	require := require.New(t)
 
 	// Build state syncer
-	snowCtx := snowtest.Context(t, snowtest.CChainID)
+	snowCtx := snowtest.Context(t, snowtest.JUNEChainID)
 	ctx := snowtest.ConsensusContext(snowCtx)
 	sender := &common.SenderTest{T: t}
 
@@ -107,7 +107,7 @@ func TestStateSyncerIsEnabledIfVMSupportsStateSyncing(t *testing.T) {
 
 func TestStateSyncingStartsOnlyIfEnoughStakeIsConnected(t *testing.T) {
 	require := require.New(t)
-	snowCtx := snowtest.Context(t, snowtest.CChainID)
+	snowCtx := snowtest.Context(t, snowtest.JUNEChainID)
 	ctx := snowtest.ConsensusContext(snowCtx)
 	beacons := buildTestPeers(t, ctx.SupernetID)
 	alpha, err := beacons.TotalWeight(ctx.SupernetID)
@@ -150,7 +150,7 @@ func TestStateSyncingStartsOnlyIfEnoughStakeIsConnected(t *testing.T) {
 
 func TestStateSyncLocalSummaryIsIncludedAmongFrontiersIfAvailable(t *testing.T) {
 	require := require.New(t)
-	snowCtx := snowtest.Context(t, snowtest.CChainID)
+	snowCtx := snowtest.Context(t, snowtest.JUNEChainID)
 	ctx := snowtest.ConsensusContext(snowCtx)
 	beacons := buildTestPeers(t, ctx.SupernetID)
 	totalWeight, err := beacons.TotalWeight(ctx.SupernetID)
@@ -188,7 +188,7 @@ func TestStateSyncLocalSummaryIsIncludedAmongFrontiersIfAvailable(t *testing.T) 
 
 func TestStateSyncNotFoundOngoingSummaryIsNotIncludedAmongFrontiers(t *testing.T) {
 	require := require.New(t)
-	snowCtx := snowtest.Context(t, snowtest.CChainID)
+	snowCtx := snowtest.Context(t, snowtest.JUNEChainID)
 	ctx := snowtest.ConsensusContext(snowCtx)
 	beacons := buildTestPeers(t, ctx.SupernetID)
 	totalWeight, err := beacons.TotalWeight(ctx.SupernetID)
@@ -219,7 +219,7 @@ func TestStateSyncNotFoundOngoingSummaryIsNotIncludedAmongFrontiers(t *testing.T
 func TestBeaconsAreReachedForFrontiersUponStartup(t *testing.T) {
 	require := require.New(t)
 
-	snowCtx := snowtest.Context(t, snowtest.CChainID)
+	snowCtx := snowtest.Context(t, snowtest.JUNEChainID)
 	ctx := snowtest.ConsensusContext(snowCtx)
 	beacons := buildTestPeers(t, ctx.SupernetID)
 	totalWeight, err := beacons.TotalWeight(ctx.SupernetID)
@@ -258,7 +258,7 @@ func TestBeaconsAreReachedForFrontiersUponStartup(t *testing.T) {
 func TestUnRequestedStateSummaryFrontiersAreDropped(t *testing.T) {
 	require := require.New(t)
 
-	snowCtx := snowtest.Context(t, snowtest.CChainID)
+	snowCtx := snowtest.Context(t, snowtest.JUNEChainID)
 	ctx := snowtest.ConsensusContext(snowCtx)
 	beacons := buildTestPeers(t, ctx.SupernetID)
 	totalWeight, err := beacons.TotalWeight(ctx.SupernetID)
@@ -348,7 +348,7 @@ func TestUnRequestedStateSummaryFrontiersAreDropped(t *testing.T) {
 func TestMalformedStateSummaryFrontiersAreDropped(t *testing.T) {
 	require := require.New(t)
 
-	snowCtx := snowtest.Context(t, snowtest.CChainID)
+	snowCtx := snowtest.Context(t, snowtest.JUNEChainID)
 	ctx := snowtest.ConsensusContext(snowCtx)
 	beacons := buildTestPeers(t, ctx.SupernetID)
 	totalWeight, err := beacons.TotalWeight(ctx.SupernetID)
@@ -417,7 +417,7 @@ func TestMalformedStateSummaryFrontiersAreDropped(t *testing.T) {
 func TestLateResponsesFromUnresponsiveFrontiersAreNotRecorded(t *testing.T) {
 	require := require.New(t)
 
-	snowCtx := snowtest.Context(t, snowtest.CChainID)
+	snowCtx := snowtest.Context(t, snowtest.JUNEChainID)
 	ctx := snowtest.ConsensusContext(snowCtx)
 	beacons := buildTestPeers(t, ctx.SupernetID)
 	totalWeight, err := beacons.TotalWeight(ctx.SupernetID)
@@ -500,7 +500,7 @@ func TestLateResponsesFromUnresponsiveFrontiersAreNotRecorded(t *testing.T) {
 func TestStateSyncIsRestartedIfTooManyFrontierSeedersTimeout(t *testing.T) {
 	require := require.New(t)
 
-	snowCtx := snowtest.Context(t, snowtest.CChainID)
+	snowCtx := snowtest.Context(t, snowtest.JUNEChainID)
 	ctx := snowtest.ConsensusContext(snowCtx)
 	beacons := buildTestPeers(t, ctx.SupernetID)
 	totalWeight, err := beacons.TotalWeight(ctx.SupernetID)
@@ -589,7 +589,7 @@ func TestStateSyncIsRestartedIfTooManyFrontierSeedersTimeout(t *testing.T) {
 func TestVoteRequestsAreSentAsAllFrontierBeaconsResponded(t *testing.T) {
 	require := require.New(t)
 
-	snowCtx := snowtest.Context(t, snowtest.CChainID)
+	snowCtx := snowtest.Context(t, snowtest.JUNEChainID)
 	ctx := snowtest.ConsensusContext(snowCtx)
 	beacons := buildTestPeers(t, ctx.SupernetID)
 	totalWeight, err := beacons.TotalWeight(ctx.SupernetID)
@@ -660,7 +660,7 @@ func TestVoteRequestsAreSentAsAllFrontierBeaconsResponded(t *testing.T) {
 func TestUnRequestedVotesAreDropped(t *testing.T) {
 	require := require.New(t)
 
-	snowCtx := snowtest.Context(t, snowtest.CChainID)
+	snowCtx := snowtest.Context(t, snowtest.JUNEChainID)
 	ctx := snowtest.ConsensusContext(snowCtx)
 	beacons := buildTestPeers(t, ctx.SupernetID)
 	totalWeight, err := beacons.TotalWeight(ctx.SupernetID)
@@ -777,7 +777,7 @@ func TestUnRequestedVotesAreDropped(t *testing.T) {
 func TestVotesForUnknownSummariesAreDropped(t *testing.T) {
 	require := require.New(t)
 
-	snowCtx := snowtest.Context(t, snowtest.CChainID)
+	snowCtx := snowtest.Context(t, snowtest.JUNEChainID)
 	ctx := snowtest.ConsensusContext(snowCtx)
 	beacons := buildTestPeers(t, ctx.SupernetID)
 	totalWeight, err := beacons.TotalWeight(ctx.SupernetID)
@@ -880,7 +880,7 @@ func TestVotesForUnknownSummariesAreDropped(t *testing.T) {
 func TestStateSummaryIsPassedToVMAsMajorityOfVotesIsCastedForIt(t *testing.T) {
 	require := require.New(t)
 
-	snowCtx := snowtest.Context(t, snowtest.CChainID)
+	snowCtx := snowtest.Context(t, snowtest.JUNEChainID)
 	ctx := snowtest.ConsensusContext(snowCtx)
 	beacons := buildTestPeers(t, ctx.SupernetID)
 	totalWeight, err := beacons.TotalWeight(ctx.SupernetID)
@@ -1025,7 +1025,7 @@ func TestStateSummaryIsPassedToVMAsMajorityOfVotesIsCastedForIt(t *testing.T) {
 func TestVotingIsRestartedIfMajorityIsNotReachedDueToTimeouts(t *testing.T) {
 	require := require.New(t)
 
-	snowCtx := snowtest.Context(t, snowtest.CChainID)
+	snowCtx := snowtest.Context(t, snowtest.JUNEChainID)
 	ctx := snowtest.ConsensusContext(snowCtx)
 	beacons := buildTestPeers(t, ctx.SupernetID)
 	totalWeight, err := beacons.TotalWeight(ctx.SupernetID)
@@ -1131,7 +1131,7 @@ func TestVotingIsRestartedIfMajorityIsNotReachedDueToTimeouts(t *testing.T) {
 func TestStateSyncIsStoppedIfEnoughVotesAreCastedWithNoClearMajority(t *testing.T) {
 	require := require.New(t)
 
-	snowCtx := snowtest.Context(t, snowtest.CChainID)
+	snowCtx := snowtest.Context(t, snowtest.JUNEChainID)
 	ctx := snowtest.ConsensusContext(snowCtx)
 	beacons := buildTestPeers(t, ctx.SupernetID)
 	totalWeight, err := beacons.TotalWeight(ctx.SupernetID)
@@ -1277,7 +1277,7 @@ func TestStateSyncIsStoppedIfEnoughVotesAreCastedWithNoClearMajority(t *testing.
 func TestStateSyncIsDoneOnceVMNotifies(t *testing.T) {
 	require := require.New(t)
 
-	snowCtx := snowtest.Context(t, snowtest.CChainID)
+	snowCtx := snowtest.Context(t, snowtest.JUNEChainID)
 	ctx := snowtest.ConsensusContext(snowCtx)
 	beacons := buildTestPeers(t, ctx.SupernetID)
 	totalWeight, err := beacons.TotalWeight(ctx.SupernetID)

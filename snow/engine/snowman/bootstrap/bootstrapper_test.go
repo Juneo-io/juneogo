@@ -39,7 +39,7 @@ var errUnknownBlock = errors.New("unknown block")
 func newConfig(t *testing.T) (Config, ids.NodeID, *common.SenderTest, *block.TestVM) {
 	require := require.New(t)
 
-	snowCtx := snowtest.Context(t, snowtest.CChainID)
+	snowCtx := snowtest.Context(t, snowtest.JUNEChainID)
 	ctx := snowtest.ConsensusContext(snowCtx)
 
 	vdrs := validators.NewManager()
@@ -116,7 +116,7 @@ func TestBootstrapperStartsOnlyIfEnoughStakeIsConnected(t *testing.T) {
 
 	sender.Default(true)
 	vm.Default(true)
-	snowCtx := snowtest.Context(t, snowtest.CChainID)
+	snowCtx := snowtest.Context(t, snowtest.JUNEChainID)
 	ctx := snowtest.ConsensusContext(snowCtx)
 	// create boostrapper configuration
 	peers := validators.NewManager()
@@ -607,7 +607,7 @@ func TestBootstrapContinueAfterHalt(t *testing.T) {
 func TestBootstrapNoParseOnNew(t *testing.T) {
 	require := require.New(t)
 
-	snowCtx := snowtest.Context(t, snowtest.CChainID)
+	snowCtx := snowtest.Context(t, snowtest.JUNEChainID)
 	ctx := snowtest.ConsensusContext(snowCtx)
 	peers := validators.NewManager()
 

@@ -202,7 +202,7 @@ func (v *verifier) ApricotAtomicBlock(b *block.ApricotAtomicBlock) error {
 	}
 
 	feePoolValue := atomicExecutor.OnAccept.GetFeePoolValue()
-	newFeePoolValue, err := math.Add64(feePoolValue, b.Tx.Unsigned.ConsumedValue(v.ctx.AVAXAssetID))
+	newFeePoolValue, err := math.Add64(feePoolValue, b.Tx.Unsigned.ConsumedValue(v.ctx.JUNEAssetID))
 	if err != nil {
 		return err
 	}
@@ -382,7 +382,7 @@ func (v *verifier) proposalBlock(
 	}
 
 	feePoolValue := onCommitState.GetFeePoolValue()
-	newFeePoolValue, err := math.Add64(feePoolValue, b.Tx.Unsigned.ConsumedValue(v.ctx.AVAXAssetID))
+	newFeePoolValue, err := math.Add64(feePoolValue, b.Tx.Unsigned.ConsumedValue(v.ctx.JUNEAssetID))
 	if err != nil {
 		return err
 	}
@@ -472,7 +472,7 @@ func (v *verifier) processStandardTxs(txs []*txs.Tx, state state.Diff, parentID 
 		// Add UTXOs to batch
 		inputs.Union(txExecutor.Inputs)
 
-		newFeePoolValue, err := math.Add64(feePoolValue, tx.Unsigned.ConsumedValue(v.ctx.AVAXAssetID))
+		newFeePoolValue, err := math.Add64(feePoolValue, tx.Unsigned.ConsumedValue(v.ctx.JUNEAssetID))
 		if err != nil {
 			return nil, nil, nil, err
 		}

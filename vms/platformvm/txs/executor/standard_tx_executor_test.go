@@ -1172,7 +1172,7 @@ func TestDurangoMemoField(t *testing.T) {
 				env.backend.Bootstrapped.Set(false)
 
 				var (
-					sourceChain  = env.ctx.XChainID
+					sourceChain  = env.ctx.JVMChainID
 					sourceKey    = preFundedKeys[1]
 					sourceAmount = 10 * units.Avax
 				)
@@ -1183,7 +1183,7 @@ func TestDurangoMemoField(t *testing.T) {
 					sourceKey,
 					sourceChain,
 					map[ids.ID]uint64{
-						env.ctx.AVAXAssetID: sourceAmount,
+						env.ctx.JUNEAssetID: sourceAmount,
 					},
 				)
 				env.msm.SharedMemory = sharedMemory
@@ -1210,9 +1210,9 @@ func TestDurangoMemoField(t *testing.T) {
 			name: "ExportTx",
 			setupTest: func(env *environment, memoField []byte) (*txs.Tx, state.Diff) {
 				tx, err := env.txBuilder.NewExportTx(
-					env.ctx.XChainID,
+					env.ctx.JVMChainID,
 					[]*avax.TransferableOutput{{
-						Asset: avax.Asset{ID: env.ctx.AVAXAssetID},
+						Asset: avax.Asset{ID: env.ctx.JUNEAssetID},
 						Out: &secp256k1fx.TransferOutput{
 							Amt: units.Avax,
 							OutputOwners: secp256k1fx.OutputOwners{
@@ -1340,7 +1340,7 @@ func TestDurangoMemoField(t *testing.T) {
 						Supernet: constants.PrimaryNetworkID,
 					},
 					signer.NewProofOfPossession(sk),
-					env.ctx.AVAXAssetID,
+					env.ctx.JUNEAssetID,
 					&secp256k1fx.OutputOwners{
 						Threshold: 1,
 						Addrs:     []ids.ShortID{ids.ShortEmpty},
@@ -1387,7 +1387,7 @@ func TestDurangoMemoField(t *testing.T) {
 						},
 						Supernet: constants.PrimaryNetworkID,
 					},
-					env.ctx.AVAXAssetID,
+					env.ctx.JUNEAssetID,
 					&secp256k1fx.OutputOwners{
 						Threshold: 1,
 						Addrs:     []ids.ShortID{ids.ShortEmpty},
@@ -1429,7 +1429,7 @@ func TestDurangoMemoField(t *testing.T) {
 				tx, err := env.txBuilder.NewBaseTx(
 					[]*avax.TransferableOutput{
 						{
-							Asset: avax.Asset{ID: env.ctx.AVAXAssetID},
+							Asset: avax.Asset{ID: env.ctx.JUNEAssetID},
 							Out: &secp256k1fx.TransferOutput{
 								Amt: 1,
 								OutputOwners: secp256k1fx.OutputOwners{

@@ -37,7 +37,7 @@ func TestAddPermissionlessPrimaryDelegatorSerialization(t *testing.T) {
 		0x44, 0x55, 0x66, 0x77,
 	}
 
-	avaxAssetID, err := ids.FromString("FvwEAhmxKfeiG8SnEvq42hc6whRyY3EFYAvebMqDNDGCgxN5Z")
+	juneAssetID, err := ids.FromString("FvwEAhmxKfeiG8SnEvq42hc6whRyY3EFYAvebMqDNDGCgxN5Z")
 	require.NoError(err)
 
 	customAssetID := ids.ID{
@@ -72,7 +72,7 @@ func TestAddPermissionlessPrimaryDelegatorSerialization(t *testing.T) {
 							OutputIndex: 1,
 						},
 						Asset: avax.Asset{
-							ID: avaxAssetID,
+							ID: juneAssetID,
 						},
 						In: &secp256k1fx.TransferInput{
 							Amt: 2 * units.KiloAvax,
@@ -95,7 +95,7 @@ func TestAddPermissionlessPrimaryDelegatorSerialization(t *testing.T) {
 		StakeOuts: []*avax.TransferableOutput{
 			{
 				Asset: avax.Asset{
-					ID: avaxAssetID,
+					ID: juneAssetID,
 				},
 				Out: &secp256k1fx.TransferOutput{
 					Amt: 2 * units.KiloAvax,
@@ -123,7 +123,7 @@ func TestAddPermissionlessPrimaryDelegatorSerialization(t *testing.T) {
 	require.NoError(simpleAddPrimaryTx.SyntacticVerify(&snow.Context{
 		NetworkID:   45,
 		ChainID:     constants.PlatformChainID,
-		AVAXAssetID: avaxAssetID,
+		JUNEAssetID: juneAssetID,
 	}))
 
 	expectedUnsignedSimpleAddPrimaryTxBytes := []byte{
@@ -227,7 +227,7 @@ func TestAddPermissionlessPrimaryDelegatorSerialization(t *testing.T) {
 				Outs: []*avax.TransferableOutput{
 					{
 						Asset: avax.Asset{
-							ID: avaxAssetID,
+							ID: juneAssetID,
 						},
 						Out: &secp256k1fx.TransferOutput{
 							Amt: 1,
@@ -242,7 +242,7 @@ func TestAddPermissionlessPrimaryDelegatorSerialization(t *testing.T) {
 					},
 					{
 						Asset: avax.Asset{
-							ID: avaxAssetID,
+							ID: juneAssetID,
 						},
 						Out: &stakeable.LockOut{
 							Locktime: 87654321,
@@ -282,7 +282,7 @@ func TestAddPermissionlessPrimaryDelegatorSerialization(t *testing.T) {
 							OutputIndex: 1,
 						},
 						Asset: avax.Asset{
-							ID: avaxAssetID,
+							ID: juneAssetID,
 						},
 						In: &secp256k1fx.TransferInput{
 							Amt: units.MegaAvax,
@@ -338,7 +338,7 @@ func TestAddPermissionlessPrimaryDelegatorSerialization(t *testing.T) {
 		StakeOuts: []*avax.TransferableOutput{
 			{
 				Asset: avax.Asset{
-					ID: avaxAssetID,
+					ID: juneAssetID,
 				},
 				Out: &secp256k1fx.TransferOutput{
 					Amt: 2 * units.KiloAvax,
@@ -353,7 +353,7 @@ func TestAddPermissionlessPrimaryDelegatorSerialization(t *testing.T) {
 			},
 			{
 				Asset: avax.Asset{
-					ID: avaxAssetID,
+					ID: juneAssetID,
 				},
 				Out: &stakeable.LockOut{
 					Locktime: 987654321,
@@ -377,7 +377,7 @@ func TestAddPermissionlessPrimaryDelegatorSerialization(t *testing.T) {
 	require.NoError(complexAddPrimaryTx.SyntacticVerify(&snow.Context{
 		NetworkID:   45,
 		ChainID:     constants.PlatformChainID,
-		AVAXAssetID: avaxAssetID,
+		JUNEAssetID: juneAssetID,
 	}))
 
 	expectedUnsignedComplexAddPrimaryTxBytes := []byte{
@@ -608,7 +608,7 @@ func TestAddPermissionlessPrimaryDelegatorSerialization(t *testing.T) {
 	unsignedComplexAddPrimaryTx.InitCtx(&snow.Context{
 		NetworkID:   45,
 		ChainID:     constants.PlatformChainID,
-		AVAXAssetID: avaxAssetID,
+		JUNEAssetID: juneAssetID,
 		BCLookup:    aliaser,
 	})
 
@@ -751,7 +751,7 @@ func TestAddPermissionlessSupernetDelegatorSerialization(t *testing.T) {
 		0x44, 0x55, 0x66, 0x77,
 	}
 
-	avaxAssetID, err := ids.FromString("FvwEAhmxKfeiG8SnEvq42hc6whRyY3EFYAvebMqDNDGCgxN5Z")
+	juneAssetID, err := ids.FromString("FvwEAhmxKfeiG8SnEvq42hc6whRyY3EFYAvebMqDNDGCgxN5Z")
 	require.NoError(err)
 
 	customAssetID := ids.ID{
@@ -792,7 +792,7 @@ func TestAddPermissionlessSupernetDelegatorSerialization(t *testing.T) {
 							OutputIndex: 1,
 						},
 						Asset: avax.Asset{
-							ID: avaxAssetID,
+							ID: juneAssetID,
 						},
 						In: &secp256k1fx.TransferInput{
 							Amt: units.MilliAvax,
@@ -858,7 +858,7 @@ func TestAddPermissionlessSupernetDelegatorSerialization(t *testing.T) {
 	require.NoError(simpleAddSupernetTx.SyntacticVerify(&snow.Context{
 		NetworkID:   45,
 		ChainID:     constants.PlatformChainID,
-		AVAXAssetID: avaxAssetID,
+		JUNEAssetID: juneAssetID,
 	}))
 
 	expectedUnsignedSimpleAddSupernetTxBytes := []byte{
@@ -983,7 +983,7 @@ func TestAddPermissionlessSupernetDelegatorSerialization(t *testing.T) {
 				Outs: []*avax.TransferableOutput{
 					{
 						Asset: avax.Asset{
-							ID: avaxAssetID,
+							ID: juneAssetID,
 						},
 						Out: &secp256k1fx.TransferOutput{
 							Amt: 1,
@@ -998,7 +998,7 @@ func TestAddPermissionlessSupernetDelegatorSerialization(t *testing.T) {
 					},
 					{
 						Asset: avax.Asset{
-							ID: avaxAssetID,
+							ID: juneAssetID,
 						},
 						Out: &stakeable.LockOut{
 							Locktime: 87654321,
@@ -1038,7 +1038,7 @@ func TestAddPermissionlessSupernetDelegatorSerialization(t *testing.T) {
 							OutputIndex: 1,
 						},
 						Asset: avax.Asset{
-							ID: avaxAssetID,
+							ID: juneAssetID,
 						},
 						In: &secp256k1fx.TransferInput{
 							Amt: units.MegaAvax,
@@ -1133,7 +1133,7 @@ func TestAddPermissionlessSupernetDelegatorSerialization(t *testing.T) {
 	require.NoError(complexAddSupernetTx.SyntacticVerify(&snow.Context{
 		NetworkID:   45,
 		ChainID:     constants.PlatformChainID,
-		AVAXAssetID: avaxAssetID,
+		JUNEAssetID: juneAssetID,
 	}))
 
 	expectedUnsignedComplexAddSupernetTxBytes := []byte{
@@ -1364,7 +1364,7 @@ func TestAddPermissionlessSupernetDelegatorSerialization(t *testing.T) {
 	unsignedComplexAddSupernetTx.InitCtx(&snow.Context{
 		NetworkID:   45,
 		ChainID:     constants.PlatformChainID,
-		AVAXAssetID: avaxAssetID,
+		JUNEAssetID: juneAssetID,
 		BCLookup:    aliaser,
 	})
 

@@ -24,7 +24,7 @@ func TestIndex(t *testing.T) {
 	require := require.New(t)
 	baseDB := memdb.New()
 	db := versiondb.New(baseDB)
-	snowCtx := snowtest.Context(t, snowtest.CChainID)
+	snowCtx := snowtest.Context(t, snowtest.JUNEChainID)
 	ctx := snowtest.ConsensusContext(snowCtx)
 
 	idx, err := newIndex(db, logging.NoLog{}, mockable.Clock{})
@@ -109,7 +109,7 @@ func TestIndexGetContainerByRangeMaxPageSize(t *testing.T) {
 	// Setup
 	require := require.New(t)
 	db := memdb.New()
-	snowCtx := snowtest.Context(t, snowtest.CChainID)
+	snowCtx := snowtest.Context(t, snowtest.JUNEChainID)
 	ctx := snowtest.ConsensusContext(snowCtx)
 	idx, err := newIndex(db, logging.NoLog{}, mockable.Clock{})
 	require.NoError(err)
@@ -147,7 +147,7 @@ func TestDontIndexSameContainerTwice(t *testing.T) {
 	// Setup
 	require := require.New(t)
 	db := memdb.New()
-	snowCtx := snowtest.Context(t, snowtest.CChainID)
+	snowCtx := snowtest.Context(t, snowtest.JUNEChainID)
 	ctx := snowtest.ConsensusContext(snowCtx)
 	idx, err := newIndex(db, logging.NoLog{}, mockable.Clock{})
 	require.NoError(err)

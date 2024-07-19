@@ -34,7 +34,7 @@ func TestRemoveSupernetValidatorTxSerialization(t *testing.T) {
 		0x44, 0x55, 0x66, 0x77,
 	}
 
-	avaxAssetID, err := ids.FromString("FvwEAhmxKfeiG8SnEvq42hc6whRyY3EFYAvebMqDNDGCgxN5Z")
+	juneAssetID, err := ids.FromString("FvwEAhmxKfeiG8SnEvq42hc6whRyY3EFYAvebMqDNDGCgxN5Z")
 	require.NoError(err)
 
 	customAssetID := ids.ID{
@@ -75,7 +75,7 @@ func TestRemoveSupernetValidatorTxSerialization(t *testing.T) {
 							OutputIndex: 1,
 						},
 						Asset: avax.Asset{
-							ID: avaxAssetID,
+							ID: juneAssetID,
 						},
 						In: &secp256k1fx.TransferInput{
 							Amt: units.MilliAvax,
@@ -97,7 +97,7 @@ func TestRemoveSupernetValidatorTxSerialization(t *testing.T) {
 	require.NoError(simpleRemoveValidatorTx.SyntacticVerify(&snow.Context{
 		NetworkID:   45,
 		ChainID:     constants.PlatformChainID,
-		AVAXAssetID: avaxAssetID,
+		JUNEAssetID: juneAssetID,
 	}))
 
 	expectedUnsignedSimpleRemoveValidatorTxBytes := []byte{
@@ -168,7 +168,7 @@ func TestRemoveSupernetValidatorTxSerialization(t *testing.T) {
 				Outs: []*avax.TransferableOutput{
 					{
 						Asset: avax.Asset{
-							ID: avaxAssetID,
+							ID: juneAssetID,
 						},
 						Out: &stakeable.LockOut{
 							Locktime: 87654321,
@@ -208,7 +208,7 @@ func TestRemoveSupernetValidatorTxSerialization(t *testing.T) {
 							OutputIndex: 1,
 						},
 						Asset: avax.Asset{
-							ID: avaxAssetID,
+							ID: juneAssetID,
 						},
 						In: &secp256k1fx.TransferInput{
 							Amt: units.Avax,
@@ -265,7 +265,7 @@ func TestRemoveSupernetValidatorTxSerialization(t *testing.T) {
 	require.NoError(complexRemoveValidatorTx.SyntacticVerify(&snow.Context{
 		NetworkID:   45,
 		ChainID:     constants.PlatformChainID,
-		AVAXAssetID: avaxAssetID,
+		JUNEAssetID: juneAssetID,
 	}))
 
 	expectedUnsignedComplexRemoveValidatorTxBytes := []byte{
@@ -426,7 +426,7 @@ func TestRemoveSupernetValidatorTxSerialization(t *testing.T) {
 	unsignedComplexRemoveValidatorTx.InitCtx(&snow.Context{
 		NetworkID:   45,
 		ChainID:     constants.PlatformChainID,
-		AVAXAssetID: avaxAssetID,
+		JUNEAssetID: juneAssetID,
 		BCLookup:    aliaser,
 	})
 

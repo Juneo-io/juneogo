@@ -24,10 +24,10 @@ const (
 )
 
 var (
-	fujiXChainID    = ids.FromStringOrPanic("2JVSBoinj9C2J33VntvzYtVJNZdN2NKiwwKjcumHUWEb5DbBrm")
-	fujiCChainID    = ids.FromStringOrPanic("yH8D7ThNJkxmtkuv2jgBa4P1Rn3Qpr4pPr7QYNfcdoS6k6HWp")
-	mainnetXChainID = ids.FromStringOrPanic("2oYMBNV4eNHyqk2fjjV5nVQLDbtmNJzq5s3qs3Lo6ftnC6FByM")
-	mainnetCChainID = ids.FromStringOrPanic("2q9e4r6Mu3U68nU1fYjgbR6JvwrRx36CohpAX5UQxse55x1Q5")
+	fujiJVMChainID    = ids.FromStringOrPanic("2JVSBoinj9C2J33VntvzYtVJNZdN2NKiwwKjcumHUWEb5DbBrm")
+	fujiJUNEChainID    = ids.FromStringOrPanic("yH8D7ThNJkxmtkuv2jgBa4P1Rn3Qpr4pPr7QYNfcdoS6k6HWp")
+	mainnetJVMChainID = ids.FromStringOrPanic("2oYMBNV4eNHyqk2fjjV5nVQLDbtmNJzq5s3qs3Lo6ftnC6FByM")
+	mainnetJUNEChainID = ids.FromStringOrPanic("2q9e4r6Mu3U68nU1fYjgbR6JvwrRx36CohpAX5UQxse55x1Q5")
 )
 
 // This fetches IDs of blocks periodically accepted on the P-chain, X-chain, and
@@ -67,13 +67,13 @@ func main() {
 	checkpoints := map[string]map[ids.ID]set.Set[ids.ID]{
 		constants.FujiName: {
 			constants.PlatformChainID: fujiPChainCheckpoints,
-			fujiXChainID:              fujiXChainCheckpoints,
-			fujiCChainID:              fujiCChainCheckpoints,
+			fujiJVMChainID:              fujiXChainCheckpoints,
+			fujiJUNEChainID:              fujiCChainCheckpoints,
 		},
 		constants.MainnetName: {
 			constants.PlatformChainID: mainnetPChainCheckpoints,
-			mainnetXChainID:           mainnetXChainCheckpoints,
-			mainnetCChainID:           mainnetCChainCheckpoints,
+			mainnetJVMChainID:           mainnetXChainCheckpoints,
+			mainnetJUNEChainID:           mainnetCChainCheckpoints,
 		},
 	}
 	checkpointsJSON, err := json.MarshalIndent(checkpoints, "", "\t")

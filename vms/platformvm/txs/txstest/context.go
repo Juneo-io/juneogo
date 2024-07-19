@@ -18,7 +18,7 @@ func newContext(
 ) *builder.Context {
 	return &builder.Context{
 		NetworkID:                     ctx.NetworkID,
-		AVAXAssetID:                   ctx.AVAXAssetID,
+		JUNEAssetID:                   ctx.JUNEAssetID,
 		BaseTxFee:                     cfg.TxFee,
 		CreateSupernetTxFee:             cfg.GetCreateSupernetTxFee(timestamp),
 		TransformSupernetTxFee:          cfg.TransformSupernetTxFee,

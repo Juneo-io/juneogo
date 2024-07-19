@@ -456,7 +456,7 @@ func TestUnverifiedParentPanicRegression(t *testing.T) {
 		ctx.Lock.Unlock()
 	}()
 
-	_, genesisBytes := defaultGenesis(t, ctx.AVAXAssetID)
+	_, genesisBytes := defaultGenesis(t, ctx.JUNEAssetID)
 
 	msgChan := make(chan common.Message, 1)
 	require.NoError(vm.Initialize(
@@ -638,7 +638,7 @@ func TestRejectedStateRegressionInvalidValidatorTimestamp(t *testing.T) {
 			TxID: ids.GenerateTestID(),
 		},
 		Asset: avax.Asset{
-			ID: vm.ctx.AVAXAssetID,
+			ID: vm.ctx.JUNEAssetID,
 		},
 		Out: &secp256k1fx.TransferOutput{
 			Amt:          vm.TxFee,
@@ -652,7 +652,7 @@ func TestRejectedStateRegressionInvalidValidatorTimestamp(t *testing.T) {
 			NetworkID:    vm.ctx.NetworkID,
 			BlockchainID: vm.ctx.ChainID,
 		}},
-		SourceChain: vm.ctx.XChainID,
+		SourceChain: vm.ctx.JVMChainID,
 		ImportedInputs: []*avax.TransferableInput{
 			{
 				UTXOID: utxo.UTXOID,
@@ -698,7 +698,7 @@ func TestRejectedStateRegressionInvalidValidatorTimestamp(t *testing.T) {
 	m := atomic.NewMemory(prefixdb.New([]byte{5}, baseDB))
 
 	mutableSharedMemory.SharedMemory = m.NewSharedMemory(vm.ctx.ChainID)
-	peerSharedMemory := m.NewSharedMemory(vm.ctx.XChainID)
+	peerSharedMemory := m.NewSharedMemory(vm.ctx.JVMChainID)
 
 	utxoBytes, err := txs.Codec.Marshal(txs.CodecVersion, utxo)
 	require.NoError(err)
@@ -885,7 +885,7 @@ func TestRejectedStateRegressionInvalidValidatorReward(t *testing.T) {
 			TxID: ids.GenerateTestID(),
 		},
 		Asset: avax.Asset{
-			ID: vm.ctx.AVAXAssetID,
+			ID: vm.ctx.JUNEAssetID,
 		},
 		Out: &secp256k1fx.TransferOutput{
 			Amt:          vm.TxFee,
@@ -899,7 +899,7 @@ func TestRejectedStateRegressionInvalidValidatorReward(t *testing.T) {
 			NetworkID:    vm.ctx.NetworkID,
 			BlockchainID: vm.ctx.ChainID,
 		}},
-		SourceChain: vm.ctx.XChainID,
+		SourceChain: vm.ctx.JVMChainID,
 		ImportedInputs: []*avax.TransferableInput{
 			{
 				UTXOID: utxo.UTXOID,
@@ -944,7 +944,7 @@ func TestRejectedStateRegressionInvalidValidatorReward(t *testing.T) {
 	m := atomic.NewMemory(prefixdb.New([]byte{5}, baseDB))
 
 	mutableSharedMemory.SharedMemory = m.NewSharedMemory(vm.ctx.ChainID)
-	peerSharedMemory := m.NewSharedMemory(vm.ctx.XChainID)
+	peerSharedMemory := m.NewSharedMemory(vm.ctx.JVMChainID)
 
 	utxoBytes, err := txs.Codec.Marshal(txs.CodecVersion, utxo)
 	require.NoError(err)
@@ -1671,7 +1671,7 @@ func TestSupernetValidatorBLSKeyDiffAfterExpiry(t *testing.T) {
 			Supernet: constants.PrimaryNetworkID,
 		},
 		signer.NewProofOfPossession(sk1),
-		vm.ctx.AVAXAssetID,
+		vm.ctx.JUNEAssetID,
 		&secp256k1fx.OutputOwners{
 			Threshold: 1,
 			Addrs:     []ids.ShortID{addr},
@@ -1798,7 +1798,7 @@ func TestSupernetValidatorBLSKeyDiffAfterExpiry(t *testing.T) {
 			Supernet: constants.PrimaryNetworkID,
 		},
 		signer.NewProofOfPossession(sk2),
-		vm.ctx.AVAXAssetID,
+		vm.ctx.JUNEAssetID,
 		&secp256k1fx.OutputOwners{
 			Threshold: 1,
 			Addrs:     []ids.ShortID{addr},
@@ -1990,7 +1990,7 @@ func TestPrimaryNetworkValidatorPopulatedToEmptyBLSKeyDiff(t *testing.T) {
 			Supernet: constants.PrimaryNetworkID,
 		},
 		signer.NewProofOfPossession(sk2),
-		vm.ctx.AVAXAssetID,
+		vm.ctx.JUNEAssetID,
 		&secp256k1fx.OutputOwners{
 			Threshold: 1,
 			Addrs:     []ids.ShortID{addr},
@@ -2193,7 +2193,7 @@ func TestSupernetValidatorPopulatedToEmptyBLSKeyDiff(t *testing.T) {
 			Supernet: constants.PrimaryNetworkID,
 		},
 		signer.NewProofOfPossession(sk2),
-		vm.ctx.AVAXAssetID,
+		vm.ctx.JUNEAssetID,
 		&secp256k1fx.OutputOwners{
 			Threshold: 1,
 			Addrs:     []ids.ShortID{addr},

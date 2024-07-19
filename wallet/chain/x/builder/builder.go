@@ -209,7 +209,7 @@ func (b *builder) NewBaseTx(
 	options ...common.Option,
 ) (*txs.BaseTx, error) {
 	toBurn := map[ids.ID]uint64{
-		b.context.AVAXAssetID: b.context.BaseTxFee,
+		b.context.JUNEAssetID: b.context.BaseTxFee,
 	}
 	for _, out := range outputs {
 		assetID := out.AssetID()
@@ -246,7 +246,7 @@ func (b *builder) NewCreateAssetTx(
 	options ...common.Option,
 ) (*txs.CreateAssetTx, error) {
 	toBurn := map[ids.ID]uint64{
-		b.context.AVAXAssetID: b.context.CreateAssetTxFee,
+		b.context.JUNEAssetID: b.context.CreateAssetTxFee,
 	}
 	ops := common.NewOptions(options)
 	inputs, outputs, err := b.spend(toBurn, ops)
@@ -288,7 +288,7 @@ func (b *builder) NewOperationTx(
 	options ...common.Option,
 ) (*txs.OperationTx, error) {
 	toBurn := map[ids.ID]uint64{
-		b.context.AVAXAssetID: b.context.BaseTxFee,
+		b.context.JUNEAssetID: b.context.BaseTxFee,
 	}
 	ops := common.NewOptions(options)
 	inputs, outputs, err := b.spend(toBurn, ops)
@@ -375,7 +375,7 @@ func (b *builder) NewImportTx(
 	var (
 		addrs           = ops.Addresses(b.addrs)
 		minIssuanceTime = ops.MinIssuanceTime()
-		avaxAssetID     = b.context.AVAXAssetID
+		juneAssetID     = b.context.JUNEAssetID
 		txFee           = b.context.BaseTxFee
 
 		importedInputs  = make([]*avax.TransferableInput, 0, len(utxos))
@@ -426,14 +426,14 @@ func (b *builder) NewImportTx(
 	var (
 		inputs       []*avax.TransferableInput
 		outputs      = make([]*avax.TransferableOutput, 0, len(importedAmounts))
-		importedAVAX = importedAmounts[avaxAssetID]
+		importedAVAX = importedAmounts[juneAssetID]
 	)
 	if importedAVAX > txFee {
-		importedAmounts[avaxAssetID] -= txFee
+		importedAmounts[juneAssetID] -= txFee
 	} else {
 		if importedAVAX < txFee { // imported amount goes toward paying tx fee
 			toBurn := map[ids.ID]uint64{
-				avaxAssetID: txFee - importedAVAX,
+				juneAssetID: txFee - importedAVAX,
 			}
 			var err error
 			inputs, outputs, err = b.spend(toBurn, ops)
@@ -441,7 +441,7 @@ func (b *builder) NewImportTx(
 				return nil, fmt.Errorf("couldn't generate tx inputs/outputs: %w", err)
 			}
 		}
-		delete(importedAmounts, avaxAssetID)
+		delete(importedAmounts, juneAssetID)
 	}
 
 	for assetID, amount := range importedAmounts {
@@ -476,7 +476,7 @@ func (b *builder) NewExportTx(
 	options ...common.Option,
 ) (*txs.ExportTx, error) {
 	toBurn := map[ids.ID]uint64{
-		b.context.AVAXAssetID: b.context.BaseTxFee,
+		b.context.JUNEAssetID: b.context.BaseTxFee,
 	}
 	for _, out := range outputs {
 		assetID := out.AssetID()
@@ -880,7 +880,7 @@ func (b *builder) initCtx(tx txs.UnsignedTx) error {
 	ctx, err := NewSnowContext(
 		b.context.NetworkID,
 		b.context.BlockchainID,
-		b.context.AVAXAssetID,
+		b.context.JUNEAssetID,
 	)
 	if err != nil {
 		return err

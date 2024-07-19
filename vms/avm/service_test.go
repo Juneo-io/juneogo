@@ -1850,7 +1850,7 @@ func TestServiceGetUTXOs(t *testing.T) {
 			UTXOID: avax.UTXOID{
 				TxID: ids.GenerateTestID(),
 			},
-			Asset: avax.Asset{ID: env.vm.ctx.AVAXAssetID},
+			Asset: avax.Asset{ID: env.vm.ctx.JUNEAssetID},
 			Out: &secp256k1fx.TransferOutput{
 				Amt: 1,
 				OutputOwners: secp256k1fx.OutputOwners{
@@ -1872,7 +1872,7 @@ func TestServiceGetUTXOs(t *testing.T) {
 			UTXOID: avax.UTXOID{
 				TxID: ids.GenerateTestID(),
 			},
-			Asset: avax.Asset{ID: env.vm.ctx.AVAXAssetID},
+			Asset: avax.Asset{ID: env.vm.ctx.JUNEAssetID},
 			Out: &secp256k1fx.TransferOutput{
 				Amt: 1,
 				OutputOwners: secp256k1fx.OutputOwners{
@@ -2099,11 +2099,11 @@ func TestGetAssetDescription(t *testing.T) {
 		env.vm.ctx.Lock.Unlock()
 	}()
 
-	avaxAssetID := env.genesisTx.ID()
+	juneAssetID := env.genesisTx.ID()
 
 	reply := GetAssetDescriptionReply{}
 	require.NoError(env.service.GetAssetDescription(nil, &GetAssetDescriptionArgs{
-		AssetID: avaxAssetID.String(),
+		AssetID: juneAssetID.String(),
 	}, &reply))
 
 	require.Equal("JUNE", reply.Name)
@@ -2124,14 +2124,14 @@ func TestGetBalance(t *testing.T) {
 		env.vm.ctx.Lock.Unlock()
 	}()
 
-	avaxAssetID := env.genesisTx.ID()
+	juneAssetID := env.genesisTx.ID()
 
 	reply := GetBalanceReply{}
 	addrStr, err := env.vm.FormatLocalAddress(keys[0].PublicKey().Address())
 	require.NoError(err)
 	require.NoError(env.service.GetBalance(nil, &GetBalanceArgs{
 		Address: addrStr,
-		AssetID: avaxAssetID.String(),
+		AssetID: juneAssetID.String(),
 	}, &reply))
 
 	require.Equal(startBalance, uint64(reply.Balance))
