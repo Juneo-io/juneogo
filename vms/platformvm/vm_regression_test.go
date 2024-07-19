@@ -33,6 +33,7 @@ import (
 	"github.com/Juneo-io/juneogo/utils/crypto/bls"
 	"github.com/Juneo-io/juneogo/utils/crypto/secp256k1"
 	"github.com/Juneo-io/juneogo/utils/timer/mockable"
+	"github.com/Juneo-io/juneogo/utils/units"
 	"github.com/Juneo-io/juneogo/version"
 	"github.com/Juneo-io/juneogo/vms/components/avax"
 	"github.com/Juneo-io/juneogo/vms/platformvm/block"
@@ -792,7 +793,7 @@ func TestRejectedStateRegressionInvalidValidatorReward(t *testing.T) {
 	vm.ctx.Lock.Lock()
 	defer vm.ctx.Lock.Unlock()
 
-	vm.state.SetCurrentSupply(constants.PrimaryNetworkID, defaultRewardConfig.SupplyCap/2)
+	vm.state.SetCurrentSupply(constants.PrimaryNetworkID, units.MegaAvax)
 
 	newValidatorStartTime0 := vm.clock.Time().Add(executor.SyncBound).Add(1 * time.Second)
 	newValidatorEndTime0 := newValidatorStartTime0.Add(defaultMaxStakingDuration)

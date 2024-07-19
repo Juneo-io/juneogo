@@ -54,6 +54,7 @@ func TestVerifyAddPermissionlessValidatorTx(t *testing.T) {
 			MinStakeDuration:  3,
 			MaxStakeDuration:  4,
 			MinDelegationFee:  5,
+			MaxDelegationFee:  20_000,
 		}
 		transformTx = txs.Tx{
 			Unsigned: unsignedTransformTx,
@@ -251,6 +252,34 @@ func TestVerifyAddPermissionlessValidatorTx(t *testing.T) {
 				return &tx
 			},
 			expectedErr: ErrInsufficientDelegationFee,
+		},
+		{
+			name: "too large delegation fee",
+			backendF: func(*gomock.Controller) *Backend {
+				bootstrapped := &utils.Atomic[bool]{}
+				bootstrapped.Set(true)
+				return &Backend{
+					Ctx:          ctx,
+					Config:       defaultTestConfig(t, durango, activeForkTime),
+					Bootstrapped: bootstrapped,
+				}
+			},
+			stateF: func(ctrl *gomock.Controller) state.Chain {
+				state := state.NewMockChain(ctrl)
+				state.EXPECT().GetTimestamp().Return(now) // chain time is after latest fork activation since now.After(activeForkTime)
+				state.EXPECT().GetSupernetTransformation(supernetID).Return(&transformTx, nil)
+				return state
+			},
+			sTxF: func() *txs.Tx {
+				return &verifiedSignedTx
+			},
+			txF: func() *txs.AddPermissionlessValidatorTx {
+				tx := verifiedTx // Note that this copies [verifiedTx]
+				tx.Validator.Wght = unsignedTransformTx.MaxValidatorStake
+				tx.DelegationShares = unsignedTransformTx.MaxDelegationFee + 1
+				return &tx
+			},
+			expectedErr: ErrTooLargeDelegationFee,
 		},
 		{
 			name: "duration too short",

@@ -35,6 +35,7 @@ func main() {
 	}
 	vmID := xsvm.ID
 	name := "let there"
+	chainAssetID := ids.Empty
 
 	supernetID, err := ids.FromString(supernetIDStr)
 	if err != nil {
@@ -72,6 +73,7 @@ func main() {
 		vmID,
 		nil,
 		name,
+		chainAssetID,
 	)
 	if err != nil {
 		log.Fatalf("failed to issue create chain transaction: %s\n", err)

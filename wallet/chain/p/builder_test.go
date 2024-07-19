@@ -238,6 +238,7 @@ func TestCreateChainTx(t *testing.T) {
 		vmID         = ids.GenerateTestID()
 		fxIDs        = []ids.ID{ids.GenerateTestID()}
 		chainName    = "dummyChain"
+		chainAssetID = ids.Empty
 	)
 
 	// build the transaction
@@ -247,6 +248,7 @@ func TestCreateChainTx(t *testing.T) {
 		vmID,
 		fxIDs,
 		chainName,
+		chainAssetID,
 	)
 	require.NoError(err)
 
@@ -492,23 +494,27 @@ func TestTransformSupernetTx(t *testing.T) {
 		builder  = builder.New(set.Of(utxoAddr, supernetAuthAddr), testContext, backend)
 
 		// data to build the transaction
-		initialSupply = 40 * units.MegaAvax
-		maxSupply     = 100 * units.MegaAvax
+		initialRewardPoolSupply = 40 * units.MegaAvax
 	)
 
 	// build the transaction
 	utx, err := builder.NewTransformSupernetTx(
 		supernetID,
 		supernetAssetID,
-		initialSupply,                 // initial supply
-		maxSupply,                     // max supply
-		reward.PercentDenominator,     // min consumption rate
-		reward.PercentDenominator,     // max consumption rate
+		initialRewardPoolSupply, // initial reward pool supply
+		1_0000, // start reward share
+		uint64(time.Date(2000, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()), // start reward time
+		8000, // diminishing reward share
+		uint64(time.Date(2001, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()), // diminishing reward time
+		6000, // target reward share
+		uint64(time.Date(2002, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()), // target reward time
 		1,                             // min validator stake
 		100*units.MegaAvax,            // max validator stake
 		time.Second,                   // min stake duration
 		365*24*time.Hour,              // max stake duration
+		2_0000,                        // stake period reward share
 		0,                             // min delegation fee
+		0,                             // max delegation fee
 		1,                             // min delegator stake
 		5,                             // max validator weight factor
 		.80*reward.PercentDenominator, // uptime requirement
@@ -521,7 +527,7 @@ func TestTransformSupernetTx(t *testing.T) {
 	require.Len(ins, 2)
 	require.Len(outs, 2)
 
-	expectedConsumedSupernetAsset := maxSupply - initialSupply
+	expectedConsumedSupernetAsset := initialRewardPoolSupply
 	consumedSupernetAsset := ins[0].In.Amount() - outs[1].Out.Amount()
 	require.Equal(expectedConsumedSupernetAsset, consumedSupernetAsset)
 	expectedConsumed := testContext.TransformSupernetTxFee

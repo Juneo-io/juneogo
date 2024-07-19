@@ -191,7 +191,7 @@ func TestBanffProposalBlockJSON(t *testing.T) {
 	"txs": [
 		{
 			"unsignedTx": {
-				"networkID": 1,
+				"networkID": 45,
 				"blockchainID": "11111111111111111111111111111111LpoYY",
 				"outputs": [],
 				"inputs": [],
@@ -202,7 +202,7 @@ func TestBanffProposalBlockJSON(t *testing.T) {
 		},
 		{
 			"unsignedTx": {
-				"networkID": 1,
+				"networkID": 45,
 				"blockchainID": "11111111111111111111111111111111LpoYY",
 				"outputs": [],
 				"inputs": [],

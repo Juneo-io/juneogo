@@ -223,6 +223,7 @@ func TestGetTx(t *testing.T) {
 					constants.AVMID,
 					[]ids.ID{},
 					"chain name",
+					ids.Empty,
 					[]*secp256k1.PrivateKey{testSupernet1ControlKeys[0], testSupernet1ControlKeys[1]},
 					common.WithChangeOwner(&secp256k1fx.OutputOwners{
 						Threshold: 1,
@@ -758,6 +759,7 @@ func TestGetBlock(t *testing.T) {
 				constants.AVMID,
 				[]ids.ID{},
 				"chain name",
+				ids.Empty,
 				[]*secp256k1.PrivateKey{testSupernet1ControlKeys[0], testSupernet1ControlKeys[1]},
 				common.WithChangeOwner(&secp256k1fx.OutputOwners{
 					Threshold: 1,

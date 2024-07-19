@@ -237,6 +237,7 @@ func TestBlockVerify(t *testing.T) {
 				mockParentState := state.NewMockDiff(ctrl)
 				mockParentState.EXPECT().GetLastAccepted().Return(parentID)
 				mockParentState.EXPECT().GetTimestamp().Return(blockTimestamp.Add(1))
+				mockParentState.EXPECT().GetFeePoolValue().Return(uint64(0))
 
 				return &Block{
 					Block: mockBlock,
@@ -283,6 +284,7 @@ func TestBlockVerify(t *testing.T) {
 				mockParentState := state.NewMockDiff(ctrl)
 				mockParentState.EXPECT().GetLastAccepted().Return(parentID)
 				mockParentState.EXPECT().GetTimestamp().Return(blockTimestamp)
+				mockParentState.EXPECT().GetFeePoolValue().Return(uint64(0))
 
 				mempool := mempool.NewMockMempool(ctrl)
 				mempool.EXPECT().MarkDropped(tx.ID(), errTest).Times(1)
@@ -334,6 +336,8 @@ func TestBlockVerify(t *testing.T) {
 				mockParentState := state.NewMockDiff(ctrl)
 				mockParentState.EXPECT().GetLastAccepted().Return(parentID)
 				mockParentState.EXPECT().GetTimestamp().Return(blockTimestamp)
+				mockParentState.EXPECT().GetFeePoolValue().Return(uint64(0))
+				mockUnsignedTx.EXPECT().ConsumedValue(ids.Empty).Return(uint64(0))
 
 				mempool := mempool.NewMockMempool(ctrl)
 				mempool.EXPECT().MarkDropped(tx.ID(), errTest).Times(1)
@@ -412,6 +416,9 @@ func TestBlockVerify(t *testing.T) {
 				mockParentState := state.NewMockDiff(ctrl)
 				mockParentState.EXPECT().GetLastAccepted().Return(parentID)
 				mockParentState.EXPECT().GetTimestamp().Return(blockTimestamp)
+				mockParentState.EXPECT().GetFeePoolValue().Return(uint64(0))
+				mockUnsignedTx1.EXPECT().ConsumedValue(ids.Empty).Return(uint64(0))
+				mockUnsignedTx2.EXPECT().ConsumedValue(ids.Empty).Return(uint64(0))
 
 				mempool := mempool.NewMockMempool(ctrl)
 				mempool.EXPECT().MarkDropped(tx2.ID(), ErrConflictingBlockTxs).Times(1)
@@ -474,6 +481,8 @@ func TestBlockVerify(t *testing.T) {
 				mockParentState := state.NewMockDiff(ctrl)
 				mockParentState.EXPECT().GetLastAccepted().Return(parentID)
 				mockParentState.EXPECT().GetTimestamp().Return(blockTimestamp)
+				mockParentState.EXPECT().GetFeePoolValue().Return(uint64(0))
+				mockUnsignedTx.EXPECT().ConsumedValue(ids.Empty).Return(uint64(0))
 
 				return &Block{
 					Block: mockBlock,
@@ -522,6 +531,8 @@ func TestBlockVerify(t *testing.T) {
 				mockParentState := state.NewMockDiff(ctrl)
 				mockParentState.EXPECT().GetLastAccepted().Return(parentID)
 				mockParentState.EXPECT().GetTimestamp().Return(blockTimestamp)
+				mockParentState.EXPECT().GetFeePoolValue().Return(uint64(0))
+				mockUnsignedTx.EXPECT().ConsumedValue(ids.Empty).Return(uint64(0))
 
 				mockMempool := mempool.NewMockMempool(ctrl)
 				mockMempool.EXPECT().Remove([]*txs.Tx{tx})
@@ -850,6 +861,7 @@ func TestBlockReject(t *testing.T) {
 				mockState := state.NewMockState(ctrl)
 				mockState.EXPECT().GetLastAccepted().Return(lastAcceptedID).AnyTimes()
 				mockState.EXPECT().GetTimestamp().Return(time.Now()).AnyTimes()
+				mockState.EXPECT().GetFeePoolValue().Return(uint64(0)).AnyTimes()
 
 				return &Block{
 					Block: mockBlock,
@@ -903,6 +915,7 @@ func TestBlockReject(t *testing.T) {
 				mockState := state.NewMockState(ctrl)
 				mockState.EXPECT().GetLastAccepted().Return(lastAcceptedID).AnyTimes()
 				mockState.EXPECT().GetTimestamp().Return(time.Now()).AnyTimes()
+				mockState.EXPECT().GetFeePoolValue().Return(uint64(0)).AnyTimes()
 
 				return &Block{
 					Block: mockBlock,

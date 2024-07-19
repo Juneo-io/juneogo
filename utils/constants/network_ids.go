@@ -25,6 +25,7 @@ const (
 	MainnetName  = "mainnet"
 	SocotraName  = "socotra"
 	TestnetName  = "testnet"
+	FujiName     = "fuji"
 	UnitTestName = "testing"
 	LocalName    = "local"
 

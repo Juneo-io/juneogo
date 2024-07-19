@@ -1134,6 +1134,7 @@ func TestDurangoMemoField(t *testing.T) {
 					ids.GenerateTestID(), // vmID
 					[]ids.ID{},           // fxIDs
 					"aaa",                // chain name
+					ids.Empty,
 					preFundedKeys,
 					common.WithMemo(memoField),
 				)
@@ -1289,15 +1290,20 @@ func TestDurangoMemoField(t *testing.T) {
 				tx, err := env.txBuilder.NewTransformSupernetTx(
 					testSupernet1.TxID,          // supernetID
 					ids.GenerateTestID(),      // assetID
-					10,                        // initial supply
-					10,                        // max supply
-					0,                         // min consumption rate
-					reward.PercentDenominator, // max consumption rate
+					0, // initial reward pool supply
+					1_0000, // start reward share
+					uint64(time.Date(2000, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()), // start reward time
+					8000, // diminishing reward share
+					uint64(time.Date(2001, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()), // diminishing reward time
+					6000, // target reward share
+					uint64(time.Date(2002, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()), // target reward time
 					2,                         // min validator stake
 					10,                        // max validator stake
 					time.Minute,               // min stake duration
 					time.Hour,                 // max stake duration
+					2_0000,                    // stake period reward share
 					1,                         // min delegation fees
+					1,                         // max delegation fees
 					10,                        // min delegator stake
 					1,                         // max validator weight factor
 					80,                        // uptime requirement
@@ -1852,15 +1858,20 @@ func newTransformSupernetTx(t *testing.T) (*txs.TransformSupernetTx, *txs.Tx) {
 		},
 		Supernet:                   ids.GenerateTestID(),
 		AssetID:                  ids.GenerateTestID(),
-		InitialSupply:            10,
-		MaximumSupply:            10,
-		MinConsumptionRate:       0,
-		MaxConsumptionRate:       reward.PercentDenominator,
+		InitialRewardPoolSupply:  0,
+		StartRewardShare:         1_0000,
+		StartRewardTime:          uint64(time.Date(2000, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()),
+		DiminishingRewardShare:   8000,
+		DiminishingRewardTime:    uint64(time.Date(2001, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()),
+		TargetRewardShare:        6000,
+		TargetRewardTime:         uint64(time.Date(2002, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()),
 		MinValidatorStake:        2,
 		MaxValidatorStake:        10,
 		MinStakeDuration:         1,
 		MaxStakeDuration:         2,
+		StakePeriodRewardShare:   2_0000,
 		MinDelegationFee:         reward.PercentDenominator,
+		MaxDelegationFee:         reward.PercentDenominator,
 		MinDelegatorStake:        1,
 		MaxValidatorWeightFactor: 1,
 		UptimeRequirement:        reward.PercentDenominator,
@@ -2042,7 +2053,8 @@ func TestStandardExecutorTransformSupernetTx(t *testing.T) {
 					env.unsignedTx, env.state, env.unsignedTx.Ins, env.unsignedTx.Outs, env.tx.Creds[:len(env.tx.Creds)-1], gomock.Any(),
 				).Return(nil).Times(1)
 				env.state.EXPECT().AddSupernetTransformation(env.tx)
-				env.state.EXPECT().SetCurrentSupply(env.unsignedTx.Supernet, env.unsignedTx.InitialSupply)
+				env.state.EXPECT().SetCurrentSupply(env.unsignedTx.Supernet, uint64(0))
+				env.state.EXPECT().SetRewardPoolSupply(env.unsignedTx.Supernet, env.unsignedTx.InitialRewardPoolSupply)
 				env.state.EXPECT().DeleteUTXO(gomock.Any()).Times(len(env.unsignedTx.Ins))
 				env.state.EXPECT().AddUTXO(gomock.Any()).Times(len(env.unsignedTx.Outs))
 

@@ -785,10 +785,13 @@ func newStateFromDB(require *require.Assertions, db database.Database) *state {
 		&snow.Context{},
 		prometheus.NewRegistry(),
 		reward.NewCalculator(reward.Config{
-			MaxConsumptionRate: .12 * reward.PercentDenominator,
-			MinConsumptionRate: .1 * reward.PercentDenominator,
-			MintingPeriod:      365 * 24 * time.Hour,
-			SupplyCap:          720 * units.MegaAvax,
+			StakePeriodRewardShare: 2_0000,
+			StartRewardShare:       12_0000,
+			StartRewardTime:        uint64(time.Date(2024, time.April, 1, 0, 0, 0, 0, time.UTC).Unix()),
+			DiminishingRewardShare: 8_0000,
+			DiminishingRewardTime:  uint64(time.Date(2029, time.April, 1, 0, 0, 0, 0, time.UTC).Unix()),
+			TargetRewardShare:      6_0000,
+			TargetRewardTime:       uint64(time.Date(2030, time.April, 1, 0, 0, 0, 0, time.UTC).Unix()),
 		}),
 	)
 	require.NoError(err)

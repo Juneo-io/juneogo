@@ -40,6 +40,7 @@ func TestVerifierVisitProposalBlock(t *testing.T) {
 	timestamp := time.Now()
 	// One call for each of onCommitState and onAbortState.
 	parentOnAcceptState.EXPECT().GetTimestamp().Return(timestamp).Times(2)
+	parentOnAcceptState.EXPECT().GetFeePoolValue().Return(uint64(0)).Times(2)
 
 	backend := &backend{
 		lastAccepted: parentID,
@@ -92,6 +93,7 @@ func TestVerifierVisitProposalBlock(t *testing.T) {
 	tx := apricotBlk.Txs()[0]
 	parentStatelessBlk.EXPECT().Height().Return(uint64(1)).Times(1)
 	mempool.EXPECT().Remove([]*txs.Tx{tx}).Times(1)
+	blkTx.EXPECT().ConsumedValue(ids.Empty).Return(uint64(0)).Times(1)
 
 	// Visit the block
 	blk := manager.NewBlock(apricotBlk)
@@ -187,6 +189,9 @@ func TestVerifierVisitAtomicBlock(t *testing.T) {
 	mempool.EXPECT().Remove([]*txs.Tx{apricotBlk.Tx}).Times(1)
 	onAccept.EXPECT().AddTx(apricotBlk.Tx, status.Committed).Times(1)
 	onAccept.EXPECT().GetTimestamp().Return(timestamp).Times(1)
+	onAccept.EXPECT().GetFeePoolValue().Return(uint64(0)).Times(1)
+	blkTx.EXPECT().ConsumedValue(ids.Empty).Return(uint64(0)).Times(1)
+	onAccept.EXPECT().SetFeePoolValue(uint64(0)).Times(1)
 
 	blk := manager.NewBlock(apricotBlk)
 	require.NoError(blk.Verify(context.Background()))
@@ -284,7 +289,9 @@ func TestVerifierVisitStandardBlock(t *testing.T) {
 	// Set expectations for dependencies.
 	timestamp := time.Now()
 	parentState.EXPECT().GetTimestamp().Return(timestamp).Times(1)
+	parentState.EXPECT().GetFeePoolValue().Return(uint64(0)).Times(1)
 	parentStatelessBlk.EXPECT().Height().Return(uint64(1)).Times(1)
+	blkTx.EXPECT().ConsumedValue(ids.Empty).Return(uint64(0)).Times(1)
 	mempool.EXPECT().Remove(apricotBlk.Txs()).Times(1)
 
 	blk := manager.NewBlock(apricotBlk)
@@ -552,6 +559,7 @@ func TestBanffAbortBlockTimestampChecks(t *testing.T) {
 			parentTime := defaultGenesisTime
 			s.EXPECT().GetLastAccepted().Return(parentID).Times(3)
 			s.EXPECT().GetTimestamp().Return(parentTime).Times(3)
+			s.EXPECT().GetFeePoolValue().Return(uint64(0)).Times(3)
 
 			onDecisionState, err := state.NewDiff(parentID, backend)
 			require.NoError(err)
@@ -648,6 +656,7 @@ func TestBanffCommitBlockTimestampChecks(t *testing.T) {
 			parentTime := defaultGenesisTime
 			s.EXPECT().GetLastAccepted().Return(parentID).Times(3)
 			s.EXPECT().GetTimestamp().Return(parentTime).Times(3)
+			s.EXPECT().GetFeePoolValue().Return(uint64(0)).Times(3)
 
 			onDecisionState, err := state.NewDiff(parentID, backend)
 			require.NoError(err)
@@ -763,6 +772,8 @@ func TestVerifierVisitStandardBlockWithDuplicateInputs(t *testing.T) {
 	timestamp := time.Now()
 	parentStatelessBlk.EXPECT().Height().Return(uint64(1)).Times(1)
 	parentState.EXPECT().GetTimestamp().Return(timestamp).Times(1)
+	parentState.EXPECT().GetFeePoolValue().Return(uint64(0)).Times(1)
+	blkTx.EXPECT().ConsumedValue(ids.Empty).Return(uint64(0)).Times(1)
 	parentStatelessBlk.EXPECT().Parent().Return(grandParentID).Times(1)
 
 	err = verifier.ApricotStandardBlock(blk)

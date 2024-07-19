@@ -162,6 +162,7 @@ func TestManagerVerifyTx(t *testing.T) {
 				state := state.NewMockState(ctrl)
 				state.EXPECT().GetLastAccepted().Return(lastAcceptedID)
 				state.EXPECT().GetTimestamp().Return(time.Time{})
+				state.EXPECT().GetFeePoolValue().Return(uint64(0))
 
 				return &manager{
 					backend:      defaultTestBackend(true, nil),
@@ -192,6 +193,7 @@ func TestManagerVerifyTx(t *testing.T) {
 				state := state.NewMockState(ctrl)
 				state.EXPECT().GetLastAccepted().Return(lastAcceptedID)
 				state.EXPECT().GetTimestamp().Return(time.Time{})
+				state.EXPECT().GetFeePoolValue().Return(uint64(0))
 
 				return &manager{
 					backend:      defaultTestBackend(true, nil),
@@ -222,6 +224,7 @@ func TestManagerVerifyTx(t *testing.T) {
 				state := state.NewMockState(ctrl)
 				state.EXPECT().GetLastAccepted().Return(lastAcceptedID)
 				state.EXPECT().GetTimestamp().Return(time.Time{})
+				state.EXPECT().GetFeePoolValue().Return(uint64(0))
 
 				return &manager{
 					backend:      defaultTestBackend(true, nil),

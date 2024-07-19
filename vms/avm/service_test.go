@@ -61,7 +61,7 @@ func TestServiceIssueTx(t *testing.T) {
 	err := env.service.IssueTx(nil, txArgs, txReply)
 	require.ErrorIs(err, codec.ErrCantUnpackVersion)
 
-	tx := newTx(t, env.genesisBytes, env.vm.ctx.ChainID, env.vm.parser, "AVAX")
+	tx := newTx(t, env.genesisBytes, env.vm.ctx.ChainID, env.vm.parser, "JUNE")
 	txArgs.Tx, err = formatting.Encode(formatting.Hex, tx.Bytes())
 	require.NoError(err)
 	txArgs.Encoding = formatting.Hex
@@ -1553,7 +1553,7 @@ func TestServiceGetTxJSON_OperationTxWithPropertyFxMintOpMultiple(t *testing.T) 
 }
 
 func newAvaxBaseTxWithOutputs(t *testing.T, genesisBytes []byte, chainID ids.ID, fee uint64, parser txs.Parser) *txs.Tx {
-	avaxTx := getCreateTxFromGenesisTest(t, genesisBytes, "AVAX")
+	avaxTx := getCreateTxFromGenesisTest(t, genesisBytes, "JUNE")
 	key := keys[0]
 	tx := buildBaseTx(avaxTx, chainID, fee, key)
 	require.NoError(t, tx.SignSECP256K1Fx(parser.Codec(), [][]*secp256k1.PrivateKey{{key}}))
@@ -1561,7 +1561,7 @@ func newAvaxBaseTxWithOutputs(t *testing.T, genesisBytes []byte, chainID ids.ID,
 }
 
 func newAvaxExportTxWithOutputs(t *testing.T, genesisBytes []byte, chainID ids.ID, fee uint64, parser txs.Parser) *txs.Tx {
-	avaxTx := getCreateTxFromGenesisTest(t, genesisBytes, "AVAX")
+	avaxTx := getCreateTxFromGenesisTest(t, genesisBytes, "JUNE")
 	key := keys[0]
 	tx := buildExportTx(avaxTx, chainID, fee, key)
 	require.NoError(t, tx.SignSECP256K1Fx(parser.Codec(), [][]*secp256k1.PrivateKey{{key}}))
@@ -2106,7 +2106,7 @@ func TestGetAssetDescription(t *testing.T) {
 		AssetID: avaxAssetID.String(),
 	}, &reply))
 
-	require.Equal("AVAX", reply.Name)
+	require.Equal("JUNE", reply.Name)
 	require.Equal("SYMB", reply.Symbol)
 }
 

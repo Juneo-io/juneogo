@@ -5,7 +5,6 @@ package reward
 
 import (
 	"fmt"
-	"math"
 	"testing"
 	"time"
 
@@ -22,10 +21,15 @@ const (
 )
 
 var defaultConfig = Config{
-	MaxConsumptionRate: .12 * PercentDenominator,
-	MinConsumptionRate: .10 * PercentDenominator,
-	MintingPeriod:      365 * 24 * time.Hour,
-	SupplyCap:          720 * units.MegaAvax,
+	MinStakePeriod:         defaultMinStakingDuration,
+	MaxStakePeriod:         defaultMaxStakingDuration,
+	StakePeriodRewardShare: 2_0000,
+	StartRewardShare:       12_0000,
+	StartRewardTime:        uint64(time.Date(2024, time.April, 1, 0, 0, 0, 0, time.UTC).Unix()),
+	DiminishingRewardShare: 8_0000,
+	DiminishingRewardTime:  uint64(time.Date(2029, time.April, 1, 0, 0, 0, 0, time.UTC).Unix()),
+	TargetRewardShare:      6_0000,
+	TargetRewardTime:       uint64(time.Date(2030, time.April, 1, 0, 0, 0, 0, time.UTC).Unix()),
 }
 
 func TestLongerDurationBonus(t *testing.T) {
@@ -33,142 +37,157 @@ func TestLongerDurationBonus(t *testing.T) {
 	shortDuration := 24 * time.Hour
 	totalDuration := 365 * 24 * time.Hour
 	shortBalance := units.KiloAvax
+	currentTime := time.Now()
 	for i := 0; i < int(totalDuration/shortDuration); i++ {
-		r := c.Calculate(shortDuration, shortBalance, 359*units.MegaAvax+shortBalance)
+		r := c.Calculate(shortDuration, currentTime, shortBalance)
 		shortBalance += r
 	}
-	reward := c.Calculate(totalDuration%shortDuration, shortBalance, 359*units.MegaAvax+shortBalance)
+	reward := c.Calculate(totalDuration%shortDuration, currentTime, shortBalance)
 	shortBalance += reward
 
 	longBalance := units.KiloAvax
-	longBalance += c.Calculate(totalDuration, longBalance, 359*units.MegaAvax+longBalance)
+	longBalance += c.Calculate(totalDuration, currentTime, longBalance)
 	require.Less(t, shortBalance, longBalance, "should promote stakers to stake longer")
 }
 
 func TestRewards(t *testing.T) {
 	c := NewCalculator(defaultConfig)
+	startRewardTime := time.Unix(int64(defaultConfig.StartRewardTime), 0)
+	diminishingRewardTime := time.Unix(int64(defaultConfig.DiminishingRewardTime), 0)
+	targetRewardTime := time.Unix(int64(defaultConfig.TargetRewardTime), 0)
 	tests := []struct {
 		duration       time.Duration
+		currentTime    time.Time
 		stakeAmount    uint64
-		existingAmount uint64
 		expectedReward uint64
 	}{
 		// Max duration:
-		{ // (720M - 360M) * (1M / 360M) * 12%
+		{ // One day before start reward time
 			duration:       defaultMaxStakingDuration,
+			currentTime:    startRewardTime.Add(time.Hour * -24),
 			stakeAmount:    units.MegaAvax,
-			existingAmount: 360 * units.MegaAvax,
-			expectedReward: 120 * units.KiloAvax,
+			expectedReward: 140 * units.KiloAvax,
 		},
-		{ // (720M - 400M) * (1M / 400M) * 12%
+		{ // At start reward time
 			duration:       defaultMaxStakingDuration,
+			currentTime:    startRewardTime,
 			stakeAmount:    units.MegaAvax,
-			existingAmount: 400 * units.MegaAvax,
-			expectedReward: 96 * units.KiloAvax,
+			expectedReward: 140 * units.KiloAvax,
 		},
-		{ // (720M - 400M) * (2M / 400M) * 12%
+		{ // One day after start reward time
 			duration:       defaultMaxStakingDuration,
-			stakeAmount:    2 * units.MegaAvax,
-			existingAmount: 400 * units.MegaAvax,
-			expectedReward: 192 * units.KiloAvax,
-		},
-		{ // (720M - 720M) * (1M / 720M) * 12%
-			duration:       defaultMaxStakingDuration,
+			currentTime:    startRewardTime.Add(time.Hour * 24),
 			stakeAmount:    units.MegaAvax,
-			existingAmount: defaultConfig.SupplyCap,
-			expectedReward: 0,
+			expectedReward: 139978 * units.Avax,
+		},
+		{ // One day before diminishing reward time
+			duration:       defaultMaxStakingDuration,
+			currentTime:    diminishingRewardTime.Add(time.Hour * -24),
+			stakeAmount:    units.MegaAvax,
+			expectedReward: 100021 * units.Avax,
+		},
+		{ // At diminishing reward time
+			duration:       defaultMaxStakingDuration,
+			currentTime:    diminishingRewardTime,
+			stakeAmount:    units.MegaAvax,
+			expectedReward: 100 * units.KiloAvax,
+		},
+		{ // One day after diminishing reward time
+			duration:       defaultMaxStakingDuration,
+			currentTime:    diminishingRewardTime.Add(time.Hour * 24),
+			stakeAmount:    units.MegaAvax,
+			expectedReward: 99945 * units.Avax,
+		},
+		{ // One day before target reward time
+			duration:       defaultMaxStakingDuration,
+			currentTime:    targetRewardTime.Add(time.Hour * -24),
+			stakeAmount:    units.MegaAvax,
+			expectedReward: 80054 * units.Avax,
+		},
+		{ // At target reward time
+			duration:       defaultMaxStakingDuration,
+			currentTime:    targetRewardTime,
+			stakeAmount:    units.MegaAvax,
+			expectedReward: 80 * units.KiloAvax,
+		},
+		{ // One day after target reward time
+			duration:       defaultMaxStakingDuration,
+			currentTime:    targetRewardTime.Add(time.Hour * 24),
+			stakeAmount:    units.MegaAvax,
+			expectedReward: 80 * units.KiloAvax,
 		},
 		// Min duration:
-		// (720M - 360M) * (1M / 360M) * (10% + 2% * MinimumStakingDuration / MaximumStakingDuration) * MinimumStakingDuration / MaximumStakingDuration
-		{
+		{ // Four weeks before start reward time
 			duration:       defaultMinStakingDuration,
+			currentTime:    startRewardTime.Add(time.Hour * -24 * 7 * 4),
 			stakeAmount:    units.MegaAvax,
-			existingAmount: 360 * units.MegaAvax,
-			expectedReward: 274122724713,
+			expectedReward: 328 * units.Avax,
 		},
-		// (720M - 360M) * (.005 / 360M) * (10% + 2% * MinimumStakingDuration / MaximumStakingDuration) * MinimumStakingDuration / MaximumStakingDuration
-		{
+		{ // At start reward time
 			duration:       defaultMinStakingDuration,
-			stakeAmount:    defaultMinValidatorStake,
-			existingAmount: 360 * units.MegaAvax,
-			expectedReward: 1370,
-		},
-		// (720M - 400M) * (1M / 400M) * (10% + 2% * MinimumStakingDuration / MaximumStakingDuration) * MinimumStakingDuration / MaximumStakingDuration
-		{
-			duration:       defaultMinStakingDuration,
+			currentTime:    startRewardTime,
 			stakeAmount:    units.MegaAvax,
-			existingAmount: 400 * units.MegaAvax,
-			expectedReward: 219298179771,
+			expectedReward: 328 * units.Avax,
 		},
-		// (720M - 400M) * (2M / 400M) * (10% + 2% * MinimumStakingDuration / MaximumStakingDuration) * MinimumStakingDuration / MaximumStakingDuration
-		{
+		{ // Four weeks after start reward time
 			duration:       defaultMinStakingDuration,
-			stakeAmount:    2 * units.MegaAvax,
-			existingAmount: 400 * units.MegaAvax,
-			expectedReward: 438596359542,
-		},
-		// (720M - 720M) * (1M / 720M) * (10% + 2% * MinimumStakingDuration / MaximumStakingDuration) * MinimumStakingDuration / MaximumStakingDuration
-		{
-			duration:       defaultMinStakingDuration,
+			currentTime:    startRewardTime.Add(time.Hour * 24 * 7 * 4),
 			stakeAmount:    units.MegaAvax,
-			existingAmount: defaultConfig.SupplyCap,
-			expectedReward: 0,
+			expectedReward: 326 * units.Avax,
+		},
+		{ // Four weeks before diminishing reward time
+			duration:       defaultMinStakingDuration,
+			currentTime:    diminishingRewardTime.Add(time.Hour * -24 * 7 * 4),
+			stakeAmount:    units.MegaAvax,
+			expectedReward: 220 * units.Avax,
+		},
+		{ // At diminishing reward time
+			duration:       defaultMinStakingDuration,
+			currentTime:    diminishingRewardTime,
+			stakeAmount:    units.MegaAvax,
+			expectedReward: 219 * units.Avax,
+		},
+		{ // Four weeks after diminishing reward time
+			duration:       defaultMinStakingDuration,
+			currentTime:    diminishingRewardTime.Add(time.Hour * 24 * 7 * 4),
+			stakeAmount:    units.MegaAvax,
+			expectedReward: 214 * units.Avax,
+		},
+		{ // Four weeks before target reward time
+			duration:       defaultMinStakingDuration,
+			currentTime:    targetRewardTime.Add(time.Hour * -24 * 7 * 4),
+			stakeAmount:    units.MegaAvax,
+			expectedReward: 168 * units.Avax,
+		},
+		{ // At target reward time
+			duration:       defaultMinStakingDuration,
+			currentTime:    targetRewardTime,
+			stakeAmount:    units.MegaAvax,
+			expectedReward: 164 * units.Avax,
+		},
+		{ // Four weeks after target reward time
+			duration:       defaultMinStakingDuration,
+			currentTime:    targetRewardTime.Add(time.Hour * 24 * 7 * 4),
+			stakeAmount:    units.MegaAvax,
+			expectedReward: 164 * units.Avax,
 		},
 	}
 	for _, test := range tests {
-		name := fmt.Sprintf("reward(%s,%d,%d)==%d",
+		name := fmt.Sprintf("reward(%s,%s,%d)==%d",
 			test.duration,
+			test.currentTime,
 			test.stakeAmount,
-			test.existingAmount,
 			test.expectedReward,
 		)
 		t.Run(name, func(t *testing.T) {
 			reward := c.Calculate(
 				test.duration,
+				test.currentTime,
 				test.stakeAmount,
-				test.existingAmount,
 			)
 			require.Equal(t, test.expectedReward, reward)
 		})
 	}
-}
-
-func TestRewardsOverflow(t *testing.T) {
-	var (
-		maxSupply     uint64 = math.MaxUint64
-		initialSupply uint64 = 1
-	)
-	c := NewCalculator(Config{
-		MaxConsumptionRate: PercentDenominator,
-		MinConsumptionRate: PercentDenominator,
-		MintingPeriod:      defaultMinStakingDuration,
-		SupplyCap:          maxSupply,
-	})
-	reward := c.Calculate(
-		defaultMinStakingDuration,
-		maxSupply, // The staked amount is larger than the current supply
-		initialSupply,
-	)
-	require.Equal(t, maxSupply-initialSupply, reward)
-}
-
-func TestRewardsMint(t *testing.T) {
-	var (
-		maxSupply     uint64 = 1000
-		initialSupply uint64 = 1
-	)
-	c := NewCalculator(Config{
-		MaxConsumptionRate: PercentDenominator,
-		MinConsumptionRate: PercentDenominator,
-		MintingPeriod:      defaultMinStakingDuration,
-		SupplyCap:          maxSupply,
-	})
-	rewards := c.Calculate(
-		defaultMinStakingDuration,
-		maxSupply, // The staked amount is larger than the current supply
-		initialSupply,
-	)
-	require.Equal(t, maxSupply-initialSupply, rewards)
 }
 
 func TestSplit(t *testing.T) {

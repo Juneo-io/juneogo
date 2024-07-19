@@ -130,7 +130,7 @@ func TestRewardValidatorTxExecuteOnCommit(t *testing.T) {
 
 	onCommitBalance, err := avax.GetBalance(env.state, stakeOwners)
 	require.NoError(err)
-	require.Equal(oldBalance+stakerToRemove.Weight+27697, onCommitBalance)
+	require.Equal(oldBalance+stakerToRemove.Weight+33160, onCommitBalance)
 }
 
 func TestRewardValidatorTxExecuteOnAbort(t *testing.T) {
@@ -752,7 +752,7 @@ func TestRewardDelegatorTxExecuteOnAbort(t *testing.T) {
 	env := newEnvironment(t, apricotPhase5)
 	dummyHeight := uint64(1)
 
-	initialSupply, err := env.state.GetCurrentSupply(constants.PrimaryNetworkID)
+	initialRewardPoolSupply, err := env.state.GetRewardPoolSupply(constants.PrimaryNetworkID)
 	require.NoError(err)
 
 	vdrRewardAddress := ids.GenerateTestShortID()
@@ -866,7 +866,7 @@ func TestRewardDelegatorTxExecuteOnAbort(t *testing.T) {
 	require.NoError(err)
 	require.Zero(delReward, "expected delegator balance not to increase")
 
-	newSupply, err := env.state.GetCurrentSupply(constants.PrimaryNetworkID)
+	newRewardPoolSupply, err := env.state.GetRewardPoolSupply(constants.PrimaryNetworkID)
 	require.NoError(err)
-	require.Equal(initialSupply-expectedReward, newSupply, "should have removed un-rewarded tokens from the potential supply")
+	require.Equal(initialRewardPoolSupply+expectedReward, newRewardPoolSupply, "should have added un-rewarded tokens to the reward pool supply")
 }
