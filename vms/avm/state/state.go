@@ -441,10 +441,9 @@ func (s *state) write() error {
 		s.writeBlockIDs(),
 		s.writeBlocks(),
 	)
-	lastAcceptedBlock := s.addedBlocks[s.persistedLastAccepted]
 	var metadataErr error
 	// force update at genesis height
-	if lastAcceptedBlock == nil {
+	if len(s.addedBlocks) == 1 {
 		metadataErr = s.forceWriteMetadata()
 	} else {
 		metadataErr = s.writeMetadata()
