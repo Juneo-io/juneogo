@@ -82,10 +82,28 @@ func (s Staker) Unparse(networkID uint32) (UnparsedStaker, error) {
 	}, err
 }
 
+type EVMChainGenesis struct {
+	ChainName string `json:"chainName"`
+	AssetName string `json:"assetName"`
+	AssetSymbol string `json:"assetSymbol"`
+	Genesis string `json:"genesis"`
+}
+
+func (g EVMChainGenesis) Unparse() (UnparsedEVMChainGenesis, error) {
+	return UnparsedEVMChainGenesis{
+		ChainName: g.ChainName,
+		AssetName: g.AssetName,
+		AssetSymbol: g.AssetSymbol,
+		Genesis: g.Genesis,
+	}, nil
+}
+
 // Config contains the genesis addresses used to construct a genesis
 type Config struct {
 	NetworkID        uint32 `json:"networkID"`
 	RewardPoolSupply uint64 `json:"rewardPoolSupply"`
+	AssetName        string `json:"assetName"`
+	AssetSymbol      string `json:"assetSymbol"`
 
 	Allocations []Allocation `json:"allocations"`
 
@@ -95,18 +113,7 @@ type Config struct {
 	InitialStakedFunds         []ids.ShortID `json:"initialStakedFunds"`
 	InitialStakers             []Staker      `json:"initialStakers"`
 
-	JUNEChainGenesis  string `json:"JUNEChainGenesis"`
-	USDT1ChainGenesis string `json:"USDT1ChainGenesis"`
-	USD1ChainGenesis  string `json:"USD1ChainGenesis"`
-	DAI1ChainGenesis  string `json:"DAI1ChainGenesis"`
-	EUR1ChainGenesis  string `json:"EUR1ChainGenesis"`
-	SGD1ChainGenesis  string `json:"SGD1ChainGenesis"`
-	GLD1ChainGenesis  string `json:"GLD1ChainGenesis"`
-	MBTC1ChainGenesis string `json:"MBTC1ChainGenesis"`
-	DOGE1ChainGenesis string `json:"DOGE1ChainGenesis"`
-	LTC1ChainGenesis  string `json:"LTC1ChainGenesis"`
-	BCH1ChainGenesis  string `json:"BCH1ChainGenesis"`
-	LINK1ChainGenesis string `json:"LINK1ChainGenesis"`
+	EVMChains []EVMChainGenesis `json:"evmChainsGenesis"`
 
 	Message string `json:"message"`
 }
@@ -115,24 +122,15 @@ func (c Config) Unparse() (UnparsedConfig, error) {
 	uc := UnparsedConfig{
 		NetworkID:                  c.NetworkID,
 		RewardPoolSupply:           c.RewardPoolSupply,
+		AssetName:                  c.AssetName,
+		AssetSymbol:                c.AssetSymbol,
 		Allocations:                make([]UnparsedAllocation, len(c.Allocations)),
 		StartTime:                  c.StartTime,
 		InitialStakeDuration:       c.InitialStakeDuration,
 		InitialStakeDurationOffset: c.InitialStakeDurationOffset,
 		InitialStakedFunds:         make([]string, len(c.InitialStakedFunds)),
 		InitialStakers:             make([]UnparsedStaker, len(c.InitialStakers)),
-		JUNEChainGenesis:           c.JUNEChainGenesis,
-		USDT1ChainGenesis:          c.USDT1ChainGenesis,
-		USD1ChainGenesis:           c.USD1ChainGenesis,
-		DAI1ChainGenesis:           c.DAI1ChainGenesis,
-		EUR1ChainGenesis:           c.EUR1ChainGenesis,
-		SGD1ChainGenesis:           c.SGD1ChainGenesis,
-		GLD1ChainGenesis:           c.GLD1ChainGenesis,
-		MBTC1ChainGenesis:          c.MBTC1ChainGenesis,
-		DOGE1ChainGenesis:          c.DOGE1ChainGenesis,
-		LTC1ChainGenesis:           c.LTC1ChainGenesis,
-		BCH1ChainGenesis:           c.BCH1ChainGenesis,
-		LINK1ChainGenesis:          c.LINK1ChainGenesis,
+		EVMChains:                  make([]UnparsedEVMChainGenesis, len(c.EVMChains)),
 		Message:                    c.Message,
 	}
 	for i, a := range c.Allocations {
@@ -159,6 +157,13 @@ func (c Config) Unparse() (UnparsedConfig, error) {
 			return uc, err
 		}
 		uc.InitialStakers[i] = uis
+	}
+	for i, ec := range c.EVMChains {
+		uec, err := ec.Unparse()
+		if err != nil {
+			return uc, err
+		}
+		uc.EVMChains[i] = uec
 	}
 
 	return uc, nil
