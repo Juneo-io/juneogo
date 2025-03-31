@@ -38,7 +38,6 @@ var (
 	errNoSupply                        = errors.New("initial supply must be > 0")
 	errNoStakeDuration                 = errors.New("initial stake duration must be > 0")
 	errNoStakers                       = errors.New("initial stakers must be > 0")
-	errNoEVMChainGenesis               = errors.New("evm genesis cannot be empty")
 	errNoTxs                           = errors.New("genesis creates no transactions")
 	errNoAllocationToStake             = errors.New("no allocation to stake")
 	errDuplicateInitiallyStakedAddress = errors.New("duplicate initially staked address")
@@ -173,43 +172,6 @@ func validateConfig(networkID uint32, config *Config, stakingCfg *StakingConfig)
 		return fmt.Errorf("initial staked funds validation failed: %w", err)
 	}
 
-	if len(config.JUNEChainGenesis) == 0 {
-		return errNoEVMChainGenesis
-	}
-	if len(config.USDT1ChainGenesis) == 0 {
-		return errNoEVMChainGenesis
-	}
-	if len(config.USD1ChainGenesis) == 0 {
-		return errNoEVMChainGenesis
-	}
-	if len(config.DAI1ChainGenesis) == 0 {
-		return errNoEVMChainGenesis
-	}
-	if len(config.EUR1ChainGenesis) == 0 {
-		return errNoEVMChainGenesis
-	}
-	if len(config.SGD1ChainGenesis) == 0 {
-		return errNoEVMChainGenesis
-	}
-	if len(config.GLD1ChainGenesis) == 0 {
-		return errNoEVMChainGenesis
-	}
-	if len(config.MBTC1ChainGenesis) == 0 {
-		return errNoEVMChainGenesis
-	}
-	if len(config.DOGE1ChainGenesis) == 0 {
-		return errNoEVMChainGenesis
-	}
-	if len(config.LTC1ChainGenesis) == 0 {
-		return errNoEVMChainGenesis
-	}
-	if len(config.BCH1ChainGenesis) == 0 {
-		return errNoEVMChainGenesis
-	}
-	if len(config.LINK1ChainGenesis) == 0 {
-		return errNoEVMChainGenesis
-	}
-
 	return nil
 }
 
@@ -308,17 +270,15 @@ func FromConfig(config *Config) ([]byte, ids.ID, error) {
 	amount := uint64(0)
 	assetsCount := int(0)
 
-	var june, usdt1, usd1, dai1, eur1, sgd1, gld1, mbtc1, doge1, ltc1, bch1, link1 avm.AssetDefinition
-
 	// Specify the genesis state of the JVM
 	avmArgs := avm.BuildGenesisArgs{
 		NetworkID: json.Uint32(config.NetworkID),
 		Encoding:  defaultEncoding,
 	}
 	{
-		june = avm.AssetDefinition{
-			Name:         "JUNE",
-			Symbol:       "JUNE",
+		june := avm.AssetDefinition{
+			Name:         config.AssetName,
+			Symbol:       config.AssetSymbol,
 			Denomination: 9,
 			InitialState: map[string][]interface{}{},
 		}
@@ -351,6 +311,10 @@ func FromConfig(config *Config) ([]byte, ids.ID, error) {
 			return nil, ids.Empty, fmt.Errorf("couldn't parse memo bytes to string: %w", err)
 		}
 
+		avmArgs.GenesisData = map[string]avm.AssetDefinition{
+			june.Symbol:  june,
+		}
+
 		zeroAddress, err := address.FormatBech32(
 			hrp,
 			make([]byte, 20),
@@ -358,31 +322,13 @@ func FromConfig(config *Config) ([]byte, ids.ID, error) {
 		if err != nil {
 			return nil, ids.Empty, fmt.Errorf("couldn't parse zero address: %w", err)
 		}
-		usdt1 = createFixedAsset("Tether USDt", "USDT1", 9, zeroAddress)
-		usd1 = createFixedAsset("USD1", "USD1", 9, zeroAddress)
-		dai1 = createFixedAsset("Dai", "DAI1", 9, zeroAddress)
-		eur1 = createFixedAsset("EUR1", "EUR1", 9, zeroAddress)
-		sgd1 = createFixedAsset("SGD1", "SGD1", 9, zeroAddress)
-		gld1 = createFixedAsset("Gold1", "GLD1", 9, zeroAddress)
-		mbtc1 = createFixedAsset("Mili Bitcoin", "mBTC1", 9, zeroAddress)
-		doge1 = createFixedAsset("Dogecoin", "DOGE1", 9, zeroAddress)
-		ltc1 = createFixedAsset("Litecoin", "LTC1", 9, zeroAddress)
-		bch1 = createFixedAsset("Bitcoin Cash", "BCH1", 9, zeroAddress)
-		link1 = createFixedAsset("Chainlink", "LINK1", 9, zeroAddress)
 
-		avmArgs.GenesisData = map[string]avm.AssetDefinition{
-			june.Symbol:  june,
-			usdt1.Symbol: usdt1,
-			usd1.Symbol:  usd1,
-			dai1.Symbol:  dai1,
-			eur1.Symbol:  eur1,
-			sgd1.Symbol:  sgd1,
-			gld1.Symbol:  gld1,
-			mbtc1.Symbol: mbtc1,
-			doge1.Symbol: doge1,
-			ltc1.Symbol:  ltc1,
-			bch1.Symbol:  bch1,
-			link1.Symbol: link1,
+		for _, evm := range config.EVMChains {
+			// Do not overwrite network native asset
+			if evm.AssetSymbol == config.AssetSymbol {
+				continue
+			}
+			avmArgs.GenesisData[evm.AssetSymbol] = createFixedAsset(evm.AssetName, evm.AssetSymbol, 9, zeroAddress)
 		}
 		assetsCount = len(avmArgs.GenesisData)
 	}
@@ -414,7 +360,7 @@ func FromConfig(config *Config) ([]byte, ids.ID, error) {
 
 	// Specify the initial state of the Platform Chain
 	platformvmArgs := api.BuildGenesisArgs{
-		AvaxAssetID:      assetsIDs[june.Symbol],
+		AvaxAssetID:      assetsIDs[config.AssetSymbol],
 		NetworkID:        json.Uint32(config.NetworkID),
 		RewardPoolSupply: json.Uint64(config.RewardPoolSupply),
 		Time:             json.Uint64(config.StartTime),
@@ -505,54 +451,6 @@ func FromConfig(config *Config) ([]byte, ids.ID, error) {
 	}
 
 	// Specify the chains that exist upon this network's creation
-	juneGenesisStr, err := formatting.Encode(defaultEncoding, []byte(config.JUNEChainGenesis))
-	if err != nil {
-		return nil, ids.Empty, fmt.Errorf("couldn't encode message: %w", err)
-	}
-	usdt1GenesisStr, err := formatting.Encode(defaultEncoding, []byte(config.USDT1ChainGenesis))
-	if err != nil {
-		return nil, ids.Empty, fmt.Errorf("couldn't encode message: %w", err)
-	}
-	usd1GenesisStr, err := formatting.Encode(defaultEncoding, []byte(config.USD1ChainGenesis))
-	if err != nil {
-		return nil, ids.Empty, fmt.Errorf("couldn't encode message: %w", err)
-	}
-	dai1GenesisStr, err := formatting.Encode(defaultEncoding, []byte(config.DAI1ChainGenesis))
-	if err != nil {
-		return nil, ids.Empty, fmt.Errorf("couldn't encode message: %w", err)
-	}
-	eur1GenesisStr, err := formatting.Encode(defaultEncoding, []byte(config.EUR1ChainGenesis))
-	if err != nil {
-		return nil, ids.Empty, fmt.Errorf("couldn't encode message: %w", err)
-	}
-	sgd1GenesisStr, err := formatting.Encode(defaultEncoding, []byte(config.SGD1ChainGenesis))
-	if err != nil {
-		return nil, ids.Empty, fmt.Errorf("couldn't encode message: %w", err)
-	}
-	gld1GenesisStr, err := formatting.Encode(defaultEncoding, []byte(config.GLD1ChainGenesis))
-	if err != nil {
-		return nil, ids.Empty, fmt.Errorf("couldn't encode message: %w", err)
-	}
-	mbtc1GenesisStr, err := formatting.Encode(defaultEncoding, []byte(config.MBTC1ChainGenesis))
-	if err != nil {
-		return nil, ids.Empty, fmt.Errorf("couldn't encode message: %w", err)
-	}
-	doge1GenesisStr, err := formatting.Encode(defaultEncoding, []byte(config.DOGE1ChainGenesis))
-	if err != nil {
-		return nil, ids.Empty, fmt.Errorf("couldn't encode message: %w", err)
-	}
-	ltc1GenesisStr, err := formatting.Encode(defaultEncoding, []byte(config.LTC1ChainGenesis))
-	if err != nil {
-		return nil, ids.Empty, fmt.Errorf("couldn't encode message: %w", err)
-	}
-	bch1GenesisStr, err := formatting.Encode(defaultEncoding, []byte(config.BCH1ChainGenesis))
-	if err != nil {
-		return nil, ids.Empty, fmt.Errorf("couldn't encode message: %w", err)
-	}
-	link1GenesisStr, err := formatting.Encode(defaultEncoding, []byte(config.LINK1ChainGenesis))
-	if err != nil {
-		return nil, ids.Empty, fmt.Errorf("couldn't encode message: %w", err)
-	}
 	platformvmArgs.Chains = []api.Chain{
 		{
 			GenesisData: avmReply.Bytes,
@@ -564,92 +462,22 @@ func FromConfig(config *Config) ([]byte, ids.ID, error) {
 				propertyfx.ID,
 			},
 			Name:         "JVM-Chain",
-			ChainAssetID: assetsIDs[june.Symbol],
+			ChainAssetID: assetsIDs[config.AssetSymbol],
 		},
-		{
-			GenesisData:  juneGenesisStr,
-			SupernetID:   constants.PrimaryNetworkID,
-			VMID:         constants.EVMID,
-			Name:         "JUNE-Chain",
-			ChainAssetID: assetsIDs[june.Symbol],
-		},
-		{
-			GenesisData:  usdt1GenesisStr,
-			SupernetID:   constants.PrimaryNetworkID,
-			VMID:         constants.EVMID,
-			Name:         "USDT1-Chain",
-			ChainAssetID: assetsIDs[usdt1.Symbol],
-		},
-		{
-			GenesisData:  usd1GenesisStr,
-			SupernetID:   constants.PrimaryNetworkID,
-			VMID:         constants.EVMID,
-			Name:         "USD1-Chain",
-			ChainAssetID: assetsIDs[usd1.Symbol],
-		},
-		{
-			GenesisData:  dai1GenesisStr,
-			SupernetID:   constants.PrimaryNetworkID,
-			VMID:         constants.EVMID,
-			Name:         "DAI1-Chain",
-			ChainAssetID: assetsIDs[dai1.Symbol],
-		},
-		{
-			GenesisData:  eur1GenesisStr,
-			SupernetID:   constants.PrimaryNetworkID,
-			VMID:         constants.EVMID,
-			Name:         "EUR1-Chain",
-			ChainAssetID: assetsIDs[eur1.Symbol],
-		},
-		{
-			GenesisData:  sgd1GenesisStr,
-			SupernetID:   constants.PrimaryNetworkID,
-			VMID:         constants.EVMID,
-			Name:         "SGD1-Chain",
-			ChainAssetID: assetsIDs[sgd1.Symbol],
-		},
-		{
-			GenesisData:  gld1GenesisStr,
-			SupernetID:   constants.PrimaryNetworkID,
-			VMID:         constants.EVMID,
-			Name:         "GLD1-Chain",
-			ChainAssetID: assetsIDs[gld1.Symbol],
-		},
-		{
-			GenesisData:  mbtc1GenesisStr,
-			SupernetID:   constants.PrimaryNetworkID,
-			VMID:         constants.EVMID,
-			Name:         "mBTC1-Chain",
-			ChainAssetID: assetsIDs[mbtc1.Symbol],
-		},
-		{
-			GenesisData:  doge1GenesisStr,
-			SupernetID:   constants.PrimaryNetworkID,
-			VMID:         constants.EVMID,
-			Name:         "DOGE1-Chain",
-			ChainAssetID: assetsIDs[doge1.Symbol],
-		},
-		{
-			GenesisData:  ltc1GenesisStr,
-			SupernetID:   constants.PrimaryNetworkID,
-			VMID:         constants.EVMID,
-			Name:         "LTC1-Chain",
-			ChainAssetID: assetsIDs[ltc1.Symbol],
-		},
-		{
-			GenesisData:  bch1GenesisStr,
-			SupernetID:   constants.PrimaryNetworkID,
-			VMID:         constants.EVMID,
-			Name:         "BCH1-Chain",
-			ChainAssetID: assetsIDs[bch1.Symbol],
-		},
-		{
-			GenesisData:  link1GenesisStr,
-			SupernetID:   constants.PrimaryNetworkID,
-			VMID:         constants.EVMID,
-			Name:         "LINK1-Chain",
-			ChainAssetID: assetsIDs[link1.Symbol],
-		},
+	}
+	for _, evm := range config.EVMChains {
+		genesisStr, err := formatting.Encode(defaultEncoding, []byte(evm.Genesis))
+		if err != nil {
+			return nil, ids.Empty, fmt.Errorf("couldn't encode message: %w", err)
+		}
+		platformvmArgs.Chains = append(platformvmArgs.Chains, api.Chain{
+				GenesisData:  genesisStr,
+				SupernetID:   constants.PrimaryNetworkID,
+				VMID:         constants.EVMID,
+				Name:         evm.ChainName,
+				ChainAssetID: assetsIDs[evm.AssetSymbol],
+			},
+		)
 	}
 
 	platformvmReply := api.BuildGenesisReply{}
@@ -663,7 +491,7 @@ func FromConfig(config *Config) ([]byte, ids.ID, error) {
 		return nil, ids.ID{}, fmt.Errorf("problem parsing platformvm genesis bytes: %w", err)
 	}
 
-	return genesisBytes, assetsIDs[june.Symbol], nil
+	return genesisBytes, assetsIDs[config.AssetSymbol], nil
 }
 
 func createFixedAsset(name string, symbol string, denomination json.Uint8, address string) avm.AssetDefinition {
