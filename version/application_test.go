@@ -152,8 +152,7 @@ func TestComparingVersions(t *testing.T) {
 			if test.compatible {
 				require.NoError(err)
 			} else {
-				// TODO restore after mainnet update
-				// require.ErrorIs(err, errDifferentMajor)
+				require.ErrorIs(err, errDifferentMajor)
 			}
 			require.Equal(test.before, test.myVersion.Before(test.peerVersion))
 		})

@@ -63,17 +63,16 @@ func TestCompatibility(t *testing.T) {
 			},
 			time: time.Unix(8500, 0),
 		},
-		// TODO restore after mainnet update
-		// {
-		// 	peer: &Application{
-		// 		Name:  Client,
-		// 		Major: 0,
-		// 		Minor: 1,
-		// 		Patch: 0,
-		// 	},
-		// 	time:        minCompatibleTime,
-		// 	expectedErr: errDifferentMajor,
-		// },
+		{
+			peer: &Application{
+				Name:  Client,
+				Major: 0,
+				Minor: 1,
+				Patch: 0,
+			},
+			time:        minCompatibleTime,
+			expectedErr: errDifferentMajor,
+		},
 		{
 			peer: &Application{
 				Name:  Client,

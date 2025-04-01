@@ -45,8 +45,7 @@ func (a *Application) initString() {
 func (a *Application) Compatible(o *Application) error {
 	switch {
 	case a.Major > o.Major:
-		// TODO reset changes after mainnet update
-		return nil
+		return errDifferentMajor
 	default:
 		return nil
 	}
