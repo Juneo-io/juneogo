@@ -1,6 +1,8 @@
 {
   "networkID": 45,
   "rewardPoolSupply": 25000000000000000,
+  "assetName": "JUNE",
+  "assetSymbol": "JUNE",
   "allocations": [
     {
       "ethAddr": "0xDaB7C2d3a4CD7fb852775b586fc7D2bcc43d55FE",
