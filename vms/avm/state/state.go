@@ -435,21 +435,13 @@ func (s *state) Close() error {
 }
 
 func (s *state) write() error {
-	errs := utils.Err(
+	return utils.Err(
 		s.writeUTXOs(),
 		s.writeTxs(),
 		s.writeBlockIDs(),
 		s.writeBlocks(),
+		s.writeMetadata(),
 	)
-	var metadataErr error
-	// force update at genesis height
-	if len(s.addedBlocks) == 1 {
-		metadataErr = s.forceWriteMetadata()
-	} else {
-		metadataErr = s.writeMetadata()
-	}
-	utils.Err(errs, metadataErr)
-	return errs
 }
 
 func (s *state) writeUTXOs() error {
@@ -517,7 +509,7 @@ func (s *state) writeMetadata() error {
 		}
 		s.persistedTimestamp = s.timestamp
 	}
-	if s.persistedFeePoolValue != s.feePoolValue {
+	if s.persistedFeePoolValue != s.feePoolValue || s.feePoolValue == 0 {
 		if err := database.PutUInt64(s.singletonDB, feePoolValueKey, s.feePoolValue); err != nil {
 			return fmt.Errorf("failed to write fee pool value: %w", err)
 		}
@@ -529,22 +521,6 @@ func (s *state) writeMetadata() error {
 		}
 		s.persistedLastAccepted = s.lastAccepted
 	}
-	return nil
-}
-
-func (s *state) forceWriteMetadata() error {
-	if err := database.PutTimestamp(s.singletonDB, timestampKey, s.timestamp); err != nil {
-		return fmt.Errorf("failed to force write timestamp: %w", err)
-	}
-	s.persistedTimestamp = s.timestamp
-	if err := database.PutUInt64(s.singletonDB, feePoolValueKey, s.feePoolValue); err != nil {
-		return fmt.Errorf("failed to write fee pool value: %w", err)
-	}
-	s.persistedFeePoolValue = s.feePoolValue
-	if err := database.PutID(s.singletonDB, lastAcceptedKey, s.lastAccepted); err != nil {
-		return fmt.Errorf("failed to force write last accepted: %w", err)
-	}
-	s.persistedLastAccepted = s.lastAccepted
 	return nil
 }
 
