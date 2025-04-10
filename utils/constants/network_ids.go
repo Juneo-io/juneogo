@@ -17,6 +17,7 @@ import (
 const (
 	MainnetID uint32 = 45
 	SocotraID uint32 = 46
+	BananaID  uint32 = 47
 
 	TestnetID  uint32 = SocotraID
 	UnitTestID uint32 = 10
@@ -25,12 +26,14 @@ const (
 	MainnetName  = "mainnet"
 	SocotraName  = "socotra"
 	TestnetName  = "testnet"
+	BananaName   = "banana"
 	FujiName     = "fuji"
 	UnitTestName = "testing"
 	LocalName    = "local"
 
 	MainnetHRP  = "june"
 	SocotraHRP  = "socotra"
+	BananaHRP   = "banana"
 	UnitTestHRP = "testing"
 	LocalHRP    = "local"
 	FallbackHRP = "custom"
@@ -44,12 +47,14 @@ var (
 	NetworkIDToNetworkName = map[uint32]string{
 		MainnetID:  MainnetName,
 		SocotraID:  SocotraName,
+		BananaID:   BananaName,
 		UnitTestID: UnitTestName,
 		LocalID:    LocalName,
 	}
 	NetworkNameToNetworkID = map[string]uint32{
 		MainnetName:  MainnetID,
 		SocotraName:  SocotraID,
+		BananaName:   BananaID,
 		TestnetName:  TestnetID,
 		UnitTestName: UnitTestID,
 		LocalName:    LocalID,
@@ -58,12 +63,14 @@ var (
 	NetworkIDToHRP = map[uint32]string{
 		MainnetID:  MainnetHRP,
 		SocotraID:  SocotraHRP,
+		BananaID:   BananaHRP,
 		UnitTestID: UnitTestHRP,
 		LocalID:    LocalHRP,
 	}
 	NetworkHRPToNetworkID = map[string]uint32{
 		MainnetHRP:  MainnetID,
 		SocotraHRP:  SocotraID,
+		BananaHRP:   BananaID,
 		UnitTestHRP: UnitTestID,
 		LocalHRP:    LocalID,
 	}
