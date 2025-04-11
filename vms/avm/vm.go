@@ -576,8 +576,11 @@ func (vm *VM) initGenesis(genesisBytes []byte) error {
 
 func (vm *VM) initState(tx *txs.Tx) {
 	txID := tx.ID()
+	createAssetTx := tx.Unsigned.(*txs.CreateAssetTx)
 	vm.ctx.Log.Info("initializing genesis asset",
 		zap.Stringer("txID", txID),
+		zap.String("assetName", createAssetTx.Name),
+		zap.String("assetSymbol", createAssetTx.Symbol),
 	)
 	vm.state.AddTx(tx)
 	for _, utxo := range tx.UTXOs() {
