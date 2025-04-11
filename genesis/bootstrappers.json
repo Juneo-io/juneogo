@@ -138,5 +138,27 @@
       "id": "NodeID-PnSrjQGFaKdQSRcusrrHivgEE98J8Qn4y",
       "ip": "172.105.186.43:9651"
     }
+  ],
+  "banana": [
+    {
+      "id": "NodeID-F3fNdZHa4Wn6qi4kYDU3iUdxDQzaa3VyM",
+      "ip": "139.162.159.115:9651"
+    },
+    {
+      "id": "NodeID-FWdRtaW7afSDAr8UBWAEJjdiDqyiBtHco",
+      "ip": "172.236.219.75:9651"
+    },
+    {
+      "id": "NodeID-B8KH33CfQjnJv5UaHMptpkUE2hDcVvPWy",
+      "ip": "172.232.54.96:9651"
+    },
+    {
+      "id": "NodeID-DibVR8hsyGYTNFAEDzdCAdfvHRZRnuqQm",
+      "ip": "172.232.54.109:9651"
+    },
+    {
+      "id": "NodeID-7fptWyGeDFFRDppvXmqbysPHwxGVH1TSy",
+      "ip": "109.74.198.163:9651"
+    }
   ]
 }

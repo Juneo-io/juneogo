@@ -201,6 +201,8 @@ var (
 	// genesis.
 	SocotraConfig Config
 
+	BananaConfig Config
+
 	// LocalConfig is the config that should be used to generate a local
 	// genesis.
 	LocalConfig Config
@@ -209,11 +211,13 @@ var (
 func init() {
 	unparsedMainnetConfig := UnparsedConfig{}
 	unparsedSocotraConfig := UnparsedConfig{}
+	unparsedBananaConfig := UnparsedConfig{}
 	unparsedLocalConfig := UnparsedConfig{}
 
 	err := utils.Err(
 		json.Unmarshal(mainnetGenesisConfigJSON, &unparsedMainnetConfig),
 		json.Unmarshal(socotraGenesisConfigJSON, &unparsedSocotraConfig),
+		json.Unmarshal(bananaGenesisConfigJSON, &unparsedBananaConfig),
 		json.Unmarshal(localGenesisConfigJSON, &unparsedLocalConfig),
 	)
 	if err != nil {
@@ -230,6 +234,11 @@ func init() {
 		panic(err)
 	}
 
+	BananaConfig, err = unparsedBananaConfig.Parse()
+	if err != nil {
+		panic(err)
+	}
+
 	LocalConfig, err = unparsedLocalConfig.Parse()
 	if err != nil {
 		panic(err)
@@ -242,6 +251,8 @@ func GetConfig(networkID uint32) *Config {
 		return &MainnetConfig
 	case constants.TestnetID:
 		return &SocotraConfig
+	case constants.BananaID:
+		return &BananaConfig
 	case constants.LocalID:
 		return &LocalConfig
 	default:
