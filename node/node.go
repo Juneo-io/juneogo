@@ -1016,27 +1016,22 @@ func (n *Node) initChainManager(juneAssetID ids.ID) error {
 		constants.PlatformChainID,
 	)
 
-	jvmChainID := ids.Empty
-	juneChainID := ids.Empty
 	for _, createJVMTx := range createJVMTxs {
 		criticalChains.Add(createJVMTx.BlockchainID)
-		if createJVMTx.ChainName == "JVM-Chain" {
-			jvmChainID = createJVMTx.BlockchainID
-		}
 	}
 	for _, createEVMTx := range createEVMTxs {
 		criticalChains.Add(createEVMTx.BlockchainID)
-		if createEVMTx.ChainName == "JUNE-Chain" {
-			juneChainID = createEVMTx.BlockchainID
-		}
 	}
 
-	if jvmChainID == ids.Empty {
-		return fmt.Errorf("couldn't find jvm chain ID")
+	if len(createJVMTxs) == 0 {
+		return fmt.Errorf("couldn't find jvm chain ID missing create JVM txs")
 	}
-	if juneChainID == ids.Empty {
-		return fmt.Errorf("couldn't find june chain ID")
+	if len(createEVMTxs) == 0 {
+		return fmt.Errorf("couldn't find june chain ID missing create EVM txs")
 	}
+
+	jvmChainID := createJVMTxs[0].BlockchainID
+	juneChainID := createEVMTxs[0].BlockchainID
 
 	n.timeoutManager, err = timeout.NewManager(
 		&n.Config.AdaptiveTimeoutConfig,
