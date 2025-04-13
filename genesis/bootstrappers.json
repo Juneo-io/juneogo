@@ -141,14 +141,6 @@
   ],
   "banana": [
     {
-      "id": "NodeID-F3fNdZHa4Wn6qi4kYDU3iUdxDQzaa3VyM",
-      "ip": "139.162.159.115:9651"
-    },
-    {
-      "id": "NodeID-FWdRtaW7afSDAr8UBWAEJjdiDqyiBtHco",
-      "ip": "172.236.219.75:9651"
-    },
-    {
       "id": "NodeID-B8KH33CfQjnJv5UaHMptpkUE2hDcVvPWy",
       "ip": "172.232.54.96:9651"
     },
@@ -159,6 +151,14 @@
     {
       "id": "NodeID-7fptWyGeDFFRDppvXmqbysPHwxGVH1TSy",
       "ip": "109.74.198.163:9651"
+    },
+    {
+      "id": "NodeID-CCQsQXyGALPwBrAAfKEc6GbERSBLa1gf1",
+      "ip": "172.232.204.252:9651"
+    },
+    {
+      "id": "NodeID-3wXhLHXqPfMTqWfZw8ZtMPDsx2xRtoVsM",
+      "ip": "172.234.124.135:9651"
     }
   ]
 }
