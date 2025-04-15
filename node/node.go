@@ -1162,6 +1162,7 @@ func (n *Node) initVMs() error {
 				MaxDelegationFee:              n.Config.MaxDelegationFee,
 				MinStakeDuration:              n.Config.MinStakeDuration,
 				MaxStakeDuration:              n.Config.MaxStakeDuration,
+				MaxValidatorWeightFactor:      n.Config.MaxValidatorWeightFactor,
 				RewardConfig:                  n.Config.RewardConfig,
 				ApricotPhase3Time:             version.GetApricotPhase3Time(n.Config.NetworkID),
 				ApricotPhase5Time:             version.GetApricotPhase5Time(n.Config.NetworkID),

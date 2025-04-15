@@ -15,13 +15,14 @@ import (
 )
 
 type addValidatorRules struct {
-	assetID           ids.ID
-	minValidatorStake uint64
-	maxValidatorStake uint64
-	minStakeDuration  time.Duration
-	maxStakeDuration  time.Duration
-	minDelegationFee  uint32
-	maxDelegationFee  uint32
+	assetID                  ids.ID
+	minValidatorStake        uint64
+	maxValidatorStake        uint64
+	minStakeDuration         time.Duration
+	maxStakeDuration         time.Duration
+	minDelegationFee         uint32
+	maxDelegationFee         uint32
+	maxValidatorWeightFactor byte
 }
 
 func getValidatorRules(
@@ -31,13 +32,14 @@ func getValidatorRules(
 ) (*addValidatorRules, error) {
 	if supernetID == constants.PrimaryNetworkID {
 		return &addValidatorRules{
-			assetID:           backend.Ctx.JUNEAssetID,
-			minValidatorStake: backend.Config.MinValidatorStake,
-			maxValidatorStake: backend.Config.MaxValidatorStake,
-			minStakeDuration:  backend.Config.MinStakeDuration,
-			maxStakeDuration:  backend.Config.MaxStakeDuration,
-			minDelegationFee:  backend.Config.MinDelegationFee,
-			maxDelegationFee:  backend.Config.MaxDelegationFee,
+			assetID:                  backend.Ctx.JUNEAssetID,
+			minValidatorStake:        backend.Config.MinValidatorStake,
+			maxValidatorStake:        backend.Config.MaxValidatorStake,
+			minStakeDuration:         backend.Config.MinStakeDuration,
+			maxStakeDuration:         backend.Config.MaxStakeDuration,
+			minDelegationFee:         backend.Config.MinDelegationFee,
+			maxDelegationFee:         backend.Config.MaxDelegationFee,
+			maxValidatorWeightFactor: backend.Config.MaxValidatorWeightFactor,
 		}, nil
 	}
 
@@ -47,13 +49,14 @@ func getValidatorRules(
 	}
 
 	return &addValidatorRules{
-		assetID:           transformSupernet.AssetID,
-		minValidatorStake: transformSupernet.MinValidatorStake,
-		maxValidatorStake: transformSupernet.MaxValidatorStake,
-		minStakeDuration:  time.Duration(transformSupernet.MinStakeDuration) * time.Second,
-		maxStakeDuration:  time.Duration(transformSupernet.MaxStakeDuration) * time.Second,
-		minDelegationFee:  transformSupernet.MinDelegationFee,
-		maxDelegationFee:  transformSupernet.MaxDelegationFee,
+		assetID:                  transformSupernet.AssetID,
+		minValidatorStake:        transformSupernet.MinValidatorStake,
+		maxValidatorStake:        transformSupernet.MaxValidatorStake,
+		minStakeDuration:         time.Duration(transformSupernet.MinStakeDuration) * time.Second,
+		maxStakeDuration:         time.Duration(transformSupernet.MaxStakeDuration) * time.Second,
+		minDelegationFee:         transformSupernet.MinDelegationFee,
+		maxDelegationFee:         transformSupernet.MaxDelegationFee,
+		maxValidatorWeightFactor: transformSupernet.MaxValidatorWeightFactor,
 	}, nil
 }
 
@@ -78,7 +81,7 @@ func getDelegatorRules(
 			maxValidatorStake:        backend.Config.MaxValidatorStake,
 			minStakeDuration:         backend.Config.MinStakeDuration,
 			maxStakeDuration:         backend.Config.MaxStakeDuration,
-			maxValidatorWeightFactor: MaxValidatorWeightFactor,
+			maxValidatorWeightFactor: backend.Config.MaxValidatorWeightFactor,
 		}, nil
 	}
 

@@ -41,6 +41,7 @@ var (
 			MaxDelegationFee:  50000,
 			MinStakeDuration:  bananaMinStakeDuration,
 			MaxStakeDuration:  bananaMaxStakeDuration,
+			MaxValidatorWeightFactor: 10,
 			RewardConfig: reward.Config{
 				MinStakePeriod:         bananaMinStakeDuration,
 				MaxStakePeriod:         bananaMaxStakeDuration,

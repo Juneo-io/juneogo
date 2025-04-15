@@ -59,6 +59,7 @@ var (
 			MaxDelegationFee:  200000, // 20%
 			MinStakeDuration:  localMinStakeDuration,
 			MaxStakeDuration:  localMaxStakeDuration,
+			MaxValidatorWeightFactor: 5,
 			RewardConfig: reward.Config{
 				MinStakePeriod:         localMinStakeDuration,
 				MaxStakePeriod:         localMaxStakeDuration,

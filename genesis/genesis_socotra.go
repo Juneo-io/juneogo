@@ -41,6 +41,7 @@ var (
 			MaxDelegationFee:  120000,
 			MinStakeDuration:  socotraMinStakeDuration,
 			MaxStakeDuration:  socotraMaxStakeDuration,
+			MaxValidatorWeightFactor: 5,
 			RewardConfig: reward.Config{
 				MinStakePeriod:         socotraMinStakeDuration,
 				MaxStakePeriod:         socotraMaxStakeDuration,

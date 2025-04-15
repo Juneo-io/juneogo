@@ -24,8 +24,6 @@ const (
 
 	// SyncBound is the synchrony bound used for safe decision making
 	SyncBound = 10 * time.Second
-
-	MaxValidatorWeightFactor = 5
 )
 
 var (

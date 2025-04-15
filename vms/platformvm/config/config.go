@@ -83,6 +83,9 @@ type Config struct {
 	// Maximum fee that can be charged for delegation
 	MaxDelegationFee uint32
 
+	// MaxValidatorWeightFactor is the factor which calculates the maximum amount of delegation a validator can receive.
+	MaxValidatorWeightFactor byte
+
 	// UptimePercentage is the minimum uptime required to be rewarded for staking
 	UptimePercentage float64
 

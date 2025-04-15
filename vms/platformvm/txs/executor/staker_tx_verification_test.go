@@ -705,7 +705,7 @@ func TestGetDelegatorRules(t *testing.T) {
 				maxValidatorStake:        config.MaxValidatorStake,
 				minStakeDuration:         config.MinStakeDuration,
 				maxStakeDuration:         config.MaxStakeDuration,
-				maxValidatorWeightFactor: MaxValidatorWeightFactor,
+				maxValidatorWeightFactor: config.MaxValidatorWeightFactor,
 			},
 		},
 		{

@@ -41,6 +41,7 @@ var (
 			MaxDelegationFee:  120000,
 			MinStakeDuration:  mainnetMinStakeDuration,
 			MaxStakeDuration:  mainnetMaxStakeDuration,
+			MaxValidatorWeightFactor: 5,
 			RewardConfig: reward.Config{
 				MinStakePeriod:         mainnetMinStakeDuration,
 				MaxStakePeriod:         mainnetMaxStakeDuration,

@@ -32,6 +32,10 @@ type StakingConfig struct {
 	// MaxStakeDuration is the maximum amount of time a validator can validate
 	// for in a single period.
 	MaxStakeDuration time.Duration `json:"maxStakeDuration"`
+	// MaxValidatorWeightFactor is the factor which calculates the maximum
+	// amount of delegation a validator can receive.
+	// Note: a value of 1 effectively disables delegation. Must be > 0
+	MaxValidatorWeightFactor byte `serialize:"true" json:"maxValidatorWeightFactor"`
 	// RewardConfig is the config for the reward function.
 	RewardConfig reward.Config `json:"rewardConfig"`
 }
