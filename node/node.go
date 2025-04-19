@@ -1169,6 +1169,7 @@ func (n *Node) initVMs() error {
 				BanffTime:                     version.GetBanffTime(n.Config.NetworkID),
 				CortinaTime:                   version.GetCortinaTime(n.Config.NetworkID),
 				DurangoTime:                   version.GetDurangoTime(n.Config.NetworkID),
+				DonationTime:                  version.GetDonationTime(n.Config.NetworkID),
 				EUpgradeTime:                  eUpgradeTime,
 				UseCurrentHeight:              n.Config.UseCurrentHeight,
 			},

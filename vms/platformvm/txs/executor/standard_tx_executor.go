@@ -578,6 +578,56 @@ func (e *StandardTxExecutor) BaseTx(tx *txs.BaseTx) error {
 	return nil
 }
 
+func (e *StandardTxExecutor) DonationTx(tx *txs.DonationTx) error {
+	if !e.Backend.Config.IsDonationActivated(e.State.GetTimestamp()) {
+		return ErrDonationUpgradeNotActive
+	}
+
+	// Verify the tx is well-formed
+	if err := e.Tx.SyntacticVerify(e.Ctx); err != nil {
+		return err
+	}
+
+	if err := avax.VerifyMemoFieldLength(tx.Memo, true /*=isDurangoActive*/); err != nil {
+		return err
+	}
+
+	spending, err := math.Add64(e.Config.TxFee, tx.Amount)
+	if err != nil {
+		return err
+	}
+
+	// Verify the flowcheck
+	if err := e.FlowChecker.VerifySpend(
+		tx,
+		e.State,
+		tx.Ins,
+		tx.Outs,
+		e.Tx.Creds,
+		map[ids.ID]uint64{
+			e.Ctx.JUNEAssetID: spending,
+		},
+	); err != nil {
+		return err
+	}
+
+	txID := e.Tx.ID()
+	// Consume the UTXOS
+	avax.Consume(e.State, tx.Ins)
+	// Produce the UTXOS
+	avax.Produce(e.State, txID, tx.Outs)
+	rewardsPoolSupply, err := e.State.GetRewardPoolSupply(tx.Supernet)
+	if err != nil {
+		return err
+	}
+	newRewardsPoolSupply, err := math.Add64(rewardsPoolSupply, tx.Amount)
+	if err != nil {
+		return err
+	}
+	e.State.SetRewardPoolSupply(tx.Supernet, newRewardsPoolSupply)
+	return nil
+}
+
 // Creates the staker as defined in [stakerTx] and adds it to [e.State].
 func (e *StandardTxExecutor) putStaker(stakerTx txs.Staker) error {
 	var (

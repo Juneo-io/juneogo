@@ -29,6 +29,7 @@ type txMetrics struct {
 	numAddPermissionlessValidatorTxs,
 	numAddPermissionlessDelegatorTxs,
 	numTransferSupernetOwnershipTxs,
+	numDonationTxs,
 	numBaseTxs prometheus.Counter
 }
 
@@ -52,6 +53,7 @@ func newTxMetrics(
 		numAddPermissionlessValidatorTxs: newTxMetric(namespace, "add_permissionless_validator", registerer, &errs),
 		numAddPermissionlessDelegatorTxs: newTxMetric(namespace, "add_permissionless_delegator", registerer, &errs),
 		numTransferSupernetOwnershipTxs:    newTxMetric(namespace, "transfer_supernet_ownership", registerer, &errs),
+		numDonationTxs:                   newTxMetric(namespace, "donation", registerer, &errs),
 		numBaseTxs:                       newTxMetric(namespace, "base", registerer, &errs),
 	}
 	return m, errs.Err
@@ -144,5 +146,10 @@ func (m *txMetrics) TransferSupernetOwnershipTx(*txs.TransferSupernetOwnershipTx
 
 func (m *txMetrics) BaseTx(*txs.BaseTx) error {
 	m.numBaseTxs.Inc()
+	return nil
+}
+
+func (m *txMetrics) DonationTx(*txs.DonationTx) error {
+	m.numDonationTxs.Inc()
 	return nil
 }

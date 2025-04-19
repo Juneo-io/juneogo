@@ -113,6 +113,9 @@ type Config struct {
 	// Time of the Durango network upgrade
 	DurangoTime time.Time
 
+	// Time of the Donation network upgrade
+	DonationTime time.Time
+
 	// Time of the E network upgrade
 	EUpgradeTime time.Time
 
@@ -144,6 +147,10 @@ func (c *Config) IsCortinaActivated(timestamp time.Time) bool {
 
 func (c *Config) IsDurangoActivated(timestamp time.Time) bool {
 	return !timestamp.Before(c.DurangoTime)
+}
+
+func (c *Config) IsDonationActivated(timestamp time.Time) bool {
+	return !timestamp.Before(c.DonationTime)
 }
 
 func (c *Config) IsEActivated(timestamp time.Time) bool {

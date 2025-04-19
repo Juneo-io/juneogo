@@ -107,5 +107,6 @@ func RegisterDUnsignedTxsTypes(targetCodec linearcodec.Codec) error {
 	return utils.Err(
 		targetCodec.RegisterType(&TransferSupernetOwnershipTx{}),
 		targetCodec.RegisterType(&BaseTx{}),
+		targetCodec.RegisterType(&DonationTx{}),
 	)
 }

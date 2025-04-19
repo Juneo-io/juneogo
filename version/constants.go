@@ -144,6 +144,11 @@ var (
 		constants.TestnetID: time.Date(2025, time.April, 1, 12, 0, 0, 0, time.UTC),
 	}
 
+	DonationTimes = map[uint32]time.Time{
+		constants.MainnetID: time.Date(10000, time.December, 1, 0, 0, 0, 0, time.UTC),
+		constants.TestnetID: time.Date(10000, time.December, 1, 0, 0, 0, 0, time.UTC),
+	}
+
 	EUpgradeTimes = map[uint32]time.Time{
 		constants.MainnetID: time.Date(10000, time.December, 1, 0, 0, 0, 0, time.UTC),
 		constants.TestnetID: time.Date(10000, time.December, 1, 0, 0, 0, 0, time.UTC),
@@ -243,6 +248,13 @@ func GetCortinaTime(networkID uint32) time.Time {
 
 func GetDurangoTime(networkID uint32) time.Time {
 	if upgradeTime, exists := DurangoTimes[networkID]; exists {
+		return upgradeTime
+	}
+	return DefaultUpgradeTime
+}
+
+func GetDonationTime(networkID uint32) time.Time {
+	if upgradeTime, exists := DonationTimes[networkID]; exists {
 		return upgradeTime
 	}
 	return DefaultUpgradeTime

@@ -20,4 +20,5 @@ type Visitor interface {
 	AddPermissionlessDelegatorTx(*AddPermissionlessDelegatorTx) error
 	TransferSupernetOwnershipTx(*TransferSupernetOwnershipTx) error
 	BaseTx(*BaseTx) error
+	DonationTx(*DonationTx) error
 }
