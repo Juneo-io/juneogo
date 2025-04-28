@@ -46,12 +46,12 @@ var (
 				MinStakePeriod:         bananaMinStakeDuration,
 				MaxStakePeriod:         bananaMaxStakeDuration,
 				StakePeriodRewardShare: 2_0000,  // 2%
-				StartRewardShare:       21_5000, // 21.5%
-				StartRewardTime:        uint64(time.Date(2025, time.April, 1, 0, 0, 0, 0, time.UTC).Unix()),
-				DiminishingRewardShare: 19_0000, // 19%
-				DiminishingRewardTime:  uint64(time.Date(2030, time.April, 1, 0, 0, 0, 0, time.UTC).Unix()),
+				StartRewardShare:       19_5000, // 19.5%
+				StartRewardTime:        uint64(time.Date(2025, time.June, 15, 0, 0, 0, 0, time.UTC).Unix()),
+				DiminishingRewardShare: 19_5000, // 19.5%
+				DiminishingRewardTime:  uint64(time.Date(2030, time.June, 15, 0, 0, 0, 0, time.UTC).Unix()),
 				TargetRewardShare:      6_6000, // 6.6%
-				TargetRewardTime:       uint64(time.Date(2031, time.April, 1, 0, 0, 0, 0, time.UTC).Unix()),
+				TargetRewardTime:       uint64(time.Date(2031, time.June, 15, 0, 0, 0, 0, time.UTC).Unix()),
 			},
 		},
 	}
