@@ -160,5 +160,27 @@
       "id": "NodeID-3wXhLHXqPfMTqWfZw8ZtMPDsx2xRtoVsM",
       "ip": "172.234.124.135:9651"
     }
+  ],
+  "bluebyte": [
+    {
+      "id": "NodeID-D3UMMU1BTAR13jq6ho9aUB2Hs8exU7yvw",
+      "ip": "172.234.63.77:9651"
+    },
+    {
+      "id": "NodeID-JuJGopfTDnQkWqpDo62HfWE4D4NzetkJy",
+      "ip": "172.233.33.177:9651"
+    },
+    {
+      "id": "NodeID-NyjTGsm6ysqqofG4GSkjaPubpahdWxgfY",
+      "ip": "139.162.251.26:9651"
+    },
+    {
+      "id": "NodeID-CCQsQXyGALPwBrAAfKEc6GbERSBLa1gf1",
+      "ip": "172.232.212.43:9651"
+    },
+    {
+      "id": "NodeID-CLfhTsGeyhQM3UToadMSL3Cb2RRe5m55W",
+      "ip": "172.232.149.206:9651"
+    }
   ]
 }

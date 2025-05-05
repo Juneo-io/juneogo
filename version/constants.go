@@ -160,15 +160,17 @@ var (
 	}
 
 	DonationTimes = map[uint32]time.Time{
-		constants.MainnetID: time.Date(10000, time.December, 1, 0, 0, 0, 0, time.UTC),
-		constants.TestnetID: time.Date(10000, time.December, 1, 0, 0, 0, 0, time.UTC),
-		constants.BananaID:  time.Date(10000, time.December, 1, 0, 0, 0, 0, time.UTC),
+		constants.MainnetID:  time.Date(10000, time.December, 1, 0, 0, 0, 0, time.UTC),
+		constants.TestnetID:  time.Date(10000, time.December, 1, 0, 0, 0, 0, time.UTC),
+		constants.BananaID:   time.Date(10000, time.December, 1, 0, 0, 0, 0, time.UTC),
+		constants.BluebyteID: time.Date(10000, time.December, 1, 0, 0, 0, 0, time.UTC),
 	}
 
 	EUpgradeTimes = map[uint32]time.Time{
-		constants.MainnetID: time.Date(10000, time.December, 1, 0, 0, 0, 0, time.UTC),
-		constants.TestnetID: time.Date(10000, time.December, 1, 0, 0, 0, 0, time.UTC),
-		constants.BananaID:  time.Date(10000, time.December, 1, 0, 0, 0, 0, time.UTC),
+		constants.MainnetID:  time.Date(10000, time.December, 1, 0, 0, 0, 0, time.UTC),
+		constants.TestnetID:  time.Date(10000, time.December, 1, 0, 0, 0, 0, time.UTC),
+		constants.BananaID:   time.Date(10000, time.December, 1, 0, 0, 0, 0, time.UTC),
+		constants.BluebyteID: time.Date(10000, time.December, 1, 0, 0, 0, 0, time.UTC),
 	}
 )
 

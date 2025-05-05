@@ -15,9 +15,10 @@ import (
 
 // Const variables to be exported
 const (
-	MainnetID uint32 = 45
-	SocotraID uint32 = 46
-	BananaID  uint32 = 47
+	MainnetID  uint32 = 45
+	SocotraID  uint32 = 46
+	BananaID   uint32 = 47
+	BluebyteID uint32 = 48
 
 	TestnetID  uint32 = SocotraID
 	UnitTestID uint32 = 10
@@ -27,6 +28,7 @@ const (
 	SocotraName  = "socotra"
 	TestnetName  = "testnet"
 	BananaName   = "banana"
+	BluebyteName = "bluebyte"
 	FujiName     = "fuji"
 	UnitTestName = "testing"
 	LocalName    = "local"
@@ -34,6 +36,7 @@ const (
 	MainnetHRP  = "june"
 	SocotraHRP  = "socotra"
 	BananaHRP   = "banana"
+	BluebyteHRP = "bluebyte"
 	UnitTestHRP = "testing"
 	LocalHRP    = "local"
 	FallbackHRP = "custom"
@@ -48,6 +51,7 @@ var (
 		MainnetID:  MainnetName,
 		SocotraID:  SocotraName,
 		BananaID:   BananaName,
+		BluebyteID: BluebyteName,
 		UnitTestID: UnitTestName,
 		LocalID:    LocalName,
 	}
@@ -55,6 +59,7 @@ var (
 		MainnetName:  MainnetID,
 		SocotraName:  SocotraID,
 		BananaName:   BananaID,
+		BluebyteName: BluebyteID,
 		TestnetName:  TestnetID,
 		UnitTestName: UnitTestID,
 		LocalName:    LocalID,
@@ -64,6 +69,7 @@ var (
 		MainnetID:  MainnetHRP,
 		SocotraID:  SocotraHRP,
 		BananaID:   BananaHRP,
+		BluebyteID: BluebyteHRP,
 		UnitTestID: UnitTestHRP,
 		LocalID:    LocalHRP,
 	}
@@ -71,6 +77,7 @@ var (
 		MainnetHRP:  MainnetID,
 		SocotraHRP:  SocotraID,
 		BananaHRP:   BananaID,
+		BluebyteHRP: BluebyteID,
 		UnitTestHRP: UnitTestID,
 		LocalHRP:    LocalID,
 	}
