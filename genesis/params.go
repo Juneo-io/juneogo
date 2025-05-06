@@ -74,6 +74,8 @@ func GetTxFeeConfig(networkID uint32) TxFeeConfig {
 		return SocotraParams.TxFeeConfig
 	case constants.BananaID:
 		return BananaParams.TxFeeConfig
+	case constants.BluebyteID:
+		return BluebyteParams.TxFeeConfig
 	case constants.LocalID:
 		return LocalParams.TxFeeConfig
 	default:
@@ -89,6 +91,8 @@ func GetStakingConfig(networkID uint32) StakingConfig {
 		return SocotraParams.StakingConfig
 	case constants.BananaID:
 		return BananaParams.StakingConfig
+	case constants.BluebyteID:
+		return BluebyteParams.StakingConfig
 	case constants.LocalID:
 		return LocalParams.StakingConfig
 	default:
