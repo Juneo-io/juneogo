@@ -94,9 +94,11 @@ var (
 		constants.BananaID:  DefaultUpgradeTime,
 	}
 	ApricotPhase4MinPChainHeight = map[uint32]uint64{
-		constants.MainnetID: 0,
-		constants.TestnetID: 0,
-		constants.BananaID:  0,
+		constants.MainnetID:  0,
+		constants.TestnetID:  0,
+		constants.BananaID:   0,
+		constants.BluebyteID: 0,
+		constants.FusionID:   0,
 	}
 	ApricotPhase4DefaultMinPChainHeight uint64
 
@@ -164,6 +166,7 @@ var (
 		constants.TestnetID:  time.Date(10000, time.December, 1, 0, 0, 0, 0, time.UTC),
 		constants.BananaID:   time.Date(10000, time.December, 1, 0, 0, 0, 0, time.UTC),
 		constants.BluebyteID: time.Date(10000, time.December, 1, 0, 0, 0, 0, time.UTC),
+		constants.FusionID:   time.Date(10000, time.December, 1, 0, 0, 0, 0, time.UTC),
 	}
 
 	EUpgradeTimes = map[uint32]time.Time{
@@ -171,6 +174,7 @@ var (
 		constants.TestnetID:  time.Date(10000, time.December, 1, 0, 0, 0, 0, time.UTC),
 		constants.BananaID:   time.Date(10000, time.December, 1, 0, 0, 0, 0, time.UTC),
 		constants.BluebyteID: time.Date(10000, time.December, 1, 0, 0, 0, 0, time.UTC),
+		constants.FusionID:   time.Date(10000, time.December, 1, 0, 0, 0, 0, time.UTC),
 	}
 )
 

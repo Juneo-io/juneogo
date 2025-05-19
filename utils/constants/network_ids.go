@@ -19,6 +19,7 @@ const (
 	SocotraID  uint32 = 46
 	BananaID   uint32 = 47
 	BluebyteID uint32 = 48
+	FusionID   uint32 = 49
 
 	TestnetID  uint32 = SocotraID
 	UnitTestID uint32 = 10
@@ -29,6 +30,7 @@ const (
 	TestnetName  = "testnet"
 	BananaName   = "banana"
 	BluebyteName = "bluebyte"
+	FusionName   = "fusion"
 	FujiName     = "fuji"
 	UnitTestName = "testing"
 	LocalName    = "local"
@@ -37,6 +39,7 @@ const (
 	SocotraHRP  = "socotra"
 	BananaHRP   = "banana"
 	BluebyteHRP = "bluebyte"
+	FusionHRP   = "fusion"
 	UnitTestHRP = "testing"
 	LocalHRP    = "local"
 	FallbackHRP = "custom"
@@ -52,6 +55,7 @@ var (
 		SocotraID:  SocotraName,
 		BananaID:   BananaName,
 		BluebyteID: BluebyteName,
+		FusionID:   FusionName,
 		UnitTestID: UnitTestName,
 		LocalID:    LocalName,
 	}
@@ -60,6 +64,7 @@ var (
 		SocotraName:  SocotraID,
 		BananaName:   BananaID,
 		BluebyteName: BluebyteID,
+		FusionName:   FusionID,
 		TestnetName:  TestnetID,
 		UnitTestName: UnitTestID,
 		LocalName:    LocalID,
@@ -70,6 +75,7 @@ var (
 		SocotraID:  SocotraHRP,
 		BananaID:   BananaHRP,
 		BluebyteID: BluebyteHRP,
+		FusionID:   FusionHRP,
 		UnitTestID: UnitTestHRP,
 		LocalID:    LocalHRP,
 	}
@@ -78,6 +84,7 @@ var (
 		SocotraHRP:  SocotraID,
 		BananaHRP:   BananaID,
 		BluebyteHRP: BluebyteID,
+		FusionHRP:   FusionID,
 		UnitTestHRP: UnitTestID,
 		LocalHRP:    LocalID,
 	}

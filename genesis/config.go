@@ -205,6 +205,8 @@ var (
 
 	BluebyteConfig Config
 
+	FusionConfig Config
+
 	// LocalConfig is the config that should be used to generate a local
 	// genesis.
 	LocalConfig Config
@@ -215,6 +217,7 @@ func init() {
 	unparsedSocotraConfig := UnparsedConfig{}
 	unparsedBananaConfig := UnparsedConfig{}
 	unparsedBluebyteConfig := UnparsedConfig{}
+	unparsedFusionConfig := UnparsedConfig{}
 	unparsedLocalConfig := UnparsedConfig{}
 
 	err := utils.Err(
@@ -222,6 +225,7 @@ func init() {
 		json.Unmarshal(socotraGenesisConfigJSON, &unparsedSocotraConfig),
 		json.Unmarshal(bananaGenesisConfigJSON, &unparsedBananaConfig),
 		json.Unmarshal(bluebyteGenesisConfigJSON, &unparsedBluebyteConfig),
+		json.Unmarshal(fusionGenesisConfigJSON, &unparsedFusionConfig),
 		json.Unmarshal(localGenesisConfigJSON, &unparsedLocalConfig),
 	)
 	if err != nil {
@@ -248,6 +252,11 @@ func init() {
 		panic(err)
 	}
 
+	FusionConfig, err = unparsedFusionConfig.Parse()
+	if err != nil {
+		panic(err)
+	}
+
 	LocalConfig, err = unparsedLocalConfig.Parse()
 	if err != nil {
 		panic(err)
@@ -264,6 +273,8 @@ func GetConfig(networkID uint32) *Config {
 		return &BananaConfig
 	case constants.BluebyteID:
 		return &BluebyteConfig
+	case constants.FusionID:
+		return &FusionConfig
 	case constants.LocalID:
 		return &LocalConfig
 	default:
