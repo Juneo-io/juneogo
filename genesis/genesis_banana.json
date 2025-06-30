@@ -116,8 +116,8 @@
       "rewardAddress": "JVM-banana1npfarf9lhhnlup0tjhkk6flykxhctpdeu02qrz",
       "delegationFee": 50000,
       "signer": {
-        "publicKey": "0x0x8d14ea609818ad2e873971e018cbf38a0f4e365bfb761dedc7f58e19c95cb361f3583a64dce22ecdaa5709ae18b4a1a1",
-        "proofOfPossession": "0x0x854dd0e9c451d37dcfa34f4137bccc611b8430ef8c1a48f5d4004b920c2515c44ca9e6726faef72ccd32a146d2a0ec9c0e2dac77b098f1ebd71c89a8dbbb1ecc5c95fc43da41b81dbd94b9d4bf81041b0ca80cf84166270591591668c2c7d0d3"
+        "publicKey": "0x8d14ea609818ad2e873971e018cbf38a0f4e365bfb761dedc7f58e19c95cb361f3583a64dce22ecdaa5709ae18b4a1a1",
+        "proofOfPossession": "0x854dd0e9c451d37dcfa34f4137bccc611b8430ef8c1a48f5d4004b920c2515c44ca9e6726faef72ccd32a146d2a0ec9c0e2dac77b098f1ebd71c89a8dbbb1ecc5c95fc43da41b81dbd94b9d4bf81041b0ca80cf84166270591591668c2c7d0d3"
       }
     },
     {
