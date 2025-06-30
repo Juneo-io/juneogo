@@ -34,8 +34,8 @@ var (
 		},
 		StakingConfig: StakingConfig{
 			UptimeRequirement: .8, // 80%
-			MinValidatorStake: 20 * units.Avax,
-			MaxValidatorStake: 30 * units.KiloAvax,
+			MinValidatorStake: 5 * units.Avax,
+			MaxValidatorStake: 7500 * units.Avax,
 			MinDelegatorStake: 100 * units.MilliAvax,
 			MinDelegationFee:  50000, // 5%
 			MaxDelegationFee:  50000,
