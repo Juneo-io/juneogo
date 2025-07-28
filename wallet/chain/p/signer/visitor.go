@@ -59,6 +59,14 @@ func (s *visitor) BaseTx(tx *txs.BaseTx) error {
 	return sign(s.tx, false, txSigners)
 }
 
+func (s *visitor) DonationTx(tx *txs.DonationTx) error {
+	txSigners, err := s.getSigners(constants.PlatformChainID, tx.Ins)
+	if err != nil {
+		return err
+	}
+	return sign(s.tx, false, txSigners)
+}
+
 func (s *visitor) AddValidatorTx(tx *txs.AddValidatorTx) error {
 	txSigners, err := s.getSigners(constants.PlatformChainID, tx.Ins)
 	if err != nil {

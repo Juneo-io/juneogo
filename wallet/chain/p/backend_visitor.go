@@ -74,6 +74,10 @@ func (b *backendVisitor) BaseTx(tx *txs.BaseTx) error {
 	return b.baseTx(tx)
 }
 
+func (b *backendVisitor) DonationTx(tx *txs.DonationTx) error {
+	return b.baseTx(&tx.BaseTx)
+}
+
 func (b *backendVisitor) ImportTx(tx *txs.ImportTx) error {
 	err := b.b.removeUTXOs(
 		b.ctx,
