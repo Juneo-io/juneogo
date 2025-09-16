@@ -164,45 +164,45 @@
   "bluebyte": [
     {
       "id": "NodeID-D3UMMU1BTAR13jq6ho9aUB2Hs8exU7yvw",
-      "ip": "172.234.63.77:9651"
+      "ip": "51.178.130.61:9652"
     },
     {
       "id": "NodeID-JuJGopfTDnQkWqpDo62HfWE4D4NzetkJy",
-      "ip": "172.233.33.177:9651"
+      "ip": "51.89.235.168:9652"
     },
     {
       "id": "NodeID-NyjTGsm6ysqqofG4GSkjaPubpahdWxgfY",
-      "ip": "139.162.251.26:9651"
+      "ip": "51.83.220.91:9652"
     },
     {
       "id": "NodeID-FLidMrnApgTw2jCV7To3WBSq5ThmTLMa9",
-      "ip": "172.232.212.43:9651"
+      "ip": "51.195.104.104:9652"
     },
     {
       "id": "NodeID-CLfhTsGeyhQM3UToadMSL3Cb2RRe5m55W",
-      "ip": "172.232.149.206:9651"
+      "ip": "51.91.74.92:9652"
     }
   ],
   "fusion": [
     {
       "id": "NodeID-JQ1asasyzT5BE7ijx8aaKu833P436a3u4",
-      "ip": "172.233.240.68:9651"
+      "ip": "51.178.130.61:9651"
     },
     {
       "id": "NodeID-L1FKATFxYsgGXP6cciGByRNSFHCB1NqvN",
-      "ip": "172.233.46.254:9651"
+      "ip": "51.89.235.168:9651"
     },
     {
       "id": "NodeID-BMFKmAterkXYQjfa8vbdF3iK6fPpmWpRe",
-      "ip": "213.219.38.102:9651"
+      "ip": "51.83.220.91:9651"
     },
     {
       "id": "NodeID-PCtC9NvdP8wCDXxtRWtREN79Di8RUZ6Fz",
-      "ip": "172.232.203.209:9651"
+      "ip": "51.195.104.104:9651"
     },
     {
       "id": "NodeID-EfAdT5LvFyXKSdv12XeSLHRSfGKqiw4Wx",
-      "ip": "172.234.107.75:9651"
+      "ip": "51.91.74.92:9651"
     }
   ]
 }
