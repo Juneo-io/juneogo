@@ -25,7 +25,7 @@ const (
 var (
 	Current = &Semantic{
 		Major: 1,
-		Minor: 1,
+		Minor: 2,
 		Patch: 0,
 	}
 	CurrentApp = &Application{
@@ -37,13 +37,13 @@ var (
 	MinimumCompatibleVersion = &Application{
 		Name:  Client,
 		Major: 1,
-		Minor: 0,
+		Minor: 1,
 		Patch: 0,
 	}
 	PrevMinimumCompatibleVersion = &Application{
 		Name:  Client,
-		Major: 0,
-		Minor: 3,
+		Major: 1,
+		Minor: 0,
 		Patch: 0,
 	}
 
@@ -72,26 +72,18 @@ var (
 
 	ApricotPhase1Times = map[uint32]time.Time{
 		constants.MainnetID: time.Date(2021, time.March, 31, 14, 0, 0, 0, time.UTC),
-		constants.TestnetID: time.Date(2021, time.March, 26, 14, 0, 0, 0, time.UTC),
-		constants.BananaID:  DefaultUpgradeTime,
 	}
 
 	ApricotPhase2Times = map[uint32]time.Time{
 		constants.MainnetID: time.Date(2021, time.May, 10, 11, 0, 0, 0, time.UTC),
-		constants.TestnetID: time.Date(2021, time.May, 5, 14, 0, 0, 0, time.UTC),
-		constants.BananaID:  DefaultUpgradeTime,
 	}
 
 	ApricotPhase3Times = map[uint32]time.Time{
 		constants.MainnetID: time.Date(2021, time.August, 24, 14, 0, 0, 0, time.UTC),
-		constants.TestnetID: time.Date(2021, time.August, 16, 19, 0, 0, 0, time.UTC),
-		constants.BananaID:  DefaultUpgradeTime,
 	}
 
 	ApricotPhase4Times = map[uint32]time.Time{
 		constants.MainnetID: time.Date(2021, time.September, 22, 21, 0, 0, 0, time.UTC),
-		constants.TestnetID: time.Date(2021, time.September, 16, 21, 0, 0, 0, time.UTC),
-		constants.BananaID:  DefaultUpgradeTime,
 	}
 	ApricotPhase4MinPChainHeight = map[uint32]uint64{
 		constants.MainnetID:  0,
@@ -104,69 +96,50 @@ var (
 
 	ApricotPhase5Times = map[uint32]time.Time{
 		constants.MainnetID: time.Date(2021, time.December, 2, 18, 0, 0, 0, time.UTC),
-		constants.TestnetID: time.Date(2021, time.November, 24, 15, 0, 0, 0, time.UTC),
-		constants.BananaID:  DefaultUpgradeTime,
 	}
 
 	ApricotPhasePre6Times = map[uint32]time.Time{
 		constants.MainnetID: time.Date(2022, time.September, 5, 1, 30, 0, 0, time.UTC),
-		constants.TestnetID: time.Date(2022, time.September, 6, 20, 0, 0, 0, time.UTC),
-		constants.BananaID:  DefaultUpgradeTime,
 	}
 
 	ApricotPhase6Times = map[uint32]time.Time{
 		constants.MainnetID: time.Date(2022, time.September, 6, 20, 0, 0, 0, time.UTC),
-		constants.TestnetID: time.Date(2022, time.September, 6, 20, 0, 0, 0, time.UTC),
-		constants.BananaID:  DefaultUpgradeTime,
 	}
 
 	ApricotPhasePost6Times = map[uint32]time.Time{
 		constants.MainnetID: time.Date(2022, time.September, 7, 3, 0, 0, 0, time.UTC),
-		constants.TestnetID: time.Date(2022, time.September, 7, 6, 0, 0, 0, time.UTC),
-		constants.BananaID:  DefaultUpgradeTime,
 	}
 
 	BanffTimes = map[uint32]time.Time{
 		constants.MainnetID: time.Date(2022, time.October, 18, 16, 0, 0, 0, time.UTC),
-		constants.TestnetID: time.Date(2022, time.October, 3, 14, 0, 0, 0, time.UTC),
-		constants.BananaID:  DefaultUpgradeTime,
 	}
 
 	CortinaTimes = map[uint32]time.Time{
 		constants.MainnetID: time.Date(2023, time.April, 25, 15, 0, 0, 0, time.UTC),
-		constants.TestnetID: time.Date(2023, time.April, 6, 15, 0, 0, 0, time.UTC),
-		constants.BananaID:  DefaultUpgradeTime,
 	}
 	CortinaXChainStopVertexID = map[uint32]ids.ID{
-		constants.MainnetID: ids.FromStringOrPanic("ejqSBwWAzAY7jfzYcwaGfQDfcX37Bvv62pPuXMCNauxFadBJu"),
-		constants.TestnetID: ids.FromStringOrPanic("qXsVYV9eBiZFUSYdCw5MALrebD92LJcvvZHCvCEHCorJHyaPL"),
-		constants.BananaID:  ids.FromStringOrPanic("hypEt4wpjtj7kS7JsY9GAxzov8EdvyevJ5kyTr23kUtgMPMS9"),
+		constants.MainnetID:  ids.FromStringOrPanic("ejqSBwWAzAY7jfzYcwaGfQDfcX37Bvv62pPuXMCNauxFadBJu"),
+		constants.TestnetID:  ids.FromStringOrPanic("qXsVYV9eBiZFUSYdCw5MALrebD92LJcvvZHCvCEHCorJHyaPL"),
+		constants.BananaID:   ids.FromStringOrPanic("hypEt4wpjtj7kS7JsY9GAxzov8EdvyevJ5kyTr23kUtgMPMS9"),
+		constants.BluebyteID: ids.FromStringOrPanic("Z9w9SKQLD3Y1BgkaSs92hMXiGPzbZp9HspAYXD4z1b8y6xvd5"),
+		constants.FusionID:   ids.FromStringOrPanic("21sfw65e9UJBMbKfMEG83WkA4xZzyjLh1RBc1Tyv5y61FdDqvs"),
 	}
 
 	DurangoTimes = map[uint32]time.Time{
 		constants.MainnetID: time.Date(2024, time.March, 6, 16, 0, 0, 0, time.UTC),
-		constants.TestnetID: time.Date(2024, time.April, 9, 16, 0, 0, 0, time.UTC),
-		constants.BananaID:  DefaultUpgradeTime,
 	}
 
 	FeeUpdate1Times = map[uint32]time.Time{
 		constants.MainnetID: time.Date(2024, time.May, 11, 14, 0, 0, 0, time.UTC),
-		constants.TestnetID: time.Date(2024, time.May, 11, 14, 0, 0, 0, time.UTC),
-		constants.BananaID:  DefaultUpgradeTime,
 	}
 
 	FeeUpdate2Times = map[uint32]time.Time{
 		constants.MainnetID: time.Date(2025, time.April, 15, 18, 0, 0, 0, time.UTC),
-		constants.TestnetID: time.Date(2025, time.April, 1, 12, 0, 0, 0, time.UTC),
-		constants.BananaID:  DefaultUpgradeTime,
 	}
 
 	DonationTimes = map[uint32]time.Time{
-		constants.MainnetID:  time.Date(10000, time.December, 1, 0, 0, 0, 0, time.UTC),
-		constants.TestnetID:  time.Date(10000, time.December, 1, 0, 0, 0, 0, time.UTC),
-		constants.BananaID:   time.Date(10000, time.December, 1, 0, 0, 0, 0, time.UTC),
-		constants.BluebyteID: time.Date(10000, time.December, 1, 0, 0, 0, 0, time.UTC),
-		constants.FusionID:   time.Date(10000, time.December, 1, 0, 0, 0, 0, time.UTC),
+		constants.MainnetID:  time.Date(2025, time.October, 22, 12, 0, 0, 0, time.UTC),
+		constants.TestnetID:  time.Date(2025, time.October, 22, 12, 0, 0, 0, time.UTC),
 	}
 
 	EUpgradeTimes = map[uint32]time.Time{
