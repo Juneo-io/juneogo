@@ -37,40 +37,16 @@
       "ip": "172.105.106.66:9651"
     },
     {
-      "id": "NodeID-JLmB5sydBLRDfruR353wqqKLpK6nubJra",
-      "ip": "172.105.106.75:9651"
-    },
-    {
       "id": "NodeID-CGNUhWmVpBoJQSAmQASaUnWQLdZnnKgKC",
       "ip": "103.3.61.98:9651"
-    },
-    {
-      "id": "NodeID-3CPTc7tHoDBRbhsjxL2XqPoyj5SxAujqE",
-      "ip": "103.3.61.167:9651"
     },
     {
       "id": "NodeID-KqazoqbGKQ3CgyTXWWrqurpJucdYx8w9L",
       "ip": "172.234.80.93:9651"
     },
     {
-      "id": "NodeID-LHgARJ38DXwGKKuRNqk3a2NbcDnDtD4Pu",
-      "ip": "172.234.80.138:9651"
-    },
-    {
       "id": "NodeID-GWpQJbEgSKWRuePk1qwkV3VxD4YMQYjuQ",
       "ip": "172.233.14.146:9651"
-    },
-    {
-      "id": "NodeID-HDzEB9bG8NNvB5R8EuFdHycb72uX1eJut",
-      "ip": "172.233.14.70:9651"
-    },
-    {
-      "id": "NodeID-GAhhU4xxuABqarp5jkCr2pDEFTDXiE337",
-      "ip": "172.105.166.72:9651"
-    },
-    {
-      "id": "NodeID-Cg99vmSC1W6BrCDS5HjjkFKVfKU6m6MCP",
-      "ip": "194.195.120.229:9651"
     }
   ],
   "socotra": [
