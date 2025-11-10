@@ -3,6 +3,7 @@ package txs
 import (
 	"github.com/Juneo-io/juneogo/ids"
 	"github.com/Juneo-io/juneogo/snow"
+	"github.com/Juneo-io/juneogo/utils/math"
 )
 
 var _ UnsignedTx = (*DonationTx)(nil)
@@ -15,6 +16,15 @@ type DonationTx struct {
 	Supernet ids.ID `serialize:"true" json:"supernetID"`
 	// Describes the amount donated
 	Amount uint64 `serialize:"true" json:"amount"`
+}
+
+func (tx *DonationTx) ConsumedValue(assetID ids.ID) uint64 {
+	value := tx.BaseTx.ConsumedValue(assetID)
+	val, err := math.Sub(value, tx.Amount)
+	if err != nil {
+		return uint64(0)
+	}
+	return val
 }
 
 // InitCtx sets the FxID fields in the inputs and outputs of this
